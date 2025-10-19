@@ -52,8 +52,8 @@ export const dummyPosts = [
         media: [{ type: 'video' as const, url: '/DummyData/1.mp4' }],
         stats: { comments: 5, reshares: 12, likes: 150, views: 2500 },
         comments: [
-            { id: "comment_1_1", user: users[1], text: "So inspiring! Thank you for sharing.", isPinned: true },
-            { id: "comment_1_2", user: users[2], text: "Hare Krishna! This is wonderful to see." }
+            { id: "comment_1_1", user: users[1], text: "So inspiring! Thank you for sharing.", isPinned: true, likes: 25 },
+            { id: "comment_1_2", user: users[2], text: "Hare Krishna! This is wonderful to see.", isPinned: false, likes: 10 }
         ]
     },
     // 2. Post with four images
@@ -70,7 +70,7 @@ export const dummyPosts = [
         ],
         stats: { comments: 8, reshares: 3, likes: 88, views: 1200 },
         comments: [
-            { id: "comment_2_1", user: users[0], text: "I was there too! The kirtan was magical." },
+            { id: "comment_2_1", user: users[0], text: "I was there too! The kirtan was magical.", isPinned: false, likes: 5 },
         ]
     },
     // 3. Text-only post
@@ -82,8 +82,8 @@ export const dummyPosts = [
         media: [],
         stats: { comments: 22, reshares: 45, likes: 540, views: 10500 },
         comments: [
-            { id: "comment_3_1", user: users[3], text: "Dandavat Pranams. All glories to Srila Prabhupada." },
-            { id: "comment_3_2", user: users[1], text: "Beautifully said. 🙏" },
+            { id: "comment_3_1", user: users[3], text: "Dandavat Pranams. All glories to Srila Prabhupada.", isPinned: false, likes: 50 },
+            { id: "comment_3_2", user: users[1], text: "Beautifully said. 🙏", isPinned: false, likes: 23 },
         ]
     },
     // 4. Post with two images
@@ -99,6 +99,7 @@ export const dummyPosts = [
         stats: { comments: 2, reshares: 1, likes: 45, views: 980 },
         comments: []
     },
+    // 5. Post with three images
     {
         id: "post_5",
         author: users[1],
@@ -111,9 +112,10 @@ export const dummyPosts = [
         ],
         stats: { comments: 15, reshares: 7, likes: 210, views: 4300 },
         comments: [
-            { id: "comment_5_1", user: users[2], text: "The best way to start the day!" }
+            { id: "comment_5_1", user: users[2], text: "The best way to start the day!", isPinned: false, likes: 8 }
         ]
     },
+    // 6. Post with one image
     {
         id: "post_6",
         author: users[0],
@@ -125,6 +127,7 @@ export const dummyPosts = [
         stats: { comments: 3, reshares: 2, likes: 75, views: 1500 },
         comments: []
     },
+     // 7. Another text-only post
     {
         id: "post_8",
         author: users[2],
