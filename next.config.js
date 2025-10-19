@@ -1,10 +1,10 @@
-import type { NextConfig } from 'next'
+/** @type {import('next').NextConfig} */
 
 const supabaseHostname = process.env.NEXT_PUBLIC_SUPABASE_URL
   ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
   : '';
 
-const nextConfig: NextConfig = {
+const nextConfig = {
   trailingSlash: false,
   images: {
     remotePatterns: [
@@ -26,4 +26,4 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+module.exports = nextConfig
