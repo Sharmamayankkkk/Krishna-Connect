@@ -24,7 +24,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useToast } from '@/hooks/use-toast';
 import { ImageViewerDialog } from './image-viewer';
 import { useAppContext } from '@/providers/app-provider';
-import { HareKrishnaTrigger } from './hare-krishna-trigger';
 
 interface PostCardProps {
   post: PostType;
@@ -35,8 +34,8 @@ const parseContent = (content: string) => {
     const elements: (string | React.ReactNode)[] = [];
     let lastIndex = 0;
 
-    // Regex to find "Hare Krishna", hashtags, and links
-    const regex = /(Hare Krishna)|(#\w+)|(https?:\/\/[^\s]+)/g;
+    // Regex to find hashtags and links
+    const regex = /(#\w+)|(https?:\/\/[^\s]+)/g;
 
     let match;
     while ((match = regex.exec(content)) !== null) {
@@ -47,9 +46,7 @@ const parseContent = (content: string) => {
 
         const matchedText = match[0];
 
-        if (matchedText === "Hare Krishna") {
-            elements.push(<HareKrishnaTrigger key={lastIndex} />);
-        } else if (matchedText.startsWith('#')) {
+        if (matchedText.startsWith('#')) {
             elements.push(<Link key={lastIndex} href={`/explore/tags/${matchedText.substring(1)}`} className="text-primary hover:underline">{matchedText}</Link>);
         } else if (matchedText.startsWith('http')) {
             elements.push(<a key={lastIndex} href={matchedText} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{matchedText}</a>);

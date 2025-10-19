@@ -1,69 +1,91 @@
-'use client';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-import React, { useState, useRef, useEffect } from 'react';
-import { cn } from '@/lib/utils';
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --success: 142.1 76.2% 36.3%;
+    --success-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
 
-export function HareKrishnaTrigger() {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --success: 142.1 76.2% 36.3%;
+    --success-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
 
-  const handlePlayVideo = () => {
-    const video = videoRef.current;
-    if (!video) return;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
 
-    setIsPlaying(true);
+@layer components {
+  .spoiler {
+    @apply bg-foreground/20 text-transparent rounded-sm transition-colors duration-200 cursor-pointer;
+  }
+  .spoiler:not([data-revealed="true"]):hover {
+     @apply bg-foreground/30;
+  }
+  .spoiler[data-revealed="true"] {
+    @apply bg-transparent text-current cursor-text;
+  }
+}
 
-    if (video.requestFullscreen) {
-      video.requestFullscreen();
-    } else if ((video as any).mozRequestFullScreen) { /* Firefox */
-      (video as any).mozRequestFullScreen();
-    } else if ((video as any).webkitRequestFullscreen) { /* Chrome, Safari & Opera */
-      (video as any).webkitRequestFullscreen();
-    } else if ((video as any).msRequestFullscreen) { /* IE/Edge */
-      (video as any).msRequestFullscreen();
-    }
-    video.play();
-  };
-
-  const handleVideoEnd = () => {
-    const video = videoRef.current;
-    if (document.fullscreenElement && video) {
-      document.exitFullscreen();
-    }
-    setIsPlaying(false);
-  };
-  
-  useEffect(() => {
-    const video = videoRef.current;
-    if (video) {
-        video.addEventListener('ended', handleVideoEnd);
-    }
-    
-    // Cleanup
-    return () => {
-        if (video) {
-            video.removeEventListener('ended', handleVideoEnd);
-        }
-    }
-  }, []);
-
-  return (
-    <>
-      <span
-        onClick={handlePlayVideo}
-        className="hare-krishna-trigger"
-      >
-        Hare Krishna
-      </span>
-      <video
-        ref={videoRef}
-        src="/text/krishna.mp4"
-        className={cn(
-            'fixed top-0 left-0 w-full h-full object-cover pointer-events-none transition-opacity',
-            isPlaying ? 'z-[1000] opacity-100' : '-z-10 opacity-0'
-        )}
-        playsInline
-      />
-    </>
-  );
+@layer utilities {
+  .animate-highlight {
+    animation: highlight-message 1.5s ease-out forwards;
+  }
 }
