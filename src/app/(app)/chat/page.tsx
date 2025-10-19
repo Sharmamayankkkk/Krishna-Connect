@@ -8,6 +8,7 @@ import { PostCard } from '../components/post-card';
 import { Separator } from "@/components/ui/separator";
 import { CreatePost } from '../components/create-post';
 import { useAppContext } from '@/providers/app-provider';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function PostsFeedPage() {
   const { loggedInUser } = useAppContext();
@@ -45,7 +46,7 @@ export default function PostsFeedPage() {
         <SidebarTrigger className="md:hidden" />
         <h2 className="text-xl font-bold tracking-tight">Home</h2>
       </header>
-      <main className="flex-1 overflow-y-auto">
+      <ScrollArea className="flex-1">
         <div className="p-4 border-b">
            <CreatePost onPostCreated={handlePostCreated} />
         </div>
@@ -63,7 +64,7 @@ export default function PostsFeedPage() {
         <div className="p-4 text-center text-muted-foreground">
             Loading more posts...
         </div>
-      </main>
+      </ScrollArea>
     </div>
   )
 }

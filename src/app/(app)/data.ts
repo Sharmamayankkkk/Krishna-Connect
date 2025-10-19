@@ -7,25 +7,25 @@ export const users = [
         id: "user_1",
         name: "Advaita Das",
         username: "advaitadas",
-        avatar: "https://raw.githubusercontent.com/Sharmamayankkkk/krishna-connect/main/public/user_Avatar/male.png"
+        avatar: "/user_Avatar/male.png"
     },
     {
         id: "user_2",
         name: "Bhakti Devi",
         username: "bhaktidevi",
-        avatar: "https://raw.githubusercontent.com/Sharmamayankkkk/krishna-connect/main/public/user_Avatar/female.png"
+        avatar: "/user_Avatar/female.png"
     },
     {
         id: "user_3",
         name: "Chaitanya Charan",
         username: "ccharan",
-        avatar: "https://raw.githubusercontent.com/Sharmamayankkkk/krishna-connect/main/public/user_Avatar/male.png"
+        avatar: "/user_Avatar/male.png"
     },
     {
         id: "user_4",
         name: "Damodar Pandit",
         username: "damodarp",
-        avatar: "https://raw.githubusercontent.com/Sharmamayankkkk/krishna-connect/main/public/user_Avatar/male.png"
+        avatar: "/user_Avatar/male.png"
     },
 ];
 

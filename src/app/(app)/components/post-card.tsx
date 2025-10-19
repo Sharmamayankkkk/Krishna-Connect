@@ -34,12 +34,9 @@ const parseContent = (content: string) => {
 };
 
 const MediaGrid = ({ media }: { media: PostType['media'] }) => {
-    const gridClasses = {
-        1: 'grid-cols-1',
-        2: 'grid-cols-2',
-        3: 'grid-cols-2 grid-rows-2',
-        4: 'grid-cols-2 grid-rows-2',
-    };
+    if (!media || media.length === 0) {
+        return null;
+    }
 
     if (media.length > 0 && media[0].type === 'video') {
         return (
@@ -49,14 +46,24 @@ const MediaGrid = ({ media }: { media: PostType['media'] }) => {
         );
     }
 
+    const gridClasses: { [key: number]: string } = {
+        1: 'grid-cols-1 grid-rows-1',
+        2: 'grid-cols-2 grid-rows-1',
+        3: 'grid-cols-2 grid-rows-2',
+        4: 'grid-cols-2 grid-rows-2',
+    };
+
     return (
-        <div className={cn("mt-3 grid gap-0.5 rounded-2xl overflow-hidden border", gridClasses[media.length as keyof typeof gridClasses] || 'grid-cols-2')}>
+        <div className={cn(
+            "mt-3 grid gap-0.5 rounded-2xl overflow-hidden border",
+            gridClasses[media.length] || 'grid-cols-2'
+        )}>
             {media.map((item, index) => {
                 let itemClass = '';
                 if (media.length === 3 && index === 0) itemClass = 'row-span-2';
                 
                 return (
-                    <div key={index} className={cn("relative aspect-video bg-muted", itemClass)}>
+                    <div key={index} className={cn("relative bg-muted w-full", itemClass, media.length === 1 ? 'aspect-video' : 'aspect-square')}>
                          <Image src={item.url} alt={`Post media ${index + 1}`} fill className="object-cover" />
                     </div>
                 );
@@ -70,9 +77,9 @@ export function PostCard({ post }: PostCardProps) {
 
   return (
     <article className="p-4 transition-colors hover:bg-muted/50">
-      <div className="flex gap-4">
+      <div className="flex gap-3 sm:gap-4">
         <Link href={`/profile/${author.username}`}>
-            <Avatar className="h-11 w-11">
+            <Avatar className="h-10 w-10 sm:h-11 sm:w-11">
               <AvatarImage src={author.avatar} alt={author.name} />
               <AvatarFallback>{author.name.charAt(0)}</AvatarFallback>
             </Avatar>
@@ -97,7 +104,7 @@ export function PostCard({ post }: PostCardProps) {
             {parseContent(content)}
           </div>
           
-          {media.length > 0 && <MediaGrid media={media} />}
+          <MediaGrid media={media} />
 
           <div className="mt-4 flex items-center justify-between text-muted-foreground max-w-sm">
             <ActionButton icon={MessageCircle} value={stats.comments} hoverColor="hover:text-primary" />
@@ -113,8 +120,8 @@ export function PostCard({ post }: PostCardProps) {
 }
 
 const ActionButton = ({ icon: Icon, value, hoverColor }: { icon: React.ElementType, value: number, hoverColor: string }) => (
-    <Button variant="ghost" size="sm" className={cn("flex items-center gap-2 text-muted-foreground", hoverColor)}>
+    <Button variant="ghost" size="sm" className={cn("flex items-center gap-1.5 p-1.5 sm:p-2 sm:gap-2 text-muted-foreground", hoverColor)}>
         <Icon className="h-5 w-5" />
-        <span className="text-sm">{value > 0 ? value : ''}</span>
+        <span className="text-xs sm:text-sm">{value > 0 ? value : ''}</span>
     </Button>
 )
