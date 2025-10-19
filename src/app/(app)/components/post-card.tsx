@@ -18,7 +18,7 @@ import {
   Bookmark
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import type { PostType } from '../data';
+import type { PostType, CommentType } from '../data';
 import { cn } from '@/lib/utils';
 import { VideoPlayer } from './video-player';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -28,7 +28,7 @@ import { useAppContext } from '@/providers/app-provider';
 
 interface PostCardProps {
   post: PostType;
-  onComment: (postId: string, commentText: string) => void;
+  onComment: (postId: string, commentText: string, parentCommentId?: string) => void;
 }
 
 const parseContent = (content: string) => {
@@ -93,7 +93,7 @@ const MediaGrid = ({ media, onMediaClick }: { media: PostType['media'], onMediaC
     );
 };
 
-const CommentInput = ({ onCommentSubmit }: { onCommentSubmit: (commentText: string) => void }) => {
+const CommentInput = ({ onCommentSubmit, placeholder = "Write a comment...", buttonText = "Comment", onCancel }: { onCommentSubmit: (commentText: string) => void; placeholder?: string; buttonText?: string; onCancel?: () => void; }) => {
     const { loggedInUser } = useAppContext();
     const [commentText, setCommentText] = React.useState('');
 
@@ -113,69 +113,90 @@ const CommentInput = ({ onCommentSubmit }: { onCommentSubmit: (commentText: stri
                 <AvatarFallback>{loggedInUser.name.charAt(0)}</AvatarFallback>
             </Avatar>
             <Input 
-                placeholder="Write a comment..." 
+                placeholder={placeholder}
                 className="flex-1 rounded-full bg-muted"
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
             />
+            {onCancel && <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>}
+            <Button type="submit" size="sm">{buttonText}</Button>
         </form>
     );
 }
 
-const CommentsSection = ({ post, onCommentSubmit }: { post: PostType; onCommentSubmit: (commentText: string) => void }) => {
+const CommentsSection = ({ post, onCommentSubmit }: { post: PostType; onCommentSubmit: (postId: string, commentText: string, parentCommentId?: string) => void }) => {
     const { comments, stats } = post;
+    const [replyingToCommentId, setReplyingToCommentId] = React.useState<string | null>(null);
 
     const pinnedComment = comments.find(c => c.isPinned);
-    // Newest comments come first from the state, so we just take the first few
-    const otherComments = comments.filter(c => !c.isPinned).slice(0, 2); 
+    const otherComments = comments.filter(c => !c.isPinned); 
     
-    // Combine pinned and other comments, ensuring pinned is first
-    const commentsToShow = pinnedComment ? [pinnedComment, ...comments.filter(c => c.id !== pinnedComment.id).slice(0, 1)] : otherComments;
+    const commentsToShow = pinnedComment ? [pinnedComment, ...otherComments.slice(0, 1)] : otherComments.slice(0, 2);
 
-    if (!comments || comments.length === 0) {
-        return <CommentInput onCommentSubmit={onCommentSubmit} />;
+    const handleReply = (commentId: string) => {
+      setReplyingToCommentId(commentId);
+    }
+
+    const handleCancelReply = () => {
+        setReplyingToCommentId(null);
     }
     
-    const handleReply = (username: string) => {
-      console.log(`Replying to ${username}`);
-      // Future logic: Open a reply input or pre-fill the main comment input
+    const handleReplySubmit = (commentText: string) => {
+        onCommentSubmit(post.id, commentText, replyingToCommentId!);
+        setReplyingToCommentId(null);
+    }
+
+    if (!comments || comments.length === 0) {
+        return <CommentInput onCommentSubmit={(commentText) => onCommentSubmit(post.id, commentText)} />;
     }
 
     return (
         <div className="mt-4 space-y-4 pt-4 border-t">
             {commentsToShow.map(comment => (
-                <div key={comment.id} className="flex items-start gap-3">
-                    <Avatar className="h-9 w-9">
-                        <AvatarImage src={comment.user.avatar} alt={comment.user.name} />
-                        <AvatarFallback>{comment.user.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                        <div className="bg-muted rounded-xl px-3 py-2">
-                           <div className="flex items-center justify-between">
-                                <Link href={`/profile/${comment.user.username}`} className="font-semibold text-sm hover:underline">{comment.user.name}</Link>
-                                {comment.isPinned && (
-                                     <div className="flex items-center gap-1.5 text-yellow-500">
-                                        <Pin className="h-3.5 w-3.5" />
-                                        <span className="text-xs font-semibold">Pinned</span>
-                                    </div>
-                                )}
-                           </div>
-                            <p className="text-sm">{comment.text}</p>
-                        </div>
-                         <div className="flex items-center gap-4 px-3 pt-1">
-                            <Button variant="link" size="sm" className="text-xs text-muted-foreground p-0 h-auto" onClick={() => handleReply(comment.user.username)}>Reply</Button>
-                            <Button variant="link" size="sm" className="text-xs text-muted-foreground p-0 h-auto flex items-center gap-1">
-                                <Heart className="h-3.5 w-3.5" />
-                                {comment.likes > 0 && <span>{comment.likes}</span>}
-                            </Button>
+                <div key={comment.id}>
+                    <div className="flex items-start gap-3">
+                        <Avatar className="h-9 w-9">
+                            <AvatarImage src={comment.user.avatar} alt={comment.user.name} />
+                            <AvatarFallback>{comment.user.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                            <div className="bg-muted rounded-xl px-3 py-2">
+                               <div className="flex items-center justify-between">
+                                    <Link href={`/profile/${comment.user.username}`} className="font-semibold text-sm hover:underline">{comment.user.name}</Link>
+                                    {comment.isPinned && (
+                                         <div className="flex items-center gap-1.5 text-yellow-500">
+                                            <Pin className="h-3.5 w-3.5" />
+                                            <span className="text-xs font-semibold">Pinned</span>
+                                        </div>
+                                    )}
+                               </div>
+                                <p className="text-sm">{comment.text}</p>
+                            </div>
+                             <div className="flex items-center gap-4 px-3 pt-1">
+                                <Button variant="link" size="sm" className="text-xs text-muted-foreground p-0 h-auto" onClick={() => handleReply(comment.id)}>Reply</Button>
+                                <Button variant="link" size="sm" className="text-xs text-muted-foreground p-0 h-auto flex items-center gap-1">
+                                    <Heart className="h-3.5 w-3.5" />
+                                    {comment.likes > 0 && <span>{comment.likes}</span>}
+                                </Button>
+                            </div>
                         </div>
                     </div>
+                    {replyingToCommentId === comment.id && (
+                        <div className="pl-12">
+                            <CommentInput 
+                                onCommentSubmit={handleReplySubmit} 
+                                placeholder={`Replying to ${comment.user.name}...`}
+                                buttonText="Reply"
+                                onCancel={handleCancelReply}
+                            />
+                        </div>
+                    )}
                 </div>
             ))}
             {stats.comments > commentsToShow.length && (
                  <Button variant="link" size="sm" className="text-muted-foreground">View all {stats.comments} comments</Button>
             )}
-            <CommentInput onCommentSubmit={onCommentSubmit} />
+            {!replyingToCommentId && <CommentInput onCommentSubmit={(commentText) => onCommentSubmit(post.id, commentText)} />}
         </div>
     );
 };
@@ -262,7 +283,7 @@ export function PostCard({ post, onComment }: PostCardProps) {
             <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-primary"><Share className="h-5 w-5" /></Button>
           </div>
 
-          {isCommentsOpen && <CommentsSection post={post} onCommentSubmit={(commentText) => onComment(post.id, commentText)} />}
+          {isCommentsOpen && <CommentsSection post={post} onCommentSubmit={onComment} />}
 
         </div>
       </div>
@@ -277,3 +298,5 @@ const ActionButton = ({ icon: Icon, value, hoverColor, onClick, isActive }: { ic
         <span className="text-xs sm:text-sm">{value > 0 ? value : ''}</span>
     </Button>
 )
+
+    

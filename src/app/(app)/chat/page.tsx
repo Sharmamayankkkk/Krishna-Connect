@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { dummyPosts, PostType } from '../data';
+import { dummyPosts, PostType, CommentType } from '../data';
 import { PostCard } from '../components/post-card';
 import { Separator } from "@/components/ui/separator";
 import { CreatePost } from '../components/create-post';
@@ -35,10 +35,20 @@ export default function PostsFeedPage() {
     setPosts(prevPosts => [newPost, ...prevPosts]);
   };
 
-  const handleCommentCreated = (postId: string, commentText: string) => {
+  const handleCommentCreated = (postId: string, commentText: string, parentCommentId?: string) => {
     if (!loggedInUser) return;
 
-    const newComment = {
+    let finalCommentText = commentText;
+    
+    if (parentCommentId) {
+        const post = posts.find(p => p.id === postId);
+        const parentComment = post?.comments.find(c => c.id === parentCommentId);
+        if (parentComment) {
+            finalCommentText = `@${parentComment.user.username} ${commentText}`;
+        }
+    }
+    
+    const newComment: CommentType = {
         id: `comment_${Date.now()}`,
         user: {
             id: loggedInUser.id,
@@ -46,7 +56,7 @@ export default function PostsFeedPage() {
             username: loggedInUser.username,
             avatar: loggedInUser.avatar_url
         },
-        text: commentText,
+        text: finalCommentText,
         isPinned: false,
         likes: 0
     };
@@ -56,7 +66,6 @@ export default function PostsFeedPage() {
             if (post.id === postId) {
                 return {
                     ...post,
-                    // Prepend the new comment to show it at the top
                     comments: [newComment, ...post.comments],
                     stats: {
                         ...post.stats,
@@ -98,3 +107,5 @@ export default function PostsFeedPage() {
     </div>
   )
 }
+
+    
