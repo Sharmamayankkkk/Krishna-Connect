@@ -64,9 +64,11 @@ export default function PostsFeedPage() {
     setPosts(prevPosts => 
         prevPosts.map(post => {
             if (post.id === postId) {
+                const pinnedComment = post.comments.find(c => c.isPinned);
+                const otherComments = post.comments.filter(c => !c.isPinned);
                 return {
                     ...post,
-                    comments: [newComment, ...post.comments],
+                    comments: pinnedComment ? [pinnedComment, newComment, ...otherComments] : [newComment, ...post.comments],
                     stats: {
                         ...post.stats,
                         comments: post.stats.comments + 1
@@ -107,5 +109,3 @@ export default function PostsFeedPage() {
     </div>
   )
 }
-
-    

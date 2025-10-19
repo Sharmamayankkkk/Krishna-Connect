@@ -264,14 +264,15 @@ const MediaGrid = ({ media, onMediaClick }: { media: PostType['media'], onMediaC
     }
 
     if (imageMedia.length >= 4) {
-        const moreCount = imageMedia.length - 3;
+        const moreCount = imageMedia.length - 4;
         return (
              <div className={cn("grid grid-cols-2 grid-rows-2 gap-0.5", commonClasses)}>
-                {renderImage(imageMedia[0], 0, "row-span-2")}
+                {renderImage(imageMedia[0], 0)}
                 {renderImage(imageMedia[1], 1)}
+                {renderImage(imageMedia[2], 2)}
                 {moreCount > 0 ? 
-                    renderImageWithOverlay(imageMedia[2], 2, `+${moreCount}`) :
-                    renderImage(imageMedia[2], 2)
+                    renderImageWithOverlay(imageMedia[3], 3, `+${moreCount}`) :
+                    renderImage(imageMedia[3], 3)
                 }
             </div>
         )
