@@ -53,11 +53,27 @@ const MediaGrid = ({ media, onMediaClick }: { media: PostType['media'], onMediaC
             </div>
         );
     }
+    
+    // New layout for 3 images
+    if (media.length === 3) {
+      return (
+        <div className="mt-3 grid grid-cols-2 grid-rows-2 gap-0.5 rounded-2xl overflow-hidden border aspect-video">
+          <div className="row-span-2 relative cursor-pointer" onClick={() => onMediaClick(0)}>
+            <Image src={media[0].url} alt="Post media 1" fill className="object-cover" />
+          </div>
+          <div className="relative cursor-pointer" onClick={() => onMediaClick(1)}>
+            <Image src={media[1].url} alt="Post media 2" fill className="object-cover" />
+          </div>
+          <div className="relative cursor-pointer" onClick={() => onMediaClick(2)}>
+            <Image src={media[2].url} alt="Post media 3" fill className="object-cover" />
+          </div>
+        </div>
+      );
+    }
 
     const gridClasses: { [key: number]: string } = {
         1: 'grid-cols-1 grid-rows-1',
         2: 'grid-cols-2 grid-rows-1',
-        3: 'grid-cols-2 grid-rows-2',
         4: 'grid-cols-2 grid-rows-2',
     };
 
@@ -67,13 +83,8 @@ const MediaGrid = ({ media, onMediaClick }: { media: PostType['media'], onMediaC
             gridClasses[media.length] || 'grid-cols-2'
         )}>
             {media.map((item, index) => {
-                let itemClass = '';
-                 if (media.length === 3 && index === 0) {
-                    itemClass = 'row-span-2';
-                }
-                
                 return (
-                    <div key={index} className={cn("relative bg-muted w-full cursor-pointer", itemClass, media.length === 1 ? 'aspect-video' : 'aspect-square')} onClick={() => onMediaClick(index)}>
+                    <div key={index} className={cn("relative bg-muted w-full cursor-pointer", media.length === 1 ? 'aspect-video' : 'aspect-square')} onClick={() => onMediaClick(index)}>
                          <Image src={item.url} alt={`Post media ${index + 1}`} fill className="object-cover" />
                     </div>
                 );
@@ -113,13 +124,22 @@ const CommentInput = ({ onCommentSubmit }: { onCommentSubmit: (commentText: stri
 
 const CommentsSection = ({ post, onCommentSubmit }: { post: PostType; onCommentSubmit: (commentText: string) => void }) => {
     const { comments, stats } = post;
+
+    const pinnedComment = comments.find(c => c.isPinned);
+    // Newest comments come first from the state, so we just take the first few
+    const otherComments = comments.filter(c => !c.isPinned).slice(0, 2); 
+    
+    // Combine pinned and other comments, ensuring pinned is first
+    const commentsToShow = pinnedComment ? [pinnedComment, ...comments.filter(c => c.id !== pinnedComment.id).slice(0, 1)] : otherComments;
+
     if (!comments || comments.length === 0) {
         return <CommentInput onCommentSubmit={onCommentSubmit} />;
     }
-
-    const pinnedComment = comments.find(c => c.isPinned);
-    const otherComments = comments.filter(c => !c.isPinned).slice(0, 2);
-    const commentsToShow = pinnedComment ? [pinnedComment, ...comments.filter(c => c.id !== pinnedComment.id).slice(0, 1)] : otherComments;
+    
+    const handleReply = (username: string) => {
+      console.log(`Replying to ${username}`);
+      // Future logic: Open a reply input or pre-fill the main comment input
+    }
 
     return (
         <div className="mt-4 space-y-4 pt-4 border-t">
@@ -143,7 +163,7 @@ const CommentsSection = ({ post, onCommentSubmit }: { post: PostType; onCommentS
                             <p className="text-sm">{comment.text}</p>
                         </div>
                          <div className="flex items-center gap-4 px-3 pt-1">
-                            <Button variant="link" size="sm" className="text-xs text-muted-foreground p-0 h-auto">Reply</Button>
+                            <Button variant="link" size="sm" className="text-xs text-muted-foreground p-0 h-auto" onClick={() => handleReply(comment.user.username)}>Reply</Button>
                             <Button variant="link" size="sm" className="text-xs text-muted-foreground p-0 h-auto flex items-center gap-1">
                                 <Heart className="h-3.5 w-3.5" />
                                 {comment.likes > 0 && <span>{comment.likes}</span>}

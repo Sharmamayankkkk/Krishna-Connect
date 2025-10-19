@@ -56,7 +56,8 @@ export default function PostsFeedPage() {
             if (post.id === postId) {
                 return {
                     ...post,
-                    comments: [...post.comments, newComment],
+                    // Prepend the new comment to show it at the top
+                    comments: [newComment, ...post.comments],
                     stats: {
                         ...post.stats,
                         comments: post.stats.comments + 1
