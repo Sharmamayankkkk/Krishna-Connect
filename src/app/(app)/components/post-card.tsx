@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   MessageCircle,
   Repeat2,
@@ -14,14 +15,20 @@ import {
   Share,
   MoreHorizontal,
   Pin,
+  Bookmark
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import type { PostType } from '../data';
 import { cn } from '@/lib/utils';
 import { VideoPlayer } from './video-player';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useToast } from '@/hooks/use-toast';
+import { ImageViewerDialog } from './image-viewer';
+import { useAppContext } from '@/providers/app-provider';
 
 interface PostCardProps {
   post: PostType;
+  onComment: (postId: string, commentText: string) => void;
 }
 
 const parseContent = (content: string) => {
@@ -34,14 +41,14 @@ const parseContent = (content: string) => {
     });
 };
 
-const MediaGrid = ({ media }: { media: PostType['media'] }) => {
+const MediaGrid = ({ media, onMediaClick }: { media: PostType['media'], onMediaClick: (index: number) => void }) => {
     if (!media || media.length === 0) {
         return null;
     }
 
     if (media.length > 0 && media[0].type === 'video') {
         return (
-            <div className="mt-3 aspect-video rounded-2xl overflow-hidden border">
+            <div className="mt-3 aspect-video rounded-2xl overflow-hidden border cursor-pointer" onClick={() => onMediaClick(0)}>
                 <VideoPlayer src={media[0].url} />
             </div>
         );
@@ -66,7 +73,7 @@ const MediaGrid = ({ media }: { media: PostType['media'] }) => {
                 }
                 
                 return (
-                    <div key={index} className={cn("relative bg-muted w-full", itemClass, media.length === 1 ? 'aspect-video' : 'aspect-square')}>
+                    <div key={index} className={cn("relative bg-muted w-full cursor-pointer", itemClass, media.length === 1 ? 'aspect-video' : 'aspect-square')} onClick={() => onMediaClick(index)}>
                          <Image src={item.url} alt={`Post media ${index + 1}`} fill className="object-cover" />
                     </div>
                 );
@@ -75,9 +82,39 @@ const MediaGrid = ({ media }: { media: PostType['media'] }) => {
     );
 };
 
-const CommentsSection = ({ comments, stats }: { comments: PostType['comments'], stats: PostType['stats'] }) => {
+const CommentInput = ({ onCommentSubmit }: { onCommentSubmit: (commentText: string) => void }) => {
+    const { loggedInUser } = useAppContext();
+    const [commentText, setCommentText] = React.useState('');
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!commentText.trim()) return;
+        onCommentSubmit(commentText);
+        setCommentText('');
+    };
+
+    if (!loggedInUser) return null;
+
+    return (
+        <form onSubmit={handleSubmit} className="flex items-center gap-3 mt-4 pt-4 border-t">
+            <Avatar className="h-9 w-9">
+                <AvatarImage src={loggedInUser.avatar_url} />
+                <AvatarFallback>{loggedInUser.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <Input 
+                placeholder="Write a comment..." 
+                className="flex-1 rounded-full bg-muted"
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+            />
+        </form>
+    );
+}
+
+const CommentsSection = ({ post, onCommentSubmit }: { post: PostType; onCommentSubmit: (commentText: string) => void }) => {
+    const { comments, stats } = post;
     if (!comments || comments.length === 0) {
-        return null;
+        return <CommentInput onCommentSubmit={onCommentSubmit} />;
     }
 
     const pinnedComment = comments.find(c => c.isPinned);
@@ -118,16 +155,39 @@ const CommentsSection = ({ comments, stats }: { comments: PostType['comments'], 
             {stats.comments > commentsToShow.length && (
                  <Button variant="link" size="sm" className="text-muted-foreground">View all {stats.comments} comments</Button>
             )}
+            <CommentInput onCommentSubmit={onCommentSubmit} />
         </div>
     );
 };
 
-
-export function PostCard({ post }: PostCardProps) {
-  const { author, createdAt, content, media, stats, comments } = post;
+export function PostCard({ post, onComment }: PostCardProps) {
+  const { author, createdAt, content, media, stats } = post;
   const [isCommentsOpen, setIsCommentsOpen] = React.useState(false);
+  const [isImageViewerOpen, setIsImageViewerOpen] = React.useState(false);
+  const [imageViewerStartIndex, setImageViewerStartIndex] = React.useState(0);
+  const { toast } = useToast();
+
+  const handleSavePost = () => {
+    // In a real app, this would save to a DB. For now, just a toast.
+    toast({
+        title: "Post Saved!",
+        description: "You can view your saved posts in a future update."
+    });
+  };
+
+  const handleMediaClick = (index: number) => {
+    setImageViewerStartIndex(index);
+    setIsImageViewerOpen(true);
+  };
 
   return (
+    <>
+    <ImageViewerDialog
+        open={isImageViewerOpen}
+        onOpenChange={setIsImageViewerOpen}
+        media={media}
+        startIndex={imageViewerStartIndex}
+    />
     <article className="p-4 transition-colors hover:bg-muted/50">
       <div className="flex gap-3 sm:gap-4">
         <Link href={`/profile/${author.username}`}>
@@ -147,16 +207,26 @@ export function PostCard({ post }: PostCardProps) {
                 {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}
               </time>
             </div>
-            <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2">
-                <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2">
+                    <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={handleSavePost}>
+                    <Bookmark className="mr-2 h-4 w-4" />
+                    <span>Save Post</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           <div className="whitespace-pre-wrap text-base">
             {parseContent(content)}
           </div>
           
-          <MediaGrid media={media} />
+          <MediaGrid media={media} onMediaClick={handleMediaClick} />
 
           <div className="mt-4 flex items-center justify-between text-muted-foreground max-w-sm">
             <ActionButton 
@@ -172,11 +242,12 @@ export function PostCard({ post }: PostCardProps) {
             <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-primary"><Share className="h-5 w-5" /></Button>
           </div>
 
-          {isCommentsOpen && <CommentsSection comments={comments} stats={stats} />}
+          {isCommentsOpen && <CommentsSection post={post} onCommentSubmit={(commentText) => onComment(post.id, commentText)} />}
 
         </div>
       </div>
     </article>
+    </>
   );
 }
 

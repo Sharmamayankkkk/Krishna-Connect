@@ -27,18 +27,47 @@ export default function PostsFeedPage() {
       },
       createdAt: new Date().toISOString(),
       content: content,
-      media: [], // Media upload will be handled later
-      stats: {
-        comments: 0,
-        reshares: 0,
-        likes: 0,
-        views: 0,
-      },
+      media: [],
+      stats: { comments: 0, reshares: 0, likes: 0, views: 0 },
       comments: [],
     };
 
     setPosts(prevPosts => [newPost, ...prevPosts]);
   };
+
+  const handleCommentCreated = (postId: string, commentText: string) => {
+    if (!loggedInUser) return;
+
+    const newComment = {
+        id: `comment_${Date.now()}`,
+        user: {
+            id: loggedInUser.id,
+            name: loggedInUser.name,
+            username: loggedInUser.username,
+            avatar: loggedInUser.avatar_url
+        },
+        text: commentText,
+        isPinned: false,
+        likes: 0
+    };
+
+    setPosts(prevPosts => 
+        prevPosts.map(post => {
+            if (post.id === postId) {
+                return {
+                    ...post,
+                    comments: [...post.comments, newComment],
+                    stats: {
+                        ...post.stats,
+                        comments: post.stats.comments + 1
+                    }
+                };
+            }
+            return post;
+        })
+    );
+  };
+
 
   return (
     <div className="flex h-full flex-col">
@@ -54,7 +83,7 @@ export default function PostsFeedPage() {
         <div>
             {posts.map((post, index) => (
                 <div key={post.id}>
-                    <PostCard post={post} />
+                    <PostCard post={post} onComment={handleCommentCreated} />
                     {index < posts.length - 1 && <Separator />}
                 </div>
             ))}
