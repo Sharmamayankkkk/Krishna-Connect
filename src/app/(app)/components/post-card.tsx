@@ -115,20 +115,24 @@ const CommentInput = ({ onCommentSubmit, placeholder = "Write a comment...", but
     if (!loggedInUser) return null;
 
     return (
-        <form onSubmit={handleSubmit} className="flex items-center gap-3 mt-4 pt-4 border-t">
-            <Avatar className="h-9 w-9">
-                <AvatarImage src={loggedInUser.avatar_url} />
-                <AvatarFallback>{loggedInUser.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <Input 
-                ref={inputRef}
-                placeholder={placeholder}
-                className="flex-1 rounded-full bg-muted"
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-            />
-            {onCancel && <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>}
-            <Button type="submit" size="sm" disabled={!commentText.trim()}>{buttonText}</Button>
+        <form onSubmit={handleSubmit} className="flex flex-col items-start gap-3 mt-4 pt-4 border-t">
+            <div className="flex items-center gap-3 w-full">
+                <Avatar className="h-9 w-9">
+                    <AvatarImage src={loggedInUser.avatar_url} />
+                    <AvatarFallback>{loggedInUser.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <Input 
+                    ref={inputRef}
+                    placeholder={placeholder}
+                    className="flex-1 rounded-full bg-muted"
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                />
+            </div>
+             <div className="flex justify-end gap-2 w-full pl-12">
+                {onCancel && <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>}
+                <Button type="submit" size="sm" disabled={!commentText.trim()}>{buttonText}</Button>
+            </div>
         </form>
     );
 }
@@ -138,7 +142,11 @@ const CommentsSection = ({ post, onCommentSubmit }: { post: PostType; onCommentS
 
     const pinnedComment = post.comments.find(c => c.isPinned);
     const regularComments = post.comments.filter(c => !c.isPinned);
-    const sortedComments = pinnedComment ? [pinnedComment, ...regularComments] : regularComments;
+    
+    // Sort regular comments with newest first
+    const sortedRegularComments = regularComments.sort((a, b) => new Date(b.id.split('_')[1]).getTime() - new Date(a.id.split('_')[1]).getTime());
+    
+    const sortedComments = pinnedComment ? [pinnedComment, ...sortedRegularComments] : sortedRegularComments;
 
     const handleReply = (commentId: string) => {
       setReplyingToCommentId(commentId);
@@ -167,22 +175,24 @@ const CommentsSection = ({ post, onCommentSubmit }: { post: PostType; onCommentS
                             <AvatarFallback>{comment.user.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
-                            <div className="flex items-center gap-2 text-sm">
-                               <Link href={`/profile/${comment.user.username}`} className="font-semibold hover:underline">{comment.user.username}</Link>
-                               <span className="text-muted-foreground">{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</span>
-                               {comment.isPinned && <Pin className="h-3.5 w-3.5 text-yellow-500" />}
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2 text-sm">
+                                   <Link href={`/profile/${comment.user.username}`} className="font-semibold hover:underline">{comment.user.username}</Link>
+                                   <span className="text-muted-foreground">{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</span>
+                                   {comment.isPinned && <Pin className="h-3.5 w-3.5 text-yellow-500" />}
+                                </div>
+                                <div className="flex items-center text-muted-foreground">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                        <Heart className="h-4 w-4" />
+                                    </Button>
+                                    <span className="text-xs font-semibold">{comment.likes > 0 ? comment.likes : ''}</span>
+                                </div>
                             </div>
                             <p className="text-sm">{comment.text}</p>
                             <div className="flex items-center gap-4 mt-1">
                                 <button className="text-xs text-muted-foreground font-semibold" onClick={() => handleReply(comment.id)}>Reply</button>
                                 <button className="text-xs text-muted-foreground font-semibold">See translation</button>
                             </div>
-                        </div>
-                        <div className="flex flex-col items-center text-muted-foreground">
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <Heart className="h-4 w-4" />
-                            </Button>
-                            <span className="text-xs font-semibold">{comment.likes > 0 ? comment.likes : ''}</span>
                         </div>
                     </div>
                     {replyingToCommentId === comment.id && (
@@ -199,7 +209,7 @@ const CommentsSection = ({ post, onCommentSubmit }: { post: PostType; onCommentS
                 </div>
             ))}
             
-            {!replyingToCommentId && <CommentInput onCommentSubmit={(commentText) => onCommentSubmit(post.id, commentText)} />}
+            {replyingToCommentId === null && <CommentInput onCommentSubmit={(commentText) => onCommentSubmit(post.id, commentText)} />}
         </div>
     );
 };
@@ -301,3 +311,5 @@ const ActionButton = ({ icon: Icon, value, hoverColor, onClick, isActive }: { ic
         <span className="text-xs sm:text-sm">{value > 0 ? value : ''}</span>
     </Button>
 )
+
+    
