@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -24,11 +23,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { PostType, CommentType } from '../data';
 import { VideoPlayer } from './video-player';
 import { ImageViewerDialog } from './image-viewer';
-
-interface PostCardProps {
-    post: PostType;
-    onComment: (postId: string, commentText: string, parentCommentId?: string) => void;
-}
+import { useAppContext } from '@/providers/app-provider';
 
 const HareKrishnaVideoModal = ({ isOpen, onClose, videoUrl }: { isOpen: boolean; onClose: () => void; videoUrl: string }) => {
     const videoRef = React.useRef<HTMLVideoElement>(null);
@@ -134,6 +129,7 @@ const HareKrishnaVideoModal = ({ isOpen, onClose, videoUrl }: { isOpen: boolean;
     );
 };
 
+
 const parseContent = (content: string, onHareKrishnaClick: () => void) => {
     const elements: (string | React.ReactNode)[] = [];
     let lastIndex = 0;
@@ -208,7 +204,6 @@ const MediaGrid = ({ media, onMediaClick }: { media: PostType['media'], onMediaC
         return null;
     }
     
-    // Handle single video
     if (media.length === 1 && media[0].type === 'video') {
         return (
             <div className="mt-3 aspect-video rounded-2xl overflow-hidden border">
@@ -252,7 +247,7 @@ const MediaGrid = ({ media, onMediaClick }: { media: PostType['media'], onMediaC
             </div>
         )
     }
-
+    
     if (imageMedia.length === 3) {
         return (
             <div className={cn("grid grid-cols-2 grid-rows-2 gap-0.5", commonClasses)}>
@@ -262,17 +257,16 @@ const MediaGrid = ({ media, onMediaClick }: { media: PostType['media'], onMediaC
             </div>
         )
     }
-
+    
     if (imageMedia.length >= 4) {
-        const moreCount = imageMedia.length - 4;
+        const moreCount = imageMedia.length - 3;
         return (
              <div className={cn("grid grid-cols-2 grid-rows-2 gap-0.5", commonClasses)}>
-                {renderImage(imageMedia[0], 0)}
+                {renderImage(imageMedia[0], 0, 'row-span-2')}
                 {renderImage(imageMedia[1], 1)}
-                {renderImage(imageMedia[2], 2)}
                 {moreCount > 0 ? 
-                    renderImageWithOverlay(imageMedia[3], 3, `+${moreCount}`) :
-                    renderImage(imageMedia[3], 3)
+                    renderImageWithOverlay(imageMedia[2], 2, `+${moreCount}`) :
+                    renderImage(imageMedia[2], 2)
                 }
             </div>
         )
@@ -281,9 +275,10 @@ const MediaGrid = ({ media, onMediaClick }: { media: PostType['media'], onMediaC
     return null;
 };
 
-const CommentInput = ({ onCommentSubmit, placeholder = "Write a comment...", buttonText = "Comment", onCancel, autoFocus = false, loggedInUser }: { onCommentSubmit: (commentText: string) => void; placeholder?: string; buttonText?: string; onCancel?: () => void; autoFocus?: boolean; loggedInUser: any }) => {
+const CommentInput = ({ onCommentSubmit, placeholder = "Write a comment...", buttonText = "Comment", onCancel, autoFocus = false }: { onCommentSubmit: (commentText: string) => void; placeholder?: string; buttonText?: string; onCancel?: () => void; autoFocus?: boolean; }) => {
     const [commentText, setCommentText] = React.useState('');
     const inputRef = React.useRef<HTMLInputElement>(null);
+    const { loggedInUser } = useAppContext();
 
     React.useEffect(() => {
         if (autoFocus) {
@@ -316,15 +311,17 @@ const CommentInput = ({ onCommentSubmit, placeholder = "Write a comment...", but
                     onChange={(e) => setCommentText(e.target.value)}
                 />
             </div>
-            <div className="flex justify-end gap-2 w-full pl-12">
-                {onCancel && <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>}
-                <Button type="submit" size="sm" disabled={!commentText.trim()}>{buttonText}</Button>
-            </div>
+            {(commentText || onCancel) && (
+                <div className="flex justify-end gap-2 w-full pl-12">
+                    {onCancel && <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>}
+                    <Button type="submit" size="sm" disabled={!commentText.trim()}>{buttonText}</Button>
+                </div>
+            )}
         </form>
     );
 }
 
-const CommentsSection = ({ post, onCommentSubmit, isCommentsOpen, loggedInUser }: { post: PostType; onCommentSubmit: (postId: string, commentText: string, parentCommentId?: string) => void, isCommentsOpen: boolean; loggedInUser: any }) => {
+const CommentsSection = ({ post, onCommentSubmit, isCommentsOpen }: { post: PostType; onCommentSubmit: (postId: string, commentText: string, parentCommentId?: string) => void, isCommentsOpen: boolean; }) => {
     const [replyingToCommentId, setReplyingToCommentId] = React.useState<string | null>(null);
 
     if (!isCommentsOpen) return null;
@@ -350,7 +347,7 @@ const CommentsSection = ({ post, onCommentSubmit, isCommentsOpen, loggedInUser }
     }
     
     return (
-        <div className="mt-4 space-y-4 pt-4 border-t">
+        <div className="mt-4 space-y-4">
             {sortedComments.map(comment => (
                 <div key={comment.id}>
                     <div className="flex items-start gap-3">
@@ -359,20 +356,22 @@ const CommentsSection = ({ post, onCommentSubmit, isCommentsOpen, loggedInUser }
                             <AvatarFallback>{comment.user.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2 text-sm">
-                                    <Link href={`/profile/${comment.user.username}`} className="font-semibold hover:underline">{comment.user.name}</Link>
-                                    <span className="text-muted-foreground">{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</span>
-                                    {comment.isPinned && <Pin className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />}
+                            <div className="flex items-start justify-between">
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 text-sm">
+                                        <Link href={`/profile/${comment.user.username}`} className="font-semibold hover:underline truncate">{comment.user.name}</Link>
+                                        <span className="text-muted-foreground flex-shrink-0">{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</span>
+                                        {comment.isPinned && <Pin className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500 flex-shrink-0" />}
+                                    </div>
+                                    <p className="text-sm break-words">{comment.text}</p>
                                 </div>
-                                <div className="flex items-center text-muted-foreground">
+                                <div className="flex items-center text-muted-foreground ml-2">
                                     <Button variant="ghost" size="icon" className="h-8 w-8">
                                         <Heart className="h-4 w-4" />
                                     </Button>
                                     <span className="text-xs font-semibold">{comment.likes > 0 ? comment.likes : ''}</span>
                                 </div>
                             </div>
-                            <p className="text-sm">{comment.text}</p>
                             <div className="flex items-center gap-4 mt-1">
                                 <button className="text-xs text-muted-foreground font-semibold" onClick={() => handleReply(comment.id)}>Reply</button>
                                 <button className="text-xs text-muted-foreground font-semibold">See translation</button>
@@ -387,7 +386,6 @@ const CommentsSection = ({ post, onCommentSubmit, isCommentsOpen, loggedInUser }
                                 buttonText="Reply"
                                 onCancel={handleCancelReply}
                                 autoFocus={true}
-                                loggedInUser={loggedInUser}
                             />
                         </div>
                     )}
@@ -397,7 +395,6 @@ const CommentsSection = ({ post, onCommentSubmit, isCommentsOpen, loggedInUser }
             {replyingToCommentId === null && (
                 <CommentInput
                     onCommentSubmit={(commentText) => onCommentSubmit(post.id, commentText)}
-                    loggedInUser={loggedInUser}
                 />
             )}
         </div>
@@ -410,9 +407,6 @@ export function PostCard({ post, onComment }: PostCardProps) {
     const [isHareKrishnaVideoOpen, setIsHareKrishnaVideoOpen] = React.useState(false);
     const [isImageViewerOpen, setIsImageViewerOpen] = React.useState(false);
     const [imageViewerStartIndex, setImageViewerStartIndex] = React.useState(0);
-    
-    // Mock logged in user - replace with your actual user context
-    const loggedInUser = { name: "User", avatar_url: "" };
 
     const handleMediaClick = (index: number) => {
         setImageViewerStartIndex(index);
@@ -428,7 +422,7 @@ export function PostCard({ post, onComment }: PostCardProps) {
             <ImageViewerDialog
                 open={isImageViewerOpen}
                 onOpenChange={setIsImageViewerOpen}
-                media={post.media}
+                media={post.media || []}
                 startIndex={imageViewerStartIndex}
             />
             <HareKrishnaVideoModal
@@ -445,19 +439,19 @@ export function PostCard({ post, onComment }: PostCardProps) {
                         </Avatar>
                     </Link>
 
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2 text-sm flex-wrap">
-                                <Link href={`/profile/${author.username}`} className="font-bold hover:underline">{author.name}</Link>
-                                <span className="text-muted-foreground hidden sm:inline">@{author.username}</span>
-                                <span className="text-muted-foreground">·</span>
-                                <time dateTime={createdAt} className="text-muted-foreground hover:underline">
+                            <div className="flex items-center gap-2 text-sm flex-wrap min-w-0">
+                                <Link href={`/profile/${author.username}`} className="font-bold hover:underline truncate">{author.name}</Link>
+                                <span className="text-muted-foreground hidden sm:inline truncate">@{author.username}</span>
+                                <span className="text-muted-foreground flex-shrink-0">·</span>
+                                <time dateTime={createdAt} className="text-muted-foreground hover:underline flex-shrink-0">
                                     {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}
                                 </time>
                             </div>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 flex-shrink-0">
                                         <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -470,11 +464,11 @@ export function PostCard({ post, onComment }: PostCardProps) {
                             </DropdownMenu>
                         </div>
 
-                        <div className="whitespace-pre-wrap text-base">
+                        <div className="whitespace-pre-wrap text-base break-words">
                             {parseContent(content, handleHareKrishnaClick)}
                         </div>
 
-                        <MediaGrid media={media} onMediaClick={handleMediaClick} />
+                        <MediaGrid media={media || []} onMediaClick={handleMediaClick} />
 
                         <div className="mt-4 flex items-center justify-between text-muted-foreground max-w-sm">
                             <ActionButton
@@ -490,7 +484,7 @@ export function PostCard({ post, onComment }: PostCardProps) {
                             <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-primary"><Share className="h-5 w-5" /></Button>
                         </div>
 
-                        <CommentsSection post={post} onCommentSubmit={onComment} isCommentsOpen={isCommentsOpen} loggedInUser={loggedInUser} />
+                        <CommentsSection post={post} onCommentSubmit={onComment} isCommentsOpen={isCommentsOpen} />
 
                     </div>
                 </div>
