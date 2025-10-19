@@ -57,7 +57,7 @@ const MediaGrid = ({ media, onMediaClick }: { media: PostType['media'], onMediaC
     // New layout for 3 images
     if (media.length === 3) {
       return (
-        <div className="mt-3 grid grid-cols-2 grid-rows-2 gap-0.5 rounded-2xl overflow-hidden border aspect-video">
+        <div className="mt-3 grid grid-cols-2 grid-rows-2 gap-0.5 rounded-2xl overflow-hidden border aspect-[4/3]">
           <div className="row-span-2 relative cursor-pointer" onClick={() => onMediaClick(0)}>
             <Image src={media[0].url} alt="Post media 1" fill className="object-cover" />
           </div>
@@ -93,15 +93,23 @@ const MediaGrid = ({ media, onMediaClick }: { media: PostType['media'], onMediaC
     );
 };
 
-const CommentInput = ({ onCommentSubmit, placeholder = "Write a comment...", buttonText = "Comment", onCancel }: { onCommentSubmit: (commentText: string) => void; placeholder?: string; buttonText?: string; onCancel?: () => void; }) => {
+const CommentInput = ({ onCommentSubmit, placeholder = "Write a comment...", buttonText = "Comment", onCancel, autoFocus = false }: { onCommentSubmit: (commentText: string) => void; placeholder?: string; buttonText?: string; onCancel?: () => void; autoFocus?: boolean }) => {
     const { loggedInUser } = useAppContext();
     const [commentText, setCommentText] = React.useState('');
+    const inputRef = React.useRef<HTMLInputElement>(null);
+
+    React.useEffect(() => {
+        if (autoFocus) {
+            inputRef.current?.focus();
+        }
+    }, [autoFocus]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!commentText.trim()) return;
         onCommentSubmit(commentText);
         setCommentText('');
+        if (onCancel) onCancel();
     };
 
     if (!loggedInUser) return null;
@@ -113,25 +121,24 @@ const CommentInput = ({ onCommentSubmit, placeholder = "Write a comment...", but
                 <AvatarFallback>{loggedInUser.name.charAt(0)}</AvatarFallback>
             </Avatar>
             <Input 
+                ref={inputRef}
                 placeholder={placeholder}
                 className="flex-1 rounded-full bg-muted"
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
             />
             {onCancel && <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>}
-            <Button type="submit" size="sm">{buttonText}</Button>
+            <Button type="submit" size="sm" disabled={!commentText.trim()}>{buttonText}</Button>
         </form>
     );
 }
 
 const CommentsSection = ({ post, onCommentSubmit }: { post: PostType; onCommentSubmit: (postId: string, commentText: string, parentCommentId?: string) => void }) => {
-    const { comments, stats } = post;
     const [replyingToCommentId, setReplyingToCommentId] = React.useState<string | null>(null);
 
-    const pinnedComment = comments.find(c => c.isPinned);
-    const otherComments = comments.filter(c => !c.isPinned); 
-    
-    const commentsToShow = pinnedComment ? [pinnedComment, ...otherComments.slice(0, 1)] : otherComments.slice(0, 2);
+    const pinnedComment = post.comments.find(c => c.isPinned);
+    const regularComments = post.comments.filter(c => !c.isPinned);
+    const sortedComments = pinnedComment ? [pinnedComment, ...regularComments] : regularComments;
 
     const handleReply = (commentId: string) => {
       setReplyingToCommentId(commentId);
@@ -146,13 +153,13 @@ const CommentsSection = ({ post, onCommentSubmit }: { post: PostType; onCommentS
         setReplyingToCommentId(null);
     }
 
-    if (!comments || comments.length === 0) {
+    if (!post.comments || post.comments.length === 0) {
         return <CommentInput onCommentSubmit={(commentText) => onCommentSubmit(post.id, commentText)} />;
     }
 
     return (
         <div className="mt-4 space-y-4 pt-4 border-t">
-            {commentsToShow.map(comment => (
+            {sortedComments.map(comment => (
                 <div key={comment.id}>
                     <div className="flex items-start gap-3">
                         <Avatar className="h-9 w-9">
@@ -160,25 +167,22 @@ const CommentsSection = ({ post, onCommentSubmit }: { post: PostType; onCommentS
                             <AvatarFallback>{comment.user.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
-                            <div className="bg-muted rounded-xl px-3 py-2">
-                               <div className="flex items-center justify-between">
-                                    <Link href={`/profile/${comment.user.username}`} className="font-semibold text-sm hover:underline">{comment.user.name}</Link>
-                                    {comment.isPinned && (
-                                         <div className="flex items-center gap-1.5 text-yellow-500">
-                                            <Pin className="h-3.5 w-3.5" />
-                                            <span className="text-xs font-semibold">Pinned</span>
-                                        </div>
-                                    )}
-                               </div>
-                                <p className="text-sm">{comment.text}</p>
+                            <div className="flex items-center gap-2 text-sm">
+                               <Link href={`/profile/${comment.user.username}`} className="font-semibold hover:underline">{comment.user.username}</Link>
+                               <span className="text-muted-foreground">{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</span>
+                               {comment.isPinned && <Pin className="h-3.5 w-3.5 text-yellow-500" />}
                             </div>
-                             <div className="flex items-center gap-4 px-3 pt-1">
-                                <Button variant="link" size="sm" className="text-xs text-muted-foreground p-0 h-auto" onClick={() => handleReply(comment.id)}>Reply</Button>
-                                <Button variant="link" size="sm" className="text-xs text-muted-foreground p-0 h-auto flex items-center gap-1">
-                                    <Heart className="h-3.5 w-3.5" />
-                                    {comment.likes > 0 && <span>{comment.likes}</span>}
-                                </Button>
+                            <p className="text-sm">{comment.text}</p>
+                            <div className="flex items-center gap-4 mt-1">
+                                <button className="text-xs text-muted-foreground font-semibold" onClick={() => handleReply(comment.id)}>Reply</button>
+                                <button className="text-xs text-muted-foreground font-semibold">See translation</button>
                             </div>
+                        </div>
+                        <div className="flex flex-col items-center text-muted-foreground">
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <Heart className="h-4 w-4" />
+                            </Button>
+                            <span className="text-xs font-semibold">{comment.likes > 0 ? comment.likes : ''}</span>
                         </div>
                     </div>
                     {replyingToCommentId === comment.id && (
@@ -188,14 +192,13 @@ const CommentsSection = ({ post, onCommentSubmit }: { post: PostType; onCommentS
                                 placeholder={`Replying to ${comment.user.name}...`}
                                 buttonText="Reply"
                                 onCancel={handleCancelReply}
+                                autoFocus={true}
                             />
                         </div>
                     )}
                 </div>
             ))}
-            {stats.comments > commentsToShow.length && (
-                 <Button variant="link" size="sm" className="text-muted-foreground">View all {stats.comments} comments</Button>
-            )}
+            
             {!replyingToCommentId && <CommentInput onCommentSubmit={(commentText) => onCommentSubmit(post.id, commentText)} />}
         </div>
     );
@@ -298,5 +301,3 @@ const ActionButton = ({ icon: Icon, value, hoverColor, onClick, isActive }: { ic
         <span className="text-xs sm:text-sm">{value > 0 ? value : ''}</span>
     </Button>
 )
-
-    
