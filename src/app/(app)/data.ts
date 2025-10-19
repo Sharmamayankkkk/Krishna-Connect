@@ -30,7 +30,7 @@ const comments = [
     "Dandavat Pranams. All glories to Srila Prabhupada."
 ];
 
-const users = [
+export const users = [
     {
         id: "user_1",
         name: "Advaita Das",
@@ -118,4 +118,3 @@ const generateRandomData = () => {
 
 export const dummyPosts = generateRandomData();
 export type PostType = (typeof dummyPosts)[0];
-
