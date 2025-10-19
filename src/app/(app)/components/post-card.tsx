@@ -13,11 +13,13 @@ import {
   BarChart2,
   Share,
   MoreHorizontal,
+  Pin,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import type { PostType } from '../data';
 import { cn } from '@/lib/utils';
 import { VideoPlayer } from './video-player';
+import { Separator } from '@/components/ui/separator';
 
 interface PostCardProps {
   post: PostType;
@@ -60,7 +62,9 @@ const MediaGrid = ({ media }: { media: PostType['media'] }) => {
         )}>
             {media.map((item, index) => {
                 let itemClass = '';
-                if (media.length === 3 && index === 0) itemClass = 'row-span-2';
+                 if (media.length === 3 && index === 0) {
+                    itemClass = 'row-span-2';
+                }
                 
                 return (
                     <div key={index} className={cn("relative bg-muted w-full", itemClass, media.length === 1 ? 'aspect-video' : 'aspect-square')}>
@@ -72,8 +76,50 @@ const MediaGrid = ({ media }: { media: PostType['media'] }) => {
     );
 };
 
+const CommentsSection = ({ comments, stats }: { comments: PostType['comments'], stats: PostType['stats'] }) => {
+    if (!comments || comments.length === 0) {
+        return null;
+    }
+
+    // Show pinned comment first, then up to 2 other comments
+    const pinnedComment = comments.find(c => c.isPinned);
+    const otherComments = comments.filter(c => !c.isPinned).slice(0, 2);
+    const commentsToShow = pinnedComment ? [pinnedComment, ...comments.filter(c => c.id !== pinnedComment.id).slice(0, 1)] : otherComments;
+
+    return (
+        <div className="mt-4 space-y-4 pt-4 border-t">
+            {commentsToShow.map(comment => (
+                <div key={comment.id} className="flex items-start gap-3">
+                    <Avatar className="h-9 w-9">
+                        <AvatarImage src={comment.user.avatar} alt={comment.user.name} />
+                        <AvatarFallback>{comment.user.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                        <div className="bg-muted rounded-lg px-3 py-2">
+                           <div className="flex items-center justify-between">
+                                <Link href={`/profile/${comment.user.username}`} className="font-semibold text-sm hover:underline">{comment.user.name}</Link>
+                                {comment.isPinned && (
+                                     <div className="flex items-center gap-1.5 text-yellow-500">
+                                        <Pin className="h-3.5 w-3.5" />
+                                        <span className="text-xs font-semibold">Pinned</span>
+                                    </div>
+                                )}
+                           </div>
+                            <p className="text-sm">{comment.text}</p>
+                        </div>
+                    </div>
+                </div>
+            ))}
+            {stats.comments > commentsToShow.length && (
+                 <Button variant="link" size="sm" className="text-muted-foreground">View all {stats.comments} comments</Button>
+            )}
+        </div>
+    );
+};
+
+
 export function PostCard({ post }: PostCardProps) {
-  const { author, createdAt, content, media, stats } = post;
+  const { author, createdAt, content, media, stats, comments } = post;
 
   return (
     <article className="p-4 transition-colors hover:bg-muted/50">
@@ -113,6 +159,9 @@ export function PostCard({ post }: PostCardProps) {
             <ActionButton icon={BarChart2} value={stats.views} hoverColor="hover:text-primary" />
             <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-primary"><Share className="h-5 w-5" /></Button>
           </div>
+
+          <CommentsSection comments={comments} stats={stats} />
+
         </div>
       </div>
     </article>
@@ -125,3 +174,5 @@ const ActionButton = ({ icon: Icon, value, hoverColor }: { icon: React.ElementTy
         <span className="text-xs sm:text-sm">{value > 0 ? value : ''}</span>
     </Button>
 )
+
+    
