@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -25,6 +24,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useToast } from '@/hooks/use-toast';
 import { ImageViewerDialog } from './image-viewer';
 import { useAppContext } from '@/providers/app-provider';
+import { HareKrishnaTrigger } from './hare-krishna-trigger';
 
 interface PostCardProps {
   post: PostType;
@@ -32,13 +32,38 @@ interface PostCardProps {
 }
 
 const parseContent = (content: string) => {
-    const parts = content.split(/(#\w+)/g);
-    return parts.map((part, index) => {
-        if (part.startsWith('#')) {
-            return <Link key={index} href={`/explore/tags/${part.substring(1)}`} className="text-primary hover:underline">{part}</Link>;
+    const elements: (string | React.ReactNode)[] = [];
+    let lastIndex = 0;
+
+    // Regex to find "Hare Krishna", hashtags, and links
+    const regex = /(Hare Krishna)|(#\w+)|(https?:\/\/[^\s]+)/g;
+
+    let match;
+    while ((match = regex.exec(content)) !== null) {
+        // Add text before the match
+        if (match.index > lastIndex) {
+            elements.push(content.substring(lastIndex, match.index));
         }
-        return part;
-    });
+
+        const matchedText = match[0];
+
+        if (matchedText === "Hare Krishna") {
+            elements.push(<HareKrishnaTrigger key={lastIndex} />);
+        } else if (matchedText.startsWith('#')) {
+            elements.push(<Link key={lastIndex} href={`/explore/tags/${matchedText.substring(1)}`} className="text-primary hover:underline">{matchedText}</Link>);
+        } else if (matchedText.startsWith('http')) {
+            elements.push(<a key={lastIndex} href={matchedText} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{matchedText}</a>);
+        }
+
+        lastIndex = regex.lastIndex;
+    }
+
+    // Add any remaining text after the last match
+    if (lastIndex < content.length) {
+        elements.push(content.substring(lastIndex));
+    }
+
+    return elements;
 };
 
 const MediaGrid = ({ media, onMediaClick }: { media: PostType['media'], onMediaClick: (index: number) => void }) => {
@@ -116,7 +141,7 @@ const CommentInput = ({ onCommentSubmit, placeholder = "Write a comment...", but
 
     return (
         <form onSubmit={handleSubmit} className="flex flex-col items-start gap-3 mt-4 pt-4 border-t">
-            <div className="flex items-center gap-3 w-full">
+            <div className="flex items-start gap-3 w-full">
                 <Avatar className="h-9 w-9">
                     <AvatarImage src={loggedInUser.avatar_url} />
                     <AvatarFallback>{loggedInUser.name.charAt(0)}</AvatarFallback>
@@ -137,7 +162,7 @@ const CommentInput = ({ onCommentSubmit, placeholder = "Write a comment...", but
     );
 }
 
-const CommentsSection = ({ post, onCommentSubmit }: { post: PostType; onCommentSubmit: (postId: string, commentText: string, parentCommentId?: string) => void }) => {
+const CommentsSection = ({ post, onCommentSubmit, isCommentsOpen }: { post: PostType; onCommentSubmit: (postId: string, commentText: string, parentCommentId?: string) => void, isCommentsOpen: boolean }) => {
     const [replyingToCommentId, setReplyingToCommentId] = React.useState<string | null>(null);
 
     const pinnedComment = post.comments.find(c => c.isPinned);
@@ -161,9 +186,7 @@ const CommentsSection = ({ post, onCommentSubmit }: { post: PostType; onCommentS
         setReplyingToCommentId(null);
     }
 
-    if (!post.comments || post.comments.length === 0) {
-        return <CommentInput onCommentSubmit={(commentText) => onCommentSubmit(post.id, commentText)} />;
-    }
+    if (!isCommentsOpen) return null;
 
     return (
         <div className="mt-4 space-y-4 pt-4 border-t">
@@ -177,9 +200,9 @@ const CommentsSection = ({ post, onCommentSubmit }: { post: PostType; onCommentS
                         <div className="flex-1">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2 text-sm">
-                                   <Link href={`/profile/${comment.user.username}`} className="font-semibold hover:underline">{comment.user.username}</Link>
+                                   <Link href={`/profile/${comment.user.username}`} className="font-semibold hover:underline">{comment.user.name}</Link>
                                    <span className="text-muted-foreground">{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</span>
-                                   {comment.isPinned && <Pin className="h-3.5 w-3.5 text-yellow-500" />}
+                                   {comment.isPinned && <Pin className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />}
                                 </div>
                                 <div className="flex items-center text-muted-foreground">
                                     <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -296,7 +319,7 @@ export function PostCard({ post, onComment }: PostCardProps) {
             <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-primary"><Share className="h-5 w-5" /></Button>
           </div>
 
-          {isCommentsOpen && <CommentsSection post={post} onCommentSubmit={onComment} />}
+          <CommentsSection post={post} onCommentSubmit={onComment} isCommentsOpen={isCommentsOpen} />
 
         </div>
       </div>
@@ -311,5 +334,3 @@ const ActionButton = ({ icon: Icon, value, hoverColor, onClick, isActive }: { ic
         <span className="text-xs sm:text-sm">{value > 0 ? value : ''}</span>
     </Button>
 )
-
-    

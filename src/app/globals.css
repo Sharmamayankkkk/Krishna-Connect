@@ -82,6 +82,17 @@
   .spoiler[data-revealed="true"] {
     @apply bg-transparent text-current cursor-text;
   }
+
+  .hare-krishna-trigger {
+    @apply font-bold text-transparent bg-cover bg-center cursor-pointer transition-transform duration-200 inline-block;
+    background-image: url('/text/krishna.jpg');
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+
+  .hare-krishna-trigger:hover {
+      transform: scale(1.03);
+  }
 }
 
 @layer utilities {
