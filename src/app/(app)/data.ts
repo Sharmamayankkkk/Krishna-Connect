@@ -2,8 +2,33 @@
 // This is a temporary data generation file for UI development.
 // It will be replaced with real database calls later.
 
-// NOTE: We need to manually read the text files for now.
-// In a real app, this content would come from a database.
+export const users = [
+    {
+        id: "user_1",
+        name: "Advaita Das",
+        username: "advaitadas",
+        avatar: "https://raw.githubusercontent.com/Sharmamayankkkk/krishna-connect/main/public/user_Avatar/male.png"
+    },
+    {
+        id: "user_2",
+        name: "Bhakti Devi",
+        username: "bhaktidevi",
+        avatar: "https://raw.githubusercontent.com/Sharmamayankkkk/krishna-connect/main/public/user_Avatar/female.png"
+    },
+    {
+        id: "user_3",
+        name: "Chaitanya Charan",
+        username: "ccharan",
+        avatar: "https://raw.githubusercontent.com/Sharmamayankkkk/krishna-connect/main/public/user_Avatar/male.png"
+    },
+    {
+        id: "user_4",
+        name: "Damodar Pandit",
+        username: "damodarp",
+        avatar: "https://raw.githubusercontent.com/Sharmamayankkkk/krishna-connect/main/public/user_Avatar/male.png"
+    },
+];
+
 const captions = [
     "Just concluded a wonderful session on the Bhagavad Gita. The timeless wisdom never ceases to amaze. 🙏 #KrishnaConsciousness #BhagavadGita",
     "Early morning Japa meditation session. The serenity and peace are unparalleled. A perfect start to the day. #Japa #Meditation",
@@ -17,104 +42,63 @@ const captions = [
     "A moment of gratitude for the spiritual master, the guide who illuminates the path with the torch of knowledge. #Guru #Guidance"
 ];
 
-const comments = [
-    "So inspiring! Thank you for sharing.",
-    "Hare Krishna! This is wonderful to see.",
-    "Very true. The Gita has all the answers.",
-    "Beautifully said. 🙏",
-    "I was there too! The kirtan was magical.",
-    "This gives me so much peace.",
-    "Can you share more about this topic?",
-    "So much to learn from you.",
-    "Thank you for the reminder. #Gratitude",
-    "Dandavat Pranams. All glories to Srila Prabhupada."
-];
-
-export const users = [
+export const dummyPosts = [
+    // 1. Post with a single video
     {
-        id: "user_1",
-        name: "Advaita Das",
-        username: "advaitadas",
-        avatar: "https://placehold.co/100x100.png"
+        id: "post_1",
+        author: users[0],
+        createdAt: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
+        content: captions[0],
+        media: [{ type: 'video' as const, url: '/DummyData/video1.mp4' }],
+        stats: { comments: 5, reshares: 12, likes: 150, views: 2500 },
+        comments: [
+            { id: "comment_1_1", user: users[1], text: "So inspiring! Thank you for sharing.", isPinned: true },
+            { id: "comment_1_2", user: users[2], text: "Hare Krishna! This is wonderful to see." }
+        ]
     },
+    // 2. Post with four images
     {
-        id: "user_2",
-        name: "Bhakti Devi",
-        username: "bhaktidevi",
-        avatar: "https://placehold.co/100x100.png"
+        id: "post_2",
+        author: users[1],
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
+        content: captions[2],
+        media: [
+            { type: 'image' as const, url: '/DummyData/photo1.jpeg' },
+            { type: 'image' as const, url: '/DummyData/photo2.jpeg' },
+            { type: 'image' as const, url: '/DummyData/photo3.jpeg' },
+            { type: 'image' as const, url: '/DummyData/photo4.jpeg' }
+        ],
+        stats: { comments: 8, reshares: 3, likes: 88, views: 1200 },
+        comments: [
+            { id: "comment_2_1", user: users[0], text: "I was there too! The kirtan was magical." },
+        ]
     },
+    // 3. Text-only post
     {
-        id: "user_3",
-        name: "Chaitanya Charan",
-        username: "ccharan",
-        avatar: "https://placehold.co/100x100.png"
+        id: "post_3",
+        author: users[2],
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
+        content: captions[8],
+        media: [],
+        stats: { comments: 22, reshares: 45, likes: 540, views: 10500 },
+        comments: [
+             { id: "comment_3_1", user: users[3], text: "Dandavat Pranams. All glories to Srila Prabhupada." },
+             { id: "comment_3_2", user: users[1], text: "Beautifully said. 🙏" },
+        ]
     },
+    // 4. Post with two images
     {
-        id: "user_4",
-        name: "Damodar Pandit",
-        username: "damodarp",
-        avatar: "https://placehold.co/100x100.png"
-    },
-];
-
-const photos = [
-    '/DummyData/photo1.jpeg',
-    '/DummyData/photo2.jpeg',
-    '/DummyData/photo3.jpeg',
-    '/DummyData/photo4.jpeg',
-];
-const videos = [
-    '/DummyData/video1.mp4',
-    '/DummyData/video2.mp4',
-];
-
-const generateRandomData = () => {
-    const postCount = 10;
-    const posts = [];
-
-    for (let i = 0; i < postCount; i++) {
-        const user = users[i % users.length];
-        const mediaType = Math.random() > 0.3 ? 'image' : 'video';
-        const mediaCount = Math.floor(Math.random() * 4) + 1;
-        
-        let media: { type: 'image' | 'video', url: string }[] = [];
-        if (mediaType === 'image') {
-            media = Array.from({ length: mediaCount }, (_, j) => ({
-                type: 'image',
-                url: photos[j % photos.length]
-            }));
-        } else {
-            media = [{
-                type: 'video',
-                url: videos[i % videos.length]
-            }];
-        }
-        
-        const commentCount = Math.floor(Math.random() * 5);
-        const postComments = Array.from({ length: commentCount }, (_, j) => ({
-            id: `comment_${i}_${j}`,
-            user: users[j % users.length],
-            text: comments[Math.floor(Math.random() * comments.length)]
-        }));
-        
-        posts.push({
-            id: `post_${i}`,
-            author: user,
-            createdAt: new Date(Date.now() - Math.random() * 1000 * 60 * 60 * 24).toISOString(),
-            content: captions[i % captions.length],
-            media,
-            stats: {
-                comments: commentCount,
-                reshares: Math.floor(Math.random() * 50),
-                likes: Math.floor(Math.random() * 200),
-                views: Math.floor(Math.random() * 5000),
-            },
-            comments: postComments,
-        });
+        id: "post_4",
+        author: users[3],
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+        content: captions[6],
+        media: [
+            { type: 'image' as const, url: '/DummyData/photo1.jpeg' },
+            { type: 'image' as const, url: '/DummyData/photo2.jpeg' }
+        ],
+        stats: { comments: 2, reshares: 1, likes: 45, views: 980 },
+        comments: []
     }
+];
 
-    return posts;
-};
-
-export const dummyPosts = generateRandomData();
 export type PostType = (typeof dummyPosts)[0];

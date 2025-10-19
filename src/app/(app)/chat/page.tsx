@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { dummyPosts, PostType, users } from '../data';
+import { dummyPosts, PostType } from '../data';
 import { PostCard } from '../components/post-card';
 import { Separator } from "@/components/ui/separator";
 import { CreatePost } from '../components/create-post';

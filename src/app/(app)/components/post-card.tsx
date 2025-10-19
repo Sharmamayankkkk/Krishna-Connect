@@ -41,7 +41,7 @@ const MediaGrid = ({ media }: { media: PostType['media'] }) => {
         4: 'grid-cols-2 grid-rows-2',
     };
 
-    if (media[0].type === 'video') {
+    if (media.length > 0 && media[0].type === 'video') {
         return (
             <div className="mt-3 aspect-video rounded-2xl overflow-hidden border">
                 <VideoPlayer src={media[0].url} />
@@ -71,16 +71,18 @@ export function PostCard({ post }: PostCardProps) {
   return (
     <article className="p-4 transition-colors hover:bg-muted/50">
       <div className="flex gap-4">
-        <Avatar className="h-11 w-11">
-          <AvatarImage src={author.avatar} alt={author.name} />
-          <AvatarFallback>{author.name.charAt(0)}</AvatarFallback>
-        </Avatar>
+        <Link href={`/profile/${author.username}`}>
+            <Avatar className="h-11 w-11">
+              <AvatarImage src={author.avatar} alt={author.name} />
+              <AvatarFallback>{author.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+        </Link>
 
         <div className="flex-1">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm">
+            <div className="flex items-center gap-2 text-sm flex-wrap">
               <Link href={`/profile/${author.username}`} className="font-bold hover:underline">{author.name}</Link>
-              <span className="text-muted-foreground">@{author.username}</span>
+              <span className="text-muted-foreground hidden sm:inline">@{author.username}</span>
               <span className="text-muted-foreground">·</span>
               <time dateTime={createdAt} className="text-muted-foreground hover:underline">
                 {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}
