@@ -49,7 +49,7 @@ export const dummyPosts = [
         author: users[0],
         createdAt: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
         content: captions[0],
-        media: [{ type: 'video' as const, url: '/DummyData/video1.mp4' }],
+        media: [{ type: 'video' as const, url: '/DummyData/1.mp4' }],
         stats: { comments: 5, reshares: 12, likes: 150, views: 2500 },
         comments: [
             { id: "comment_1_1", user: users[1], text: "So inspiring! Thank you for sharing.", isPinned: true },
@@ -63,10 +63,10 @@ export const dummyPosts = [
         createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
         content: captions[2],
         media: [
-            { type: 'image' as const, url: '/DummyData/photo1.jpeg' },
-            { type: 'image' as const, url: '/DummyData/photo2.jpeg' },
-            { type: 'image' as const, url: '/DummyData/photo3.jpeg' },
-            { type: 'image' as const, url: '/DummyData/photo4.jpeg' }
+            { type: 'image' as const, url: '/DummyData/1.png' },
+            { type: 'image' as const, url: '/DummyData/2.png' },
+            { type: 'image' as const, url: '/DummyData/3.png' },
+            { type: 'image' as const, url: '/DummyData/4.png' }
         ],
         stats: { comments: 8, reshares: 3, likes: 88, views: 1200 },
         comments: [
@@ -82,8 +82,8 @@ export const dummyPosts = [
         media: [],
         stats: { comments: 22, reshares: 45, likes: 540, views: 10500 },
         comments: [
-             { id: "comment_3_1", user: users[3], text: "Dandavat Pranams. All glories to Srila Prabhupada." },
-             { id: "comment_3_2", user: users[1], text: "Beautifully said. 🙏" },
+            { id: "comment_3_1", user: users[3], text: "Dandavat Pranams. All glories to Srila Prabhupada." },
+            { id: "comment_3_2", user: users[1], text: "Beautifully said. 🙏" },
         ]
     },
     // 4. Post with two images
@@ -93,10 +93,45 @@ export const dummyPosts = [
         createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
         content: captions[6],
         media: [
-            { type: 'image' as const, url: '/DummyData/photo1.jpeg' },
-            { type: 'image' as const, url: '/DummyData/photo2.jpeg' }
+            { type: 'image' as const, url: '/DummyData/5.png' },
+            { type: 'image' as const, url: '/DummyData/6.png' }
         ],
         stats: { comments: 2, reshares: 1, likes: 45, views: 980 },
+        comments: []
+    },
+    {
+        id: "post_5",
+        author: users[1],
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString(),
+        content: captions[1],
+        media: [
+            { type: 'image' as const, url: '/DummyData/7.png' },
+            { type: 'image' as const, url: '/DummyData/9.png' },
+            { type: 'image' as const, url: '/DummyData/8.png' },
+        ],
+        stats: { comments: 15, reshares: 7, likes: 210, views: 4300 },
+        comments: [
+            { id: "comment_5_1", user: users[2], text: "The best way to start the day!" }
+        ]
+    },
+    {
+        id: "post_6",
+        author: users[0],
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 30).toISOString(),
+        content: captions[5],
+        media: [
+            { type: 'image' as const, url: '/DummyData/10.png' }
+        ],
+        stats: { comments: 3, reshares: 2, likes: 75, views: 1500 },
+        comments: []
+    },
+    {
+        id: "post_8",
+        author: users[2],
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
+        content: captions[3],
+        media: [],
+        stats: { comments: 18, reshares: 9, likes: 180, views: 3200 },
         comments: []
     }
 ];
