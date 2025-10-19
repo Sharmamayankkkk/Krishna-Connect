@@ -3,6 +3,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,32 +21,15 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-
-// Simple types (add your actual types file back later)
-interface PostType {
-    id: string;
-    author: { name: string; username: string; avatar: string; };
-    createdAt: string;
-    content: string;
-    media?: { url: string; type: string; }[];
-    stats: { comments: number; reshares: number; likes: number; views: number; };
-    comments: CommentType[];
-}
-
-interface CommentType {
-    id: string;
-    user: { name: string; username: string; avatar: string; };
-    text: string;
-    likes: number;
-    isPinned?: boolean;
-}
+import { PostType, CommentType } from '../data';
+import { VideoPlayer } from './video-player';
+import { ImageViewerDialog } from './image-viewer';
 
 interface PostCardProps {
     post: PostType;
     onComment: (postId: string, commentText: string, parentCommentId?: string) => void;
 }
 
-// Fullscreen video modal component
 const HareKrishnaVideoModal = ({ isOpen, onClose, videoUrl }: { isOpen: boolean; onClose: () => void; videoUrl: string }) => {
     const videoRef = React.useRef<HTMLVideoElement>(null);
     const [videoError, setVideoError] = React.useState(false);
@@ -55,16 +39,13 @@ const HareKrishnaVideoModal = ({ isOpen, onClose, videoUrl }: { isOpen: boolean;
             setVideoError(false);
             const video = videoRef.current;
 
-            // Disable controls explicitly
             video.controls = false;
 
-            // Play video
             video.play().catch((error) => {
                 console.error('Video play error:', error);
                 setVideoError(true);
             });
 
-            // Request fullscreen
             if (video.requestFullscreen) {
                 video.requestFullscreen().catch(err => console.log('Fullscreen error:', err));
             } else if ((video as any).webkitRequestFullscreen) {
@@ -99,11 +80,9 @@ const HareKrishnaVideoModal = ({ isOpen, onClose, videoUrl }: { isOpen: boolean;
     };
 
     React.useEffect(() => {
-        // Listen for fullscreen change events
         const handleFullscreenChange = () => {
             const isFullscreen = !!(document.fullscreenElement || (document as any).webkitFullscreenElement || (document as any).mozFullScreenElement || (document as any).msFullscreenElement);
 
-            // If user exits fullscreen manually, close the modal
             if (!isFullscreen && isOpen) {
                 onClose();
             }
@@ -160,13 +139,10 @@ const parseContent = (content: string, onHareKrishnaClick: () => void) => {
     let lastIndex = 0;
     let keyCounter = 0;
 
-    // Extended regex to find hashtags, links, and all variations of "Hare Krishna"
-    // Matches: Hare/HARE/hare, optional é, Krishna/KRISHNA/krishna with optional diacritics (ṛ, ṣ, ṇ, Ṛ, Ṣ, Ṇ)
     const regex = /(#\w+)|(https?:\/\/[^\s]+)|((?:Hare|HARE|hare|Haré|HARÉ|haré)\s+(?:Krishna|KRISHNA|krishna|Kṛṣṇa|KṚṢṆA|kṛṣṇa|Krsna|KRSNA|krsna|KṚSNA|Kṛsna))/gi;
 
     let match;
     while ((match = regex.exec(content)) !== null) {
-        // Add text before the match
         if (match.index > lastIndex) {
             elements.push(content.substring(lastIndex, match.index));
         }
@@ -220,7 +196,6 @@ const parseContent = (content: string, onHareKrishnaClick: () => void) => {
         lastIndex = regex.lastIndex;
     }
 
-    // Add any remaining text after the last match
     if (lastIndex < content.length) {
         elements.push(content.substring(lastIndex));
     }
@@ -232,52 +207,77 @@ const MediaGrid = ({ media, onMediaClick }: { media: PostType['media'], onMediaC
     if (!media || media.length === 0) {
         return null;
     }
-
-    if (media.length > 0 && media[0].type === 'video') {
+    
+    // Handle single video
+    if (media.length === 1 && media[0].type === 'video') {
         return (
-            <div className="mt-3 aspect-video rounded-2xl overflow-hidden border cursor-pointer" onClick={() => onMediaClick(0)}>
-                <video src={media[0].url} className="w-full h-full object-cover" />
+            <div className="mt-3 aspect-video rounded-2xl overflow-hidden border">
+                <VideoPlayer src={media[0].url} />
             </div>
         );
     }
 
-    // New layout for 3 images
-    if (media.length === 3) {
-        return (
-            <div className="mt-3 grid grid-cols-2 grid-rows-2 gap-0.5 rounded-2xl overflow-hidden border aspect-[4/3]">
-                <div className="row-span-2 relative cursor-pointer overflow-hidden" onClick={() => onMediaClick(0)}>
-                    <img src={media[0].url} alt="Post media 1" className="w-full h-full object-cover" />
-                </div>
-                <div className="relative cursor-pointer overflow-hidden" onClick={() => onMediaClick(1)}>
-                    <img src={media[1].url} alt="Post media 2" className="w-full h-full object-cover" />
-                </div>
-                <div className="relative cursor-pointer overflow-hidden" onClick={() => onMediaClick(2)}>
-                    <img src={media[2].url} alt="Post media 3" className="w-full h-full object-cover" />
-                </div>
-            </div>
-        );
-    }
+    const imageMedia = media.filter(m => m.type === 'image');
+    if(imageMedia.length === 0) return null;
 
-    const gridClasses: { [key: number]: string } = {
-        1: 'grid-cols-1 grid-rows-1',
-        2: 'grid-cols-2 grid-rows-1',
-        4: 'grid-cols-2 grid-rows-2',
-    };
-
-    return (
-        <div className={cn(
-            "mt-3 grid gap-0.5 rounded-2xl overflow-hidden border",
-            gridClasses[media.length] || 'grid-cols-2'
-        )}>
-            {media.map((item, index) => {
-                return (
-                    <div key={index} className={cn("relative bg-muted w-full cursor-pointer overflow-hidden", media.length === 1 ? 'aspect-video' : 'aspect-square')} onClick={() => onMediaClick(index)}>
-                        <img src={item.url} alt={`Post media ${index + 1}`} className="w-full h-full object-cover" />
-                    </div>
-                );
-            })}
+    const renderImage = (item: {url: string}, index: number, className: string = '') => (
+        <div key={index} className={cn("relative bg-muted cursor-pointer overflow-hidden", className)} onClick={() => onMediaClick(index)}>
+            <Image src={item.url} alt={`Post media ${index + 1}`} fill className="object-cover" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"/>
         </div>
     );
+
+    const renderImageWithOverlay = (item: {url: string}, index: number, overlayText: string, className: string = '') => (
+         <div key={index} className={cn("relative bg-muted cursor-pointer overflow-hidden", className)} onClick={() => onMediaClick(index)}>
+            <Image src={item.url} alt={`Post media ${index + 1}`} fill className="object-cover" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"/>
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                <span className="text-white text-2xl font-bold">{overlayText}</span>
+            </div>
+        </div>
+    );
+
+    const commonClasses = "mt-3 rounded-2xl overflow-hidden border aspect-video";
+
+    if (imageMedia.length === 1) {
+        return (
+            <div className={cn("grid grid-cols-1", commonClasses)}>
+                {renderImage(imageMedia[0], 0)}
+            </div>
+        )
+    }
+
+    if (imageMedia.length === 2) {
+        return (
+            <div className={cn("grid grid-cols-2 gap-0.5", commonClasses)}>
+                {imageMedia.map((item, index) => renderImage(item, index))}
+            </div>
+        )
+    }
+
+    if (imageMedia.length === 3) {
+        return (
+            <div className={cn("grid grid-cols-2 grid-rows-2 gap-0.5", commonClasses)}>
+                {renderImage(imageMedia[0], 0, "row-span-2")}
+                {renderImage(imageMedia[1], 1)}
+                {renderImage(imageMedia[2], 2)}
+            </div>
+        )
+    }
+
+    if (imageMedia.length >= 4) {
+        const moreCount = imageMedia.length - 3;
+        return (
+             <div className={cn("grid grid-cols-2 grid-rows-2 gap-0.5", commonClasses)}>
+                {renderImage(imageMedia[0], 0, "row-span-2")}
+                {renderImage(imageMedia[1], 1)}
+                {moreCount > 0 ? 
+                    renderImageWithOverlay(imageMedia[2], 2, `+${moreCount}`) :
+                    renderImage(imageMedia[2], 2)
+                }
+            </div>
+        )
+    }
+    
+    return null;
 };
 
 const CommentInput = ({ onCommentSubmit, placeholder = "Write a comment...", buttonText = "Comment", onCancel, autoFocus = false, loggedInUser }: { onCommentSubmit: (commentText: string) => void; placeholder?: string; buttonText?: string; onCancel?: () => void; autoFocus?: boolean; loggedInUser: any }) => {
@@ -326,11 +326,13 @@ const CommentInput = ({ onCommentSubmit, placeholder = "Write a comment...", but
 const CommentsSection = ({ post, onCommentSubmit, isCommentsOpen, loggedInUser }: { post: PostType; onCommentSubmit: (postId: string, commentText: string, parentCommentId?: string) => void, isCommentsOpen: boolean; loggedInUser: any }) => {
     const [replyingToCommentId, setReplyingToCommentId] = React.useState<string | null>(null);
 
+    if (!isCommentsOpen) return null;
+
     const pinnedComment = post.comments.find(c => c.isPinned);
     const regularComments = post.comments.filter(c => !c.isPinned);
 
-    const sortedRegularComments = regularComments.sort((a, b) => new Date(b.id.split('_')[1]).getTime() - new Date(a.id.split('_')[1]).getTime());
-
+    const sortedRegularComments = [...regularComments].sort((a, b) => new Date(b.id.split('_')[1]).getTime() - new Date(a.id.split('_')[1]).getTime());
+    
     const sortedComments = pinnedComment ? [pinnedComment, ...sortedRegularComments] : sortedRegularComments;
 
     const handleReply = (commentId: string) => {
@@ -345,9 +347,7 @@ const CommentsSection = ({ post, onCommentSubmit, isCommentsOpen, loggedInUser }
         onCommentSubmit(post.id, commentText, replyingToCommentId!);
         setReplyingToCommentId(null);
     }
-
-    if (!isCommentsOpen) return null;
-
+    
     return (
         <div className="mt-4 space-y-4 pt-4 border-t">
             {sortedComments.map(comment => (
@@ -392,8 +392,13 @@ const CommentsSection = ({ post, onCommentSubmit, isCommentsOpen, loggedInUser }
                     )}
                 </div>
             ))}
-
-            {replyingToCommentId === null && <CommentInput onCommentSubmit={(commentText) => onCommentSubmit(post.id, commentText)} loggedInUser={loggedInUser} />}
+            
+            {replyingToCommentId === null && (
+                <CommentInput
+                    onCommentSubmit={(commentText) => onCommentSubmit(post.id, commentText)}
+                    loggedInUser={loggedInUser}
+                />
+            )}
         </div>
     );
 };
@@ -402,12 +407,15 @@ export function PostCard({ post, onComment }: PostCardProps) {
     const { author, createdAt, content, media, stats } = post;
     const [isCommentsOpen, setIsCommentsOpen] = React.useState(false);
     const [isHareKrishnaVideoOpen, setIsHareKrishnaVideoOpen] = React.useState(false);
-
+    const [isImageViewerOpen, setIsImageViewerOpen] = React.useState(false);
+    const [imageViewerStartIndex, setImageViewerStartIndex] = React.useState(0);
+    
     // Mock logged in user - replace with your actual user context
     const loggedInUser = { name: "User", avatar_url: "" };
 
     const handleMediaClick = (index: number) => {
-        console.log('Media clicked:', index);
+        setImageViewerStartIndex(index);
+        setIsImageViewerOpen(true);
     };
 
     const handleHareKrishnaClick = () => {
@@ -416,6 +424,12 @@ export function PostCard({ post, onComment }: PostCardProps) {
 
     return (
         <>
+            <ImageViewerDialog
+                open={isImageViewerOpen}
+                onOpenChange={setIsImageViewerOpen}
+                media={post.media}
+                startIndex={imageViewerStartIndex}
+            />
             <HareKrishnaVideoModal
                 isOpen={isHareKrishnaVideoOpen}
                 onClose={() => setIsHareKrishnaVideoOpen(false)}
