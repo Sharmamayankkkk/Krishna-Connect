@@ -27,7 +27,7 @@ export function QuotedPostCard({ post }: QuotedPostCardProps) {
 
   return (
     <Link 
-      href={`/post/${post.id}`} // We'll need to create a /post/[id] page later
+      href={`/post/${post.id}`} // <-- UPDATE THIS LINE
       onClick={(e) => e.stopPropagation()} 
       className="block border rounded-xl mt-2 overflow-hidden hover:bg-accent/30 transition-colors"
     >
