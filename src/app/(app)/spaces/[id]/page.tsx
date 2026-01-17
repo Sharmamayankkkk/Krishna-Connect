@@ -1,14 +1,20 @@
 'use client';
 
 import { Mic, User, Volume2, PlusCircle, Hand } from 'lucide-react';
+import { use } from 'react'; // 1. Import 'use' hook
 
 interface AudioSpacePageProps {
-  params: {
+  // 2. Update params to be a Promise
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function AudioSpacePage({ params }: AudioSpacePageProps) {
+  // 3. Unwrap the params using the use() hook
+  // (Even if you aren't using 'id' yet, this fixes the type error)
+  const { id } = use(params);
+
   // Mock data for the audio space
   const spaceDetails = {
     title: 'Discussion on Srimad Bhagavatam Canto 1',
