@@ -1,19 +1,23 @@
-
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { ProfileView } from "./components/profile-view";
 
-// Define the props for the profile page
+// Update: params is a Promise in Next.js 15
 interface ProfilePageProps {
-  params: {
+  params: Promise<{
     username: string;
-  };
+  }>;
 }
 
-// The main component for the profile page
-export default async function ProfilePage({ params }: ProfilePageProps) {
-  const cookieStore = cookies();
+export default async function ProfilePage(props: ProfilePageProps) {
+  // 1. Await the params to get the username
+  const params = await props.params;
+  const { username } = params;
+
+  // 2. Await cookies() (this is now async in Next.js 15)
+  const cookieStore = await cookies();
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -50,7 +54,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   // Fetch the profile data
   const { data: profile } = await supabase
     .rpc('get_profile_by_username', { 
-        p_username: params.username,
+        p_username: username, // Use the awaited username variable
         p_requesting_user_id: user?.id 
     })
     .single();
