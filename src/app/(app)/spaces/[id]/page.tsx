@@ -2,7 +2,13 @@
 
 import { Mic, User, Volume2, PlusCircle, Hand } from 'lucide-react';
 
-export default function AudioSpacePage({ params }: { params: { id: string } }) {
+interface AudioSpacePageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default function AudioSpacePage({ params }: AudioSpacePageProps) {
   // Mock data for the audio space
   const spaceDetails = {
     title: 'Discussion on Srimad Bhagavatam Canto 1',
