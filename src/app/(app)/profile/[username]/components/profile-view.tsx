@@ -35,7 +35,7 @@ export function ProfileView({ profile, posts, followers, following, session }: P
               <span className="font-bold">{profile.following_count}</span> Following
             </div>
           </div>
-          {session?.user?.id !== profile.id && (
+          {session?.user && session.user.id !== profile.id && (
             <FollowButton 
               profileId={profile.id} 
               isFollowing={profile.is_following} 

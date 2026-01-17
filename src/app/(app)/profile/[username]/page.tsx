@@ -2,6 +2,8 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { ProfileView } from "./components/profile-view";
+import { User } from "@supabase/supabase-js";
+import { Profile } from "@/types";
 
 // Update: params is a Promise in Next.js 15
 interface ProfilePageProps {

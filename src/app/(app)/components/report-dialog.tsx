@@ -37,7 +37,7 @@ export function ReportDialog({ open, onOpenChange, userToReport, messageToReport
     if (!reason.trim()) return
     setIsSending(true)
 
-    await reportUser(userToReport.id, reason, messageToReport?.id)
+    await reportUser(userToReport.id, reason, messageToReport?.id as number)
     if (alsoBlock) {
       await blockUser(userToReport.id)
     }

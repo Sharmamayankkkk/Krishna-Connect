@@ -17,13 +17,13 @@ import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import EmojiPicker, { EmojiClickData, SkinTones } from 'emoji-picker-react';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogClose,
-  DialogDescription,
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+    DialogClose,
+    DialogDescription,
 } from '@/components/ui/dialog';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -31,7 +31,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Image from 'next/image';
 import { useAppContext } from '@/providers/app-provider';
-
+// FIX 1: Add missing imports for Avatar components
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 // This is a constant string used in our Supabase database queries.
 // It tells the database exactly which columns we want to fetch for a message,
 // including related data like the sender's profile and the message being replied to.
@@ -98,7 +99,7 @@ export function ChatInput({
     const [isSending, setIsSending] = useState(false);
     const attachmentInputRef = useRef<HTMLInputElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-    
+
     // State for voice recording.
     const [isRecording, setIsRecording] = useState(false);
     const [recordingStatus, setRecordingStatus] = useState<'recording' | 'paused'>('recording');
@@ -107,14 +108,14 @@ export function ChatInput({
     const audioChunksRef = useRef<Blob[]>([]);
     const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
     const [isEmojiOpen, setIsEmojiOpen] = useState(false);
-    
+
     const [stickerList, setStickerList] = useState<string[]>([]);
     const [customEmojiList, setCustomEmojiList] = useState<string[]>([]);
 
     // State for the @mention popup.
     const [mentionQuery, setMentionQuery] = useState<string | null>(null);
     const [activeMentionIndex, setActiveMentionIndex] = useState(0);
-    
+
     // State for the text formatting toolbar.
     const [selection, setSelection] = useState<{ start: number; end: number } | null>(null);
     const [toolbarPosition, setToolbarPosition] = useState<{ top: number; left: number } | null>(null);
@@ -140,7 +141,7 @@ export function ChatInput({
             textareaRef.current?.focus();
         }
     }, [replyingTo]);
-    
+
     // This hook fetches the list of available stickers and custom emojis from our API.
     useEffect(() => {
         fetch('/api/assets')
@@ -156,7 +157,7 @@ export function ChatInput({
         const arrayBuffer = await audioBlob.arrayBuffer();
         const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
         const duration = audioBuffer.duration;
-        
+
         const rawData = audioBuffer.getChannelData(0);
         const samples = 64; // Number of waveform bars
         const blockSize = Math.floor(rawData.length / samples);
@@ -177,40 +178,39 @@ export function ChatInput({
     };
 
     // The main function for sending a message. It handles both text and attachments.
-    const handleSendMessage = async ({ content, contentToSave, attachment }: { content: string, contentToSave?: string, attachment?: { file: File, url: string, waveform?: number[], duration?: number }}) => {
+    const handleSendMessage = async ({ content, contentToSave, attachment }: { content: string, contentToSave?: string, attachment?: { file: File, url: string, waveform?: number[], duration?: number } }) => {
         if (isSending || (content.trim() === '' && !attachment)) return;
-        
+
         setIsSending(true);
         // Create a temporary, unique ID for the message. This allows us to display it in the UI
         // instantly while the real message is being sent to the server. This is called "optimistic UI".
         const tempId = `temp-${uuidv4()}`;
-        
-        const attachmentMetadata = attachment 
-            ? { 
-                name: attachment.file.name, 
-                type: attachment.file.type, 
+
+        const attachmentMetadata = attachment
+            ? {
+                name: attachment.file.name,
+                type: attachment.file.type,
                 size: attachment.file.size,
                 waveform: attachment.waveform,
                 duration: attachment.duration,
-            } 
+            }
             : null;
 
         const optimisticMessage: Message = {
-          id: tempId,
-          created_at: new Date().toISOString(),
-          chat_id: chat.id,
-          user_id: loggedInUser.id,
-          content: content.trim(),
-          attachment_url: attachment ? attachment.url : null,
-          attachment_metadata: attachmentMetadata,
-          reply_to_message_id: replyingTo?.id,
-          profiles: loggedInUser,
-          replied_to_message: replyingTo,
-          is_edited: false,
-          reactions: null,
-          read_by: [loggedInUser.id]
+            id: tempId,
+            created_at: new Date().toISOString(),
+            chat_id: chat.id,
+            user_id: loggedInUser.id,
+            content: content.trim(),
+            attachment_url: attachment ? attachment.url : null,
+            attachment_metadata: attachmentMetadata,
+            reply_to_message_id: typeof replyingTo?.id === 'number' ? replyingTo.id : null, profiles: loggedInUser,
+            replied_to_message: replyingTo,
+            is_edited: false,
+            reactions: null,
+            read_by: [loggedInUser.id]
         };
-        
+
         // Add the optimistic message to the UI and clear the input fields.
         setMessages(current => [...current, optimisticMessage]);
         setMessage('');
@@ -237,10 +237,10 @@ export function ChatInput({
                 const { data: urlData } = supabase.storage
                     .from('attachments')
                     .getPublicUrl(filePath);
-                
+
                 attachmentUrl = urlData.publicUrl;
             }
-            
+
             // Now, insert the final message data into the 'messages' table in the database.
             let finalContent = contentToSave ?? content;
             const { data: insertedMessage, error } = await supabase
@@ -257,35 +257,35 @@ export function ChatInput({
                 .single();
 
             if (error) throw error;
-            
+
             // Once the message is successfully saved to the database, we replace the
             // temporary optimistic message in our UI with the real one from the server.
             if (insertedMessage) {
-              setMessages(current => current.map(m => (m.id === tempId ? (insertedMessage as Message) : m)));
+                setMessages(current => current.map(m => (m.id === tempId ? (insertedMessage as Message) : m)));
             } else {
-              setMessages(current => current.filter(m => m.id !== tempId));
+                setMessages(current => current.filter(m => m.id !== tempId));
             }
 
         } catch (error: any) {
-             toast({ variant: 'destructive', title: "Error sending message", description: error.message });
-             // If sending fails, remove the optimistic message from the UI.
-             setMessages(current => current.filter(m => m.id !== tempId));
+            toast({ variant: 'destructive', title: "Error sending message", description: error.message });
+            // If sending fails, remove the optimistic message from the UI.
+            setMessages(current => current.filter(m => m.id !== tempId));
         } finally {
             setIsSending(false);
         }
     };
-    
+
     // A specialized function for sending stickers, which are treated as attachments.
     const handleSendSticker = async (stickerUrl: string) => {
         if (isSending) return;
-        
+
         setIsSending(true);
         const tempId = `temp-${uuidv4()}`;
         const isSticker = stickerUrl.includes('/stickers/');
-        const attachmentMetadata: AttachmentMetadata = { 
-            name: isSticker ? 'sticker.webp' : 'emoji.png', 
-            type: isSticker ? 'image/webp' : 'image/png', 
-            size: 0 
+        const attachmentMetadata: AttachmentMetadata = {
+            name: isSticker ? 'sticker.webp' : 'emoji.png',
+            type: isSticker ? 'image/webp' : 'image/png',
+            size: 0
         };
 
         // Optimistic UI update
@@ -297,7 +297,7 @@ export function ChatInput({
             content: null,
             attachment_url: stickerUrl,
             attachment_metadata: attachmentMetadata,
-            reply_to_message_id: replyingTo?.id,
+            reply_to_message_id: typeof replyingTo?.id === 'number' ? replyingTo.id : null,
             profiles: loggedInUser,
             replied_to_message: replyingTo,
             is_edited: false,
@@ -308,7 +308,7 @@ export function ChatInput({
         setMessages(current => [...current, optimisticMessage]);
         setReplyingTo(null);
         setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
-        
+
         try {
             // Send to database
             const { data: insertedMessage, error } = await supabase
@@ -323,22 +323,22 @@ export function ChatInput({
                 })
                 .select(FULL_MESSAGE_SELECT_QUERY)
                 .single();
-    
+
             if (error) throw error;
-            
+
             // Replace optimistic with real message
             if (insertedMessage) {
-              setMessages(current => current.map(m => (m.id === tempId ? (insertedMessage as Message) : m)));
+                setMessages(current => current.map(m => (m.id === tempId ? (insertedMessage as Message) : m)));
             }
 
         } catch (error: any) {
-             toast({ variant: 'destructive', title: "Error sending sticker", description: error.message });
-             setMessages(current => current.filter(m => m.id !== tempId));
+            toast({ variant: 'destructive', title: "Error sending sticker", description: error.message });
+            setMessages(current => current.filter(m => m.id !== tempId));
         } finally {
             setIsSending(false);
         }
     };
-    
+
     // Event handlers for the emoji/sticker picker.
     const handleEmojiClick = (emojiData: EmojiClickData) => {
         setMessage(prevMessage => prevMessage + emojiData.emoji);
@@ -392,29 +392,29 @@ export function ChatInput({
 
                 try {
                     const { duration, waveform } = await processAudio(audioBlob);
-                    
-                    await handleSendMessage({ 
-                        content: '', 
-                        attachment: { 
-                            file: audioFile, 
+
+                    await handleSendMessage({
+                        content: '',
+                        attachment: {
+                            file: audioFile,
                             url: optimisticUrl,
                             duration,
                             waveform,
-                        } 
+                        }
                     });
                 } catch (err) {
                     console.error("Failed to process audio:", err);
                     toast({ variant: 'destructive', title: 'Could not process voice note.', description: 'Please try again.' });
                 }
-                
+
                 stream.getTracks().forEach(track => track.stop());
                 if (recordingIntervalRef.current) clearInterval(recordingIntervalRef.current);
                 setIsRecording(false);
                 setRecordingTime(0);
             };
-            
+
             mediaRecorderRef.current.onpause = () => {
-                 if (recordingIntervalRef.current) clearInterval(recordingIntervalRef.current);
+                if (recordingIntervalRef.current) clearInterval(recordingIntervalRef.current);
             };
 
             mediaRecorderRef.current.onresume = () => {
@@ -441,7 +441,7 @@ export function ChatInput({
             mediaRecorderRef.current.stop();
         }
     };
-    
+
     const handleTogglePauseResume = () => {
         if (!mediaRecorderRef.current) return;
 
@@ -468,7 +468,7 @@ export function ChatInput({
     // This filters the list of users for the @mention popup based on the user's query.
     const mentionableUsers = useMemo(() => {
         if (mentionQuery === null || !isGroup || !chat.participants) return [];
-        
+
         const all = [
             { id: 'everyone', username: 'everyone', name: 'Notify everyone in this group', avatar_url: '' },
             ...chat.participants.map(p => p.profiles).filter((p): p is User => !!p)
@@ -497,87 +497,87 @@ export function ChatInput({
         const cursorPosition = e.target.selectionStart;
         const textBeforeCursor = value.substring(0, cursorPosition);
         const mentionMatch = textBeforeCursor.match(/@([\w\d_]*)$/);
-        
+
         if (mentionMatch) {
             setMentionQuery(mentionMatch[1].toLowerCase());
         } else {
             setMentionQuery(null);
         }
     };
-    
+
     // This is a complex helper function to figure out the exact pixel coordinates
     // of the text cursor in the textarea. We need this to position the formatting toolbar correctly.
     const getCaretCoordinates = (element: HTMLTextAreaElement, position: number) => {
         const isBrowser = typeof window !== 'undefined'
         if (!isBrowser) {
-          throw new Error('getCaretCoordinates should only be called in a browser environment.')
+            throw new Error('getCaretCoordinates should only be called in a browser environment.')
         }
 
         const div = document.createElement('div')
         document.body.appendChild(div)
-      
+
         const style = div.style
         const computed = window.getComputedStyle(element)
-      
+
         style.whiteSpace = 'pre-wrap'
         style.wordWrap = 'break-word'
         style.position = 'absolute'
         style.visibility = 'hidden'
-      
+
         const properties = [
-          'direction', 'boxSizing', 'width', 'height', 'overflowX', 'overflowY',
-          'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth',
-          'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
-          'fontStyle', 'fontVariant', 'fontWeight', 'fontStretch', 'fontSize', 'fontSizeAdjust',
-          'lineHeight', 'fontFamily', 'textAlign', 'textTransform', 'textIndent', 'textDecoration',
-          'letterSpacing', 'wordSpacing', 'tabSize',
+            'direction', 'boxSizing', 'width', 'height', 'overflowX', 'overflowY',
+            'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth',
+            'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
+            'fontStyle', 'fontVariant', 'fontWeight', 'fontStretch', 'fontSize', 'fontSizeAdjust',
+            'lineHeight', 'fontFamily', 'textAlign', 'textTransform', 'textIndent', 'textDecoration',
+            'letterSpacing', 'wordSpacing', 'tabSize',
         ]
-      
+
         properties.forEach(prop => {
-          style[prop as any] = computed[prop as any]
+            style[prop as any] = computed[prop as any]
         })
-      
+
         div.textContent = element.value.substring(0, position)
-      
+
         const span = document.createElement('span')
         span.textContent = element.value.substring(position) || '.'
         div.appendChild(span)
-      
+
         const coordinates = {
-          top: span.offsetTop + parseInt(computed.borderTopWidth),
-          left: span.offsetLeft + parseInt(computed.borderLeftWidth),
-          height: parseInt(computed.lineHeight),
+            top: span.offsetTop + parseInt(computed.borderTopWidth),
+            left: span.offsetLeft + parseInt(computed.borderLeftWidth),
+            height: parseInt(computed.lineHeight),
         }
-      
+
         div.remove()
-      
+
         return coordinates
-      }
-    
+    }
+
     // This function runs when the user selects text in the input field,
     // and it positions the formatting toolbar above the selected text.
     const handleTextSelection = (e: React.SyntheticEvent<HTMLTextAreaElement>) => {
-      const textarea = e.currentTarget;
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-  
-      if (start === end || !textareaRef.current) {
-        setSelection(null);
-        setToolbarPosition(null);
-        return;
-      }
-  
-      setSelection({ start, end });
-  
-      const rect = textarea.getBoundingClientRect();
-      const caretPos = getCaretCoordinates(textarea, start);
-      
-      const toolbarHeight = toolbarRef.current?.offsetHeight || 40;
+        const textarea = e.currentTarget;
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
 
-      setToolbarPosition({
-        top: rect.top + window.scrollY + caretPos.top - toolbarHeight - 5,
-        left: rect.left + window.scrollX + caretPos.left,
-      });
+        if (start === end || !textareaRef.current) {
+            setSelection(null);
+            setToolbarPosition(null);
+            return;
+        }
+
+        setSelection({ start, end });
+
+        const rect = textarea.getBoundingClientRect();
+        const caretPos = getCaretCoordinates(textarea, start);
+
+        const toolbarHeight = toolbarRef.current?.offsetHeight || 40;
+
+        setToolbarPosition({
+            top: rect.top + window.scrollY + caretPos.top - toolbarHeight - 5,
+            left: rect.left + window.scrollX + caretPos.left,
+        });
     };
 
     // This function wraps the selected text with formatting characters (e.g., **, _, ~~).
@@ -596,7 +596,7 @@ export function ChatInput({
             case 'code': prefix = '`'; suffix = '`'; break;
         }
 
-        const newText = 
+        const newText =
             currentMessage.substring(0, start) +
             prefix + selectedText + suffix +
             currentMessage.substring(end);
@@ -606,7 +606,7 @@ export function ChatInput({
         } else {
             setMessage(newText);
         }
-        
+
         const newCursorPos = start + prefix.length + selectedText.length + suffix.length;
         setTimeout(() => {
             textareaRef.current?.focus();
@@ -624,23 +624,23 @@ export function ChatInput({
         const cursorPosition = textarea.selectionStart;
         const currentMessage = editingMessage ? editingMessage.content : message;
         const textBeforeCursor = currentMessage.substring(0, cursorPosition);
-        
+
         const mentionMatch = textBeforeCursor.match(/@([\w\d_]*)$/);
         if (!mentionMatch) return;
 
         const startIndex = mentionMatch.index || 0;
-        const newText = 
+        const newText =
             currentMessage.substring(0, startIndex) +
             `@${username} ` +
             currentMessage.substring(cursorPosition);
-        
+
         if (editingMessage) {
             setEditingMessage({ ...editingMessage, content: newText });
         } else {
             setMessage(newText);
         }
         setMentionQuery(null);
-        
+
         setTimeout(() => {
             textarea.focus();
             const newCursorPosition = startIndex + username.length + 2;
@@ -666,13 +666,13 @@ export function ChatInput({
                 setMentionQuery(null);
             }
         } else if (e.key === 'Enter' && e.shiftKey) {
-             // Let default behavior (new line) happen
+            // Let default behavior (new line) happen
         } else if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             if (editingMessage) {
-                if(editingMessage.content.trim()) onSaveEdit();
+                if (editingMessage.content.trim()) onSaveEdit();
             } else {
-                if(message.trim()) handleSendMessage({ content: message });
+                if (message.trim()) handleSendMessage({ content: message });
             }
         }
     };
@@ -727,7 +727,7 @@ export function ChatInput({
     if (isRecording) {
         return (
             <div className="p-2 border-t bg-background shrink-0">
-                 <div className="flex items-center w-full gap-2 bg-muted p-2 rounded-lg">
+                <div className="flex items-center w-full gap-2 bg-muted p-2 rounded-lg">
                     <Button variant="ghost" size="icon" className="text-destructive h-8 w-8" onClick={handleCancelRecording}>
                         <Trash2 className="h-5 w-5" />
                         <span className="sr-only">Cancel recording</span>
@@ -739,11 +739,11 @@ export function ChatInput({
                             <span className="sr-only">{recordingStatus === 'paused' ? 'Resume' : 'Pause'} recording</span>
                         </Button>
                         <div className="flex items-center gap-2">
-                             <div className="w-2.5 h-2.5 bg-destructive rounded-full animate-pulse"></div>
-                             <span className="text-sm font-mono text-muted-foreground">{formatRecordingTime(recordingTime)}</span>
+                            <div className="w-2.5 h-2.5 bg-destructive rounded-full animate-pulse"></div>
+                            <span className="text-sm font-mono text-muted-foreground">{formatRecordingTime(recordingTime)}</span>
                         </div>
                     </div>
-                   
+
                     <Button size="icon" className="h-10 w-10 bg-green-500 hover:bg-green-600" onClick={handleStopAndSendRecording}>
                         <Send />
                         <span className="sr-only">Send recording</span>
@@ -752,13 +752,13 @@ export function ChatInput({
             </div>
         );
     }
-    
+
     // This is the main return statement for the ChatInput component.
     // It renders the input field and all its associated buttons and popups.
     return (
         <div className="p-2 border-t bg-background shrink-0">
             <input type="file" ref={attachmentInputRef} onChange={handleFileSelect} className="hidden" />
-             <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+            <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
                 <DialogContent className="max-w-3xl">
                     <DialogHeader><DialogTitle>Send Attachment</DialogTitle></DialogHeader>
                     <div className="flex flex-col gap-4 py-4">
@@ -780,18 +780,18 @@ export function ChatInput({
                         <p className="font-semibold text-primary">Replying to {replyingTo.profiles.name}</p>
                         <p className="text-muted-foreground truncate max-w-xs">{replyingTo.content || (replyingTo.attachment_metadata?.name || 'Attachment')}</p>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={() => setReplyingTo(null)} className="h-7 w-7"><X className="h-4 w-4"/></Button>
+                    <Button variant="ghost" size="icon" onClick={() => setReplyingTo(null)} className="h-7 w-7"><X className="h-4 w-4" /></Button>
                 </div>
             )}
-             {editingMessage && (
+            {editingMessage && (
                 <div className="flex items-center justify-between p-2 pl-3 mb-2 rounded-t-md bg-muted text-sm border-b">
                     <p className="font-semibold text-primary">Editing message...</p>
-                    <Button variant="ghost" size="icon" onClick={() => setEditingMessage(null)} className="h-7 w-7"><X className="h-4 w-4"/></Button>
+                    <Button variant="ghost" size="icon" onClick={() => setEditingMessage(null)} className="h-7 w-7"><X className="h-4 w-4" /></Button>
                 </div>
             )}
             <div className="relative">
-               {/* The pop-up toolbars for text formatting and @mentions. */}
-               {toolbarPosition && selection && (
+                {/* The pop-up toolbars for text formatting and @mentions. */}
+                {toolbarPosition && selection && (
                     <div
                         ref={toolbarRef}
                         className="fixed z-10 bg-background border rounded-md shadow-lg p-1 flex gap-1"
@@ -804,7 +804,7 @@ export function ChatInput({
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => applyFormatting('code')}><Code className="h-4 w-4" /></Button>
                     </div>
                 )}
-               {mentionQuery !== null && (
+                {mentionQuery !== null && (
                     <Card className="absolute bottom-full left-0 mb-2 w-72 shadow-lg z-50">
                         <ScrollArea className="max-h-48">
                             <CardContent className="p-1">
@@ -816,7 +816,7 @@ export function ChatInput({
                                             className={cn("flex w-full items-center gap-2 rounded-md p-2 text-left text-sm hover:bg-accent", activeMentionIndex === index && "bg-accent")}
                                         >
                                             {user.id === 'everyone' ? (
-                                                <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center"><Users className="h-4 w-4"/></div>
+                                                <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center"><Users className="h-4 w-4" /></div>
                                             ) : (
                                                 <Avatar className="h-8 w-8">
                                                     <AvatarImage src={(user as User).avatar_url} alt={user.name} />
@@ -837,74 +837,74 @@ export function ChatInput({
                     </Card>
                 )}
                 {/* The main text input area. */}
-              <TextareaAutosize
-                ref={textareaRef}
-                placeholder={isGroup ? "Type @ to mention users..." : "Type a message..."}
-                className={cn("pr-36 min-h-[40px] max-h-40 resize-none w-full border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-md", (replyingTo || editingMessage) && "rounded-t-none")}
-                minRows={1}
-                maxRows={5}
-                value={currentMessageValue}
-                onChange={handleMessageChange}
-                onKeyDown={handleKeyDown}
-                onSelect={handleTextSelection}
-                onBlur={() => { setTimeout(() => { if (!toolbarRef.current?.contains(document.activeElement)) { setSelection(null); setToolbarPosition(null); } }, 150); }}
-              />
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
-                {/* The emoji picker and other action buttons. */}
-                <Popover open={isEmojiOpen} onOpenChange={setIsEmojiOpen}>
-                    <PopoverTrigger asChild>
-                        <Button variant="ghost" size="icon"><Smile className="h-5 w-5"/></Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-full max-w-sm sm:max-w-sm p-0 border-none mb-2" side="top" align="end">
-                        <Tabs defaultValue="emoji" className="w-full">
-                            <TabsList className="grid w-full grid-cols-3">
-                                <TabsTrigger value="custom-emoji"><ImageIcon className="mr-2 h-4 w-4" />Official</TabsTrigger>
-                                <TabsTrigger value="emoji"><Smile className="mr-2 h-4 w-4" />Emojis</TabsTrigger>
-                                <TabsTrigger value="stickers"><StickyNote className="mr-2 h-4 w-4" />Stickers</TabsTrigger>
-                            </TabsList>
-                            <TabsContent value="custom-emoji">
-                                <ScrollArea className="h-[350px]">
-                                    <div className="p-2 grid grid-cols-8 gap-2">
-                                        {customEmojiList.map(emojiUrl => (
-                                            <button 
-                                                key={emojiUrl} 
-                                                onClick={() => handleCustomEmojiMessage(emojiUrl)}
-                                                className="aspect-square flex items-center justify-center rounded-md hover:bg-accent"
-                                            >
-                                                <Image src={emojiUrl} alt={emojiUrl.split('/').pop() || ''} width={32} height={32} />
-                                            </button>
-                                        ))}
-                                    </div>
-                                </ScrollArea>
-                            </TabsContent>
-                            <TabsContent value="emoji"><EmojiPicker onEmojiClick={handleEmojiClick} height={350} width="100%" defaultSkinTone={SkinTones.NEUTRAL} /></TabsContent>
-                            <TabsContent value="stickers">
-                                <ScrollArea className="h-[350px]">
-                                    <div className="p-2 grid grid-cols-3 gap-2">
-                                        {stickerList.map(stickerUrl => (
-                                            <button 
-                                                key={stickerUrl} 
-                                                onClick={() => handleCustomEmojiMessage(stickerUrl)}
-                                                className="aspect-square flex items-center justify-center rounded-md hover:bg-accent"
-                                            >
-                                                <Image src={stickerUrl} alt={stickerUrl.split('/').pop() || ''} width={96} height={96} />
-                                            </button>
-                                        ))}
-                                    </div>
-                                </ScrollArea>
-                            </TabsContent>
-                        </Tabs>
-                    </PopoverContent>
-                </Popover>
-                <TooltipProvider>
-                  <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={handleAttachmentClick}><Paperclip className="h-5 w-5"/></Button></TooltipTrigger><TooltipContent>Attach file</TooltipContent></Tooltip>
-                  <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={handleStartRecording}><Mic className="h-5 w-5"/></Button></TooltipTrigger><TooltipContent>Voice message</TooltipContent></Tooltip>
-                </TooltipProvider>
-                <Button size="icon" className="ml-2 h-8 w-8" onClick={() => editingMessage ? onSaveEdit() : handleSendMessage({ content: message })} disabled={isSending || !currentMessageValue.trim()}>
-                  {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : editingMessage ? <Check className="h-4 w-4" /> : <Send className="h-4 w-4" />}
-                </Button>
-              </div>
+                <TextareaAutosize
+                    ref={textareaRef}
+                    placeholder={isGroup ? "Type @ to mention users..." : "Type a message..."}
+                    className={cn("pr-36 min-h-[40px] max-h-40 resize-none w-full border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-md", (replyingTo || editingMessage) && "rounded-t-none")}
+                    minRows={1}
+                    maxRows={5}
+                    value={currentMessageValue}
+                    onChange={handleMessageChange}
+                    onKeyDown={handleKeyDown}
+                    onSelect={handleTextSelection}
+                    onBlur={() => { setTimeout(() => { if (!toolbarRef.current?.contains(document.activeElement)) { setSelection(null); setToolbarPosition(null); } }, 150); }}
+                />
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
+                    {/* The emoji picker and other action buttons. */}
+                    <Popover open={isEmojiOpen} onOpenChange={setIsEmojiOpen}>
+                        <PopoverTrigger asChild>
+                            <Button variant="ghost" size="icon"><Smile className="h-5 w-5" /></Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full max-w-sm sm:max-w-sm p-0 border-none mb-2" side="top" align="end">
+                            <Tabs defaultValue="emoji" className="w-full">
+                                <TabsList className="grid w-full grid-cols-3">
+                                    <TabsTrigger value="custom-emoji"><ImageIcon className="mr-2 h-4 w-4" />Official</TabsTrigger>
+                                    <TabsTrigger value="emoji"><Smile className="mr-2 h-4 w-4" />Emojis</TabsTrigger>
+                                    <TabsTrigger value="stickers"><StickyNote className="mr-2 h-4 w-4" />Stickers</TabsTrigger>
+                                </TabsList>
+                                <TabsContent value="custom-emoji">
+                                    <ScrollArea className="h-[350px]">
+                                        <div className="p-2 grid grid-cols-8 gap-2">
+                                            {customEmojiList.map(emojiUrl => (
+                                                <button
+                                                    key={emojiUrl}
+                                                    onClick={() => handleCustomEmojiMessage(emojiUrl)}
+                                                    className="aspect-square flex items-center justify-center rounded-md hover:bg-accent"
+                                                >
+                                                    <Image src={emojiUrl} alt={emojiUrl.split('/').pop() || ''} width={32} height={32} />
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </ScrollArea>
+                                </TabsContent>
+                                <TabsContent value="emoji"><EmojiPicker onEmojiClick={handleEmojiClick} height={350} width="100%" defaultSkinTone={SkinTones.NEUTRAL} /></TabsContent>
+                                <TabsContent value="stickers">
+                                    <ScrollArea className="h-[350px]">
+                                        <div className="p-2 grid grid-cols-3 gap-2">
+                                            {stickerList.map(stickerUrl => (
+                                                <button
+                                                    key={stickerUrl}
+                                                    onClick={() => handleCustomEmojiMessage(stickerUrl)}
+                                                    className="aspect-square flex items-center justify-center rounded-md hover:bg-accent"
+                                                >
+                                                    <Image src={stickerUrl} alt={stickerUrl.split('/').pop() || ''} width={96} height={96} />
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </ScrollArea>
+                                </TabsContent>
+                            </Tabs>
+                        </PopoverContent>
+                    </Popover>
+                    <TooltipProvider>
+                        <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={handleAttachmentClick}><Paperclip className="h-5 w-5" /></Button></TooltipTrigger><TooltipContent>Attach file</TooltipContent></Tooltip>
+                        <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={handleStartRecording}><Mic className="h-5 w-5" /></Button></TooltipTrigger><TooltipContent>Voice message</TooltipContent></Tooltip>
+                    </TooltipProvider>
+                    <Button size="icon" className="ml-2 h-8 w-8" onClick={() => editingMessage ? onSaveEdit() : handleSendMessage({ content: message })} disabled={isSending || !currentMessageValue.trim()}>
+                        {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : editingMessage ? <Check className="h-4 w-4" /> : <Send className="h-4 w-4" />}
+                    </Button>
+                </div>
             </div>
-          </div>
+        </div>
     );
 }

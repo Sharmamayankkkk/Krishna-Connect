@@ -1,4 +1,3 @@
-
 'use client'
 
 import * as React from 'react'
@@ -150,7 +149,7 @@ export function CreateEventDialog({ open, onOpenChange, eventToEdit, onEventCrea
     }
   };
   
-  if (!loggedInUser?.verified) {
+  if (!loggedInUser?.is_verified) {
     return null;
   }
 

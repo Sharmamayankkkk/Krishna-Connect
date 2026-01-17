@@ -61,15 +61,15 @@ type FeedFilter = 'foryou' | 'following' | 'latest';
 type ExploreMode = 'feed' | 'search' | 'discover';
 
 // Trending Category Component
-function TrendingCategory({ 
-    icon: Icon, 
-    title, 
-    count, 
-    trend 
-}: { 
-    icon: any; 
-    title: string; 
-    count: string; 
+function TrendingCategory({
+    icon: Icon,
+    title,
+    count,
+    trend
+}: {
+    icon: any;
+    title: string;
+    count: string;
     trend?: string;
 }) {
     return (
@@ -95,11 +95,11 @@ function TrendingCategory({
 }
 
 // User Card Component
-function UserCard({ 
-    user, 
-    onFollow 
-}: { 
-    user: typeof suggestedUsers[0]; 
+function UserCard({
+    user,
+    onFollow
+}: {
+    user: typeof suggestedUsers[0];
     onFollow: (id: string) => void;
 }) {
     const [isFollowing, setIsFollowing] = React.useState(false);
@@ -119,7 +119,7 @@ function UserCard({
                     </Avatar>
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1">
-                            <Link 
+                            <Link
                                 href={`/profile/${user.username}`}
                                 className="font-semibold hover:underline truncate"
                             >
@@ -135,8 +135,8 @@ function UserCard({
                             {user.followers.toLocaleString()} followers
                         </p>
                     </div>
-                    <Button 
-                        variant={isFollowing ? "outline" : "default"} 
+                    <Button
+                        variant={isFollowing ? "outline" : "default"}
                         size="sm"
                         onClick={handleFollow}
                         className="flex-shrink-0"
@@ -150,13 +150,13 @@ function UserCard({
 }
 
 // Hashtag Card Component
-function HashtagCard({ 
-    hashtag, 
-    posts, 
-    category 
-}: { 
-    hashtag: string; 
-    posts: number; 
+function HashtagCard({
+    hashtag,
+    posts,
+    category
+}: {
+    hashtag: string;
+    posts: number;
     category?: string;
 }) {
     return (
@@ -186,10 +186,10 @@ export default function ExplorePage() {
     const { loggedInUser } = useAppContext();
     const { toast } = useToast();
     const router = useRouter();
-    
+
     // Mode management
     const [exploreMode, setExploreMode] = React.useState<ExploreMode>('feed');
-    
+
     // Search state
     const [searchQuery, setSearchQuery] = React.useState('');
     const [activeFilter, setActiveFilter] = React.useState<SearchFilter>('all');
@@ -243,8 +243,8 @@ export default function ExplorePage() {
         if (!searchQuery) return { posts: [], users: [], hashtags: [] };
 
         const query = searchQuery.toLowerCase();
-        
-        const posts = allPosts.filter(p => 
+
+        const posts = allPosts.filter(p =>
             p.content.toLowerCase().includes(query) ||
             p.author.name.toLowerCase().includes(query)
         );
@@ -329,7 +329,7 @@ export default function ExplorePage() {
                 );
                 break;
         }
-        
+
         setSortedFeed(filteredPosts);
         setVisiblePosts(filteredPosts.slice(0, POSTS_PER_PAGE));
         setHasMore(filteredPosts.length > POSTS_PER_PAGE);
@@ -627,13 +627,7 @@ export default function ExplorePage() {
             media: [],
             stats: { comments: 0, reshares: 0, reposts: 0, likes: 0, views: 0, bookmarks: 0 },
             comments: [],
-            originalPost: {
-                ...originalPost,
-                originalPost: null,
-                comments: [],
-                stats: originalPost.stats,
-                poll: originalPost.poll
-            },
+            originalPost: (({ comments, stats, poll, originalPost: _, ...cleanPost }) => cleanPost)(originalPost),
             isRepost: true,
             repostOf: postId,
             likedBy: [],
@@ -884,13 +878,7 @@ export default function ExplorePage() {
             media: [],
             stats: { comments: 0, reshares: 0, reposts: 0, likes: 0, views: 0, bookmarks: 0 },
             comments: [],
-            originalPost: {
-                ...originalPost,
-                originalPost: null,
-                comments: [],
-                stats: originalPost.stats,
-                poll: originalPost.poll
-            },
+            originalPost: (({ comments, stats, poll, originalPost: _, ...cleanPost }) => cleanPost)(originalPost),
             likedBy: [],
             savedBy: [],
             repostedBy: [],
@@ -994,13 +982,13 @@ export default function ExplorePage() {
                 post={postToPromote}
                 onConfirm={handleConfirmPromotion}
             />
-            
+
             <div className="flex h-full flex-col">
                 {/* Header with Search */}
                 <header className="sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
                     <div className="flex items-center gap-4 p-4">
                         <SidebarTrigger className="md:hidden" />
-                        
+
                         {/* Mode Toggle */}
                         <div className="flex gap-2 mr-2">
                             <Button
@@ -1094,33 +1082,33 @@ export default function ExplorePage() {
                     {searchQuery && (
                         <Tabs value={activeFilter} onValueChange={(v) => setActiveFilter(v as SearchFilter)} className="w-full">
                             <TabsList className="w-full justify-start rounded-none border-b bg-transparent h-auto p-0 px-4">
-                                <TabsTrigger 
-                                    value="all" 
+                                <TabsTrigger
+                                    value="all"
                                     className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
                                 >
                                     All
                                 </TabsTrigger>
-                                <TabsTrigger 
+                                <TabsTrigger
                                     value="posts"
                                     className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
                                 >
                                     Posts ({searchResults.posts.length})
                                 </TabsTrigger>
-                                <TabsTrigger 
+                                <TabsTrigger
                                     value="users"
                                     className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
                                 >
                                     <Users className="h-4 w-4 mr-2" />
                                     People ({searchResults.users.length})
                                 </TabsTrigger>
-                                <TabsTrigger 
+                                <TabsTrigger
                                     value="hashtags"
                                     className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
                                 >
                                     <Hash className="h-4 w-4 mr-2" />
                                     Tags ({searchResults.hashtags.length})
                                 </TabsTrigger>
-                                <TabsTrigger 
+                                <TabsTrigger
                                     value="media"
                                     className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
                                 >
@@ -1247,8 +1235,8 @@ export default function ExplorePage() {
                                                         While you're here
                                                     </h4>
                                                     <div className="grid gap-2">
-                                                        <Button 
-                                                            variant="ghost" 
+                                                        <Button
+                                                            variant="ghost"
                                                             className="justify-start h-auto py-3"
                                                             onClick={() => setExploreMode('discover')}
                                                         >
@@ -1258,8 +1246,8 @@ export default function ExplorePage() {
                                                                 <div className="text-xs text-muted-foreground">Find people to follow</div>
                                                             </div>
                                                         </Button>
-                                                        <Button 
-                                                            variant="ghost" 
+                                                        <Button
+                                                            variant="ghost"
                                                             className="justify-start h-auto py-3"
                                                             onClick={() => setExploreMode('discover')}
                                                         >
@@ -1290,8 +1278,8 @@ export default function ExplorePage() {
                                                     <Clock className="h-5 w-5" />
                                                     Recent Searches
                                                 </CardTitle>
-                                                <Button 
-                                                    variant="ghost" 
+                                                <Button
+                                                    variant="ghost"
                                                     size="sm"
                                                     onClick={() => setRecentSearches([])}
                                                 >
@@ -1301,7 +1289,7 @@ export default function ExplorePage() {
                                         </CardHeader>
                                         <CardContent className="space-y-2">
                                             {recentSearches.map((search, index) => (
-                                                <div 
+                                                <div
                                                     key={index}
                                                     className="flex items-center justify-between p-2 rounded-lg hover:bg-muted cursor-pointer group"
                                                     onClick={() => handleSearch(search)}
@@ -1472,17 +1460,17 @@ export default function ExplorePage() {
                                             </div>
                                         )}
 
-                                        {searchResults.posts.length === 0 && 
-                                         searchResults.users.length === 0 && 
-                                         searchResults.hashtags.length === 0 && (
-                                            <div className="text-center py-12">
-                                                <Search className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                                                <h3 className="text-lg font-semibold mb-2">No results found</h3>
-                                                <p className="text-sm text-muted-foreground">
-                                                    Try searching for something else
-                                                </p>
-                                            </div>
-                                        )}
+                                        {searchResults.posts.length === 0 &&
+                                            searchResults.users.length === 0 &&
+                                            searchResults.hashtags.length === 0 && (
+                                                <div className="text-center py-12">
+                                                    <Search className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                                                    <h3 className="text-lg font-semibold mb-2">No results found</h3>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Try searching for something else
+                                                    </p>
+                                                </div>
+                                            )}
                                     </TabsContent>
 
                                     {/* Posts Only */}
@@ -1563,9 +1551,9 @@ export default function ExplorePage() {
                                                 .slice(0, 12)
                                                 .map((media, idx) => (
                                                     <div key={idx} className="aspect-square bg-muted relative group cursor-pointer">
-                                                        <img 
-                                                            src={media.url} 
-                                                            alt={media.alt || ''} 
+                                                        <img
+                                                            src={media.url}
+                                                            alt={media.alt || ''}
                                                             className="w-full h-full object-cover"
                                                         />
                                                     </div>

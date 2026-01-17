@@ -184,14 +184,14 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
 
   const handleCommentLike = (commentId: string) => {
     setComments(prev => prev.map(comment => 
-      comment.id === commentId 
+      String(comment.id) === commentId
         ? { ...comment, reactions: comment.reactions ? null : {} }
         : comment
     ));
   };
 
   const handleCommentDelete = (commentId: string) => {
-    setComments(prev => prev.filter(comment => comment.id !== commentId));
+    setComments(prev => prev.filter(comment => String(comment.id) !== commentId));
     toast({ description: 'Comment deleted' });
   };
 
@@ -263,7 +263,7 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
             variant="ghost"
             size="icon"
             className={cn("h-7 w-7", isCommentLiked && "text-red-500")}
-            onClick={() => handleCommentLike(comment.id)}
+            onClick={() => handleCommentLike(String(comment.id))}
           >
             <Heart className={cn("h-4 w-4", isCommentLiked && "fill-current")} />
           </Button>
@@ -276,7 +276,7 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem 
-                  onClick={() => handleCommentDelete(comment.id)}
+                  onClick={() => handleCommentDelete(String(comment.id))}
                   className="text-destructive focus:text-destructive"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
@@ -379,7 +379,7 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
                           <Flag className="mr-2 h-4 w-4" />
                           Report
                         </DropdownMenuItem>
-                      </>
+                      </> 
                     )}
                   </DropdownMenuContent>
                 </DropdownMenu>

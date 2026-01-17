@@ -142,6 +142,7 @@ export default function BookmarksPage() {
                                                 onQuotePost={() => { }}
                                                 onRepost={() => { }}
                                                 onPollVote={() => { }}
+                                                onPromote={() => { }}
                                             />
                                         ) : (
                                             <Card key={post.id} className="overflow-hidden">

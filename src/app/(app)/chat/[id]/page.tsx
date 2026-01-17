@@ -42,7 +42,7 @@ export default function ChatPage() {
     resetUnreadCount,
     chats,
   } = useAppContext()
-  
+
   // This state variable holds the list of messages for the current chat.
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -69,7 +69,7 @@ export default function ChatPage() {
       console.error('Error fetching messages:', error);
       setMessages([]);
     } else {
-      setMessages(data as Message[]);
+      setMessages(data as unknown as Message[]);
     }
     setIsLoading(false);
   }, [chatId, supabase]);
@@ -95,7 +95,7 @@ export default function ChatPage() {
       return () => window.removeEventListener("focus", markAsRead)
     }
   }, [chatId, loggedInUser?.id, resetUnreadCount, supabase])
-  
+
   // *** THIS IS THE CORE OF THE REAL-TIME FIX ***
   // This `useEffect` hook sets up the real-time subscription for the current chat.
   useEffect(() => {
@@ -103,38 +103,38 @@ export default function ChatPage() {
 
     // This function will be called every time a new message is inserted into the database.
     const handleNewMessage = async (payload: any) => {
-        // The payload only contains the basic new message. We need to fetch the full
-        // message details (like the sender's profile) to display it correctly.
-        const { data: fullMessage, error } = await supabase
-          .from("messages")
-          .select(FULL_MESSAGE_SELECT_QUERY)
-          .eq("id", payload.new.id)
-          .single()
-        
-        if (error || !fullMessage) return;
+      // The payload only contains the basic new message. We need to fetch the full
+      // message details (like the sender's profile) to display it correctly.
+      const { data: fullMessage, error } = await supabase
+        .from("messages")
+        .select(FULL_MESSAGE_SELECT_QUERY)
+        .eq("id", payload.new.id)
+        .single()
 
-        // We update our local `messages` state by adding the new message to the end.
-        // We also check to make sure we don't accidentally add a duplicate message.
-        setMessages(currentMessages => {
-            if (currentMessages.some(m => m.id === fullMessage.id)) {
-                return currentMessages;
-            }
-            return [...currentMessages, fullMessage as Message]
-        });
+      if (error || !fullMessage) return;
+
+      // We update our local `messages` state by adding the new message to the end.
+      // We also check to make sure we don't accidentally add a duplicate message.
+      setMessages(currentMessages => {
+        if (currentMessages.some(m => m.id === fullMessage.id)) {
+          return currentMessages;
+        }
+        return [...currentMessages, fullMessage as unknown as Message]
+      });
     }
 
     // This function handles real-time updates for edited messages, reactions, pins, etc.
     const handleUpdatedMessage = async (payload: any) => {
-        const { data: fullMessage, error } = await supabase
-          .from("messages")
-          .select(FULL_MESSAGE_SELECT_QUERY)
-          .eq("id", payload.new.id)
-          .single()
-        
-        if (error || !fullMessage) return;
-        
-        // We find the message in our local state and replace it with the updated version.
-        setMessages(current => current.map(m => m.id === payload.new.id ? fullMessage as Message : m));
+      const { data: fullMessage, error } = await supabase
+        .from("messages")
+        .select(FULL_MESSAGE_SELECT_QUERY)
+        .eq("id", payload.new.id)
+        .single()
+
+      if (error || !fullMessage) return;
+
+      // We find the message in our local state and replace it with the updated version.
+      setMessages(current => current.map(m => m.id === payload.new.id ? fullMessage as unknown as Message : m));
     }
 
     // Here, we subscribe to the Supabase channel for our specific chat.
@@ -152,7 +152,7 @@ export default function ChatPage() {
         schema: 'public',
         table: 'messages',
         filter: `chat_id=eq.${chatId}`
-       }, handleUpdatedMessage)
+      }, handleUpdatedMessage)
       .subscribe();
 
     // The cleanup function is crucial. It unsubscribes from the channel when the user

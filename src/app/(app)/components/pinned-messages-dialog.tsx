@@ -1,4 +1,3 @@
-
 'use client'
 
 import * as React from 'react';
@@ -49,7 +48,7 @@ export function PinnedMessagesDialog({
           <div className="space-y-4 pr-4">
              {messages.length > 0 ? (
                 messages.map(message => (
-                    <div key={message.id} className="group relative text-sm p-3 rounded-lg border bg-muted/50 cursor-pointer hover:bg-muted" onClick={() => onJumpToMessage(message.id)}>
+                    <div key={message.id} className="group relative text-sm p-3 rounded-lg border bg-muted/50 cursor-pointer hover:bg-muted" onClick={() => onJumpToMessage(message.id as number)}>
                         <div className="flex justify-between items-start">
                              <div className="flex items-start gap-3">
                                 <Avatar className="h-8 w-8">
@@ -65,7 +64,7 @@ export function PinnedMessagesDialog({
                              <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  onUnpinMessage(message.id);
+                                  onUnpinMessage(message.id as number);
                                 }}
                                 className="absolute top-1 right-1 h-6 w-6 rounded-full bg-background/50 flex items-center justify-center opacity-0 group-hover:opacity-100"
                             >

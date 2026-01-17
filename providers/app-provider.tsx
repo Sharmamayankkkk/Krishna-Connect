@@ -118,8 +118,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 .select('*, participants:participants!chat_id(*, profiles!user_id(*))')
                 .in('id', chatIds);
             
-            const initialChats = (chatsData || []).map(c => ({...c, messages: [], unreadCount: 0})) as Chat;
-            setChats(initialChats);
+                const initialChats = (chatsData || []).map(c => ({...c, messages: [], unreadCount: 0})) as Chat[];
+                setChats(initialChats);
 
             const { data: lastMessages } = await supabaseRef.current.rpc('get_last_messages_for_chats', { p_chat_ids: chatIds });
             if (lastMessages) {
