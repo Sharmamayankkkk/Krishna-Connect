@@ -2,10 +2,9 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { ProfileView } from "./components/profile-view";
-import { User } from "@supabase/supabase-js";
+import { User, Session } from "@supabase/supabase-js";
 import { Profile } from "@/types";
 
-// Update: params is a Promise in Next.js 15
 interface ProfilePageProps {
   params: Promise<{
     username: string;
@@ -13,11 +12,9 @@ interface ProfilePageProps {
 }
 
 export default async function ProfilePage(props: ProfilePageProps) {
-  // 1. Await the params to get the username
   const params = await props.params;
   const { username } = params;
 
-  // 2. Await cookies() (this is now async in Next.js 15)
   const cookieStore = await cookies();
 
   const supabase = createServerClient(
@@ -51,22 +48,24 @@ export default async function ProfilePage(props: ProfilePageProps) {
   );
 
   // Get the current user's session
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
+
 
   // Fetch the profile data
   const { data: profile } = await supabase
-    .rpc('get_profile_by_username', { 
-        p_username: username, // Use the awaited username variable
-        p_requesting_user_id: user?.id 
+    .rpc('get_profile_by_username', {
+      p_username: username,
+      p_requesting_user_id: user?.id,
     })
-    .single();
+    .single() as { data: Profile | null };
 
   if (!profile) {
     notFound();
   }
 
   // Fetch the data for the tabs in parallel
-  const [ 
+  const [
     { data: posts },
     { data: followers },
     { data: following }
@@ -77,12 +76,13 @@ export default async function ProfilePage(props: ProfilePageProps) {
   ]);
 
   return (
-    <ProfileView 
-      profile={profile} 
-      posts={posts} 
-      followers={followers} 
-      following={following}
-      session={{ user }}
+    <ProfileView
+      profile={profile}
+      posts={posts || []}
+      followers={followers || []}
+      following={following || []}
+      session={session}
     />
+
   );
 }

@@ -35,7 +35,7 @@ const mockStats = {
     following: 108,
 };
 
-const generateMockComments = (postId: string, count: number): Comment[] => {
+const generateMockComments = (postId: string | number, count: number): Comment[] => {
     return Array.from({ length: count }, (_, i) => ({
         id: `comment-${postId}-${i}`,
         content: `This is a mock comment #${i + 1}. ${i % 3 === 0 ? '🙏' : ''}`,
@@ -96,19 +96,19 @@ function PostGrid({ posts, onPostClick }: { posts: Post[]; onPostClick: (post: P
                     className="relative group aspect-square overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm"
                     aria-label={`View post with ${post.stats?.likes || 0} likes and ${post.stats?.comments || 0} comments`}
                 >
-                    <img 
-                        src={post.image_url!} 
-                        alt={`Post by ${mockUser.username}`} 
-                        className="w-full h-full object-cover transition-transform group-hover:scale-105" 
+                    <img
+                        src={post.image_url!}
+                        alt={`Post by ${mockUser.username}`}
+                        className="w-full h-full object-cover transition-transform group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity">
                         <div className="text-white flex items-center space-x-4">
                             <div className="flex items-center font-semibold">
-                                <Heart className="w-5 h-5 mr-1.5 fill-white" /> 
+                                <Heart className="w-5 h-5 mr-1.5 fill-white" />
                                 {post.stats?.likes || 0}
                             </div>
                             <div className="flex items-center font-semibold">
-                                <MessageCircle className="w-5 h-5 mr-1.5 fill-white" /> 
+                                <MessageCircle className="w-5 h-5 mr-1.5 fill-white" />
                                 {post.stats?.comments || 0}
                             </div>
                         </div>
@@ -130,8 +130,8 @@ export default function MockUserProfilePage() {
     const [isPostDialogOpen, setIsPostDialogOpen] = React.useState(false);
 
     const handlePostClick = (post: Post) => {
-        const author = post.author_id === mockUser.id 
-            ? mockUser 
+        const author = post.author_id === mockUser.id
+            ? mockUser
             : mockOtherUsers.find(u => u.id === post.author_id) || null;
         setSelectedPost(post);
         setPostAuthor(author);
@@ -141,21 +141,21 @@ export default function MockUserProfilePage() {
 
     const handleFollowToggle = async () => {
         if (isFollowLoading) return;
-        
+
         setIsFollowLoading(true);
-        
+
         // Simulate API delay
         await new Promise(resolve => setTimeout(resolve, 500));
-        
+
         setIsFollowing(!isFollowing);
         setFollowerCount(prev => isFollowing ? prev - 1 : prev + 1);
-        
+
         toast({
-            description: isFollowing 
-                ? `Unfollowed ${mockUser.username}` 
+            description: isFollowing
+                ? `Unfollowed ${mockUser.username}`
                 : `Now following ${mockUser.username}`,
         });
-        
+
         setIsFollowLoading(false);
     };
 
@@ -188,14 +188,14 @@ export default function MockUserProfilePage() {
 
     return (
         <main className="flex-1 p-4 md:p-6 bg-muted/40">
-            <PostDetailDialog 
-                open={isPostDialogOpen} 
-                onOpenChange={setIsPostDialogOpen} 
-                post={selectedPost} 
+            <PostDetailDialog
+                open={isPostDialogOpen}
+                onOpenChange={setIsPostDialogOpen}
+                post={selectedPost}
                 author={postAuthor}
                 initialComments={postComments}
             />
-            
+
             <div className="max-w-4xl mx-auto">
                 <Card className="overflow-hidden">
                     <CardContent className="p-6">
@@ -204,22 +204,22 @@ export default function MockUserProfilePage() {
                                 <AvatarImage src={mockUser.avatar_url} alt={mockUser.name} />
                                 <AvatarFallback>{mockUser.name.charAt(0)}</AvatarFallback>
                             </Avatar>
-                            
+
                             <div className="flex-1 text-center md:text-left w-full">
                                 <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
                                     <h2 className="text-2xl font-bold">{mockUser.username}</h2>
                                     {mockUser.is_verified && (
-                                        <img 
-                                            src="/user_Avatar/verified.png" 
-                                            alt="Verified Account" 
-                                            className="w-6 h-6" 
+                                        <img
+                                            src="/user_Avatar/verified.png"
+                                            alt="Verified Account"
+                                            className="w-6 h-6"
                                         />
                                     )}
                                 </div>
-                                
+
                                 <div className="flex justify-center md:justify-start gap-3 mb-4 flex-wrap">
-                                    <Button 
-                                        variant={isFollowing ? "secondary" : "default"} 
+                                    <Button
+                                        variant={isFollowing ? "secondary" : "default"}
                                         onClick={handleFollowToggle}
                                         disabled={isFollowLoading}
                                         className="min-w-[120px]"
@@ -241,15 +241,15 @@ export default function MockUserProfilePage() {
                                             </>
                                         )}
                                     </Button>
-                                    
-                                    <Button 
-                                        variant="outline" 
+
+                                    <Button
+                                        variant="outline"
                                         onClick={handleMessage}
                                         className="min-w-[100px]"
                                     >
                                         Message
                                     </Button>
-                                    
+
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button variant="outline" size="icon" aria-label="More options">
@@ -265,7 +265,7 @@ export default function MockUserProfilePage() {
                                             <DropdownMenuItem onClick={handleBlock}>
                                                 Block
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem 
+                                            <DropdownMenuItem
                                                 onClick={handleReport}
                                                 className="text-destructive focus:text-destructive"
                                             >
@@ -274,19 +274,19 @@ export default function MockUserProfilePage() {
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>
-                                
+
                                 <div className="hidden md:flex items-center gap-8 mb-4">
                                     <div>
                                         <span className="font-bold">{mockStats.posts}</span> posts
                                     </div>
-                                    <button 
+                                    <button
                                         className="hover:opacity-70 transition-opacity"
                                         aria-label={`${followerCount} followers`}
                                         onClick={() => toast({ description: 'Followers list coming soon!' })}
                                     >
                                         <span className="font-bold">{followerCount.toLocaleString()}</span> followers
                                     </button>
-                                    <button 
+                                    <button
                                         className="hover:opacity-70 transition-opacity"
                                         aria-label={`${mockStats.following} following`}
                                         onClick={() => toast({ description: 'Following list coming soon!' })}
@@ -294,7 +294,7 @@ export default function MockUserProfilePage() {
                                         <span className="font-bold">{mockStats.following}</span> following
                                     </button>
                                 </div>
-                                
+
                                 <div>
                                     <h3 className="font-semibold">{mockUser.name}</h3>
                                     <p className="text-sm text-muted-foreground whitespace-pre-wrap">
@@ -303,20 +303,20 @@ export default function MockUserProfilePage() {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div className="md:hidden flex items-center justify-around text-center border-t mt-6 pt-4">
                             <div>
                                 <p className="font-bold">{mockStats.posts}</p>
                                 <p className="text-xs text-muted-foreground">posts</p>
                             </div>
-                            <button 
+                            <button
                                 className="hover:opacity-70 transition-opacity"
                                 onClick={() => toast({ description: 'Followers list coming soon!' })}
                             >
                                 <p className="font-bold">{followerCount.toLocaleString()}</p>
                                 <p className="text-xs text-muted-foreground">followers</p>
                             </button>
-                            <button 
+                            <button
                                 className="hover:opacity-70 transition-opacity"
                                 onClick={() => toast({ description: 'Following list coming soon!' })}
                             >
@@ -330,19 +330,19 @@ export default function MockUserProfilePage() {
                 <Tabs defaultValue="posts" className="mt-6">
                     <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="posts" className="gap-2">
-                            <Grid3x3 className="w-4 h-4"/> 
+                            <Grid3x3 className="w-4 h-4" />
                             <span>Posts</span>
                         </TabsTrigger>
                         <TabsTrigger value="saved" className="gap-2">
-                            <Bookmark className="w-4 h-4"/> 
+                            <Bookmark className="w-4 h-4" />
                             <span>Saved</span>
                         </TabsTrigger>
                     </TabsList>
-                    
+
                     <TabsContent value="posts" className="mt-4">
                         <PostGrid posts={mockPosts} onPostClick={handlePostClick} />
                     </TabsContent>
-                    
+
                     <TabsContent value="saved" className="mt-4">
                         {mockSavedPosts.length > 0 ? (
                             <PostGrid posts={mockSavedPosts} onPostClick={handlePostClick} />
