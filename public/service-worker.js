@@ -1,13 +1,20 @@
-
-const CACHE_NAME = 'kcs-app-v3'; // Updated version for new logic
+const CACHE_NAME = 'kcs-app-v4'; // Incremented version to force update
 const APP_SHELL_URLS = [
     '/',
     '/manifest.json',
-    '/favicon.ico',
+    // Validated Logo paths from your screenshot
     '/logo/light_KCS.svg',
-    '/logo/dark_KCS.svg',
+    '/logo/light_KCS.png',
+    '/logo/dark_KCS.png', 
+    '/logo/krishna_connect.png',
+    // Validated Background paths (Fixes the "folder" error)
+    '/chat-bg/light.png',
+    '/chat-bg/dark.png',
+    '/chat-bg/BG_3.svg',
+    '/chat-bg/BG_4.png',
+    // User Avatars (Keeping your original requests)
     '/user_Avatar/male.png',
-    '/user_Avatar/female.png',
+    '/user_Avatar/female.png'
 ];
 
 // Install event: precache the app shell
@@ -50,20 +57,22 @@ self.addEventListener('fetch', event => {
 
     const url = new URL(event.request.url);
 
-    // Don't cache API calls or requests to external domains.
+    // Don't cache API calls, AdSense, or external domains.
     if (url.origin !== self.location.origin || event.request.url.includes('/api/')) {
-        return; // Let the network handle it, do not cache.
+        return; 
     }
 
+    // Navigation requests (HTML pages) -> Network first, fallback to cache, then offline page
     if (event.request.mode === 'navigate') {
         event.respondWith(
             fetch(event.request).catch(() => {
-                return caches.match('/'); // Fallback to the root page.
+                return caches.match('/'); // Fallback to the root page for SPA
             })
         );
         return;
     }
 
+    // Asset requests (Images, CSS, JS) -> Cache first, then Network
     event.respondWith(
         caches.match(event.request).then(cachedResponse => {
             if (cachedResponse) {
@@ -84,7 +93,7 @@ self.addEventListener('fetch', event => {
                 return networkResponse;
             }).catch(error => {
                 console.error('[Service Worker] Fetch failed:', error);
-                // Rethrow the error to allow the browser to handle the network failure.
+                // Optional: Return a placeholder image here if an image fetch fails
                 throw error;
             });
         })
