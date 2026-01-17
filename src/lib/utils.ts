@@ -1,8 +1,7 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { createBrowserClient } from '@supabase/ssr'
-import { genkit } from 'genkit';
-import { googleAI } from '@genkit-ai/googleai';
+
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
