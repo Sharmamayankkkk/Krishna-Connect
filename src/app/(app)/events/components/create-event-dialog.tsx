@@ -2,7 +2,6 @@
 'use client'
 
 import * as React from 'react'
-import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -150,6 +149,10 @@ export function CreateEventDialog({ open, onOpenChange, eventToEdit, onEventCrea
       setIsLoading(false);
     }
   };
+  
+  if (!loggedInUser?.verified) {
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -1,56 +1,91 @@
-
-import { type Metadata } from 'next';
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'Terms & Conditions | Krishna Connect',
-  description: 'Terms and Conditions for Krishna Connect.',
+  title: "Terms and Conditions",
+  description: "Terms and usage guidelines for our chat application.",
 };
 
-export default function TermsAndConditionsPage() {
+const TermsAndConditionsPage = () => {
   return (
-    <div className="prose dark:prose-invert max-w-none">
-      <h1>Terms and Conditions</h1>
-      <p className="text-muted-foreground">Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+    <div className="container mx-auto px-4 py-8 max-w-4xl text-gray-800">
+      <h1 className="text-3xl font-bold mb-2">Terms and Conditions</h1>
+      <p className="text-sm text-gray-500 mb-8">Last Updated: {new Date().toLocaleDateString()}</p>
 
-      <h2>1. Agreement to Terms</h2>
-      <p>
-        By using our application, you agree to be bound by these Terms and Conditions. If you do not agree to these Terms and Conditions, you may not use the application.
-      </p>
+      <div className="space-y-6">
+        {/* Section 1 */}
+        <section>
+          <h2 className="text-xl font-semibold mb-3">1. Acceptance of Terms</h2>
+          <p className="leading-relaxed">
+            By downloading, installing, or using <strong>[Your App Name]</strong> ("the App"), you agree to be bound by these Terms and Conditions. If you do not agree to these terms, please do not use the App.
+          </p>
+        </section>
 
-      <h2>2. User Accounts</h2>
-      <p>
-        When you create an account with us, you must provide us with information that is accurate, complete, and current at all times. Failure to do so constitutes a breach of the Terms, which may result in immediate termination of your account on our Service.
-      </p>
+        {/* Section 2 */}
+        <section>
+          <h2 className="text-xl font-semibold mb-3">2. User Eligibility</h2>
+          <p className="leading-relaxed">
+            You must be at least 13 years old (or the minimum legal age in your country) to use this App. By using the App, you represent and warrant that you meet this age requirement.
+          </p>
+        </section>
 
-      <h2>3. Prohibited Activities</h2>
-      <p>
-        You may not access or use the Service for any purpose other than that for which we make the Service available. As a user of the Service, you agree not to:
-      </p>
-      <ul>
-        <li>Systematically retrieve data or other content from the Service to create or compile, directly or indirectly, a collection, compilation, database, or directory without written permission from us.</li>
-        <li>Engage in any automated use of the system, such as using scripts to send comments or messages, or using any data mining, robots, or similar data gathering and extraction tools.</li>
-        <li>Harass, annoy, intimidate, or threaten any of our employees or agents engaged in providing any portion of the Service to you.</li>
-      </ul>
+        {/* Section 3 - Critical for Chat Apps */}
+        <section>
+          <h2 className="text-xl font-semibold mb-3">3. Acceptable Use & Conduct</h2>
+          <p className="mb-2">You agree not to use the App to:</p>
+          <ul className="list-disc pl-5 space-y-1">
+            <li>Harass, threaten, or intimidate other users.</li>
+            <li>Send spam, unsolicited advertisements, or malware.</li>
+            <li>Share illegal content or content that promotes violence and hate speech.</li>
+            <li>Impersonate others or provide false information.</li>
+          </ul>
+          <p className="mt-2 text-sm italic">
+            We reserve the right to ban users who violate these guidelines immediately.
+          </p>
+        </section>
 
-      <h2>4. Intellectual Property Rights</h2>
-      <p>
-        Unless otherwise indicated, the Service is our proprietary property and all source code, databases, functionality, software, website designs, audio, video, text, photographs, and graphics on the Service are owned or controlled by us or licensed to us, and are protected by copyright and trademark laws.
-      </p>
+        {/* Section 4 */}
+        <section>
+          <h2 className="text-xl font-semibold mb-3">4. User-Generated Content</h2>
+          <p className="leading-relaxed">
+            You retain ownership of the messages and media you send ("User Content"). However, by sending content, you grant us a non-exclusive license to transmit and store that content as necessary to provide the messaging service. We do not claim ownership of your data.
+          </p>
+        </section>
 
-      <h2>5. Termination</h2>
-      <p>
-        We may terminate or suspend your account immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms and Conditions.
-      </p>
+        {/* Section 5 */}
+        <section>
+          <h2 className="text-xl font-semibold mb-3">5. Privacy</h2>
+          <p className="leading-relaxed">
+            Your privacy is important to us. Please refer to our <a href="/privacy-policy" className="text-blue-600 hover:underline">Privacy Policy</a> to understand how we collect, use, and store your data.
+          </p>
+        </section>
 
-      <h2>6. Governing Law</h2>
-      <p>
-        These Terms shall be governed and construed in accordance with the laws of the jurisdiction in which the company is based, without regard to its conflict of law provisions.
-      </p>
-      
-      <h2>7. Contact Us</h2>
-      <p>
-        If you have any questions about these Terms, please contact us.
-      </p>
+        {/* Section 6 */}
+        <section>
+          <h2 className="text-xl font-semibold mb-3">6. Termination</h2>
+          <p className="leading-relaxed">
+            We reserve the right to terminate or suspend your account at our sole discretion, without notice, for conduct that we believe violates these Terms or is harmful to other users, us, or third parties, or for any other reason.
+          </p>
+        </section>
+
+        {/* Section 7 */}
+        <section>
+          <h2 className="text-xl font-semibold mb-3">7. Disclaimers & Limitation of Liability</h2>
+          <p className="leading-relaxed">
+            The App is provided on an "AS IS" and "AS AVAILABLE" basis. We do not guarantee that the service will be uninterrupted or error-free. To the fullest extent permitted by law, [Your Company/Name] shall not be liable for any indirect, incidental, or consequential damages arising from your use of the App.
+          </p>
+        </section>
+
+        {/* Section 8 */}
+        <section>
+          <h2 className="text-xl font-semibold mb-3">8. Contact Us</h2>
+          <p className="leading-relaxed">
+            If you have any questions about these Terms, please contact us at: <br />
+            <strong>Email:</strong> 226mayankkle@gmail.com
+          </p>
+        </section>
+      </div>
     </div>
   );
-}
+};
+
+export default TermsAndConditionsPage;

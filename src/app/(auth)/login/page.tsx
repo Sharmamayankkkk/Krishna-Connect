@@ -1,7 +1,7 @@
-
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Icons } from '@/components/icons';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Terminal, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 import React, { useState } from 'react';
 import { createClient } from '@/lib/utils';
 
@@ -35,13 +35,12 @@ export default function LoginPage() {
       email,
       password,
     });
-
     if (error) {
       setError(error.message);
     } else {
       const next = searchParams.get('next');
       router.push(next || '/');
-      router.refresh(); 
+      router.refresh();
     }
   };
 
@@ -59,87 +58,151 @@ export default function LoginPage() {
   };
 
   return (
-    <Card className="mx-auto w-full max-w-sm">
-      <CardHeader className="text-center">
-        <div className="mb-4 flex justify-center">
-            <Icons.logo className="h-12 w-12 text-primary" />
-        </div>
-        <CardTitle className="text-xl sm:text-2xl font-bold">Welcome back to Krishna Connect</CardTitle>
-        <CardDescription>Enter your credentials to access your account.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleLogin} className="space-y-4">
-          {error && (
-              <Alert variant="destructive">
+    <div
+      className="relative min-h-screen w-full flex flex-col lg:flex-row items-center justify-center bg-cover bg-center"
+      style={{ backgroundImage: "url(/background/c2.png)" }}
+    >
+      <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/50 to-background/70 lg:bg-gradient-to-r lg:from-transparent lg:via-transparent lg:to-background/50" />
+
+      {/* Form Wrapper */}
+      <div className="relative z-10 w-full lg:w-1/2 flex items-center justify-center p-2">
+        <Card className="w-full max-w-md border-0 shadow-none bg-transparent lg:bg-card lg:shadow-lg lg:border">
+          <CardHeader className="text-center space-y-4">
+            <div className="flex justify-center lg:hidden mb-2">
+              <Icons.logo className="h-16 w-16 text-primary" />
+            </div>
+          </CardHeader>
+
+          <CardContent>
+            <form onSubmit={handleLogin} className="space-y-4">
+              {error && (
+                <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
                   <AlertTitle>Login Failed</AlertTitle>
-                  <AlertDescription>
-                      {error}
-                  </AlertDescription>
-              </Alert>
-          )}
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input 
-              id="email" 
-              type="email" 
-              placeholder="krishna@connect.com" 
-              required 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              />
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center">
-              <Label htmlFor="password">Password</Label>
-              <Link href="/forgot-password" className="ml-auto inline-block text-sm underline">
-                Forgot your password?
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+              
+              {/* FIXED: Email Field with proper floating label */}
+              <div className="relative">
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder=" "
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="peer pt-6 pb-2"
+                />
+                <Label
+                  htmlFor="email"
+                  className={`absolute left-3 transition-all pointer-events-none ${
+                    email
+                      ? 'top-1 scale-75 text-sm text-primary'
+                      : 'top-1/2 -translate-y-1/2 scale-100 text-muted-foreground'
+                  }`}
+                >
+                  Email
+                </Label>
+              </div>
+
+              {/* FIXED: Password Field with proper floating label */}
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder=" "
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="peer pr-10 pt-6 pb-2"
+                />
+                <Label
+                  htmlFor="password"
+                  className={`absolute left-3 transition-all pointer-events-none ${
+                    password
+                      ? 'top-1 scale-75 text-sm text-primary'
+                      : 'top-1/2 -translate-y-1/2 scale-100 text-muted-foreground'
+                  }`}
+                >
+                  Password
+                </Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowPassword(prev => !prev)}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  <span className="sr-only">Toggle password visibility</span>
+                </Button>
+              </div>
+
+              {/* "Forgot password?" link */}
+              <div className="flex justify-end -mt-2">
+                <Link
+                  href="/forgot-password"
+                  className="text-sm text-gray-800 hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+
+              <Button type="submit" className="w-full" size="lg">
+                Sign In
+              </Button>
+            </form>
+
+            <div className="flex items-center my-6">
+              <span className="flex-1 border-t" />
+              <span className="mx-4 text-xs uppercase text-gray-500">
+                Or continue with
+              </span>
+              <span className="flex-1 border-t" />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Button
+                variant="outline"
+                onClick={() => handleOAuthLogin('google')}
+              >
+                <Icons.google className="mr-2 h-4 w-4" />
+                Google
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => handleOAuthLogin('facebook')}
+              >
+                <Icons.facebook className="mr-2 h-4 w-4" />
+                Facebook
+              </Button>
+            </div>
+
+            <div className="mt-6 text-center text-sm">
+              Don&apos;t have an account?{' '}
+              <Link
+                href="/signup"
+                className="font-medium text-blue-700 hover:underline"
+              >
+                Sign up
               </Link>
             </div>
-            <div className="relative">
-                <Input 
-                    id="password" 
-                    type={showPassword ? 'text' : 'password'} 
-                    required 
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                />
-                <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground"
-                    onClick={() => setShowPassword(prev => !prev)}
-                    >
-                    {showPassword ? <EyeOff /> : <Eye />}
-                    <span className="sr-only">Toggle password visibility</span>
-                </Button>
-            </div>
-          </div>
-          <Button type="submit" className="w-full">
-            Login
-          </Button>
-        </form>
-        <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-            </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-            <Button variant="outline" onClick={() => handleOAuthLogin('google')}><Icons.google className="mr-2 h-4 w-4"/>Google</Button>
-            <Button variant="outline" onClick={() => handleOAuthLogin('facebook')}><Icons.facebook className="mr-2 h-4 w-4"/>Facebook</Button>
-        </div>
+          </CardContent>
+        </Card>
+      </div>
 
-        <div className="mt-4 text-center text-sm">
-          Don&apos;t have an account?{' '}
-          <Link href="/signup" className="underline">
-            Sign up
-          </Link>
-        </div>
-      </CardContent>
-    </Card>
+      {/* Image Wrapper */}
+      <div className="relative z-10 w-full lg:w-1/2 flex items-center justify-center mt-6 lg:mt-0">
+        <Image
+          src="/background/c1.png"
+          alt="Krishna and gopas"
+          width={1000}
+          height={600}
+          className="object-contain rounded-lg w-full max-w-lg"
+          priority
+        />
+      </div>
+    </div>
   );
 }

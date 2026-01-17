@@ -1,110 +1,25 @@
-'use client';
+import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Icons } from "@/components/icons"
+import { SidebarTrigger } from "@/components/ui/sidebar"
 
-import { useState } from 'react';
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { dummyPosts, PostType, CommentType } from '../data';
-import { PostCard } from '../components/post-card';
-import { Separator } from "@/components/ui/separator";
-import { CreatePost } from '../components/create-post';
-import { useAppContext } from '@/providers/app-provider';
-import { ScrollArea } from '@/components/ui/scroll-area';
-
-export default function PostsFeedPage() {
-  const { loggedInUser } = useAppContext();
-  const [posts, setPosts] = useState<PostType[]>(dummyPosts);
-
-  const handlePostCreated = (content: string) => {
-    if (!loggedInUser) return;
-
-    const newPost: PostType = {
-      id: `post_${Date.now()}`,
-      author: {
-        id: loggedInUser.id,
-        name: loggedInUser.name,
-        username: loggedInUser.username,
-        avatar: loggedInUser.avatar_url,
-      },
-      createdAt: new Date().toISOString(),
-      content: content,
-      media: [],
-      stats: { comments: 0, reshares: 0, likes: 0, views: 0 },
-      comments: [],
-    };
-
-    setPosts(prevPosts => [newPost, ...prevPosts]);
-  };
-
-  const handleCommentCreated = (postId: string, commentText: string, parentCommentId?: string) => {
-    if (!loggedInUser) return;
-
-    let finalCommentText = commentText;
-    
-    if (parentCommentId) {
-        const post = posts.find(p => p.id === postId);
-        const parentComment = post?.comments.find(c => c.id === parentCommentId);
-        if (parentComment) {
-            finalCommentText = `@${parentComment.user.username} ${commentText}`;
-        }
-    }
-    
-    const newComment: CommentType = {
-        id: `comment_${Date.now()}`,
-        user: {
-            id: loggedInUser.id,
-            name: loggedInUser.name,
-            username: loggedInUser.username,
-            avatar: loggedInUser.avatar_url
-        },
-        text: finalCommentText,
-        isPinned: false,
-        likes: 0
-    };
-
-    setPosts(prevPosts => 
-        prevPosts.map(post => {
-            if (post.id === postId) {
-                const pinnedComment = post.comments.find(c => c.isPinned);
-                const otherComments = post.comments.filter(c => !c.isPinned);
-                return {
-                    ...post,
-                    comments: pinnedComment ? [pinnedComment, newComment, ...otherComments] : [newComment, ...post.comments],
-                    stats: {
-                        ...post.stats,
-                        comments: post.stats.comments + 1
-                    }
-                };
-            }
-            return post;
-        })
-    );
-  };
-
-
+export default function ChatHomePage() {
   return (
-    <div className="flex h-full flex-col">
-       <header className="flex items-center gap-4 p-4 border-b bg-background sticky top-0 z-10">
-        <SidebarTrigger className="md:hidden" />
-        <h2 className="text-xl font-bold tracking-tight">Home</h2>
+    <div className="flex flex-col h-full">
+      <header className="flex items-center p-2 border-b gap-2 md:hidden">
+        <SidebarTrigger />
+        <h1 className="font-semibold text-lg">Krishna Connect</h1>
       </header>
-      <ScrollArea className="flex-1">
-        <div className="p-4 border-b">
-           <CreatePost onPostCreated={handlePostCreated} />
-        </div>
-
-        <div>
-            {posts.map((post, index) => (
-                <div key={post.id}>
-                    <PostCard post={post} onComment={handleCommentCreated} />
-                    {index < posts.length - 1 && <Separator />}
-                </div>
-            ))}
-        </div>
-
-         {/* Placeholder for infinite scroll loader */}
-        <div className="p-4 text-center text-muted-foreground">
-            Loading more posts...
-        </div>
-      </ScrollArea>
+      <div className="flex flex-1 items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md text-center border-0 shadow-none">
+          <CardHeader>
+            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Icons.logo className="h-10 w-10" />
+            </div>
+            <CardTitle className="text-2xl font-bold">Welcome to Krishna Connect</CardTitle>
+            <CardDescription>Select a chat from the sidebar to start messaging, or create a new one.</CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
     </div>
   )
 }

@@ -3,23 +3,43 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { MessageSquare, Calendar, Users, Compass } from 'lucide-react'
+import { MessageSquare, Calendar, Users, Compass, Bell, LayoutDashboard, Trophy } from 'lucide-react'
 import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
 } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
+import { Badge } from '@/components/ui/badge'
 
 export function MainNav() {
   const pathname = usePathname()
+  const unreadCount = 5; // Placeholder for unread notifications
 
   const menuItems = [
+    {
+      href: '/explore',
+      label: 'Explore',
+      icon: Users,
+      isActive: pathname.startsWith('/explore') || pathname === '/',
+    },
     {
       href: '/chat',
       label: 'Chats',
       icon: MessageSquare,
-      isActive: pathname.startsWith('/chat') || pathname === '/',
+      isActive: pathname.startsWith('/chat'),
+    },
+    {
+      href: '/moodboard',
+      label: 'Moodboard',
+      icon: LayoutDashboard,
+      isActive: pathname.startsWith('/moodboard'),
+    },
+    {
+      href: '/challenges',
+      label: 'Challenges',
+      icon: Trophy,
+      isActive: pathname.startsWith('/challenges'),
     },
     {
       href: '/status',
@@ -28,17 +48,17 @@ export function MainNav() {
       isActive: pathname.startsWith('/status'),
     },
     {
+      href: '/notifications',
+      label: 'Notifications',
+      icon: Bell,
+      isActive: pathname.startsWith('/notifications'),
+    },
+    {
       href: '/events',
       label: 'Events',
       icon: Calendar,
       isActive: pathname.startsWith('/events'),
-    },
-    {
-      href: '/explore',
-      label: 'Explore KCS',
-      icon: Users,
-      isActive: pathname.startsWith('/explore'),
-    },
+    }
   ]
 
   return (
@@ -51,9 +71,12 @@ export function MainNav() {
                 isActive={item.isActive}
                 className="w-full justify-start text-sm font-medium h-11"
               >
-                <Link href={item.href}>
+                <Link href={item.href} className="flex items-center">
                   <item.icon className="h-5 w-5 mr-3" />
                   <span>{item.label}</span>
+                  {item.href === '/notifications' && unreadCount > 0 && (
+                    <Badge className="ml-auto">{unreadCount}</Badge>
+                  )}
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

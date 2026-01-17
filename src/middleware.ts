@@ -42,12 +42,14 @@ export async function middleware(request: NextRequest) {
     '/auth/callback',
     '/terms-and-conditions',
     '/privacy-policy',
-    '/sitemap.xml'
+    '/sitemap.xml',
+    '/contact-us',
+    '/developers'
   ];
   
   // Check if the current path is a public route or an API/join route
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
-  if (isPublicRoute || pathname.startsWith('/api') || pathname.startsWith('/join/')) {
+  if (isPublicRoute || pathname.startsWith('/api') || pathname.startsWith('/join/') || pathname.startsWith('/.well-known/')) {
     return response;
   }
   
@@ -75,7 +77,7 @@ export async function middleware(request: NextRequest) {
   
   // If profile is complete, redirect away from auth pages to the main app
   if (isProfileComplete && (pathname === '/login' || pathname === '/signup' || pathname === '/complete-profile')) {
-    return NextResponse.redirect(new URL('/chat', request.url));
+    return NextResponse.redirect(new URL('/explore', request.url));
   }
 
   return response
@@ -90,6 +92,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - and files with common image/asset extensions
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"
   ],
 }

@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { cn } from "@/lib/utils"
+import Script from "next/script"
 import { Providers } from "../providers/providers"
 import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/next"
@@ -36,8 +37,8 @@ export const metadata: Metadata = {
     telephone: false,
   },
   icons: {
-    icon: '/logo/light_KCS.png',
-    apple: '/logo/light_KCS.png',
+    icon: '/logo/light_KCS.svg',
+    apple: '/logo/light_KCS.svg',
   },
   openGraph: {
     type: "website",
@@ -50,7 +51,7 @@ export const metadata: Metadata = {
     description: APP_DESCRIPTION,
     images: [
       {
-        url: `${APP_URL}/logo/light_KCS.png`,
+        url: `${APP_URL}/logo/light_KCS.svg`,
         width: 512,
         height: 512,
         alt: 'Krishna Connect Logo'
@@ -65,8 +66,11 @@ export const metadata: Metadata = {
     },
     description: APP_DESCRIPTION,
     images: [
-       `${APP_URL}/logo/light_KCS.png`,
+       `${APP_URL}/logo/light_KCS.svg`,
     ]
+  },
+  other: {
+    "google-adsense-account": process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID!,
   },
 };
 
@@ -83,6 +87,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={cn("font-sans antialiased", inter.variable)}>
+        <Script
+          id="adsbygoogle-script"
+          async
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID}`}
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
         <Providers>{children}</Providers>
         <SpeedInsights />
         <Analytics />

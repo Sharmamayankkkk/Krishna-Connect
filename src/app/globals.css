@@ -64,9 +64,7 @@
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
+  /* The problematic universal selector has been removed. */
   body {
     @apply bg-background text-foreground;
   }

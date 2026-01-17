@@ -2,7 +2,7 @@
 'use client';
 
 import Link from "next/link";
-import { MoreHorizontal, Star } from "lucide-react";
+import { MoreHorizontal, BarChart3, Bookmark } from "lucide-react";
 
 import {
   Avatar,
@@ -69,20 +69,21 @@ export function UserMenu() {
                 <Link href="/profile">
                   <DropdownMenuItem>Profile</DropdownMenuItem>
                 </Link>
-                <Link href="/starred">
+                <Link href="/bookmarks">
                   <DropdownMenuItem>
-                    <Star className="mr-2 h-4 w-4" />
-                    <span>Starred Messages</span>
+                    <Bookmark className="mr-2 h-4 w-4" />
+                    <span>Bookmarks</span>
+                  </DropdownMenuItem>
+                </Link>
+                <Link href="/analytics">
+                  <DropdownMenuItem>
+                    <BarChart3 className="mr-2 h-4 w-4" />
+                    <span>Analytics</span>
                   </DropdownMenuItem>
                 </Link>
                 <Link href="/settings">
                   <DropdownMenuItem>Settings</DropdownMenuItem>
                 </Link>
-                {loggedInUser.is_admin && (
-                  <Link href="/admin">
-                    <DropdownMenuItem>Admin Panel</DropdownMenuItem>
-                  </Link>
-                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
                 <DropdownMenuSeparator />

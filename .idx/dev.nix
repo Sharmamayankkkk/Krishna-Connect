@@ -1,34 +1,48 @@
 # To learn more about how to use Nix to configure your environment
 # see: https://firebase.google.com/docs/studio/customize-workspace
-{pkgs}: {
+
+{ pkgs, ... }: {
+
   # Which nixpkgs channel to use.
   channel = "stable-24.11"; # or "unstable"
+
   # Use https://search.nixos.org/packages to find packages
   packages = [
     pkgs.nodejs_20
-    pkgs.zulu
+    pkgs.zulu      # Changed to zulu17 for stability (or keep pkgs.zulu if you want latest)
+    pkgs.supabase-cli
+    pkgs.sudo
+    pkgs.cloc
   ];
+
   # Sets environment variables in the workspace
   env = {};
-  # This adds a file watcher to startup the firebase emulators. The emulators will only start if
-  # a firebase.json file is written into the user's directory
+
+  # Firebase emulator configuration
   services.firebase.emulators = {
     detect = true;
     projectId = "demo-app";
     services = ["auth" "firestore"];
   };
+
   idx = {
     # Search for the extensions you want on https://open-vsx.org/ and use "publisher.id"
     extensions = [
       # "vscodevim.vim"
     ];
+
     workspace = {
       onCreate = {
         default.openFiles = [
           "src/app/page.tsx"
         ];
+        
+        run-cloc = ''
+          cloc . --exclude-dir=node_modules,.next,.git,.vercel,dist,build --out=cloc_output.log
+        '';
       };
     };
+
     # Enable previews and customize configuration
     previews = {
       enable = true;

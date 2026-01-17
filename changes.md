@@ -1,0 +1,103 @@
+# File Changes
+
+## Modified Files
+
+- .idx/dev.nix
+- .vscode/settings.json
+- README.md
+- SYNOPSIS.md
+- next.config.js
+- package-lock.json
+- package.json
+- providers/app-provider.tsx
+- public/manifest.json
+- public/service-worker.js
+- src/app/(app)/chat/page.tsx
+- src/app/(app)/components/chat-layout.tsx
+- src/app/(app)/components/create-post.tsx
+- src/app/(app)/components/main-nav.tsx
+- src/app/(app)/components/post-card.tsx
+- src/app/(app)/components/user-menu.tsx
+- src/app/(app)/data.ts
+- src/app/(app)/events/components/create-event-dialog.tsx
+- src/app/(app)/events/page.tsx
+- src/app/(app)/explore/page.tsx
+- src/app/(app)/layout.tsx
+- src/app/(app)/page.tsx
+- src/app/(app)/profile/[username]/page.tsx
+- src/app/(auth)/complete-profile/page.tsx
+- src/app/(auth)/layout.tsx
+- src/app/(auth)/login/page.tsx
+- src/app/globals.css
+- src/app/layout.tsx
+- src/components/icons.tsx
+- src/lib/types.ts
+- src/middleware.ts
+- src/providers/app-provider.tsx
+- supabase/functions.sql
+- supabase/schema.sql
+
+## Deleted Files
+
+- middleware.ts
+- src/app/(app)/settings/communication-permissions.tsx
+- src/app/admin/components/dm-request-management.tsx
+- src/app/admin/components/overview.tsx
+- src/app/admin/components/report-management.tsx
+- src/app/admin/components/user-management.tsx
+- src/app/admin/layout.tsx
+- src/app/admin/page.tsx
+
+## Untracked Files
+
+- .vscode/extensions.json
+- Analysis.md
+- a.log
+- analysis.md
+- analysis2.md
+- public/.well-known/apple-app-site-association
+- public/.well-known/assetlinks.json
+- public/ads.txt
+- public/background/c.png
+- public/background/c1.png
+- public/background/c2.png
+- public/background/login.jpg
+- public/logo/krishna_connect.png
+- public/logo/light_KCS.svg
+- public/user_Avatar/verified.png
+- src/app/(app)/analytics/page.tsx
+- src/app/(app)/bookmarks/page.tsx
+- src/app/(app)/challenges/page.tsx
+- src/app/(app)/components/app-shell.tsx
+- src/app/(app)/components/collaborative-post-dialog.tsx
+- src/app/(app)/components/post-detail-dialog.tsx
+- src/app/(app)/feed-algorithm.ts
+- src/app/(app)/lists/page.tsx
+- src/app/(app)/live/[id]/page.tsx
+- src/app/(app)/memories/page.tsx
+- src/app/(app)/moodboard/components/add-item-dialog.tsx
+- src/app/(app)/moodboard/page.tsx
+- src/app/(app)/nft/page.tsx
+- src/app/(app)/notifications/page.tsx
+- src/app/(app)/profile/[username]/components/follow-button.tsx
+- src/app/(app)/profile/[username]/components/profile-view.tsx
+- src/app/(app)/profile/[username]/components/user-card.tsx
+- src/app/(app)/profile/mock/page.tsx
+- src/app/(app)/profile/private/page.tsx
+- src/app/(app)/settings/privacy/page.tsx
+- src/app/(app)/settings/promotions/page.tsx
+- src/app/(app)/settings/security/page.tsx
+- src/app/(app)/spaces/[id]/page.tsx
+- src/components/ads/google-ad.tsx
+- src/components/ar-filter.tsx
+- src/components/image-editor.tsx
+- src/components/promote-post-dialog.tsx
+- src/types/database.ts
+- src/types/index.ts
+- supabase/features.sql
+- supabase/followers.sql
+- supabase/get_challenges.sql
+- supabase/posts.sql
+- supabase/profile_functions.sql
+- supabase/profile_tabs_functions.sql
+- vercel.json

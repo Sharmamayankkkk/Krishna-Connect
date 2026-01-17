@@ -17,7 +17,7 @@ import { ChatList } from "./chat-list"
 import { MainNav } from "./main-nav"
 
 interface ChatLayoutProps {
-  chats: Chat[]
+  chats: Chat[],
   children: React.ReactNode
 }
 
@@ -25,7 +25,7 @@ interface ChatLayoutProps {
 // It creates the two-column structure with the sidebar on the left and the main content on the right.
 export function ChatLayout({ chats, children }: ChatLayoutProps) {
   return (
-    <div className="flex h-svh w-full">
+    <>
       {/* This is the sidebar component from our UI library. */}
       <Sidebar className="flex flex-col border-r">
         {/* The header of the sidebar, containing the logo and app name. */}
@@ -54,8 +54,7 @@ export function ChatLayout({ chats, children }: ChatLayoutProps) {
            <UserMenu />
         </SidebarFooter>
       </Sidebar>
-      {/* This is where the main content of the page (like the chat window) will be rendered. */}
       <main className="flex-1 overflow-y-auto">{children}</main>
-    </div>
+    </>
   )
 }

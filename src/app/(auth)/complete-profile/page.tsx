@@ -34,51 +34,72 @@ export default function CompleteProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUser = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-            router.push('/login');
-            return;
-        }
+    const fetchOrCreateProfile = async () => {
+      setIsLoading(true);
+      setError(null);
 
-        let profile = null;
-        let profileError = null;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push('/login');
+        return;
+      }
 
-        for (let attempt = 1; attempt <= 3; attempt++) {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', user.id)
-                .single();
-            
-            if (data) {
-                profile = data;
-                profileError = null;
-                break;
-            }
-            profileError = error;
-            await new Promise(res => setTimeout(res, 300 * attempt));
-        }
-        
-        if (profileError || !profile) {
-            setError("Could not fetch your profile. Please try logging in again.");
-            setIsLoading(false);
-            console.error("Failed to fetch profile after multiple attempts:", profileError);
-            return;
-        }
+      // 1. Check for an existing profile
+      const { data: existingProfile, error: fetchError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
 
-        if (profile.username) {
-            router.push('/chat');
-            return;
+      if (fetchError && fetchError.code !== 'PGRST116') { // PGRST1116 is "No rows found"
+        setError("Could not fetch your profile. Please try logging in again.");
+        console.error("Error fetching profile:", fetchError);
+        setIsLoading(false);
+        return;
+      }
+      
+      let profile = existingProfile;
+
+      // 2. If no profile, create one
+      if (!profile) {
+        const { data: newProfile, error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            email: user.email,
+            name: user.user_metadata.name, // from provider
+            avatar_url: user.user_metadata.avatar_url, // from provider
+          })
+          .select()
+          .single();
+
+        if (insertError) {
+          setError("Failed to create your profile. Please try logging in again.");
+          console.error("Error creating profile:", insertError);
+          setIsLoading(false);
+          return;
         }
-        
+        profile = newProfile;
+      }
+
+      // 3. By now, a profile should exist. Check if it's complete.
+      if (profile && profile.username) {
+        router.push('/chat');
+        return;
+      }
+
+      // 4. If incomplete, populate the form
+      if (profile) {
         setUser(profile as User);
         setName(profile.name || user.user_metadata.name || '');
         setUsername(profile.username || '');
         setGender(profile.gender || 'male');
-        setIsLoading(false);
+      }
+      
+      setIsLoading(false);
     };
-    fetchUser();
+
+    fetchOrCreateProfile();
   }, [router, supabase]);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {

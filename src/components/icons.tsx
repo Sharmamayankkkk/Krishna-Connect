@@ -5,11 +5,11 @@ import { cn } from "@/lib/utils";
 const Logo = (props: React.HTMLAttributes<HTMLDivElement>) => (
   <div {...props} className={cn("relative", props.className)}>
     <Image
-      src="/logo/light_KCS.png"
+      src="/logo/krishna_connect.png"
       alt="Krishna Connect Logo"
       fill
       sizes="10vw"
-      className="block dark:hidden object-contain"
+      className="block dark:hidden object-contain mix-blend-multiply"
       priority
     />
     <Image

@@ -1,6 +1,3 @@
-
-
-// Matches public.profiles table
 export type User = {
   id: string; // uuid
   avatar_url: string;
@@ -11,6 +8,20 @@ export type User = {
   bio?: string;
   role?: 'user' | 'admin' | 'gurudev';
   is_admin: boolean;
+  is_private?: boolean;
+  is_verified?: boolean;
+};
+
+export type Post = {
+  id: number | string;
+  author_id: string;
+  created_at: string;
+  image_url?: string | null;
+  content?: string | null;
+  stats?: {
+    likes?: number;
+    comments?: number;
+  };
 };
 
 export type Reaction = {

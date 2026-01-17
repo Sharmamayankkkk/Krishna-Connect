@@ -16,7 +16,7 @@ export default function AppHome() {
     if (isReady) {
       // If user is authenticated, redirect to chat
       if (loggedInUser) {
-        router.replace("/chat")
+        router.replace("/explore")
       } else {
         // If not authenticated, redirect to login
         router.replace("/login")

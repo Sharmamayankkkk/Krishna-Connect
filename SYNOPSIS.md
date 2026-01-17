@@ -20,9 +20,9 @@ The primary objectives of Krishna Connect are:
 - **To Foster Community:** Create a centralized platform for devotees to connect, communicate, and build strong, supportive relationships.
 - **To Facilitate Communication:** Provide robust real-time messaging features, including one-on-one DMs, group chats (Circles), and channels for announcements.
 - **To Enhance User Experience:** Deliver a beautiful, intuitive, and highly performant user interface that is both a joy to use and customizable to individual preferences.
-- **To Ensure a Safe & Sacred Space:** Implement features like moderated DM requests, user reporting, and admin controls to maintain a respectful and secure environment.
-- **To Support Community Activities:** Integrate features for organizing and managing events, from online lectures to local meetups.
-- **To Be Extensible:** Build upon a modern, scalable tech stack that allows for future feature development and community growth, including Generative AI enhancements.
+- **To Ensure a Safe & Sacred Space:** Implement features like user reporting to maintain a respectful and secure environment.
+- **To Support Community Activities:** Integrate features for organizing and managing events, with special permissions for "Verified Users."
+- **To Be Extensible:** Build upon a modern, scalable tech stack that allows for future feature development and community growth.
 
 ---
 
@@ -34,11 +34,10 @@ The scope of the project defines its boundaries, outlining what is included and 
 - **Real-Time Messaging:** One-on-one and group chats with typing indicators, read receipts, and online status.
 - **Rich Media:** Sharing of images, documents, and voice notes.
 - **Message Interactions:** Reactions, replies, editing, deleting, forwarding, and starring messages.
-- **Advanced Features:** Text formatting, link previews, `@mentions`, and pinned messages.
+- **Advanced Features:** Text formatting, link previews, and `@mentions`.
 - **Customization:** Light/dark modes and customizable chat appearance (bubble colors, wallpapers).
-- **Community Management:** Admin panel for user management, DM request moderation, and group administration.
-- **Event System:** Creation, RSVP, and sharing of community events.
-- **AI Features:** Integration of Genkit for AI-powered translation.
+- **Community Management:** Democratized group creation and user-powered reporting.
+- **Event System:** Creation of events by "Verified Users," with open RSVP for all community members.
 
 #### **Out-of-Scope (for the current version):**
 - **Live Video/Audio Calls:** While planned for the future, real-time video/audio calling is not part of the initial scope.
@@ -52,7 +51,7 @@ The scope of the project defines its boundaries, outlining what is included and 
 The project follows an **Agile development methodology**, characterized by iterative development cycles.
 1.  **Requirement Gathering:** Features are defined based on the core needs of a spiritual community and inspired by best practices from modern chat applications.
 2.  **Design & Prototyping:** User interface and experience are designed using a component-based approach with ShadCN UI and Figma mockups.
-3.  **Development Sprints:** Development is broken down into small, manageable tasks. The front end (Next.js) and back end (Supabase, Genkit) are developed in parallel.
+3.  **Development Sprints:** Development is broken down into small, manageable tasks. The front end (Next.js) and back end (Supabase) are developed in parallel.
 4.  **Database-First Approach:** The database schema is designed first in Supabase, with security rules (RLS) being a primary consideration.
 5.  **Testing & QA:** Manual testing is performed at the end of each feature implementation to ensure functionality and identify bugs.
 6.  **Deployment:** The application is deployed on Vercel, leveraging its seamless integration with Next.js and serverless functions.
@@ -62,7 +61,6 @@ The project follows an **Agile development methodology**, characterized by itera
 
 ### **6. Tools & Technologies Used**
 - **Framework:** **Next.js 14** (App Router)
-- **AI Toolkit:** **Genkit** (for Generative AI)
 - **UI Library:** **React 18**
 - **UI Components:** **ShadCN UI**
 - **Styling:** **Tailwind CSS**
@@ -87,7 +85,6 @@ graph TD
 
     subgraph "Vercel"
         B[Next.js Frontend]
-        I[Genkit AI Serverless Functions]
     end
     
     subgraph "Supabase Cloud"
@@ -95,10 +92,6 @@ graph TD
         D[PostgreSQL Database]
         E[Realtime Engine]
         F[Storage]
-    end
-
-    subgraph "Google Cloud"
-        J[Gemini API]
     end
 
     subgraph "Third-Party OAuth"
@@ -111,9 +104,6 @@ graph TD
     B -- API Calls / SDK --> D
     B -- WebSocket Connection --> E
     B -- API Calls / SDK --> F
-    B -- API Calls --> I
-    
-    I -- API Call --> J
     
     C -- OAuth Handshake --> G
     C -- OAuth Handshake --> H
@@ -152,7 +142,6 @@ Upon completion, the project will deliver:
 - **A Fully Functional Web Application:** A responsive and performant chat application accessible from any modern web browser.
 - **Secure & Scalable Backend:** A complete backend system powered by Supabase, capable of handling authentication, data storage, and real-time communication for a growing user base.
 - **Comprehensive Feature Set:** All features listed in the "In-Scope" section will be implemented and functional.
-- **Intuitive Admin Panel:** A dedicated interface for administrators to manage the community effectively.
 - **Project Documentation:** Well-documented code, a detailed README, and this synopsis to facilitate maintenance and future development.
 
 ---
@@ -166,14 +155,11 @@ Upon completion, the project will deliver:
   - Addition of rich media (images, files, voice notes).
   - Implementation of message replies, reactions, editing, and deleting.
   - UI/UX improvements, including theme customization.
-- **Phase 3: Community & Moderation (Completed)**
-  - Development of the Events system.
-  - Creation of the Admin Panel for user and DM request management.
-  - Implementation of user blocking and reporting systems.
-- **Phase 4: AI & Final Polish (In Progress)**
-  - Integration of Genkit for AI features.
-  - Performance optimization and bug fixing.
-- **Phase 5: Future Growth (Future)**
+- **Phase 3: Democratization & Refinement (Completed)**
+  - Removal of all admin-related code and UI.
+  - Democratization of features like group creation.
+  - Introduction of the "Verified User" role for event creation.
+- **Phase 4: Future Growth (Future)**
   - Exploration of native mobile app development.
   - Integration of real-time audio/video calls.
 
