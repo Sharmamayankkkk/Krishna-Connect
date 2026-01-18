@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { notFound, useParams, useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -11,9 +11,16 @@ import { ArrowLeft, Loader2, MessageSquare, Repeat2, Heart, BarChart2, Upload, M
 import { PostCard, PostSkeleton } from '../../explore/components/post-card';
 import { CreatePost } from '../../explore/components/create-post';
 import { Separator } from '@/components/ui/separator';
-import { Post, Comment } from '@/lib';
-import { createClient } from '@/lib/utils';
+import { Post, Comment, Media } from '@/lib'; 
+import { createClient, cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { PollComponent } from '../../explore/components/poll-component';
+import { ImageViewerDialog } from '../../chat/components/image-viewer';
+import { QuotedPostCard } from '../../explore/components/quoted-post-card';
+import { format } from 'date-fns';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import Link from 'next/link';
+import Image from 'next/image';
 
 const POST_QUERY = `
   id,
@@ -38,13 +45,57 @@ const POST_QUERY = `
   likes:post_likes (user_id),
   reposts:post_reposts (user_id)
 `;
-// --- END ---
 
-// This is the main detail card for the post
-function PostDetailCard({ post }: { post: Post }) {
-  const { loggedInUser, togglePostLike, repostPost, openQuoteDialog } = useAppContext();
+// --- Helper: Media Gallery for Single Post ---
+function MediaGallery({ media, onImageClick }: { media: Media[], onImageClick: (url: string) => void }) {
+  if (!media || media.length === 0) return null;
   
-  // These are copied from PostCard
+  const images = media.filter(m => m.type.startsWith('image'));
+  if (images.length === 0) return null;
+
+  return (
+    <div 
+      className={cn(
+        "grid gap-1.5 mt-3 border rounded-xl overflow-hidden",
+        images.length === 1 ? "grid-cols-1" : "grid-cols-2",
+        images.length === 3 ? "grid-rows-2" : "",
+        images.length === 4 ? "grid-rows-2" : ""
+      )}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {images.map((img, index) => (
+        <button 
+          key={index}
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            onImageClick(img.url);
+          }}
+          className={cn(
+            "relative aspect-video w-full",
+            images.length === 3 && index === 0 ? "row-span-2 h-full" : "h-full",
+          )}
+        >
+          <Image
+            src={img.url}
+            alt="Post media"
+            fill
+            className="object-cover"
+          />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// --- Main Detail Card for the Post ---
+function PostDetailCard({ post, onCommentClick }: { post: Post, onCommentClick: () => void }) {
+  const { loggedInUser, togglePostLike, repostPost, openQuoteDialog, deletePost } = useAppContext();
+  const { toast } = useToast();
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+  const [imageViewerSrc, setImageViewerSrc] = useState('');
+  const router = useRouter();
+  
   const isLiked = useMemo(() => {
     if (!loggedInUser) return false;
     return post.likes.includes(loggedInUser.id);
@@ -76,64 +127,183 @@ function PostDetailCard({ post }: { post: Post }) {
     e.preventDefault();
     openQuoteDialog(post);
   };
+
+  const handleDelete = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      e.preventDefault();
+      if (typeof post.id === 'number') {
+        deletePost(post.id);
+        router.back();
+      }
+  };
   
-  // We'll just re-use the PostCard for now.
-  // We can build a more detailed card later.
-  return <PostCard post={post} />;
+  const isAuthor = loggedInUser?.id === post.author.id;
+  
+  return (
+     <>
+      <ImageViewerDialog
+        open={isImageViewerOpen}
+        onOpenChange={setIsImageViewerOpen}
+        src={imageViewerSrc}
+        title="Post Media"
+      />
+      
+      <div className="p-4 border-b">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Link href={`/profile/${post.author.username}`} onClick={(e) => e.stopPropagation()}>
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={post.author.avatar_url} alt={post.author.name} />
+                  <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+              </Link>
+              <div className="flex flex-col">
+                  <Link href={`/profile/${post.author.username}`} onClick={(e) => e.stopPropagation()} className="group flex items-center gap-1">
+                    <span className="font-semibold hover:underline truncate">
+                      {post.author.name}
+                    </span>
+                    {post.author.verified && (
+                        <Image
+                          src="/user_Avatar/verified.png"
+                          alt="Verified"
+                          width={16}
+                          height={16}
+                          className="ml-1 inline-block"
+                        />
+                    )}
+                  </Link>
+                  <span className="text-sm text-muted-foreground truncate">
+                    @{post.author.username}
+                  </span>
+              </div>
+            </div>
+            
+            {isAuthor && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem className="text-destructive" onClick={handleDelete}>
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      <span>Delete Post</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+            )}
+        </div>
+        
+        {/* Content */}
+        {post.content && (
+          <p className="whitespace-pre-wrap text-foreground/90 mt-4 text-lg break-words">
+            {post.content}
+          </p>
+        )}
+        
+        {post.media_urls && <MediaGallery media={post.media_urls} onImageClick={(url) => {
+          setImageViewerSrc(url);
+          setIsImageViewerOpen(true);
+        }} />}
+        
+        {post.poll && <PollComponent post={post} />}
+        
+        {post.quote_of && (
+          <QuotedPostCard post={post.quote_of} />
+        )}
+
+        {/* Timestamp */}
+        <div className="text-sm text-muted-foreground mt-4 border-b pb-4">
+          {format(new Date(post.created_at), 'h:mm a · MMM d, yyyy')}
+        </div>
+        
+        {/* Stats */}
+        <div className="flex items-center gap-4 mt-4 border-b pb-4">
+            <span className="text-sm">
+                <strong className="text-foreground">{post.stats.reposts + post.stats.quotes}</strong> Reposts
+            </span>
+            <span className="text-sm">
+                <strong className="text-foreground">{post.stats.likes}</strong> Likes
+            </span>
+             <span className="text-sm">
+                <strong className="text-foreground">{post.stats.comments}</strong> Comments
+            </span>
+        </div>
+        
+        {/* Action Buttons */}
+        <div className="flex items-center justify-around mt-2 text-muted-foreground">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="flex items-center gap-2 text-sm hover:text-primary"
+            onClick={onCommentClick}
+          >
+            <MessageSquare className="h-5 w-5" />
+          </Button>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className={cn("flex items-center gap-2 text-sm hover:text-green-500", isReposted && "text-green-500")}
+                onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}
+              >
+                <Repeat2 className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-40" onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}>
+              <DropdownMenuItem onClick={handleRepost}>
+                <Repeat className="mr-2 h-4 w-4" />
+                <span>{isReposted ? 'Un-repost' : 'Repost'}</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleQuote}>
+                <Quote className="mr-2 h-4 w-4" />
+                <span>Quote</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn(
+              "flex items-center gap-2 text-sm hover:text-red-500",
+              isLiked && "text-red-500"
+            )}
+            onClick={handleLike}
+          >
+            <Heart className={cn("h-5 w-5", isLiked && "fill-red-500")} />
+          </Button>
+
+          <Button variant="ghost" size="icon" className="flex items-center gap-2 text-sm -mr-2" disabled>
+            <Upload className="h-5 w-5" />
+          </Button>
+        </div>
+        
+      </div>
+     </>
+  );
 }
 
-
-// This is the main page component
 export default function SinglePostPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { toast } = useToast();
-  const { posts, isReady } = useAppContext();
+  const { posts, isReady, loggedInUser, createComment } = useAppContext();
   const [post, setPost] = useState<Post | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [commentContent, setCommentContent] = useState('');
+  const [isPostingComment, setIsPostingComment] = useState(false);
+  const commentInputRef = useRef<HTMLTextAreaElement>(null);
   const supabase = createClient();
   
   const postId = Number(params.id);
 
-  useEffect(() => {
-    if (!isReady) return;
-    if (isNaN(postId)) {
-        notFound();
-        return;
-    }
-
-    // Check if we already have the post in context
-    const postFromContext = posts.find(p => p.id === postId);
-    if (postFromContext) {
-      setPost(postFromContext);
-      setIsLoading(false);
-    } else {
-      // If not, fetch it
-      const fetchPost = async () => {
-        setIsLoading(true);
-        const { data, error } = await supabase
-          .from('posts')
-          .select(POST_QUERY) // Use the same global query
-          .eq('id', postId)
-          .single();
-        
-        if (error || !data) {
-          toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch post.' });
-          notFound();
-        } else {
-          // We need to format it just like in the provider
-          const formattedPost = formatPost(data);
-          setPost(formattedPost);
-        }
-        setIsLoading(false);
-      };
-      fetchPost();
-    }
-  }, [postId, posts, isReady, supabase, toast]);
-  
-  // --- This is temporary, from app-provider ---
-  const formatPost = (post: any): Post => {
-    const comments = (post.comments || []).map((comment: any) => ({
+  const formatPost = (postData: any): Post => {
+    const comments = (postData.comments || []).map((comment: any) => ({
       ...comment,
       author: comment.author,
       likes: (comment.likes || []).length,
@@ -146,12 +316,12 @@ export default function SinglePostPage() {
       }))
     })).sort((a: Comment, b: Comment) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     
-    const likes = (post.likes || []).map((l: any) => l.user_id);
-    const reposts = (post.reposts || []).map((r: any) => r.user_id);
+    const likes = (postData.likes || []).map((l: any) => l.user_id);
+    const reposts = (postData.reposts || []).map((r: any) => r.user_id);
 
     return {
-      ...post,
-      media_urls: post.media_urls || [],
+      ...postData,
+      media_urls: postData.media_urls || [],
       likes: likes,
       reposts: reposts,
       stats: {
@@ -163,11 +333,56 @@ export default function SinglePostPage() {
         bookmarks: 0
       },
       comments: comments,
-      author: post.author,
-      quote_of: post.quote_of_id ? { ...post.quote_of, author: post.quote_of.author } : undefined
+      author: postData.author,
+      quote_of: postData.quote_of_id ? { ...postData.quote_of, author: postData.quote_of.author } : undefined
     }
   }
-  // --- End temporary function ---
+
+  useEffect(() => {
+    if (!isReady) return;
+    if (isNaN(postId)) {
+        notFound();
+        return;
+    }
+
+    const postFromContext = posts.find(p => p.id === postId);
+    
+    if (postFromContext) {
+      setPost(postFromContext);
+      setIsLoading(false);
+    } else {
+      const fetchPost = async () => {
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from('posts')
+          .select(POST_QUERY)
+          .eq('id', postId)
+          .single();
+        
+        if (error || !data) {
+          toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch post.' });
+          notFound();
+        } else {
+          const formattedPost = formatPost(data);
+          setPost(formattedPost);
+        }
+        setIsLoading(false);
+      };
+      fetchPost();
+    }
+  }, [postId, posts, isReady, supabase, toast]);
+
+  const handleCommentSubmit = async () => {
+    if (!commentContent.trim() || !post || typeof post.id !== 'number') return;
+    setIsPostingComment(true);
+    await createComment(post.id, commentContent);
+    setCommentContent('');
+    setIsPostingComment(false);
+  };
+  
+  const handleCommentClick = () => {
+    commentInputRef.current?.focus();
+  };
 
   return (
     <div className="flex h-full flex-col">
@@ -182,27 +397,47 @@ export default function SinglePostPage() {
       </header>
 
       <ScrollArea className="flex-1">
-        <main className="max-w-2xl mx-auto">
-          {isLoading || !post ? (
+        <main className="max-w-2xl mx-auto pb-20">
+          {isLoading || !post || !loggedInUser ? (
             <PostSkeleton />
           ) : (
             <>
-              {/* This is the main post */}
-              <PostDetailCard post={post} />
+              <PostDetailCard post={post} onCommentClick={handleCommentClick} />
               
               <Separator />
               
-              {/* This is the reply box */}
-              <CreatePost />
+              <div className="p-4 flex gap-3 border-b">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={loggedInUser.avatar_url} alt={loggedInUser.name} />
+                  <AvatarFallback>{loggedInUser.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1 space-y-3">
+                  <textarea
+                    ref={commentInputRef}
+                    placeholder={`Replying to @${post.author.username}`}
+                    className="w-full bg-transparent border-none focus:ring-0 resize-none text-base min-h-[3rem] outline-none"
+                    value={commentContent}
+                    onChange={(e) => setCommentContent(e.target.value)}
+                  />
+                  <div className="flex justify-end">
+                    <Button
+                      onClick={handleCommentSubmit}
+                      disabled={!commentContent.trim() || isPostingComment}
+                      className="rounded-full"
+                    >
+                      {isPostingComment && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Reply
+                    </Button>
+                  </div>
+                </div>
+              </div>
               
               <Separator />
 
-              {/* This is the list of comments */}
               <div>
                 {post.comments && post.comments.length > 0 ? (
                   post.comments.map((comment) => (
-                    // We can replace this with a dedicated CommentCard later
-                    <PostCard key={comment.id} post={comment as any} /> // Temporary cast
+                    <PostCard key={comment.id} post={{...comment, author: comment.author} as any} /> 
                   ))
                 ) : (
                   <div className="p-10 text-center">

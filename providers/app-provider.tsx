@@ -388,6 +388,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     sendDmRequest, addChat, updateUser, leaveGroup, deleteGroup,
     blockUser, unblockUser, reportUser, forwardMessage,
     themeSettings, setThemeSettings, isReady, resetUnreadCount,
+<<<<<<< HEAD
+=======
+    followUser,
+    approveFollow,
+    rejectFollow,
+    unfollowUser,
+    removeFollower,
+    blockUser,
+    unblockUser,
+    markNotificationsAsRead,
+>>>>>>> 9613c09 (Made postings working)
   }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
