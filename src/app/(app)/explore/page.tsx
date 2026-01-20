@@ -357,25 +357,11 @@ export default function ExplorePage() {
 
     // Reactive Feed Filter: Apply filter when posts or filter settings change
     React.useEffect(() => {
-        if (allPosts.length >= 0) {
+        if (allPosts.length > 0) {
             applyFeedFilter(allPosts, feedFilter);
         }
     }, [allPosts, feedFilter, userInteractions]); // Re-run when posts or filter changes
 
-    // Check for new posts periodically
-    React.useEffect(() => {
-        if (!isInitialLoading && exploreMode === 'feed') {
-            newPostsCheckInterval.current = setInterval(() => {
-                checkForNewPosts();
-            }, 30000);
-
-            return () => {
-                if (newPostsCheckInterval.current) {
-                    clearInterval(newPostsCheckInterval.current);
-                }
-            };
-        }
-    }, [allPosts, userInteractions, isInitialLoading, exploreMode]);
 
     // Scroll detection
     React.useEffect(() => {
@@ -415,39 +401,108 @@ export default function ExplorePage() {
                 break;
         }
 
+        // Deduplicate posts by ID to prevent key collisions
+        filteredPosts = filteredPosts.filter((post, index, self) =>
+            index === self.findIndex((p) => p.id === post.id)
+        );
+
         setSortedFeed(filteredPosts);
         setVisiblePosts(filteredPosts.slice(0, POSTS_PER_PAGE));
         setHasMore(filteredPosts.length > POSTS_PER_PAGE);
     };
 
-    // Check for new posts
-    const checkForNewPosts = () => {
-        const lastSeenTime = new Date(userInteractions.lastSeenPostTime).getTime();
-        const newPosts = allPosts.filter(p =>
-            new Date(p.createdAt).getTime() > lastSeenTime
-        );
+    // Check for new posts from Supabase
+    const checkForNewPosts = React.useCallback(async () => {
+        if (allPosts.length === 0) return;
 
-        if (newPosts.length > 0) {
-            setNewPostsCount(newPosts.length);
+        const supabase = createClient();
+
+        // Get the timestamp of the most recent post in our current list
+        const latestPostTime = allPosts.reduce((latest, post) => {
+            const postTime = new Date(post.createdAt).getTime();
+            return postTime > latest ? postTime : latest;
+        }, 0);
+
+        if (latestPostTime === 0) return;
+
+        // Query Supabase for posts newer than our latest post
+        const { count, error } = await supabase
+            .from('posts')
+            .select('*', { count: 'exact', head: true })
+            .gt('created_at', new Date(latestPostTime).toISOString());
+
+        if (error) {
+            console.error('Error checking for new posts:', error);
+            return;
+        }
+
+        if (count && count > 0) {
+            setNewPostsCount(count);
             setShowNewPostsBanner(true);
         }
-    };
+    }, [allPosts]);
 
-    // Load new posts
-    const handleLoadNewPosts = () => {
+    // Check for new posts periodically
+    React.useEffect(() => {
+        if (!isInitialLoading && exploreMode === 'feed') {
+            newPostsCheckInterval.current = setInterval(() => {
+                checkForNewPosts();
+            }, 30000);
+
+            return () => {
+                if (newPostsCheckInterval.current) {
+                    clearInterval(newPostsCheckInterval.current);
+                }
+            };
+        }
+    }, [isInitialLoading, exploreMode, checkForNewPosts]);
+
+    // Load new posts from Supabase
+    const handleLoadNewPosts = async () => {
+        if (allPosts.length === 0) return;
+
+        const supabase = createClient();
+
+        // Get the timestamp of the most recent post in our current list
+        const latestPostTime = allPosts.reduce((latest, post) => {
+            const postTime = new Date(post.createdAt).getTime();
+            return postTime > latest ? postTime : latest;
+        }, 0);
+
+        // Fetch new posts from Supabase
+        const { data, error } = await supabase
+            .from('posts')
+            .select(`
+                *,
+                profiles:user_id (id, name, username, avatar_url, verified)
+            `)
+            .gt('created_at', new Date(latestPostTime).toISOString())
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error loading new posts:', error);
+            toast({
+                title: "Error loading new posts",
+                description: error.message,
+                variant: "destructive"
+            });
+            return;
+        }
+
+        if (data && data.length > 0) {
+            const newPosts = data.map(transformPost);
+            // Prepend new posts to the existing list
+            setAllPosts(prev => [...newPosts, ...prev]);
+
+            toast({
+                title: "Feed updated",
+                description: `${data.length} new ${data.length === 1 ? 'post' : 'posts'} loaded`
+            });
+        }
+
         setShowNewPostsBanner(false);
         setNewPostsCount(0);
-
-        const updatedInteractions = updateLastSeenTime(userInteractions);
-        setUserInteractions(updatedInteractions);
-
-        applyFeedFilter(allPosts, feedFilter);
         window.scrollTo({ top: 0, behavior: 'smooth' });
-
-        toast({
-            title: "Feed updated",
-            description: `${newPostsCount} new ${newPostsCount === 1 ? 'post' : 'posts'} loaded`
-        });
     };
 
     // Refresh feed
@@ -572,8 +627,10 @@ export default function ExplorePage() {
         });
     };
 
-    const handlePostLikeToggle = (postId: string) => {
+    const handlePostLikeToggle = async (postId: string) => {
         if (!loggedInUser) return;
+
+        const supabase = createClient();
 
         const updatePost = (post: PostType) => {
             if (post.id === postId) {
@@ -597,12 +654,41 @@ export default function ExplorePage() {
         const post = allPosts.find(p => p.id === postId);
         if (post) {
             const isLiked = post.likedBy.includes(loggedInUser.id);
+
+            // Track interaction (Feed Algorithm)
             setUserInteractions(prev => ({
                 ...prev,
                 likedPosts: isLiked
                     ? prev.likedPosts.filter(id => id !== postId)
                     : [...prev.likedPosts, postId]
             }));
+
+            // Supabase Persistence
+            try {
+                if (isLiked) {
+                    // Was liked, so remove like
+                    const { error } = await supabase
+                        .from('post_likes')
+                        .delete()
+                        .eq('post_id', postId)
+                        .eq('user_id', loggedInUser.id);
+                    if (error) throw error;
+                } else {
+                    // Was not liked, so add like
+                    const { error } = await supabase
+                        .from('post_likes')
+                        .insert({ post_id: postId, user_id: loggedInUser.id });
+                    if (error) throw error;
+                }
+            } catch (error) {
+                console.error("Error updating like status:", error);
+                // Revert optimistic update? For now just toast
+                toast({
+                    title: "Error",
+                    description: "Failed to update like status",
+                    variant: "destructive"
+                });
+            }
         }
     };
 
@@ -692,8 +778,10 @@ export default function ExplorePage() {
         });
     };
 
-    const handleCommentCreated = (postId: string, commentText: string, parentCommentId?: string) => {
+    const handleCommentCreated = async (postId: string, commentText: string, parentCommentId?: string) => {
         if (!loggedInUser) return;
+
+        const supabase = createClient();
 
         const commenterUser = {
             id: loggedInUser.id,
@@ -754,6 +842,36 @@ export default function ExplorePage() {
             ...prev,
             commentedPosts: [...new Set([...prev.commentedPosts, postId])]
         }));
+
+        try {
+            const commentPayload: any = {
+                post_id: postId,
+                user_id: loggedInUser.id,
+                content: commentText
+            };
+
+            // Note: parent_id persistence is skipped as column name is unconfirmed. 
+            // If parent_id matches schema, uncomment:
+            // if (parentCommentId) commentPayload.parent_id = parentCommentId;
+
+            const { error } = await supabase
+                .from('comments')
+                .insert(commentPayload);
+
+            if (error) throw error;
+
+            toast({
+                title: "Comment added",
+                description: "Your comment has been posted."
+            });
+        } catch (error) {
+            console.error("Error creating comment:", error);
+            toast({
+                title: "Error",
+                description: "Failed to post comment",
+                variant: "destructive"
+            });
+        }
     };
 
     const handleCommentLikeToggle = (postId: string, commentId: string, isReply: boolean = false) => {
@@ -1193,6 +1311,14 @@ export default function ExplorePage() {
                                         <PostSkeleton />
                                         <PostSkeleton />
                                     </>
+                                ) : feedFilter === 'following' ? (
+                                    <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
+                                        <Users className="h-16 w-16 text-muted-foreground/50 mb-4" />
+                                        <h3 className="text-xl font-semibold mb-2">Feature Coming Soon</h3>
+                                        <p className="text-muted-foreground max-w-sm">
+                                            The Following feed is under development. Stay tuned for updates!
+                                        </p>
+                                    </div>
                                 ) : (
                                     <>
                                         {visiblePosts.map((post, index) => (

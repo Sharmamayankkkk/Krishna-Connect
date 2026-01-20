@@ -58,6 +58,12 @@ export function MainNav() {
       label: 'Events',
       icon: Calendar,
       isActive: pathname.startsWith('/events'),
+    },
+    {
+      href: '/groups',
+      label: 'Groups',
+      icon: Users,
+      isActive: pathname.startsWith('/groups'),
     }
   ]
 
@@ -65,22 +71,22 @@ export function MainNav() {
     <nav>
       <SidebarMenu>
         {menuItems.map((item) => (
-            <SidebarMenuItem key={item.href}>
-              <SidebarMenuButton
-                asChild
-                isActive={item.isActive}
-                className="w-full justify-start text-sm font-medium h-11"
-              >
-                <Link href={item.href} className="flex items-center">
-                  <item.icon className="h-5 w-5 mr-3" />
-                  <span>{item.label}</span>
-                  {item.href === '/notifications' && unreadCount > 0 && (
-                    <Badge className="ml-auto">{unreadCount}</Badge>
-                  )}
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          )
+          <SidebarMenuItem key={item.href}>
+            <SidebarMenuButton
+              asChild
+              isActive={item.isActive}
+              className="w-full justify-start text-sm font-medium h-11"
+            >
+              <Link href={item.href} className="flex items-center">
+                <item.icon className="h-5 w-5 mr-3" />
+                <span>{item.label}</span>
+                {item.href === '/notifications' && unreadCount > 0 && (
+                  <Badge className="ml-auto">{unreadCount}</Badge>
+                )}
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        )
         )}
       </SidebarMenu>
     </nav>

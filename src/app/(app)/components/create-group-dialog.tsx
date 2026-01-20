@@ -32,7 +32,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { useToast } from "@/hooks/use-toast"
 import { useAppContext } from "@/providers/app-provider"
 import type { User } from '@/lib/types'
-import { createClient } from '@/lib/utils'
+import { createClient, getAvatarUrl } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
 
 interface CreateGroupDialogProps {
@@ -79,8 +79,8 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
       };
       fetchUsers();
     } else {
-        form.reset();
-        setAllUsers([]);
+      form.reset();
+      setAllUsers([]);
     }
   }, [open, supabase, toast, form, loggedInUser]);
 
@@ -89,52 +89,52 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
     setIsCreating(true);
 
     try {
-        // 1. Create the chat.
-        const { data: chatData, error: chatError } = await supabase
-            .from('chats')
-            .insert({
-                name: values.name,
-                description: values.description,
-                avatar_url: `https://placehold.co/100x100.png`,
-                type: 'group',
-                created_by: loggedInUser.id,
-            })
-            .select()
-            .single();
-        
-        if (chatError) throw chatError;
-        const newChatId = chatData.id;
+      // 1. Create the chat.
+      const { data: chatData, error: chatError } = await supabase
+        .from('chats')
+        .insert({
+          name: values.name,
+          description: values.description,
+          avatar_url: `https://placehold.co/100x100.png`,
+          type: 'group',
+          created_by: loggedInUser.id,
+        })
+        .select()
+        .single();
 
-        // 2. Add participants, including creator.
-        const allMemberIds = [...new Set([...values.members, loggedInUser.id])];
-        const participantData = allMemberIds.map(userId => {
-          const user = allUsers.find(u => u.id === userId);
-          // Creator and Gurudev are admins by default
-          const isAdmin = userId === loggedInUser.id || user?.role === 'gurudev';
-          return {
-            chat_id: newChatId,
-            user_id: userId,
-            is_admin: isAdmin,
-          };
-        });
-        
-        const { error: participantsError } = await supabase.from('participants').insert(participantData);
-        if (participantsError) throw participantsError;
-        
-        toast({ title: "Group Created!", description: `The group "${values.name}" has been successfully created.` });
-        onOpenChange(false);
-        router.push(`/chat/${newChatId}`);
-        router.refresh();
+      if (chatError) throw chatError;
+      const newChatId = chatData.id;
+
+      // 2. Add participants, including creator.
+      const allMemberIds = [...new Set([...values.members, loggedInUser.id])];
+      const participantData = allMemberIds.map(userId => {
+        const user = allUsers.find(u => u.id === userId);
+        // Creator and Gurudev are admins by default
+        const isAdmin = userId === loggedInUser.id || user?.role === 'gurudev';
+        return {
+          chat_id: newChatId,
+          user_id: userId,
+          is_admin: isAdmin,
+        };
+      });
+
+      const { error: participantsError } = await supabase.from('participants').insert(participantData);
+      if (participantsError) throw participantsError;
+
+      toast({ title: "Group Created!", description: `The group "${values.name}" has been successfully created.` });
+      onOpenChange(false);
+      router.push(`/chat/${newChatId}`);
+      router.refresh();
 
     } catch (error: any) {
-        console.error("Supabase error details:", error);
-        toast({
-          variant: 'destructive',
-          title: 'Error creating group',
-          description: `Database error: ${error.message}. Please ensure RLS policies are correct or disabled for testing.`
-        });
+      console.error("Supabase error details:", error);
+      toast({
+        variant: 'destructive',
+        title: 'Error creating group',
+        description: `Database error: ${error.message}. Please ensure RLS policies are correct or disabled for testing.`
+      });
     } finally {
-        setIsCreating(false);
+      setIsCreating(false);
     }
   }
 
@@ -191,44 +191,44 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
                 <FormItem>
                   <FormLabel>Add Members</FormLabel>
                   <ScrollArea className="h-40 w-full rounded-md border p-4">
-                  {isLoading ? (
+                    {isLoading ? (
                       <div className="space-y-3">
-                          <div className="flex items-center space-x-3"><Skeleton className="h-4 w-4 rounded-full" /><Skeleton className="h-4 w-2/3" /></div>
-                          <div className="flex items-center space-x-3"><Skeleton className="h-4 w-4 rounded-full" /><Skeleton className="h-4 w-1/2" /></div>
-                          <div className="flex items-center space-x-3"><Skeleton className="h-4 w-4 rounded-full" /><Skeleton className="h-4 w-3/4" /></div>
+                        <div className="flex items-center space-x-3"><Skeleton className="h-4 w-4 rounded-full" /><Skeleton className="h-4 w-2/3" /></div>
+                        <div className="flex items-center space-x-3"><Skeleton className="h-4 w-4 rounded-full" /><Skeleton className="h-4 w-1/2" /></div>
+                        <div className="flex items-center space-x-3"><Skeleton className="h-4 w-4 rounded-full" /><Skeleton className="h-4 w-3/4" /></div>
                       </div>
-                  ) : otherUsers.length > 0 ? (
-                    otherUsers.map((user) => (
-                      <FormField
-                        key={user.id}
-                        control={form.control}
-                        name="members"
-                        render={({ field }) => (
-                          <FormItem key={user.id} className="flex flex-row items-start space-x-3 space-y-0 mb-3">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value?.includes(user.id)}
-                                onCheckedChange={(checked) => {
-                                  return checked
-                                    ? field.onChange([...field.value, user.id])
-                                    : field.onChange(field.value?.filter((value) => value !== user.id))
-                                }}
-                              />
-                            </FormControl>
-                            <FormLabel className="font-normal flex items-center gap-2 cursor-pointer">
-                               <Avatar className="h-6 w-6">
-                                    <AvatarImage src={user.avatar_url} alt={user.name} />
-                                    <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
+                    ) : otherUsers.length > 0 ? (
+                      otherUsers.map((user) => (
+                        <FormField
+                          key={user.id}
+                          control={form.control}
+                          name="members"
+                          render={({ field }) => (
+                            <FormItem key={user.id} className="flex flex-row items-start space-x-3 space-y-0 mb-3">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value?.includes(user.id)}
+                                  onCheckedChange={(checked) => {
+                                    return checked
+                                      ? field.onChange([...field.value, user.id])
+                                      : field.onChange(field.value?.filter((value) => value !== user.id))
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal flex items-center gap-2 cursor-pointer">
+                                <Avatar className="h-6 w-6">
+                                  <AvatarImage src={getAvatarUrl(user.avatar_url)} alt={user.name} />
+                                  <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 {user.name}
-                            </FormLabel>
-                          </FormItem>
-                        )}
-                      />
-                    ))
-                  ) : (
-                    <p className="text-sm text-center text-muted-foreground py-4">No other users found to add.</p>
-                  )}
+                              </FormLabel>
+                            </FormItem>
+                          )}
+                        />
+                      ))
+                    ) : (
+                      <p className="text-sm text-center text-muted-foreground py-4">No other users found to add.</p>
+                    )}
                   </ScrollArea>
                   <FormMessage />
                 </FormItem>

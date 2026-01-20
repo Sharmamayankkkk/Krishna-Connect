@@ -13,6 +13,14 @@ export const createClient = () =>
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
+export function getAvatarUrl(url?: string): string | undefined {
+  if (!url) return undefined;
+  if (url.startsWith('http')) return url;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!supabaseUrl) return url;
+  return `${supabaseUrl}/storage/v1/object/public/attachments/${url}`;
+}
+
 export function getContrastingTextColor(color: string): string {
   if (!color) return '#000000';
 

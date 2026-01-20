@@ -1,6 +1,8 @@
 
 'use client';
 
+import { getAvatarUrl } from '@/lib/utils';
+
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -40,19 +42,19 @@ export function ChatList({ chats }: ChatListProps) {
       setOpenMobile(false);
     }
   };
-  
+
   const getChatPartner = (chat: Chat) => {
     if (!loggedInUser || chat.type !== 'dm') return null;
     const partner = chat.participants?.find(p => p.user_id !== loggedInUser.id);
     return partner?.profiles ?? null;
   }
-  
+
   const getChatDisplayInfo = (chat: Chat) => {
     if (chat.type === 'dm') {
       const partner = getChatPartner(chat);
       return {
         name: partner?.name || "DM Chat",
-        avatar: partner?.avatar_url || "https://placehold.co/100x100.png"
+        avatar: getAvatarUrl(partner?.avatar_url) || "https://placehold.co/100x100.png"
       };
     }
     return {
@@ -73,39 +75,37 @@ export function ChatList({ chats }: ChatListProps) {
 
   return (
     <div className="flex h-full flex-col">
-       <CreateGroupDialog open={isCreateGroupOpen} onOpenChange={setIsCreateGroupOpen} />
-       <NewChatDialog open={isNewChatOpen} onOpenChange={setIsNewChatOpen} />
+      <CreateGroupDialog open={isCreateGroupOpen} onOpenChange={setIsCreateGroupOpen} />
+      <NewChatDialog open={isNewChatOpen} onOpenChange={setIsNewChatOpen} />
       <div className="relative flex items-center gap-2 mb-2">
         <div className="relative w-full">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search chats..."
-              className="pl-8"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search chats..."
+            className="pl-8"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
         <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="flex-shrink-0" onClick={() => setIsNewChatOpen(true)}>
-                  <MessageSquarePlus className="h-5 w-5" />
-                  <span className="sr-only">New Chat</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right">New Chat</TooltipContent>
-            </Tooltip>
-          {loggedInUser?.is_admin && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="flex-shrink-0" onClick={() => setIsCreateGroupOpen(true)}>
-                  <PlusCircle className="h-5 w-5" />
-                  <span className="sr-only">Create Group</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right">Create Group</TooltipContent>
-            </Tooltip>
-          )}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" className="flex-shrink-0" onClick={() => setIsNewChatOpen(true)}>
+                <MessageSquarePlus className="h-5 w-5" />
+                <span className="sr-only">New Chat</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">New Chat</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" className="flex-shrink-0" onClick={() => setIsCreateGroupOpen(true)}>
+                <PlusCircle className="h-5 w-5" />
+                <span className="sr-only">Create Group</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">Create Group</TooltipContent>
+          </Tooltip>
         </TooltipProvider>
       </div>
       <ScrollArea className="flex-1 -mx-2">

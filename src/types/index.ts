@@ -9,7 +9,9 @@ export interface Profile {
   bio?: string;
   follower_count: number;
   following_count: number;
+  post_count?: number; // Added to match usage
   is_following: boolean;
+  verified?: boolean;  // Added for verified badge
 }
 
 export interface Post {

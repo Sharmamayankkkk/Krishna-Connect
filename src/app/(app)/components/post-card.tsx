@@ -444,7 +444,7 @@ const CommentsSheet = ({
                     <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
                             <p className="text-sm">
-                                <Link href={`/profile/${comment.user.username}`} className="font-semibold hover:underline">
+                                <Link href={`/profile/${encodeURIComponent(comment.user.username)}`} className="font-semibold hover:underline" prefetch={false}>
                                     {comment.user.username}
                                 </Link>
                                 <span className="ml-1.5">{comment.text}</span>
@@ -976,7 +976,7 @@ export function PostCard({
                     {/* START: Add this block for avatar stack */}
                     <div className="flex flex-shrink-0 -space-x-3">
                         {[post.author, ...(post.collaborators || [])].slice(0, 3).map((user, index) => (
-                            <Link href={`/profile/${user.username}`} key={user.id}>
+                            <Link href={`/profile/${encodeURIComponent(user.username)}`} key={user.id} prefetch={false}>
                                 <Avatar className="h-10 w-10 border-2 border-background" style={{ zIndex: 3 - index }}>
                                     <AvatarImage src={(user as any).avatar || (user as any).avatar_url} alt={user.name} />
                                     <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
@@ -992,7 +992,7 @@ export function PostCard({
                                 <div className="flex flex-wrap items-center gap-x-1.5 font-bold">
                                     {[post.author, ...(post.collaborators || [])].map((user, index, arr) => (
                                         <React.Fragment key={user.id}>
-                                            <Link href={`/profile/${user.username}`} className="hover:underline">
+                                            <Link href={`/profile/${encodeURIComponent(user.username)}`} className="hover:underline" prefetch={false}>
                                                 {user.name}
                                             </Link>
                                             {index === 0 && arr.length > 1 && <span className="font-medium text-muted-foreground">with</span>}
