@@ -31,19 +31,19 @@ import {
     Activity,
     ChevronRight
 } from 'lucide-react';
-import { 
-    LineChart, 
-    Line, 
-    BarChart, 
-    Bar, 
-    PieChart, 
-    Pie, 
+import {
+    LineChart,
+    Line,
+    BarChart,
+    Bar,
+    PieChart,
+    Pie,
     Cell,
-    XAxis, 
-    YAxis, 
-    CartesianGrid, 
-    Tooltip, 
-    Legend, 
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    Legend,
     ResponsiveContainer,
     Area,
     AreaChart,
@@ -55,12 +55,12 @@ import {
     ComposedChart
 } from 'recharts';
 import { useAppContext } from '@/providers/app-provider';
-import { dummyPosts, PostType } from '../data';
+import { PostType } from '../types';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 
-// Enhanced mock analytics data with real post data
+// Enhanced mock analytics data (no real posts for now)
 const generateMockData = () => {
     const last7Days = Array.from({ length: 7 }, (_, i) => {
         const date = new Date();
@@ -87,16 +87,8 @@ const generateMockData = () => {
         };
     });
 
-    // Use real posts with analytics
-    const topPosts = dummyPosts
-        .filter(post => post.analytics)
-        .sort((a, b) => (b.analytics?.reach || 0) - (a.analytics?.reach || 0))
-        .slice(0, 5)
-        .map(post => ({
-            ...post,
-            views: post.stats.views,
-            engagementRate: post.analytics?.engagementRate.toFixed(2) || '0'
-        }));
+    // Empty topPosts - will be fetched from DB
+    const topPosts: (PostType & { views: number; engagementRate: string })[] = [];
 
     const audienceByGender = [
         { name: 'Male', value: 45, color: '#3b82f6' },
@@ -168,18 +160,18 @@ const generateMockData = () => {
 };
 
 // Stat Card Component
-function StatCard({ 
-    title, 
-    value, 
-    change, 
-    icon: Icon, 
+function StatCard({
+    title,
+    value,
+    change,
+    icon: Icon,
     trend,
     subtitle
-}: { 
-    title: string; 
-    value: string | number; 
-    change: string; 
-    icon: any; 
+}: {
+    title: string;
+    value: string | number;
+    change: string;
+    icon: any;
     trend: 'up' | 'down' | 'neutral';
     subtitle?: string;
 }) {
@@ -433,20 +425,20 @@ export default function AnalyticsPage() {
                                         <AreaChart data={data.last7Days}>
                                             <defs>
                                                 <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                                                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                                                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                                                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                                                 </linearGradient>
                                             </defs>
                                             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                                             <XAxis dataKey="date" className="text-[10px] sm:text-xs" />
                                             <YAxis className="text-[10px] sm:text-xs" />
                                             <Tooltip content={<CustomTooltip />} />
-                                            <Area 
-                                                type="monotone" 
-                                                dataKey="views" 
-                                                stroke="#3b82f6" 
-                                                fillOpacity={1} 
-                                                fill="url(#colorViews)" 
+                                            <Area
+                                                type="monotone"
+                                                dataKey="views"
+                                                stroke="#3b82f6"
+                                                fillOpacity={1}
+                                                fill="url(#colorViews)"
                                             />
                                         </AreaChart>
                                     </ResponsiveContainer>

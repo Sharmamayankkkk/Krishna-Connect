@@ -52,7 +52,8 @@ const generateMockComments = (postId: string | number, count: number): Comment[]
     }));
 };
 
-const mockPosts: Post[] = Array.from({ length: 12 }, (_, i) => ({
+// Using 'any' type because mock data structure differs from the imported Post type
+const mockPosts: any[] = Array.from({ length: 12 }, (_, i) => ({
     id: `post-${i + 1}`,
     author_id: mockUser.id,
     created_at: new Date(Date.now() - (i + 1) * 24 * 60 * 60 * 1000).toISOString(),
@@ -64,7 +65,7 @@ const mockPosts: Post[] = Array.from({ length: 12 }, (_, i) => ({
     }
 }));
 
-const mockSavedPosts: Post[] = Array.from({ length: 4 }, (_, i) => ({
+const mockSavedPosts: any[] = Array.from({ length: 4 }, (_, i) => ({
     id: `saved-${i + 1}`,
     author_id: mockOtherUsers[i % mockOtherUsers.length].id,
     created_at: new Date(Date.now() - (i + 1) * 3 * 24 * 60 * 60 * 1000).toISOString(),
@@ -76,7 +77,7 @@ const mockSavedPosts: Post[] = Array.from({ length: 4 }, (_, i) => ({
     }
 }));
 
-function PostGrid({ posts, onPostClick }: { posts: Post[]; onPostClick: (post: Post) => void; }) {
+function PostGrid({ posts, onPostClick }: { posts: any[]; onPostClick: (post: any) => void; }) {
     if (posts.length === 0) {
         return (
             <div className="text-center text-muted-foreground p-12">
@@ -124,12 +125,12 @@ export default function MockUserProfilePage() {
     const [isFollowing, setIsFollowing] = React.useState(false);
     const [isFollowLoading, setIsFollowLoading] = React.useState(false);
     const [followerCount, setFollowerCount] = React.useState(mockStats.followers);
-    const [selectedPost, setSelectedPost] = React.useState<Post | null>(null);
+    const [selectedPost, setSelectedPost] = React.useState<any | null>(null);
     const [postAuthor, setPostAuthor] = React.useState<User | null>(null);
     const [postComments, setPostComments] = React.useState<Comment[]>([]);
     const [isPostDialogOpen, setIsPostDialogOpen] = React.useState(false);
 
-    const handlePostClick = (post: Post) => {
+    const handlePostClick = (post: any) => {
         const author = post.author_id === mockUser.id
             ? mockUser
             : mockOtherUsers.find(u => u.id === post.author_id) || null;

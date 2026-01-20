@@ -16,20 +16,29 @@ import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { QuotedPostCard } from './quoted-post-card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import type { PostType } from '../../data';
 
-export function QuotePostDialog() {
-  const { loggedInUser, postToQuote, closeQuoteDialog, createQuotePost } = useAppContext();
+interface QuotePostDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  postToQuote: PostType | null;
+  onQuote?: (originalPostId: string, quoteText: string) => void;
+}
+
+export function QuotePostDialog({ open, onOpenChange, postToQuote, onQuote }: QuotePostDialogProps) {
+  const { loggedInUser } = useAppContext();
   const [content, setContent] = useState('');
   const [isPosting, setIsPosting] = useState(false);
   const { toast } = useToast();
 
   const handlePost = async () => {
-    if (!postToQuote) return;
+    if (!postToQuote || !onQuote) return;
 
     setIsPosting(true);
     try {
-      await createQuotePost(content, postToQuote);
+      onQuote(postToQuote.id, content);
       setContent('');
+      onOpenChange(false);
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -40,13 +49,13 @@ export function QuotePostDialog() {
       setIsPosting(false);
     }
   };
-  
-  const handleOpenChange = (open: boolean) => {
-    if (!open) {
+
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
       setContent('');
       setIsPosting(false);
-      closeQuoteDialog();
     }
+    onOpenChange(isOpen);
   }
 
   if (!loggedInUser || !postToQuote) {
@@ -54,7 +63,7 @@ export function QuotePostDialog() {
   }
 
   return (
-    <Dialog open={!!postToQuote} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>Quote Post</DialogTitle>
@@ -69,14 +78,13 @@ export function QuotePostDialog() {
               <Textarea
                 placeholder="Add your own thoughts..."
                 className="border-none focus-visible:ring-0 shadow-none p-0 text-lg resize-none"
-                minRows={3}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 disabled={isPosting}
               />
-              
+
               <QuotedPostCard post={postToQuote} />
-            
+
             </div>
           </div>
         </ScrollArea>

@@ -15,24 +15,22 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAppContext } from '@/providers/app-provider';
-import type { Post, Comment } from '@/lib';
+import type { PostType as Post, CommentType as Comment } from '../../data';
 import { formatDistanceToNow } from 'date-fns';
 import { Loader2, Heart, MessageSquareReply, Send } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { QuotedPostCard } from './quoted-post-card'; 
 import { useToast } from '@/hooks/use-toast';
 
 interface CommentSheetProps {
   post: Post;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onComment?: (postId: string, commentText: string) => void;
 }
 
 // --- Individual Comment Component ---
-function CommentCard({ comment, post }: { comment: Comment, post: Post }) {
-  const { loggedInUser, toggleCommentLike } = useAppContext();
-  const [isReplying, setIsReplying] = useState(false); // We'll wire this up later
+function CommentCard({ comment, post, onLikeToggle }: { comment: Comment, post: Post, onLikeToggle?: (postId: string, commentId: string) => void }) {
+  const { loggedInUser } = useAppContext();
 
   const isLiked = useMemo(() => {
     if (!loggedInUser) return false;
@@ -42,36 +40,36 @@ function CommentCard({ comment, post }: { comment: Comment, post: Post }) {
   const handleLike = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    if (typeof comment.id === 'number') {
-      toggleCommentLike(comment, post);
+    if (onLikeToggle) {
+      onLikeToggle(post.id, comment.id);
     }
   };
 
   return (
     <div className="flex gap-3">
-      <Link href={`/profile/${comment.author.username}`}>
+      <Link href={`/profile/${comment.user.username}`}>
         <Avatar className="h-9 w-9">
-          <AvatarImage src={comment.author.avatar_url} alt={comment.author.name} />
-          <AvatarFallback>{comment.author.name.charAt(0)}</AvatarFallback>
+          <AvatarImage src={comment.user.avatar} alt={comment.user.name} />
+          <AvatarFallback>{comment.user.name.charAt(0)}</AvatarFallback>
         </Avatar>
       </Link>
       <div className="flex-1">
         <div className="flex items-center gap-2">
-          <Link href={`/profile/${comment.author.username}`} className="group">
+          <Link href={`/profile/${comment.user.username}`} className="group">
             <span className="font-semibold hover:underline truncate text-sm">
-              {comment.author.name}
+              {comment.user.name}
             </span>
             <span className="text-sm text-muted-foreground ml-2 truncate">
-              @{comment.author.username}
+              @{comment.user.username}
             </span>
           </Link>
           <span className="text-sm text-muted-foreground">·</span>
           <span className="text-sm text-muted-foreground flex-shrink-0">
-            {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+            {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
           </span>
         </div>
         <p className="whitespace-pre-wrap text-foreground/90 mt-1">
-          {comment.content}
+          {comment.text}
         </p>
         <div className="flex items-center gap-2 mt-2 text-muted-foreground">
           <Button
@@ -95,17 +93,19 @@ function CommentCard({ comment, post }: { comment: Comment, post: Post }) {
 }
 
 // --- Main Comment Sheet Component ---
-export function CommentSheet({ post, open, onOpenChange }: CommentSheetProps) {
-  const { loggedInUser, createComment } = useAppContext();
+export function CommentSheet({ post, open, onOpenChange, onComment }: CommentSheetProps) {
+  const { loggedInUser } = useAppContext();
   const [content, setContent] = useState('');
   const [isPosting, setIsPosting] = useState(false);
   const { toast } = useToast();
-  
+
   const handleComment = async () => {
-    if (!content.trim() || typeof post.id !== 'number') return;
+    if (!content.trim()) return;
     setIsPosting(true);
     try {
-      await createComment(post.id, content);
+      if (onComment) {
+        onComment(post.id, content);
+      }
       setContent('');
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Error posting comment' });
@@ -125,23 +125,22 @@ export function CommentSheet({ post, open, onOpenChange }: CommentSheetProps) {
             Replying to {post.author.name}
           </SheetDescription>
         </SheetHeader>
-        
+
         {/* Original Post Snippet */}
         <div className="flex gap-3 p-4 border-b -mx-6 px-6">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={post.author.avatar_url} alt={post.author.name} />
-              <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-                <div className="flex items-center gap-2">
-                    <span className="font-semibold">{post.author.name}</span>
-                    <span className="text-sm text-muted-foreground">@{post.author.username}</span>
-                </div>
-                {post.content && <p className="mt-1">{post.content}</p>}
-                {post.quote_of && <QuotedPostCard post={post.quote_of} />}
+          <Avatar className="h-10 w-10">
+            <AvatarImage src={post.author.avatar} alt={post.author.name} />
+            <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
+          </Avatar>
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold">{post.author.name}</span>
+              <span className="text-sm text-muted-foreground">@{post.author.username}</span>
             </div>
+            {post.content && <p className="mt-1">{post.content}</p>}
+          </div>
         </div>
-        
+
         {/* Comment List */}
         <ScrollArea className="flex-1 -mx-6 px-6">
           <div className="py-4 space-y-6">
@@ -156,7 +155,7 @@ export function CommentSheet({ post, open, onOpenChange }: CommentSheetProps) {
             )}
           </div>
         </ScrollArea>
-        
+
         {/* Comment Input Footer */}
         <SheetFooter className="mt-auto border-t -mx-6 px-6 pt-4 bg-background">
           <div className="flex gap-3 w-full">
@@ -168,7 +167,6 @@ export function CommentSheet({ post, open, onOpenChange }: CommentSheetProps) {
               <Textarea
                 placeholder="Post your reply"
                 className="text-base"
-                minRows={1}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 disabled={isPosting}

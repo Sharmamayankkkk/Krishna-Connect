@@ -1,12 +1,10 @@
-'use client';
-
+"use client";
 import * as React from 'react';
 import Link from 'next/link';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-<<<<<<< HEAD
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -29,7 +27,7 @@ import {
     Home
 } from 'lucide-react';
 import { useAppContext } from '@/providers/app-provider';
-import { dummyPosts, dummyTrendingTopics, PostType, CommentType, ReplyType, PollType, NotificationType, dummyNotifications } from '../data';
+import { PostType, CommentType, ReplyType, PollType, NotificationType } from '../types';
 import { PostCard, PostSkeleton } from '../components/post-card';
 import { CreatePost } from '../components/create-post';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -44,23 +42,56 @@ import {
     updateLastSeenTime,
     trackPostView
 } from '../feed-algorithm';
-=======
-import { Button } from '@/components/ui/button';
-import { Post } from '@/lib';
-import { QuotePostDialog } from './components/quote-post-dialog'; // <-- ADDED
->>>>>>> 80817c3 (added comments, reposts, and quotes)
+import { QuotePostDialog } from './components/quote-post-dialog';
+import { createClient } from '@/lib/supabase/client';
 
 const POSTS_PER_PAGE = 10;
 const SCROLL_THRESHOLD = 500;
 
-// Mock user data for suggestions
-const suggestedUsers = [
-    { id: '1', name: 'Advaita Das', username: 'advaitadas', avatar: '/user_Avatar/male.png', bio: 'Spiritual seeker 🙏', followers: 1234, verified: true },
-    { id: '2', name: 'Bhakti Devi', username: 'bhaktidevi', avatar: '/user_Avatar/female.png', bio: 'Devotee of Krishna 💙', followers: 2456, verified: true },
-    { id: '3', name: 'Chaitanya Charan', username: 'ccharan', avatar: '/user_Avatar/male.png', bio: 'Author & Speaker 📚', followers: 5678, verified: true },
-    { id: '4', name: 'Krishna Priya', username: 'kpriya', avatar: '/user_Avatar/female.png', bio: 'Musician 🎵', followers: 3456, verified: false },
-    { id: '5', name: 'Jagannath Swami', username: 'jswami', avatar: '/user_Avatar/male.png', bio: 'Spiritual guide 🕉️', followers: 8901, verified: true },
-];
+// Transform DB post to UI PostType
+const transformPost = (dbPost: any): PostType => {
+    // Handle missing author (e.g. due to RLS or data integrity)
+    const author = dbPost.author || {
+        id: 'unknown',
+        name: 'Unknown User',
+        username: 'unknown',
+        avatar: '', // Use default placeholder
+        verified: false
+    };
+
+    return {
+        id: dbPost.id.toString(),
+        author: {
+            id: author.id,
+            name: author.name,
+            username: author.username,
+            avatar: author.avatar_url || '/placeholder-user.jpg', // Fallback avatar
+            verified: author.verified,
+        },
+        createdAt: dbPost.created_at,
+        content: dbPost.content,
+        media: dbPost.media_urls || [],
+        poll: dbPost.poll,
+        stats: {
+            likes: dbPost.likes?.[0]?.count || 0,
+            comments: dbPost.comments?.[0]?.count || 0,
+            reposts: dbPost.reposts?.[0]?.count || 0,
+            reshares: 0, // Not tracked yet
+            views: 0, // Not tracked yet
+            bookmarks: 0 // Not tracked yet
+        },
+        comments: [], // Loaded separately if needed
+        originalPost: dbPost.quote_of ? transformPost(dbPost.quote_of) : null,
+        likedBy: dbPost.user_likes?.length ? [dbPost.user_likes[0].user_id] : [], // Check if current user liked
+        savedBy: [],
+        repostedBy: [],
+        isPinned: dbPost.is_pinned,
+        isPromoted: dbPost.is_promoted
+    };
+};
+
+// Mock user data for suggestions (Removed)
+const suggestedUsers: any[] = [];
 
 type SearchFilter = 'all' | 'posts' | 'users' | 'hashtags' | 'media';
 type FeedFilter = 'foryou' | 'following' | 'latest';
@@ -189,23 +220,12 @@ function HashtagCard({
 
 // Main Explore Page
 export default function ExplorePage() {
-<<<<<<< HEAD
-    const { loggedInUser } = useAppContext();
+    const {
+        loggedInUser,
+        isReady
+    } = useAppContext();
     const { toast } = useToast();
     const router = useRouter();
-=======
-  const { 
-    loggedInUser, 
-    isReady, 
-    posts, 
-    relationships, 
-    notifications,
-    postToQuote // <-- ADDED
-  } = useAppContext();
-  
-  const [searchQuery, setSearchQuery] = useState('');
-  const [feedFilter, setFeedFilter] = useState<FeedFilter>('foryou');
->>>>>>> 80817c3 (added comments, reposts, and quotes)
 
     // Mode management
     const [exploreMode, setExploreMode] = React.useState<ExploreMode>('feed');
@@ -233,7 +253,6 @@ export default function ExplorePage() {
     const [showScrollTop, setShowScrollTop] = React.useState(false);
     const [isRefreshing, setIsRefreshing] = React.useState(false);
 
-<<<<<<< HEAD
     // Notifications
     const [notifications, setNotifications] = React.useState<NotificationType[]>([]);
     const [unreadCount, setUnreadCount] = React.useState(0);
@@ -241,6 +260,10 @@ export default function ExplorePage() {
     // Promotion Dialog
     const [isPromotionDialogOpen, setIsPromotionDialogOpen] = React.useState(false);
     const [postToPromote, setPostToPromote] = React.useState<PostType | null>(null);
+
+    // Quote Dialog
+    const [isQuoteDialogOpen, setIsQuoteDialogOpen] = React.useState(false);
+    const [postToQuote, setPostToQuote] = React.useState<PostType | null>(null);
 
     // User interactions
     const [userInteractions, setUserInteractions] = React.useState<UserInteractions>({
@@ -276,27 +299,68 @@ export default function ExplorePage() {
             u.bio.toLowerCase().includes(query)
         );
 
-        const hashtags = dummyTrendingTopics.filter(t =>
-            t.hashtag.toLowerCase().includes(query)
-        );
-
+        const hashtags: { id: string; hashtag: string; postsCount: number; category?: string }[] = [];
         return { posts, users, hashtags };
     }, [searchQuery, allPosts]);
 
-    // Load initial data
-    React.useEffect(() => {
+    // Initial fetch from Supabase
+    const fetchPosts = React.useCallback(async () => {
         setIsInitialLoading(true);
+        const supabase = createClient();
 
-        setTimeout(() => {
-            const postsToLoad = dummyPosts;
-            setAllPosts(postsToLoad);
-            setNotifications(dummyNotifications);
-            setUnreadCount(dummyNotifications.filter(n => !n.read).length);
+        const { data, error } = await supabase
+            .from('posts')
+            .select(`
+                *,
+                author:user_id (id, name, username, avatar_url, verified),
+                likes:post_likes(count),
+                comments:comments(count),
+                reposts:post_reposts(count),
+                quote_of:quote_of_id (
+                    *,
+                    author:user_id (id, name, username, avatar_url, verified)
+                ),
+                user_likes:post_likes!post_id(user_id)
+            `)
+            .order('created_at', { ascending: false });
 
-            applyFeedFilter(postsToLoad, feedFilter);
+        console.log('[Explore] Fetched posts:', { data, error, count: data?.length });
+
+        if (error) {
+            console.error('Error fetching posts:', error);
+            toast({
+                title: "Error fetching posts",
+                description: error.message,
+                variant: "destructive"
+            });
             setIsInitialLoading(false);
-        }, 500);
+            return;
+        }
+
+        if (data) {
+            const transformedPosts = data.map(transformPost);
+            setAllPosts(transformedPosts);
+        }
+        setIsInitialLoading(false);
+    }, [toast]);
+
+    React.useEffect(() => {
+        fetchPosts();
+    }, [fetchPosts]);
+
+    // Filter posts
+    // Initialize Notifications (Empty for now until real notifications implemented)
+    React.useEffect(() => {
+        setNotifications([]);
+        setUnreadCount(0);
     }, []);
+
+    // Reactive Feed Filter: Apply filter when posts or filter settings change
+    React.useEffect(() => {
+        if (allPosts.length >= 0) {
+            applyFeedFilter(allPosts, feedFilter);
+        }
+    }, [allPosts, feedFilter, userInteractions]); // Re-run when posts or filter changes
 
     // Check for new posts periodically
     React.useEffect(() => {
@@ -472,57 +536,9 @@ export default function ExplorePage() {
     };
 
     // Post handlers
-    const handlePostCreated = (
-        content: string,
-        invitedUserIds: string[],
-        media: { type: 'image' | 'video' | 'gif'; url: string; alt?: string }[] = [],
-        poll?: PollType
-    ) => {
-        if (!loggedInUser) return;
-
-        const newPost: PostType = {
-            id: `post_${Date.now()}`,
-            author: {
-                id: loggedInUser.id,
-                name: loggedInUser.name,
-                username: loggedInUser.username,
-                avatar: loggedInUser.avatar_url
-            },
-            createdAt: new Date().toISOString(),
-            content,
-            media,
-            poll,
-            pendingCollaborators: invitedUserIds.map(id => ({ userId: id, status: 'pending' })),
-            stats: { comments: 0, reshares: 0, reposts: 0, likes: 0, views: 0, bookmarks: 0 },
-            comments: [],
-            originalPost: null,
-            likedBy: [],
-            savedBy: [],
-            repostedBy: [],
-        };
-
-        const newNotifications: NotificationType[] = invitedUserIds.map(userId => ({
-            id: `notif_${Date.now()}_${userId}`,
-            type: 'collaboration_request',
-            fromUser: {
-                id: loggedInUser.id,
-                name: loggedInUser.name,
-                username: loggedInUser.username,
-                avatar: loggedInUser.avatar_url,
-            },
-            postId: newPost.id,
-            text: `Invited you to collaborate on a post: "${content.substring(0, 50)}..."`,
-            createdAt: new Date().toISOString(),
-            read: false,
-            status: 'pending',
-        }));
-
-        setNotifications(prev => [...newNotifications, ...prev]);
-        setAllPosts(prev => [newPost, ...prev]);
-        setVisiblePosts(prev => [newPost, ...prev]);
-
-        const updatedInteractions = updateLastSeenTime(userInteractions);
-        setUserInteractions(updatedInteractions);
+    const handlePostCreated = async () => {
+        // Refresh feed to show new post
+        await fetchPosts();
     };
 
     const handlePostDeleted = (postId: string) => {
@@ -1346,28 +1362,7 @@ export default function ExplorePage() {
                                         <CardDescription>Popular topics in the community</CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-2">
-                                        {dummyTrendingTopics.map((topic, index) => (
-                                            <div
-                                                key={topic.id}
-                                                className="flex items-center justify-between p-3 rounded-lg hover:bg-muted cursor-pointer transition-colors"
-                                                onClick={() => handleSearch(topic.hashtag)}
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <span className="text-sm font-bold text-muted-foreground w-6">
-                                                        {index + 1}
-                                                    </span>
-                                                    <div>
-                                                        <p className="font-semibold">{topic.hashtag}</p>
-                                                        <p className="text-sm text-muted-foreground">
-                                                            {topic.postsCount.toLocaleString()} posts
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                {topic.category && (
-                                                    <Badge variant="secondary">{topic.category}</Badge>
-                                                )}
-                                            </div>
-                                        ))}
+                                        {/* Trending topics removed */}
                                     </CardContent>
                                 </Card>
 
@@ -1605,113 +1600,16 @@ export default function ExplorePage() {
                     </Button>
                 )}
             </div>
+            <QuotePostDialog
+                open={isQuoteDialogOpen}
+                onOpenChange={setIsQuoteDialogOpen}
+                postToQuote={postToQuote}
+                onQuote={(originalPostId, quoteText) => {
+                    // Handle quote post creation here if needed
+                    setIsQuoteDialogOpen(false);
+                    setPostToQuote(null);
+                }}
+            />
         </>
     );
-=======
-  return (
-    <>
-      {/* --- ADDED: Global Quote Dialog --- */}
-      <QuotePostDialog />
-      {/* --- END ADDED --- */}
-    
-      <div className="flex h-full flex-col">
-        <header className="sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-          <div className="flex items-center gap-4 p-4">
-            <SidebarTrigger className="md:hidden" />
-            <h2 className="text-xl font-bold tracking-tight hidden md:block">Explore</h2>
-
-            <div className="relative ml-auto flex-1 md:grow-0">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search..." // We will add search functionality later
-                className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            
-            <Link href="/notifications">
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5" />
-                {unreadNotificationCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                    {unreadNotificationCount}
-                  </span>
-                )}
-              </Button>
-            </Link>
-          </div>
-
-          {/* Feed Filter Tabs */}
-          <Tabs value={feedFilter} onValueChange={(v) => setFeedFilter(v as FeedFilter)} className="w-full">
-            <TabsList className="w-full justify-around rounded-none border-b bg-transparent h-auto p-0">
-              <TabsTrigger
-                value="foryou"
-                className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-              >
-                <Sparkles className="h-4 w-4 mr-2" />
-                For You
-              </TabsTrigger>
-              <TabsTrigger
-                value="following"
-                className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-              >
-                <Users className="h-4 w-4 mr-2" />
-                Following
-              </TabsTrigger>
-              <TabsTrigger
-                value="latest"
-                className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-              >
-                <Clock className="h-4 w-4 mr-2" />
-                Latest
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </header>
-
-        {/* Main content area */}
-        <ScrollArea className="flex-1">
-          <main className="max-w-2xl mx-auto">
-            {/* Status Rail */}
-            <div className="p-4">
-              <StatusRail />
-            </div>
-            
-            <Separator />
-            
-            {/* Create Post */}
-            <CreatePost />
-            
-            <Separator />
-
-            {/* Post Feed */}
-            <div>
-              {!isReady ? (
-                <>
-                  <PostSkeleton />
-                  <PostSkeleton />
-                  <PostSkeleton />
-                </>
-              ) : filteredPosts.length > 0 ? (
-                filteredPosts.map((post) => (
-                  <PostCard key={post.id} post={post} />
-                ))
-              ) : (
-                <div className="p-10 text-center">
-                  <p className="text-muted-foreground">
-                    {feedFilter === 'following' 
-                      ? "Posts from users you follow will appear here." 
-                      : "No posts yet. Be the first!"}
-                  </p>
-                </div>
-              )}
-            </div>
-          </main>
-        </ScrollArea>
-      </div>
-    </>
-  );
->>>>>>> 80817c3 (added comments, reposts, and quotes)
 }

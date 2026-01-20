@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Plus, X } from 'lucide-react';
-import type { Poll } from '@/lib';
+import type { PollType as Poll } from '../../data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface CreatePollDialogProps {
@@ -53,21 +53,22 @@ export function CreatePollDialog({ open, onOpenChange, onCreatePoll }: CreatePol
 
     const days = parseInt(durationDays);
     const pollData: Poll = {
+      id: `poll_${Date.now()}`,
       question,
       options: filledOptions.map((text, i) => ({
-        id: i + 1,
+        id: `opt_${i + 1}`,
         text,
         votes: 0,
         votedBy: [],
       })),
       totalVotes: 0,
       endsAt: new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString(),
-      durationDays: days // Optional: helps UI display duration
+      allowMultipleChoices: false,
     };
     onCreatePoll(pollData);
     handleClose();
   };
-  
+
   const handleClose = () => {
     setQuestion('');
     setOptions(['', '']);
@@ -84,7 +85,7 @@ export function CreatePollDialog({ open, onOpenChange, onCreatePoll }: CreatePol
             Ask a question and let the community vote.
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="poll-question">Question</Label>
@@ -100,7 +101,7 @@ export function CreatePollDialog({ open, onOpenChange, onCreatePoll }: CreatePol
               {question.length}/100
             </div>
           </div>
-          
+
           <div className="space-y-3">
             <Label>Options</Label>
             {options.map((option, index) => (
@@ -113,14 +114,14 @@ export function CreatePollDialog({ open, onOpenChange, onCreatePoll }: CreatePol
                   className="pr-10"
                 />
                 {options.length > 2 && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-1 h-8 w-8 text-muted-foreground hover:text-destructive"
-                      onClick={() => removeOption(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 h-8 w-8 text-muted-foreground hover:text-destructive"
+                    onClick={() => removeOption(index)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 )}
               </div>
             ))}
@@ -133,17 +134,17 @@ export function CreatePollDialog({ open, onOpenChange, onCreatePoll }: CreatePol
           </div>
 
           <div className="space-y-2">
-             <Label>Poll Duration</Label>
-             <Select value={durationDays} onValueChange={setDurationDays}>
-                <SelectTrigger>
-                    <SelectValue placeholder="Select duration" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="1">1 Day</SelectItem>
-                    <SelectItem value="3">3 Days</SelectItem>
-                    <SelectItem value="7">7 Days</SelectItem>
-                </SelectContent>
-             </Select>
+            <Label>Poll Duration</Label>
+            <Select value={durationDays} onValueChange={setDurationDays}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select duration" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">1 Day</SelectItem>
+                <SelectItem value="3">3 Days</SelectItem>
+                <SelectItem value="7">7 Days</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

@@ -37,18 +37,12 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { dummyPosts, PollType } from '../data';
+import { PollType, PostType, CommentType, ReplyType, MediaType } from '../types';
 import { VideoPlayer } from './video-player';
 import { ImageViewerDialog } from './image-viewer';
 import { useAppContext } from '@/providers/app-provider';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from "@/components/ui/skeleton";
-
-// --- TYPE DEFINITIONS ---
-type MediaType = { type: 'image' | 'video' | 'gif'; url: string; alt?: string; width?: number; height?: number };
-type PostType = typeof dummyPosts[0];
-type CommentType = PostType['comments'][number];
-type ReplyType = Omit<CommentType, 'replies'>;
 
 interface PostCardProps {
     post: PostType;

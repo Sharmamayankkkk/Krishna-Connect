@@ -37,7 +37,8 @@ import { useAppContext } from '@/providers/app-provider';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
-import { PollType, MediaType, DraftPost, createEmptyPoll, createDraft } from '../data';
+import { PollType, MediaType, DraftPost, createEmptyPoll, createDraft } from '../types';
+import { createClient } from '@/lib/supabase/client';
 
 interface CreatePostProps {
     onPostCreated: (content: string, invitedUserIds: string[], media?: MediaType[], poll?: PollType) => void;
@@ -210,8 +211,9 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                 setMediaPreviews(prev => [...prev, {
                     type: 'image',
                     url: e.target?.result as string,
-                    alt: file.name
-                }]);
+                    alt: file.name,
+                    file: file // Store original file for upload
+                } as MediaType & { file?: File }]);
             };
             reader.readAsDataURL(file);
         });
@@ -249,8 +251,9 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                 setMediaPreviews(prev => [...prev, {
                     type: 'video',
                     url: e.target?.result as string,
-                    alt: file.name
-                }]);
+                    alt: file.name,
+                    file: file // Store original file for upload
+                } as MediaType & { file?: File }]);
             };
             reader.readAsDataURL(file);
         });
@@ -379,7 +382,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     };
 
     // Post submission
-    const handlePost = () => {
+    const handlePost = async () => {
         if (!validatePost()) {
             toast({
                 title: "Validation error",
@@ -390,16 +393,64 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
         }
 
         setIsPosting(true);
+        const supabase = createClient();
 
-        setTimeout(() => {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error("Not authenticated");
+
+            // Upload media
+            const uploadedMedia: MediaType[] = [];
+            for (const media of mediaPreviews) {
+                let fileToUpload: File | Blob | null = (media as any).file;
+
+                // If no file but has data URL (e.g. from editor), convert to blob
+                if (!fileToUpload && media.url.startsWith('data:')) {
+                    const res = await fetch(media.url);
+                    fileToUpload = await res.blob();
+                }
+
+                if (fileToUpload) {
+                    const fileExt = media.type === 'video' ? 'mp4' : 'png'; // Simple extension logic
+                    const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+                    const filePath = `${user.id}/${fileName}`;
+
+                    const { error: uploadError } = await supabase.storage
+                        .from('post_media')
+                        .upload(filePath, fileToUpload);
+
+                    if (uploadError) throw uploadError;
+
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('post_media')
+                        .getPublicUrl(filePath);
+
+                    uploadedMedia.push({ ...media, url: publicUrl }); // Use public URL, strip file
+                } else {
+                    uploadedMedia.push(media); // Keep existing URL (e.g. GIF)
+                }
+            }
+
             let poll: PollType | undefined;
-
             if (isPollMode && pollQuestion.trim()) {
                 const validOptions = pollOptions.filter(opt => opt.trim());
                 poll = createEmptyPoll(pollQuestion, validOptions, pollDuration);
             }
 
-            onPostCreated(content, collaborators.map(c => c.id), mediaPreviews, poll);
+            // Insert into DB
+            const { error: insertError } = await supabase
+                .from('posts')
+                .insert({
+                    user_id: user.id,
+                    content,
+                    media_urls: uploadedMedia,
+                    poll
+                });
+
+            if (insertError) throw insertError;
+
+            // Notify parent to refresh
+            onPostCreated(content, collaborators.map(c => c.id), uploadedMedia, poll);
 
             // Reset form
             setContent('');
@@ -408,7 +459,6 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             setPollQuestion('');
             setPollOptions(['', '']);
             setErrors([]);
-            setIsPosting(false);
 
             toast({
                 title: isScheduleMode ? "Post scheduled!" : "Post published!",
@@ -416,7 +466,17 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                     ? `Your post will be published on ${scheduleDate}`
                     : "Your post has been shared with your followers."
             });
-        }, 500);
+
+        } catch (error: any) {
+            console.error('Post creation error:', error);
+            toast({
+                title: "Error creating post",
+                description: error.message,
+                variant: "destructive"
+            });
+        } finally {
+            setIsPosting(false);
+        }
     };
 
     // Keyboard shortcuts

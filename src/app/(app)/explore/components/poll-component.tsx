@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import type { Post, Poll, PollOption } from '@/lib';
+import type { PostType as Post, PollType as Poll, PollOptionType as PollOption } from '../../data';
 import { useAppContext } from '@/providers/app-provider';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -10,10 +10,11 @@ import { formatDistanceToNow } from 'date-fns';
 
 interface PollComponentProps {
   post: Post;
+  onVote?: (postId: string, optionId: string) => void;
 }
 
-export function PollComponent({ post }: PollComponentProps) {
-  const { loggedInUser, voteOnPoll } = useAppContext();
+export function PollComponent({ post, onVote }: PollComponentProps) {
+  const { loggedInUser } = useAppContext();
   const poll = post.poll;
 
   if (!poll) return null;
@@ -32,12 +33,12 @@ export function PollComponent({ post }: PollComponentProps) {
     return poll.options.reduce((acc, opt) => acc + opt.votes, 0);
   }, [poll.options]);
 
-  const handleVote = (optionId: number) => {
-    if (!userVote) { 
-      voteOnPoll(post, optionId);
+  const handleVote = (optionId: string) => {
+    if (!userVote && onVote) {
+      onVote(post.id, optionId);
     }
   };
-  
+
   const endsAt = new Date(poll.endsAt || 0);
   const hasEnded = endsAt < new Date();
 
@@ -58,7 +59,7 @@ export function PollComponent({ post }: PollComponentProps) {
               onClick={() => handleVote(option.id)}
               disabled={!!userVote || hasEnded}
             >
-              <div 
+              <div
                 className={cn(
                   "absolute left-0 top-0 bottom-0 transition-all duration-500",
                   isUserVote ? "bg-primary/20" : "bg-accent/50"

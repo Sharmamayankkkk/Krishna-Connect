@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation'; 
+import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -26,25 +26,25 @@ import {
   Quote,
 } from 'lucide-react';
 import { useAppContext } from '@/providers/app-provider';
-import type { Post, Media } from '@/lib';
+import type { PostType as Post, MediaType as Media } from '../../data';
 import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { CommentSheet } from './comment-sheet';
 import { QuotedPostCard } from './quoted-post-card';
-import { ImageViewerDialog } from '../../chat/components/image-viewer';
-import { PollComponent } from './poll-component'; 
+import { ImageViewerDialog } from '../../components/image-viewer';
+import { PollComponent } from './poll-component';
 
 // --- Media Gallery Component ---
 function MediaGallery({ media, onImageClick }: { media: Media[], onImageClick: (url: string) => void }) {
   if (!media || media.length === 0) return null;
-  
+
   const images = media.filter(m => m.type.startsWith('image'));
   if (images.length === 0) return null;
 
   return (
-    <div 
+    <div
       className={cn(
         "grid gap-1.5 mt-3 border rounded-xl overflow-hidden",
         images.length === 1 ? "grid-cols-1" : "grid-cols-2",
@@ -54,7 +54,7 @@ function MediaGallery({ media, onImageClick }: { media: Media[], onImageClick: (
       onClick={(e) => e.stopPropagation()}
     >
       {images.map((img, index) => (
-        <button 
+        <button
           key={index}
           onClick={(e) => {
             e.stopPropagation();
@@ -81,24 +81,28 @@ function MediaGallery({ media, onImageClick }: { media: Media[], onImageClick: (
 // --- PostCard Component ---
 interface PostCardProps {
   post: Post;
+  onLike?: (postId: string) => void;
+  onRepost?: (postId: string) => void;
+  onQuote?: (post: Post) => void;
+  onDelete?: (postId: string) => void;
 }
 
-export function PostCard({ post }: PostCardProps) {
+export function PostCard({ post, onLike, onRepost, onQuote, onDelete }: PostCardProps) {
   const router = useRouter();
-  const { loggedInUser, togglePostLike, repostPost, openQuoteDialog } = useAppContext();
+  const { loggedInUser } = useAppContext();
   const [isCommentSheetOpen, setIsCommentSheetOpen] = useState(false);
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
-  const [imageViewerSrc, setImageViewerSrc] = useState('');
+  const [imageViewerIndex, setImageViewerIndex] = useState(0);
 
   const isLiked = useMemo(() => {
     if (!loggedInUser) return false;
-    return post.likes.includes(loggedInUser.id);
-  }, [post.likes, loggedInUser]);
+    return post.likedBy.includes(loggedInUser.id);
+  }, [post.likedBy, loggedInUser]);
 
   const isReposted = useMemo(() => {
     if (!loggedInUser) return false;
-    return post.reposts.includes(loggedInUser.id);
-  }, [post.reposts, loggedInUser]);
+    return post.repostedBy.includes(loggedInUser.id);
+  }, [post.repostedBy, loggedInUser]);
 
   const handleCardClick = (e: React.MouseEvent) => {
     // Prevent navigation if user is selecting text
@@ -111,41 +115,43 @@ export function PostCard({ post }: PostCardProps) {
   const handleLike = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    if (typeof post.id === 'number') {
-      togglePostLike(post);
+    if (onLike) {
+      onLike(post.id);
     }
   };
 
   const handleRepost = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    if (typeof post.id === 'number') {
-      repostPost(post);
+    if (onRepost) {
+      onRepost(post.id);
     }
   };
-  
+
   const handleQuote = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    openQuoteDialog(post);
+    if (onQuote) {
+      onQuote(post);
+    }
   };
 
   return (
     <>
-      <CommentSheet 
-        post={post} 
-        open={isCommentSheetOpen} 
-        onOpenChange={setIsCommentSheetOpen} 
+      <CommentSheet
+        post={post}
+        open={isCommentSheetOpen}
+        onOpenChange={setIsCommentSheetOpen}
       />
-      
+
       <ImageViewerDialog
         open={isImageViewerOpen}
         onOpenChange={setIsImageViewerOpen}
-        src={imageViewerSrc}
-        title="Post Media"
+        media={post.media || []}
+        startIndex={imageViewerIndex}
       />
 
-      <Card 
+      <Card
         onClick={handleCardClick}
         className="rounded-none border-b border-t-0 border-x-0 shadow-none hover:bg-accent/20 transition-colors cursor-pointer"
       >
@@ -154,7 +160,7 @@ export function PostCard({ post }: PostCardProps) {
             {/* Avatar */}
             <Link href={`/profile/${post.author.username}`} onClick={(e) => e.stopPropagation()} className="shrink-0">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={post.author.avatar_url} alt={post.author.name} />
+                <AvatarImage src={post.author.avatar} alt={post.author.name} />
                 <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
               </Avatar>
             </Link>
@@ -168,8 +174,8 @@ export function PostCard({ post }: PostCardProps) {
                     <span className="font-semibold hover:underline truncate text-sm">
                       {post.author.name}
                     </span>
-                    
-                    {post.author.verified && (
+
+                    {post.author.verified && post.author.verified === true && (
                       <Image
                         src="/user_Avatar/verified.png"
                         alt="Verified"
@@ -185,7 +191,7 @@ export function PostCard({ post }: PostCardProps) {
                   </Link>
                   <span className="text-sm text-muted-foreground flex-shrink-0 hidden sm:inline">·</span>
                   <span className="text-xs sm:text-sm text-muted-foreground flex-shrink-0 whitespace-nowrap ml-auto sm:ml-0">
-                    {formatDistanceToNow(new Date(post.created_at), { addSuffix: false }).replace('about ', '')}
+                    {formatDistanceToNow(new Date(post.createdAt), { addSuffix: false }).replace('about ', '')}
                   </span>
                 </div>
                 <PostMenu post={post} />
@@ -199,45 +205,46 @@ export function PostCard({ post }: PostCardProps) {
               )}
 
               {/* Media Gallery */}
-              {post.media_urls && <MediaGallery media={post.media_urls} onImageClick={(url) => {
-                setImageViewerSrc(url);
+              {post.media && post.media.length > 0 && <MediaGallery media={post.media} onImageClick={(url) => {
+                const index = post.media.findIndex(m => m.url === url);
+                setImageViewerIndex(index >= 0 ? index : 0);
                 setIsImageViewerOpen(true);
               }} />}
-              
+
               {/* Poll */}
               {post.poll && (
                 <div onClick={(e) => e.stopPropagation()} className="w-full">
                   <PollComponent post={post} />
                 </div>
               )}
-              
+
               {/* Quoted Post */}
-              {post.quote_of && (
-                <QuotedPostCard post={post.quote_of} />
+              {post.originalPost && (
+                <QuotedPostCard post={post.originalPost} />
               )}
 
               {/* Action Buttons */}
               <div className="flex items-center justify-between mt-3 text-muted-foreground max-w-md">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="flex items-center gap-1.5 text-sm -ml-2 hover:text-primary h-8 w-8 sm:w-auto"
                   onClick={(e) => { e.stopPropagation(); e.preventDefault(); setIsCommentSheetOpen(true); }}
                 >
                   <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5" />
                   <span className="text-xs sm:text-sm">{post.stats.comments || 0}</span>
                 </Button>
-                
+
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       className={cn("flex items-center gap-1.5 text-sm hover:text-green-500 h-8 w-8 sm:w-auto", isReposted && "text-green-500")}
                       onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}
                     >
                       <Repeat2 className="h-4 w-4 sm:h-5 sm:w-5" />
-                      <span className="text-xs sm:text-sm">{(post.stats.reposts || 0) + (post.stats.quotes || 0)}</span>
+                      <span className="text-xs sm:text-sm">{(post.stats.reposts || 0) + (post.stats.reshares || 0)}</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-40" onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}>
@@ -262,7 +269,7 @@ export function PostCard({ post }: PostCardProps) {
                   onClick={handleLike}
                 >
                   <Heart className={cn("h-4 w-4 sm:h-5 sm:w-5", isLiked && "fill-red-500")} />
-                  <span className="text-xs sm:text-sm">{post.likes.length}</span>
+                  <span className="text-xs sm:text-sm">{post.likedBy.length}</span>
                 </Button>
 
                 <Button variant="ghost" size="icon" className="flex items-center gap-1.5 text-sm h-8 w-8 sm:w-auto" disabled>
@@ -283,15 +290,15 @@ export function PostCard({ post }: PostCardProps) {
 }
 
 // --- Post Menu ---
-function PostMenu({ post }: { post: Post }) {
-  const { loggedInUser, deletePost } = useAppContext();
+function PostMenu({ post, onDelete }: { post: Post, onDelete?: (postId: string) => void }) {
+  const { loggedInUser } = useAppContext();
   const { toast } = useToast();
-  
+
   const handleMenuClick = (e: React.MouseEvent) => {
-      e.stopPropagation();
-      e.preventDefault();
+    e.stopPropagation();
+    e.preventDefault();
   };
-  
+
   if (post.author.id !== loggedInUser?.id) {
     return (
       <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 shrink-0" onClick={handleMenuClick}>
@@ -303,10 +310,10 @@ function PostMenu({ post }: { post: Post }) {
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    if (typeof post.id === 'number') {
-      deletePost(post.id);
+    if (onDelete) {
+      onDelete(post.id);
     } else {
-      toast({ variant: "destructive", title: "Cannot delete post", description: "This post is still being created." });
+      toast({ variant: "destructive", title: "Cannot delete post", description: "Delete handler not provided." });
     }
   };
 

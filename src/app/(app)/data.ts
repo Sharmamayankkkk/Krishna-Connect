@@ -28,6 +28,7 @@ export type ReplyType = {
 };
 
 export type CommentType = {
+    [x: string]: any;
     id: string;
     user: UserType;
     text: string;

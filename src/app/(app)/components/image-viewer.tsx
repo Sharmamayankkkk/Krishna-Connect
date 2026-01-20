@@ -10,7 +10,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { X, Download, ZoomIn, ZoomOut, RotateCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
-import { PostType } from '../data';
+import { PostType } from '../types';
 import { VideoPlayer } from './video-player';
 
 interface ImageViewerDialogProps {
@@ -20,9 +20,9 @@ interface ImageViewerDialogProps {
   startIndex: number;
 }
 
-export function ImageViewerDialog({ 
-  open, 
-  onOpenChange, 
+export function ImageViewerDialog({
+  open,
+  onOpenChange,
   media = [],
   startIndex = 0
 }: ImageViewerDialogProps) {
@@ -33,10 +33,10 @@ export function ImageViewerDialog({
   useEffect(() => {
     setCurrentIndex(startIndex);
   }, [startIndex, open]);
-  
+
   const resetTransforms = useCallback(() => {
-      setZoom(1);
-      setRotation(0);
+    setZoom(1);
+    setRotation(0);
   }, []);
 
   const handleNext = useCallback(() => {
@@ -80,7 +80,7 @@ export function ImageViewerDialog({
       resetTransforms();
     }, 200);
   };
-  
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight') handleNext();
@@ -99,7 +99,7 @@ export function ImageViewerDialog({
       <DialogContent className="max-w-[95vw] max-h-[95vh] w-auto h-auto bg-black/95 border-none shadow-2xl p-0 flex flex-col">
         <DialogTitle className="sr-only">Media Viewer</DialogTitle>
         <DialogDescription className="sr-only">Viewing media in full screen. Use controls to navigate, zoom, rotate, or download.</DialogDescription>
-        
+
         <div className="flex items-center justify-between p-4 bg-black/50 backdrop-blur-sm border-b border-white/10">
           <div className="flex-1 text-white/80 text-sm">
             <span>{currentIndex + 1} / {media.length}</span>
@@ -120,33 +120,33 @@ export function ImageViewerDialog({
 
         <div className="flex-1 flex items-center justify-center p-4 overflow-hidden relative">
           {media.length > 1 && (
-             <Button onClick={handlePrev} variant="ghost" size="icon" className="absolute left-4 top-1/2 -translate-y-1/2 z-10 text-white bg-black/30 hover:bg-black/50">
-               <ChevronLeft size={24}/>
-             </Button>
+            <Button onClick={handlePrev} variant="ghost" size="icon" className="absolute left-4 top-1/2 -translate-y-1/2 z-10 text-white bg-black/30 hover:bg-black/50">
+              <ChevronLeft size={24} />
+            </Button>
           )}
-          <div 
+          <div
             className="transition-transform duration-200 ease-out flex items-center justify-center"
             style={currentItem.type === 'image' ? { transform: `scale(${zoom}) rotate(${rotation}deg)` } : {}}
           >
             {currentItem.type === 'image' ? (
-                 <Image
-                    src={currentItem.url}
-                    alt={`Post media ${currentIndex + 1}`}
-                    width={1920}
-                    height={1080}
-                    className="max-w-[80vw] max-h-[70vh] w-auto h-auto object-contain rounded-lg shadow-2xl"
-                    priority
-                />
+              <Image
+                src={currentItem.url}
+                alt={`Post media ${currentIndex + 1}`}
+                width={1920}
+                height={1080}
+                className="max-w-[80vw] max-h-[70vh] w-auto h-auto object-contain rounded-lg shadow-2xl"
+                priority
+              />
             ) : (
-                <div className="w-[80vw] h-[70vh]">
-                   <VideoPlayer src={currentItem.url} />
-                </div>
+              <div className="w-[80vw] h-[70vh]">
+                <VideoPlayer src={currentItem.url} />
+              </div>
             )}
           </div>
-           {media.length > 1 && (
-             <Button onClick={handleNext} variant="ghost" size="icon" className="absolute right-4 top-1/2 -translate-y-1/2 z-10 text-white bg-black/30 hover:bg-black/50">
-               <ChevronRight size={24}/>
-             </Button>
+          {media.length > 1 && (
+            <Button onClick={handleNext} variant="ghost" size="icon" className="absolute right-4 top-1/2 -translate-y-1/2 z-10 text-white bg-black/30 hover:bg-black/50">
+              <ChevronRight size={24} />
+            </Button>
           )}
         </div>
       </DialogContent>

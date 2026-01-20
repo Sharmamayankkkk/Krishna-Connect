@@ -3,13 +3,15 @@
 import React from 'react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { Post } from '@/lib';
+import type { PostType } from '../../data';
 import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
+// Accept a partial post type for quoted posts which may be missing some fields
+type QuotedPost = Omit<PostType, 'originalPost' | 'comments' | 'stats' | 'poll'>;
+
 interface QuotedPostCardProps {
-  post?: Post | null;
+  post?: QuotedPost | null;
 }
 
 export function QuotedPostCard({ post }: QuotedPostCardProps) {
@@ -21,20 +23,20 @@ export function QuotedPostCard({ post }: QuotedPostCardProps) {
     );
   }
 
-  const postDate = new Date(post.created_at);
+  const postDate = new Date(post.createdAt);
   const formattedDate = format(postDate, "MMM d, yyyy");
-  const firstMedia = post.media_urls?.[0];
+  const firstMedia = post.media?.[0];
 
   return (
-    <Link 
-      href={`/post/${post.id}`} // <-- UPDATE THIS LINE
-      onClick={(e) => e.stopPropagation()} 
+    <Link
+      href={`/post/${post.id}`}
+      onClick={(e) => e.stopPropagation()}
       className="block border rounded-xl mt-2 overflow-hidden hover:bg-accent/30 transition-colors"
     >
       <div className="p-3">
         <div className="flex items-center gap-2 mb-2">
           <Avatar className="h-5 w-5">
-            <AvatarImage src={post.author.avatar_url} alt={post.author.name} />
+            <AvatarImage src={post.author.avatar} alt={post.author.name} />
             <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
           </Avatar>
           <span className="font-semibold text-sm truncate">{post.author.name}</span>

@@ -7,12 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsTrigger, TabsList } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-    Heart, 
-    MessageCircle, 
-    Repeat2, 
-    UserPlus, 
-    AtSign, 
+import {
+    Heart,
+    MessageCircle,
+    Repeat2,
+    UserPlus,
+    AtSign,
     BarChart3,
     CheckCheck,
     Trash2,
@@ -24,7 +24,7 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { dummyNotifications, NotificationType } from '../data';
+import { NotificationType } from '../types';
 
 type NotificationFilter = 'all' | 'mentions' | 'likes' | 'comments' | 'follows';
 
@@ -54,7 +54,7 @@ const getNotificationIcon = (type: NotificationType['type']) => {
 // Notification action text
 const getNotificationText = (notification: NotificationType) => {
     const userName = notification.fromUser.name;
-    
+
     switch (notification.type) {
         case 'like':
             return `${userName} liked your post`;
@@ -78,13 +78,13 @@ const getNotificationText = (notification: NotificationType) => {
 };
 
 // Individual Notification Item Component
-const NotificationItem = React.memo(({ 
-    notification, 
+const NotificationItem = React.memo(({
+    notification,
     onMarkAsRead,
     onDelete,
     onAccept,
     onDecline
-}: { 
+}: {
     notification: NotificationType;
     onMarkAsRead: (id: string) => void;
     onDelete: (id: string) => void;
@@ -93,9 +93,9 @@ const NotificationItem = React.memo(({
 }) => {
     const notificationText = getNotificationText(notification);
     const icon = getNotificationIcon(notification.type);
-    
+
     return (
-        <div 
+        <div
             className={cn(
                 "flex gap-2 sm:gap-3 py-3 px-2 sm:px-4 border-b transition-colors hover:bg-muted/50 relative group",
                 !notification.read && "bg-primary/5"
@@ -105,19 +105,19 @@ const NotificationItem = React.memo(({
             {!notification.read && (
                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" aria-hidden="true" />
             )}
-            
+
             {/* User Avatar */}
             <Link href={`/profile/${notification.fromUser.username}`} className="flex-shrink-0">
                 <Avatar className="h-9 w-9 sm:h-10 sm:w-10">
-                    <AvatarImage 
-                        src={notification.fromUser.avatar} 
+                    <AvatarImage
+                        src={notification.fromUser.avatar}
                         alt={`${notification.fromUser.name}'s avatar`}
                         loading="lazy"
                     />
                     <AvatarFallback>{notification.fromUser.name.charAt(0)}</AvatarFallback>
                 </Avatar>
             </Link>
-            
+
             {/* Notification Content */}
             <div className="flex-1 min-w-0 space-y-1">
                 <div className="flex items-start gap-1.5 sm:gap-2">
@@ -125,11 +125,11 @@ const NotificationItem = React.memo(({
                     <div className="flex-shrink-0 mt-0.5" aria-hidden="true">
                         {icon}
                     </div>
-                    
+
                     {/* Text */}
                     <div className="flex-1 min-w-0">
                         <p className="text-sm sm:text-base break-words">
-                            <Link 
+                            <Link
                                 href={`/profile/${notification.fromUser.username}`}
                                 className="font-semibold hover:underline"
                             >
@@ -139,36 +139,36 @@ const NotificationItem = React.memo(({
                                 {notificationText.replace(notification.fromUser.name, '').trim()}
                             </span>
                         </p>
-                        
+
                         {/* Additional text (for post snippets, etc.) */}
                         {notification.text && (
                             <p className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-2 p-2 border rounded-md bg-muted/50 break-words">
                                 {notification.text}
                             </p>
                         )}
-                        
+
                         {/* Timestamp */}
                         <p className="text-xs text-muted-foreground mt-1">
                             {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                         </p>
                     </div>
                 </div>
-                
+
                 {/* Collaboration actions */}
                 {notification.type === 'collaboration_request' && (
                     <div className="flex flex-wrap items-center gap-2 pt-2">
                         {notification.status === 'pending' ? (
                             <>
-                                <Button 
-                                    size="sm" 
+                                <Button
+                                    size="sm"
                                     onClick={() => onAccept(notification.id)}
                                     aria-label="Accept collaboration request"
                                 >
                                     Accept
                                 </Button>
-                                <Button 
-                                    size="sm" 
-                                    variant="outline" 
+                                <Button
+                                    size="sm"
+                                    variant="outline"
                                     onClick={() => onDecline(notification.id)}
                                     aria-label="Decline collaboration request"
                                 >
@@ -209,12 +209,12 @@ const NotificationItem = React.memo(({
                     </Button>
                 </div>
             </div>
-            
+
             {/* Quick action (if applicable) */}
             {notification.type === 'follow' && (
-                <Button 
-                    variant="outline" 
-                    size="sm" 
+                <Button
+                    variant="outline"
+                    size="sm"
                     className="flex-shrink-0 text-xs sm:text-sm"
                     aria-label={`Follow ${notification.fromUser.name} back`}
                 >
@@ -277,9 +277,9 @@ function EmptyState({ filter }: { filter: NotificationFilter }) {
                 };
         }
     };
-    
+
     const { icon, title, description } = getMessage();
-    
+
     return (
         <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
             <div className="mb-4">{icon}</div>
@@ -292,17 +292,17 @@ function EmptyState({ filter }: { filter: NotificationFilter }) {
 // Main Notifications Page Component
 export default function NotificationsPage() {
     const { toast } = useToast();
-    
+
     // State
-    const [notifications, setNotifications] = React.useState<NotificationType[]>(dummyNotifications);
+    const [notifications, setNotifications] = React.useState<NotificationType[]>([]);
     const [filter, setFilter] = React.useState<NotificationFilter>('all');
     const [isLoading, setIsLoading] = React.useState(false);
     const [showSettings, setShowSettings] = React.useState(false);
-    
+
     // Filter notifications
     const filteredNotifications = React.useMemo(() => {
         let filtered = notifications;
-        
+
         switch (filter) {
             case 'mentions':
                 filtered = notifications.filter(n => n.type === 'mention');
@@ -317,32 +317,32 @@ export default function NotificationsPage() {
                 filtered = notifications.filter(n => n.type === 'follow');
                 break;
         }
-        
-        return filtered.sort((a, b) => 
+
+        return filtered.sort((a, b) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
     }, [notifications, filter]);
-    
+
     // Count unread notifications
-    const unreadCount = React.useMemo(() => 
-        notifications.filter(n => !n.read).length, 
+    const unreadCount = React.useMemo(() =>
+        notifications.filter(n => !n.read).length,
         [notifications]
     );
-    
+
     // Memoized handlers for better performance
     const handleMarkAsRead = React.useCallback((id: string) => {
-        setNotifications(prev => 
+        setNotifications(prev =>
             prev.map(n => n.id === id ? { ...n, read: true } : n)
         );
     }, []);
-    
+
     const handleMarkAllAsRead = React.useCallback(() => {
         setNotifications(prev => prev.map(n => ({ ...n, read: true })));
         toast({
             title: "✓ All marked as read",
         });
     }, [toast]);
-    
+
     const handleDelete = React.useCallback((id: string) => {
         setNotifications(prev => prev.filter(n => n.id !== id));
         toast({
@@ -352,25 +352,25 @@ export default function NotificationsPage() {
     }, [toast]);
 
     const handleAcceptCollaboration = React.useCallback((id: string) => {
-        setNotifications(prev => 
+        setNotifications(prev =>
             prev.map(n => n.id === id ? { ...n, status: 'accepted', read: true } : n)
         );
-        toast({ 
-            title: "✓ Collaboration accepted!", 
-            description: "You are now a collaborator on the post." 
+        toast({
+            title: "✓ Collaboration accepted!",
+            description: "You are now a collaborator on the post."
         });
     }, [toast]);
 
     const handleDeclineCollaboration = React.useCallback((id: string) => {
-        setNotifications(prev => 
+        setNotifications(prev =>
             prev.map(n => n.id === id ? { ...n, status: 'declined', read: true } : n)
         );
-        toast({ 
-            title: "✗ Collaboration declined.", 
-            variant: 'destructive' 
+        toast({
+            title: "✗ Collaboration declined.",
+            variant: 'destructive'
         });
     }, [toast]);
-    
+
     const handleClearAll = React.useCallback(() => {
         setNotifications([]);
         toast({
@@ -378,7 +378,7 @@ export default function NotificationsPage() {
             description: "Your notification inbox is now empty"
         });
     }, [toast]);
-    
+
     return (
         <div className="flex flex-col min-h-screen w-full max-w-2xl mx-auto sm:border-x">
             {/* Header */}
@@ -392,11 +392,11 @@ export default function NotificationsPage() {
                             </Badge>
                         )}
                     </div>
-                    
+
                     <div className="flex items-center gap-2 flex-shrink-0">
                         {unreadCount > 0 && !isLoading && (
-                            <Button 
-                                variant="ghost" 
+                            <Button
+                                variant="ghost"
                                 size="sm"
                                 onClick={handleMarkAllAsRead}
                                 className="hidden md:flex"
@@ -407,8 +407,8 @@ export default function NotificationsPage() {
                             </Button>
                         )}
                         {unreadCount > 0 && !isLoading && (
-                            <Button 
-                                variant="ghost" 
+                            <Button
+                                variant="ghost"
                                 size="icon"
                                 onClick={handleMarkAllAsRead}
                                 className="md:hidden"
@@ -417,8 +417,8 @@ export default function NotificationsPage() {
                                 <CheckCheck className="h-5 w-5" aria-hidden="true" />
                             </Button>
                         )}
-                        <Button 
-                            variant="ghost" 
+                        <Button
+                            variant="ghost"
                             size="icon"
                             onClick={() => setShowSettings(!showSettings)}
                             aria-label={showSettings ? "Hide settings" : "Show settings"}
@@ -428,38 +428,38 @@ export default function NotificationsPage() {
                         </Button>
                     </div>
                 </div>
-                
+
                 {/* Filter Tabs */}
                 <Tabs value={filter} onValueChange={(v) => setFilter(v as NotificationFilter)} className="w-full">
                     <TabsList className="w-full justify-start rounded-none border-b bg-transparent h-auto p-0 overflow-x-auto">
-                        <TabsTrigger 
-                            value="all" 
+                        <TabsTrigger
+                            value="all"
                             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent text-sm px-4 whitespace-nowrap"
                         >
                             All
                         </TabsTrigger>
-                        <TabsTrigger 
+                        <TabsTrigger
                             value="mentions"
                             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent text-sm px-4 whitespace-nowrap"
                         >
                             <AtSign className="h-4 w-4 mr-2" aria-hidden="true" />
                             Mentions
                         </TabsTrigger>
-                        <TabsTrigger 
+                        <TabsTrigger
                             value="likes"
                             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent text-sm px-4 whitespace-nowrap"
                         >
                             <Heart className="h-4 w-4 mr-2" aria-hidden="true" />
                             Likes
                         </TabsTrigger>
-                        <TabsTrigger 
+                        <TabsTrigger
                             value="comments"
                             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent text-sm px-4 whitespace-nowrap"
                         >
                             <MessageCircle className="h-4 w-4 mr-2" aria-hidden="true" />
                             Comments
                         </TabsTrigger>
-                        <TabsTrigger 
+                        <TabsTrigger
                             value="follows"
                             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent text-sm px-4 whitespace-nowrap"
                         >
@@ -468,7 +468,7 @@ export default function NotificationsPage() {
                         </TabsTrigger>
                     </TabsList>
                 </Tabs>
-                
+
                 {/* Settings Panel (expandable) */}
                 {showSettings && (
                     <div className="border-t py-3 px-3 sm:px-4 bg-muted/50 space-y-2">
@@ -491,9 +491,9 @@ export default function NotificationsPage() {
                             </Button>
                         </div>
                         {notifications.length > 0 && (
-                            <Button 
-                                variant="destructive" 
-                                size="sm" 
+                            <Button
+                                variant="destructive"
+                                size="sm"
                                 className="w-full"
                                 onClick={handleClearAll}
                                 aria-label="Clear all notifications permanently"
@@ -505,7 +505,7 @@ export default function NotificationsPage() {
                     </div>
                 )}
             </div>
-            
+
             {/* Notifications List */}
             <div className="flex-grow overflow-y-auto">
                 {isLoading ? (
@@ -532,12 +532,12 @@ export default function NotificationsPage() {
                                 onDecline={handleDeclineCollaboration}
                             />
                         ))}
-                        
+
                         {/* Load more button (for pagination) */}
                         {filteredNotifications.length >= 20 && (
                             <div className="py-3 px-3 sm:px-4 text-center border-b">
-                                <Button 
-                                    variant="outline" 
+                                <Button
+                                    variant="outline"
                                     className="w-full"
                                     aria-label="Load more notifications"
                                 >

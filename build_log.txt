@@ -1,0 +1,130 @@
+
+> krishna-connect@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.9
+   - Environments: .env
+
+   Creating an optimized production build ...
+Failed to compile.
+
+./src/app/(app)/explore/components/post-card.tsx
+Module not found: Can't resolve '../../chat/components/image-viewer'
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/app/(app)/post/[id]/page.tsx
+
+./src/app/(app)/post/[id]/page.tsx
+Module not found: Can't resolve '../../chat/components/image-viewer'
+
+https://nextjs.org/docs/messages/module-not-found
+
+./src/app/(app)/explore/page.tsx
+Error:   [31mx[0m Merge conflict marker encountered.
+    ,-[[36;1;4mC:\KCS\chat\src\app\(app)\explore\page.tsx[0m:9:1]
+ [2m 6[0m | import { Button } from "@/components/ui/button";
+ [2m 7[0m | import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+ [2m 8[0m | import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+ [2m 9[0m | <<<<<<< HEAD
+    : [35;1m^^^^^^^[0m
+ [2m10[0m | import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+ [2m11[0m | import { Badge } from "@/components/ui/badge";
+ [2m11[0m | import { ScrollArea } from "@/components/ui/scroll-area";
+    `----
+  [31mx[0m Merge conflict marker encountered.
+    ,-[[36;1;4mC:\KCS\chat\src\app\(app)\explore\page.tsx[0m:47:1]
+ [2m44[0m |     updateLastSeenTime,
+ [2m45[0m |     trackPostView
+ [2m46[0m | } from '../feed-algorithm';
+ [2m47[0m | =======
+    : [35;1m^^^^^^^[0m
+ [2m48[0m | import { Button } from '@/components/ui/button';
+ [2m49[0m | import { Post } from '@/lib';
+ [2m49[0m | import { QuotePostDialog } from './components/quote-post-dialog'; // <-- ADDED
+    `----
+  [31mx[0m Merge conflict marker encountered.
+    ,-[[36;1;4mC:\KCS\chat\src\app\(app)\explore\page.tsx[0m:51:1]
+ [2m48[0m | import { Button } from '@/components/ui/button';
+ [2m49[0m | import { Post } from '@/lib';
+ [2m50[0m | import { QuotePostDialog } from './components/quote-post-dialog'; // <-- ADDED
+ [2m51[0m | >>>>>>> 80817c3 (added comments, reposts, and quotes)
+    : [35;1m^^^^^^^[0m
+ [2m52[0m | 
+ [2m53[0m | const POSTS_PER_PAGE = 10;
+ [2m53[0m | const SCROLL_THRESHOLD = 500;
+    `----
+  [31mx[0m Merge conflict marker encountered.
+     ,-[[36;1;4mC:\KCS\chat\src\app\(app)\explore\page.tsx[0m:192:1]
+ [2m189[0m | 
+ [2m190[0m | // Main Explore Page
+ [2m191[0m | export default function ExplorePage() {
+ [2m192[0m | <<<<<<< HEAD
+     : [35;1m^^^^^^^[0m
+ [2m193[0m |     const { loggedInUser } = useAppContext();
+ [2m194[0m |     const { toast } = useToast();
+ [2m194[0m |     const router = useRouter();
+     `----
+  [31mx[0m Merge conflict marker encountered.
+     ,-[[36;1;4mC:\KCS\chat\src\app\(app)\explore\page.tsx[0m:196:1]
+ [2m193[0m |     const { loggedInUser } = useAppContext();
+ [2m194[0m |     const { toast } = useToast();
+ [2m195[0m |     const router = useRouter();
+ [2m196[0m | =======
+     : [35;1m^^^^^^^[0m
+ [2m197[0m |   const { 
+ [2m198[0m |     loggedInUser, 
+ [2m198[0m |     isReady, 
+     `----
+  [31mx[0m Merge conflict marker encountered.
+     ,-[[36;1;4mC:\KCS\chat\src\app\(app)\explore\page.tsx[0m:208:1]
+ [2m205[0m |   
+ [2m206[0m |   const [searchQuery, setSearchQuery] = useState('');
+ [2m207[0m |   const [feedFilter, setFeedFilter] = useState<FeedFilter>('foryou');
+ [2m208[0m | >>>>>>> 80817c3 (added comments, reposts, and quotes)
+     : [35;1m^^^^^^^[0m
+ [2m209[0m | 
+ [2m210[0m |     // Mode management
+ [2m210[0m |     const [exploreMode, setExploreMode] = React.useState<ExploreMode>('feed');
+     `----
+  [31mx[0m Merge conflict marker encountered.
+     ,-[[36;1;4mC:\KCS\chat\src\app\(app)\explore\page.tsx[0m:236:1]
+ [2m233[0m |     const [showScrollTop, setShowScrollTop] = React.useState(false);
+ [2m234[0m |     const [isRefreshing, setIsRefreshing] = React.useState(false);
+ [2m235[0m | 
+ [2m236[0m | <<<<<<< HEAD
+     : [35;1m^^^^^^^[0m
+ [2m237[0m |     // Notifications
+ [2m238[0m |     const [notifications, setNotifications] = React.useState<NotificationType[]>([]);
+ [2m238[0m |     const [unreadCount, setUnreadCount] = React.useState(0);
+     `----
+  [31mx[0m Merge conflict marker encountered.
+      ,-[[36;1;4mC:\KCS\chat\src\app\(app)\explore\page.tsx[0m:1610:1]
+ [2m1607[0m |             </div>
+ [2m1608[0m |         </>
+ [2m1609[0m |     );
+ [2m1610[0m | =======
+      : [35;1m^^^^^^^[0m
+ [2m1611[0m |   return (
+ [2m1612[0m |     <>
+ [2m1612[0m |       {/* --- ADDED: Global Quote Dialog --- */}
+      `----
+  [31mx[0m Merge conflict marker encountered.
+      ,-[[36;1;4mC:\KCS\chat\src\app\(app)\explore\page.tsx[0m:1716:1]
+ [2m1713[0m |       </div>
+ [2m1714[0m |     </>
+ [2m1715[0m |   );
+ [2m1716[0m | >>>>>>> 80817c3 (added comments, reposts, and quotes)
+      : [35;1m^^^^^^^[0m
+ [2m1717[0m | }
+      `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/(app)/explore/page.tsx
+
+
+> Build failed because of webpack errors

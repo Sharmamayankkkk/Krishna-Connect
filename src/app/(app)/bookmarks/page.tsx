@@ -20,29 +20,38 @@ import {
 
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { PostCard } from '../components/post-card';
-import { dummyPosts, PostType, BookmarkCollection } from '../data';
+import { PostType } from '../types';
 import { useRouter } from 'next/navigation';
 
-// Mock collections
+// Type for bookmark collections
+type BookmarkCollection = {
+    id: string;
+    name: string;
+    postIds: string[];
+    createdAt: string;
+    isPrivate: boolean;
+};
+
+// Mock collections (to be replaced with real data)
 const mockCollections: BookmarkCollection[] = [
     {
         id: 'collection_1',
         name: 'Spiritual Wisdom',
-        postIds: ['post_1', 'post_4', 'post_6'],
+        postIds: [],
         createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
         isPrivate: false,
     },
     {
         id: 'collection_2',
         name: 'Kirtan Melodies',
-        postIds: ['post_8'],
+        postIds: [],
         createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
         isPrivate: true,
     },
     {
         id: 'collection_3',
         name: 'Festival Photos',
-        postIds: ['post_7'],
+        postIds: [],
         createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(),
         isPrivate: false,
     },
@@ -69,8 +78,8 @@ function CollectionCard({ collection, postCount }: { collection: BookmarkCollect
 export default function BookmarksPage() {
     const router = useRouter();
 
-    // Filter posts that are bookmarked
-    const bookmarkedPosts = dummyPosts.filter(post => post.savedBy && post.savedBy.length > 0);
+    // Empty bookmarked posts - will be fetched from DB
+    const bookmarkedPosts: PostType[] = [];
 
     const [viewMode, setViewMode] = React.useState<'list' | 'grid'>('list');
 
@@ -169,7 +178,7 @@ export default function BookmarksPage() {
 
                         {/* Bookmark Collections */}
                         <TabsContent value="collections" className="mt-4">
-                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                                 {mockCollections.map(collection => (
                                     <CollectionCard
                                         key={collection.id}

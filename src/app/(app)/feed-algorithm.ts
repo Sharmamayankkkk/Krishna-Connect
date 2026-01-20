@@ -3,7 +3,7 @@
  * Handles personalized feed ranking, recommendations, and feed management
  */
 
-import { PostType } from './data';
+import { PostType } from './types';
 
 // User interaction history tracking
 export interface UserInteractions {

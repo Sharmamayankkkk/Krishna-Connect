@@ -12,16 +12,37 @@ export type User = {
   is_verified?: boolean;
 };
 
+export type Media = {
+  type: string;
+  url: string;
+};
+
 export type Post = {
   id: number | string;
   author_id: string;
   created_at: string;
   image_url?: string | null;
   content?: string | null;
-  stats?: {
+  stats: {
     likes?: number;
     comments?: number;
+    reposts?: number;
+    quotes?: number;
+    views?: number;
   };
+  // Added fields based on usage
+  author: {
+    id: string;
+    username: string;
+    name: string;
+    avatar_url: string;
+    verified?: boolean;
+  };
+  media_urls?: Media[];
+  likes: string[]; // array of user IDs
+  reposts: string[]; // array of user IDs
+  quote_of?: Post;
+  poll?: any; 
 };
 
 export type Reaction = {

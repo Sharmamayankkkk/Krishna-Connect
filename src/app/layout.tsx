@@ -66,7 +66,7 @@ export const metadata: Metadata = {
     },
     description: APP_DESCRIPTION,
     images: [
-       `${APP_URL}/logo/light_KCS.svg`,
+      `${APP_URL}/logo/light_KCS.svg`,
     ]
   },
   other: {
@@ -86,7 +86,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={cn("font-sans antialiased", inter.variable)}>
+      <body className={cn("font-sans antialiased", inter.variable)} suppressHydrationWarning>
         <Script
           id="adsbygoogle-script"
           async
