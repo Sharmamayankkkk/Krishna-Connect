@@ -11,10 +11,45 @@ import {
 } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 export function MainNav() {
   const pathname = usePathname()
-  const unreadCount = 5; // Placeholder for unread notifications
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  // Fetch unread notification count
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      const supabase = createClient()
+
+      const { data, error } = await supabase.rpc('get_unread_notification_count')
+
+      if (!error && data !== null) {
+        setUnreadCount(data)
+      }
+    }
+
+    fetchUnreadCount()
+
+    // Set up realtime subscription for notification changes
+    const supabase = createClient()
+    const channel = supabase
+      .channel('notification_count_changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'notifications'
+      }, () => {
+        // Refresh count when notifications change
+        fetchUnreadCount()
+      })
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [])
 
   const menuItems = [
     {

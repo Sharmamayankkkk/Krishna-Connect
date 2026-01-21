@@ -657,11 +657,15 @@ export default function ExplorePage() {
         if (!loggedInUser) return;
 
         const supabase = createClient();
+        const post = allPosts.find(p => p.id === postId);
+        if (!post) return;
 
+        const isCurrentlyLiked = post.likedBy.includes(loggedInUser.id);
+
+        // Optimistic UI update
         const updatePost = (post: PostType) => {
             if (post.id === postId) {
-                const isLiked = post.likedBy.includes(loggedInUser.id);
-                const newLikedBy = isLiked
+                const newLikedBy = isCurrentlyLiked
                     ? post.likedBy.filter(id => id !== loggedInUser.id)
                     : [...post.likedBy, loggedInUser.id];
 
@@ -677,44 +681,35 @@ export default function ExplorePage() {
         setAllPosts(prev => prev.map(updatePost));
         setVisiblePosts(prev => prev.map(updatePost));
 
-        const post = allPosts.find(p => p.id === postId);
-        if (post) {
-            const isLiked = post.likedBy.includes(loggedInUser.id);
+        // Track interaction (Feed Algorithm)
+        setUserInteractions(prev => ({
+            ...prev,
+            likedPosts: isCurrentlyLiked
+                ? prev.likedPosts.filter(id => id !== postId)
+                : [...prev.likedPosts, postId]
+        }));
 
-            // Track interaction (Feed Algorithm)
-            setUserInteractions(prev => ({
-                ...prev,
-                likedPosts: isLiked
-                    ? prev.likedPosts.filter(id => id !== postId)
-                    : [...prev.likedPosts, postId]
-            }));
+        // Call atomic toggle function in database
+        try {
+            const { data, error } = await supabase.rpc('toggle_post_like', {
+                p_post_id: parseInt(postId)
+            });
 
-            // Supabase Persistence
-            try {
-                if (isLiked) {
-                    // Was liked, so remove like
-                    const { error } = await supabase
-                        .from('post_likes')
-                        .delete()
-                        .eq('post_id', postId)
-                        .eq('user_id', loggedInUser.id);
-                    if (error) throw error;
-                } else {
-                    // Was not liked, so add like
-                    const { error } = await supabase
-                        .from('post_likes')
-                        .insert({ post_id: postId, user_id: loggedInUser.id });
-                    if (error) throw error;
-                }
-            } catch (error) {
-                console.error("Error updating like status:", error);
-                // Revert optimistic update? For now just toast
-                toast({
-                    title: "Error",
-                    description: "Failed to update like status",
-                    variant: "destructive"
-                });
-            }
+            if (error) throw error;
+
+            console.log(`Like toggled for post ${postId}:`, data);
+        } catch (error: any) {
+            console.error("Error toggling like:", error);
+
+            // Revert optimistic update on error
+            setAllPosts(prev => prev.map(updatePost));
+            setVisiblePosts(prev => prev.map(updatePost));
+
+            toast({
+                title: "Error",
+                description: error.message || "Failed to update like status",
+                variant: "destructive"
+            });
         }
     };
 
@@ -757,12 +752,14 @@ export default function ExplorePage() {
         }
     };
 
-    const handleRepost = (postId: string) => {
+    const handleRepost = async (postId: string) => {
         if (!loggedInUser) return;
 
+        const supabase = createClient();
         const originalPost = allPosts.find(p => p.id === postId);
         if (!originalPost) return;
 
+        // Optimistic UI update
         const repost: PostType = {
             id: `post_${Date.now()}`,
             author: {
@@ -786,22 +783,63 @@ export default function ExplorePage() {
 
         const updateOriginalPost = (post: PostType) => {
             if (post.id === postId) {
+                const isReposted = post.repostedBy.includes(loggedInUser.id);
+                const newRepostedBy = isReposted
+                    ? post.repostedBy.filter(id => id !== loggedInUser.id)
+                    : [...post.repostedBy, loggedInUser.id];
+
                 return {
                     ...post,
-                    repostedBy: [...post.repostedBy, loggedInUser.id],
-                    stats: { ...post.stats, reposts: post.stats.reposts + 1 }
+                    repostedBy: newRepostedBy,
+                    stats: { ...post.stats, reposts: newRepostedBy.length }
                 };
             }
             return post;
         };
 
-        setAllPosts(prev => [repost, ...prev.map(updateOriginalPost)]);
-        setVisiblePosts(prev => [repost, ...prev.map(updateOriginalPost)]);
+        const wasReposted = originalPost.repostedBy.includes(loggedInUser.id);
 
-        toast({
-            title: "Reposted!",
-            description: "Post shared to your followers"
-        });
+        // Update UI immediately
+        if (!wasReposted) {
+            setAllPosts(prev => [repost, ...prev.map(updateOriginalPost)]);
+            setVisiblePosts(prev => [repost, ...prev.map(updateOriginalPost)]);
+        } else {
+            setAllPosts(prev => prev.map(updateOriginalPost));
+            setVisiblePosts(prev => prev.map(updateOriginalPost));
+        }
+
+        // Persist to database using atomic toggle function
+        try {
+            const { data, error } = await supabase.rpc('toggle_post_repost', {
+                p_post_id: parseInt(postId)
+            });
+
+            if (error) throw error;
+
+            console.log(`Repost toggled for post ${postId}:`, data);
+
+            toast({
+                title: wasReposted ? "Repost removed" : "Reposted!",
+                description: wasReposted ? "Post removed from your profile" : "Post shared to your followers"
+            });
+        } catch (error: any) {
+            console.error("Error toggling repost:", error);
+
+            // Revert optimistic update
+            if (!wasReposted) {
+                setAllPosts(prev => prev.slice(1).map(updateOriginalPost));
+                setVisiblePosts(prev => prev.slice(1).map(updateOriginalPost));
+            } else {
+                setAllPosts(prev => prev.map(updateOriginalPost));
+                setVisiblePosts(prev => prev.map(updateOriginalPost));
+            }
+
+            toast({
+                title: "Error",
+                description: error.message || "Failed to update repost",
+                variant: "destructive"
+            });
+        }
     };
 
     const handleCommentCreated = async (postId: string, commentText: string, parentCommentId?: string) => {

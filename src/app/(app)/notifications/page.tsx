@@ -296,8 +296,111 @@ export default function NotificationsPage() {
     // State
     const [notifications, setNotifications] = React.useState<NotificationType[]>([]);
     const [filter, setFilter] = React.useState<NotificationFilter>('all');
-    const [isLoading, setIsLoading] = React.useState(false);
+    const [isLoading, setIsLoading] = React.useState(true);
     const [showSettings, setShowSettings] = React.useState(false);
+
+    // Fetch notifications from database
+    React.useEffect(() => {
+        const fetchNotifications = async () => {
+            setIsLoading(true);
+            const supabase = (await import('@/lib/supabase/client')).createClient();
+
+            const { data, error } = await supabase.rpc('get_user_notifications', {
+                p_limit: 100,
+                p_offset: 0
+            });
+
+            if (error) {
+                console.error('Error fetching notifications:', error);
+                toast({
+                    title: "Error loading notifications",
+                    description: error.message,
+                    variant: "destructive"
+                });
+                setIsLoading(false);
+                return;
+            }
+
+            if (data) {
+                console.log('Fetched notifications:', data.length);
+                // Transform database notifications to UI format
+                const transformedNotifications: NotificationType[] = data.map((n: any) => ({
+                    id: n.id.toString(),
+                    type: mapNotificationType(n.type),
+                    fromUser: {
+                        id: n.actor_id,
+                        name: n.actor_name || 'Unknown User',
+                        username: n.actor_username || 'unknown',
+                        avatar: n.actor_avatar_url || '/placeholder-user.jpg',
+                        verified: n.actor_verified || false
+                    },
+                    postId: n.entity_id?.toString(),
+                    commentId: undefined,
+                    text: undefined,
+                    createdAt: n.created_at,
+                    read: n.is_read
+                }));
+
+                setNotifications(transformedNotifications);
+            }
+            setIsLoading(false);
+        };
+
+        fetchNotifications();
+
+        // Set up realtime subscription for new notifications
+        const setupRealtimeSubscription = async () => {
+            const supabase = (await import('@/lib/supabase/client')).createClient();
+
+            // Get current user ID properly
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (!user) {
+                console.log('No user found for realtime subscription');
+                return null;
+            }
+
+            const channel = supabase
+                .channel('notifications_changes')
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'notifications',
+                    filter: `user_id=eq.${user.id}`
+                }, (payload) => {
+                    console.log('Notification change detected:', payload);
+                    // Refresh notifications when any change occurs
+                    fetchNotifications();
+                })
+                .subscribe();
+
+            return { supabase, channel };
+        };
+
+        let realtimeCleanup: { supabase: any; channel: any } | null = null;
+
+        setupRealtimeSubscription().then(result => {
+            realtimeCleanup = result;
+        });
+
+        return () => {
+            if (realtimeCleanup) {
+                realtimeCleanup.supabase.removeChannel(realtimeCleanup.channel);
+            }
+        };
+    }, [toast]);
+
+    // Helper function to map database notification types to UI types
+    const mapNotificationType = (dbType: string): NotificationType['type'] => {
+        const typeMap: Record<string, NotificationType['type']> = {
+            'new_like': 'like',
+            'new_comment': 'comment',
+            'new_repost': 'repost',
+            'follow_request': 'follow',
+            'new_follower': 'follow'
+        };
+        return typeMap[dbType] || 'follow'; // Default fallback
+    };
 
     // Filter notifications
     const filteredNotifications = React.useMemo(() => {
@@ -330,21 +433,65 @@ export default function NotificationsPage() {
     );
 
     // Memoized handlers for better performance
-    const handleMarkAsRead = React.useCallback((id: string) => {
+    const handleMarkAsRead = React.useCallback(async (id: string) => {
+        const supabase = (await import('@/lib/supabase/client')).createClient();
+
+        // Optimistic update
         setNotifications(prev =>
             prev.map(n => n.id === id ? { ...n, read: true } : n)
         );
+
+        const { error } = await supabase.rpc('mark_notification_as_read', {
+            p_notification_id: parseInt(id)
+        });
+
+        if (error) {
+            console.error('Error marking notification as read:', error);
+            // Revert on error
+            setNotifications(prev =>
+                prev.map(n => n.id === id ? { ...n, read: false } : n)
+            );
+        }
     }, []);
 
-    const handleMarkAllAsRead = React.useCallback(() => {
+    const handleMarkAllAsRead = React.useCallback(async () => {
+        const supabase = (await import('@/lib/supabase/client')).createClient();
+
+        // Optimistic update
         setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+
+        const { error } = await supabase.rpc('mark_all_notifications_as_read');
+
+        if (error) {
+            console.error('Error marking all as read:', error);
+            toast({
+                title: "Error",
+                description: "Failed to mark all as read",
+                variant: "destructive"
+            });
+            return;
+        }
+
         toast({
             title: "✓ All marked as read",
         });
     }, [toast]);
 
-    const handleDelete = React.useCallback((id: string) => {
+    const handleDelete = React.useCallback(async (id: string) => {
+        const supabase = (await import('@/lib/supabase/client')).createClient();
+
+        // Optimistic update
         setNotifications(prev => prev.filter(n => n.id !== id));
+
+        const { error } = await supabase.rpc('delete_notification', {
+            p_notification_id: parseInt(id)
+        });
+
+        if (error) {
+            console.error('Error deleting notification:', error);
+            // Could revert here, but deletion is usually final
+        }
+
         toast({
             title: "✗ Notification deleted",
             variant: 'destructive'
@@ -371,8 +518,24 @@ export default function NotificationsPage() {
         });
     }, [toast]);
 
-    const handleClearAll = React.useCallback(() => {
+    const handleClearAll = React.useCallback(async () => {
+        const supabase = (await import('@/lib/supabase/client')).createClient();
+
+        // Optimistic update
         setNotifications([]);
+
+        const { error } = await supabase.rpc('delete_all_notifications');
+
+        if (error) {
+            console.error('Error clearing notifications:', error);
+            toast({
+                title: "Error",
+                description: "Failed to clear notifications",
+                variant: "destructive"
+            });
+            return;
+        }
+
         toast({
             title: "✓ All notifications cleared",
             description: "Your notification inbox is now empty"
