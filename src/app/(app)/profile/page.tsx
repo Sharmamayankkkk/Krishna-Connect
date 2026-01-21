@@ -65,7 +65,7 @@ export default function ProfilePage() {
   const { toast } = useToast();
   const router = useRouter();
   const supabase = createClient();
-  
+
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [bio, setBio] = useState('');
@@ -80,10 +80,10 @@ export default function ProfilePage() {
       router.push('/login');
     }
     if (loggedInUser) {
-        setName(loggedInUser.name);
-        setUsername(loggedInUser.username);
-        setBio(loggedInUser.bio || '');
-        setAvatarPreview(loggedInUser.avatar_url);
+      setName(loggedInUser.name);
+      setUsername(loggedInUser.username);
+      setBio(loggedInUser.bio || '');
+      setAvatarPreview(loggedInUser.avatar_url);
     }
   }, [loggedInUser, isReady, router]);
 
@@ -91,7 +91,7 @@ export default function ProfilePage() {
   if (!isReady || !loggedInUser) {
     return <ProfilePageLoader />;
   }
-  
+
   const getRoleBadge = (role?: 'user' | 'admin' | 'gurudev', is_admin?: boolean) => {
     if (role === 'gurudev') {
       return <Badge variant="destructive">Gurudev</Badge>;
@@ -126,10 +126,10 @@ export default function ProfilePage() {
       }
 
       await updateUser({
-          name,
-          username,
-          bio,
-          avatar_url: newAvatarUrl,
+        name,
+        username,
+        bio,
+        avatar_url: newAvatarUrl,
       });
 
       setAvatarFile(null); // Clear the file after successful upload
@@ -163,7 +163,7 @@ export default function ProfilePage() {
 
   return (
     <div className="flex h-full flex-col">
-       <input
+      <input
         type="file"
         ref={avatarInputRef}
         onChange={handleAvatarChange}
@@ -210,7 +210,7 @@ export default function ProfilePage() {
                     <Label htmlFor="username">Username</Label>
                     <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} />
                   </div>
-                   <div className="space-y-2">
+                  <div className="space-y-2">
                     <Label htmlFor="gender">Gender</Label>
                     <Input
                       id="gender"
@@ -218,8 +218,8 @@ export default function ProfilePage() {
                         loggedInUser.gender === "male"
                           ? "Prabhuji (Male)"
                           : loggedInUser.gender === "female"
-                          ? "Mataji (Female)"
-                          : "Not specified"
+                            ? "Mataji (Female)"
+                            : "Not specified"
                       }
                       disabled
                     />

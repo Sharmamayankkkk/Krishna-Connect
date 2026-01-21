@@ -36,7 +36,7 @@ import {
     TrendingUp
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { cn, getAvatarUrl } from '@/lib/utils';
 import { PollType, PostType, CommentType, ReplyType, MediaType } from '../types';
 import { VideoPlayer } from './video-player';
 import { ImageViewerDialog } from './image-viewer';
@@ -978,7 +978,7 @@ export function PostCard({
                         {[post.author, ...(post.collaborators || [])].slice(0, 3).map((user, index) => (
                             <Link href={`/profile/${encodeURIComponent(user.username)}`} key={user.id} prefetch={false}>
                                 <Avatar className="h-10 w-10 border-2 border-background" style={{ zIndex: 3 - index }}>
-                                    <AvatarImage src={(user as any).avatar || (user as any).avatar_url} alt={user.name} />
+                                    <AvatarImage src={getAvatarUrl((user as any).avatar || (user as any).avatar_url)} alt={user.name} />
                                     <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                                 </Avatar>
                             </Link>

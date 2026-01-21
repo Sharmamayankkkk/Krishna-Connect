@@ -26,6 +26,7 @@ interface PostDetailDialogProps {
 }
 
 export function PostDetailDialog({ post, author, initialComments = [], open, onOpenChange }: PostDetailDialogProps) {
+  console.log('PostDetailDialog rendering. Open:', open, 'Post ID:', post?.id);
   const { loggedInUser } = useAppContext();
   const { toast } = useToast();
   const [comments, setComments] = useState<Comment[]>(initialComments);
@@ -52,6 +53,40 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
       setIsSaved(false);
     }
   }, [post, loggedInUser]);
+
+  // Fetch comments when dialog opens
+  useEffect(() => {
+    const fetchComments = async () => {
+      console.log('Fetching comments for post:', post?.id, 'Open:', open);
+      if (!post?.id || !open) return;
+
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('comments')
+        .select(`
+          *,
+          profiles (*)
+        `)
+        .eq('post_id', post.id)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching comments:', error);
+        toast({ title: 'Debug: Fetch Error', description: error.message, variant: 'destructive' });
+        return;
+      }
+
+      console.log('Fetched comments data:', data);
+
+      if (data) {
+        // Transform data to match Comment type if needed, or cast if structure matches
+        // The type expects 'profiles' property which is joined by user_id
+        setComments(data as unknown as Comment[]);
+      }
+    };
+
+    fetchComments();
+  }, [post?.id, open]);
 
   // Auto-scroll to bottom when new comments are added (desktop only)
   useEffect(() => {

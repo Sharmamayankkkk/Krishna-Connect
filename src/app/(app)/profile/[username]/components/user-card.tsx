@@ -7,12 +7,14 @@ interface UserCardProps {
   user: User;
 }
 
+import { getAvatarUrl } from '@/lib/utils'; // Assuming absolute import path works here too
+
 export function UserCard({ user }: UserCardProps) {
   return (
     <Link href={`/profile/${encodeURIComponent(user.username)}`} prefetch={false}>
       <div className="flex items-center space-x-4 p-2 hover:bg-muted rounded-lg">
         <Avatar>
-          <AvatarImage src={user.avatar_url} alt={`${user.username}'s avatar`} />
+          <AvatarImage src={getAvatarUrl(user.avatar_url)} alt={`${user.username}'s avatar`} />
           <AvatarFallback>{user.username?.[0]?.toUpperCase()}</AvatarFallback>
         </Avatar>
         <div>

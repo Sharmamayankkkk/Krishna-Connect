@@ -98,12 +98,95 @@ export function CommentSheet({ post, open, onOpenChange, onComment }: CommentShe
   const [content, setContent] = useState('');
   const [isPosting, setIsPosting] = useState(false);
   const { toast } = useToast();
+  const [comments, setComments] = useState<Comment[]>(post.comments || []);
+
+  React.useEffect(() => {
+    setComments(post.comments || []);
+  }, [post.comments]);
+
+  // Fetch comments when sheet opens
+  React.useEffect(() => {
+    const fetchComments = async () => {
+      if (!post.id || !open) return;
+
+      const supabase = (await import('@/lib/supabase/client')).createClient();
+
+      // Toast to confirm fetch start
+      // toast({ title: 'Debug', description: `Fetching comments for post ${post.id}` });
+
+      const { data, error } = await supabase
+        .from('comments')
+        .select(`
+          *,
+          profiles (*)
+        `)
+        .eq('post_id', post.id)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching comments:', error);
+        toast({ title: 'Fetch Error', description: error.message, variant: 'destructive' });
+        return;
+      }
+
+      if (data) {
+        // toast({ title: 'Debug', description: `Fetched ${data.length} comments` });
+        const formattedComments = data.map((c: any) => ({
+          id: c.id,
+          text: c.content,
+          createdAt: c.created_at,
+          user: {
+            id: c.profiles?.id || c.user_id,
+            name: c.profiles?.name || 'Unknown',
+            username: c.profiles?.username || 'unknown',
+            avatar: c.profiles?.avatar_url || 'https://github.com/shadcn.png'
+          },
+          likes: 0,
+          likedBy: [],
+          replies: [],
+          isPinned: false,
+          isHidden: false
+        }));
+        setComments(formattedComments);
+      }
+    };
+
+    if (open) {
+      fetchComments();
+    }
+  }, [post.id, open]);
+
 
   const handleComment = async () => {
-    if (!content.trim()) return;
+    if (!content.trim() || !loggedInUser) return;
     setIsPosting(true);
     try {
       if (onComment) {
+        // Optimistic update
+        const newComment: Comment = {
+          id: `temp-${Date.now()}`,
+          text: content,
+          createdAt: new Date().toISOString(),
+          user: {
+            id: loggedInUser.id,
+            name: loggedInUser.name,
+            username: loggedInUser.username,
+            avatar: loggedInUser.avatar_url,
+          },
+          likes: 0,
+          likedBy: [],
+          replies: [],
+          isPinned: false,
+          isHidden: false
+        };
+        setComments(prev => [...prev, newComment]);
+
+        // We still call onComment to handle the actual server submission via parent if needed,
+        // BUT calling parent might not update our local fetch.
+        // Ideally we should submit here directly if we are fetching here.
+        // For now, let's keep parent handler but also insert directly? 
+        // No, parent handler (PostCard) calls onComment which might do the insertion.
+        // Let's rely on parent handler for now, but if parent doesn't refresh 'post' prop, we need to handle it.
         onComment(post.id, content);
       }
       setContent('');

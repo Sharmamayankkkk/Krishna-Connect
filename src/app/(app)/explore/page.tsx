@@ -59,6 +59,25 @@ const transformPost = (dbPost: any): PostType => {
         verified: false
     };
 
+    // Transform comments from database format to UI format
+    const transformedComments: CommentType[] = (dbPost.post_comments || []).map((comment: any) => ({
+        id: comment.id.toString(),
+        user: {
+            id: comment.profiles?.id || comment.user_id,
+            name: comment.profiles?.name || 'Unknown User',
+            username: comment.profiles?.username || 'unknown',
+            avatar: comment.profiles?.avatar_url || '/placeholder-user.jpg',
+            verified: comment.profiles?.verified || false
+        },
+        text: comment.content,
+        createdAt: comment.created_at,
+        likes: comment.like_count || 0,
+        likedBy: [], // Could be populated if needed
+        replies: [], // Nested replies not yet supported
+        isPinned: false,
+        isHidden: false
+    }));
+
     return {
         id: dbPost.id.toString(),
         author: {
@@ -74,13 +93,13 @@ const transformPost = (dbPost: any): PostType => {
         poll: dbPost.poll,
         stats: {
             likes: dbPost.likes?.[0]?.count || 0,
-            comments: dbPost.comments?.[0]?.count || 0,
+            comments: transformedComments.length || dbPost.comments?.[0]?.count || 0,
             reposts: dbPost.reposts?.[0]?.count || 0,
             reshares: 0, // Not tracked yet
             views: 0, // Not tracked yet
             bookmarks: 0 // Not tracked yet
         },
-        comments: [], // Loaded separately if needed
+        comments: transformedComments,
         originalPost: dbPost.quote_of ? transformPost(dbPost.quote_of) : null,
         likedBy: dbPost.user_likes?.length ? [dbPost.user_likes[0].user_id] : [], // Check if current user liked
         savedBy: [],
@@ -316,6 +335,13 @@ export default function ExplorePage() {
                 likes:post_likes(count),
                 comments:comments(count),
                 reposts:post_reposts(count),
+                post_comments:comments (
+                    id,
+                    user_id,
+                    content,
+                    created_at,
+                    profiles:user_id (id, name, username, avatar_url, verified)
+                ),
                 quote_of:quote_of_id (
                     *,
                     author:user_id (id, name, username, avatar_url, verified)
@@ -1058,53 +1084,46 @@ export default function ExplorePage() {
         });
     };
 
-    const handlePollVote = (postId: string, optionId: string) => {
+    const handlePollVote = async (postId: string, optionId: string) => {
         if (!loggedInUser) return;
 
-        const updatePost = (post: PostType) => {
-            if (post.id !== postId || !post.poll) return post;
+        const supabase = createClient();
 
-            const hasVoted = post.poll.options.some(opt =>
-                opt.votedBy.includes(loggedInUser.id)
-            );
-
-            if (hasVoted && !post.poll.allowMultipleChoices) {
-                toast({
-                    title: "Already voted",
-                    description: "You can only vote once on this poll",
-                    variant: "destructive"
+        try {
+            // Call the database function to record the vote
+            const { data: updatedPoll, error } = await supabase
+                .rpc('vote_on_poll', {
+                    p_post_id: parseInt(postId),
+                    p_option_id: optionId
                 });
-                return post;
-            }
 
-            const updatedOptions = post.poll.options.map(opt => {
-                if (opt.id === optionId) {
-                    return {
-                        ...opt,
-                        votes: opt.votes + 1,
-                        votedBy: [...opt.votedBy, loggedInUser.id]
-                    };
-                }
-                return opt;
-            });
+            if (error) throw error;
 
-            return {
-                ...post,
-                poll: {
-                    ...post.poll,
-                    options: updatedOptions,
-                    totalVotes: post.poll.totalVotes + 1
-                }
+            // Update local state with the returned poll data
+            const updatePost = (post: PostType) => {
+                if (post.id !== postId || !post.poll) return post;
+
+                return {
+                    ...post,
+                    poll: updatedPoll as PollType
+                };
             };
-        };
 
-        setAllPosts(prev => prev.map(updatePost));
-        setVisiblePosts(prev => prev.map(updatePost));
+            setAllPosts(prev => prev.map(updatePost));
+            setVisiblePosts(prev => prev.map(updatePost));
 
-        toast({
-            title: "Vote recorded",
-            description: "Thank you for voting!"
-        });
+            toast({
+                title: "Vote recorded",
+                description: "Thank you for voting!"
+            });
+        } catch (error: any) {
+            console.error("Error voting on poll:", error);
+            toast({
+                title: "Error",
+                description: error.message || "Failed to record your vote",
+                variant: "destructive"
+            });
+        }
     };
 
     const handlePromoteClick = (post: PostType) => {
