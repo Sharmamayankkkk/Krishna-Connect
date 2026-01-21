@@ -1,25 +1,40 @@
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Icons } from "@/components/icons"
-import { SidebarTrigger } from "@/components/ui/sidebar"
+"use client";
 
-export default function ChatHomePage() {
+import { useAppContext } from "@/providers/app-provider";
+import { ChatList } from "../components/chat-list";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+
+export default function ChatPage() {
+  const { chats } = useAppContext();
+
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full w-full bg-background">
+      {/* Mobile Header */}
       <header className="flex items-center p-2 border-b gap-2 md:hidden">
         <SidebarTrigger />
-        <h1 className="font-semibold text-lg">Krishna Connect</h1>
+        <h1 className="font-semibold text-lg">Chats</h1>
       </header>
-      <div className="flex flex-1 items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md text-center border-0 shadow-none">
-          <CardHeader>
-            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Icons.logo className="h-10 w-10" />
-            </div>
-            <CardTitle className="text-2xl font-bold">Welcome to Krishna Connect</CardTitle>
-            <CardDescription>Select a chat from the sidebar to start messaging, or create a new one.</CardDescription>
-          </CardHeader>
-        </Card>
+
+      {/* Desktop Header */}
+      <div className="hidden md:flex items-center justify-between border-b px-6 py-4">
+        <div>
+          <h1 className="text-2xl font-bold mb-1">Chats</h1>
+          <p className="text-sm text-muted-foreground">
+            {chats.length} {chats.length === 1 ? 'conversation' : 'conversations'}
+          </p>
+        </div>
+        <Button>
+          <Plus className="h-4 w-4 mr-2" />
+          New Chat
+        </Button>
+      </div>
+
+      {/* Chat List with built-in search */}
+      <div className="flex-1 overflow-hidden p-4">
+        <ChatList chats={chats} />
       </div>
     </div>
-  )
+  );
 }
