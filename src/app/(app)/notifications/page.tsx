@@ -543,14 +543,15 @@ export default function NotificationsPage() {
     }, [toast]);
 
     return (
-        <div className="flex flex-col min-h-screen w-full max-w-2xl mx-auto sm:border-x">
+        <div className="flex flex-col min-h-screen w-full bg-background">
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-                <div className="flex items-center justify-between py-3 px-3 sm:px-4">
-                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                        <h1 className="text-xl font-bold">Notifications</h1>
+            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b">
+                <div className="flex items-center justify-between py-4 px-4 sm:px-6">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <Bell className="h-6 w-6 text-primary" />
+                        <h1 className="text-2xl font-bold">Notifications</h1>
                         {unreadCount > 0 && (
-                            <Badge variant="default" className="rounded-full flex-shrink-0">
+                            <Badge variant="default" className="rounded-full px-2 py-0.5">
                                 {unreadCount}
                             </Badge>
                         )}
@@ -562,11 +563,11 @@ export default function NotificationsPage() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={handleMarkAllAsRead}
-                                className="hidden md:flex"
+                                className="hidden md:flex items-center gap-2 hover:bg-primary/10"
                                 aria-label="Mark all notifications as read"
                             >
-                                <CheckCheck className="h-4 w-4 mr-2" aria-hidden="true" />
-                                Mark all as read
+                                <CheckCheck className="h-4 w-4" aria-hidden="true" />
+                                <span className="text-sm font-medium">Mark all read</span>
                             </Button>
                         )}
                         {unreadCount > 0 && !isLoading && (
@@ -574,7 +575,7 @@ export default function NotificationsPage() {
                                 variant="ghost"
                                 size="icon"
                                 onClick={handleMarkAllAsRead}
-                                className="md:hidden"
+                                className="md:hidden hover:bg-primary/10"
                                 aria-label="Mark all notifications as read"
                             >
                                 <CheckCheck className="h-5 w-5" aria-hidden="true" />
@@ -584,6 +585,7 @@ export default function NotificationsPage() {
                             variant="ghost"
                             size="icon"
                             onClick={() => setShowSettings(!showSettings)}
+                            className="hover:bg-muted"
                             aria-label={showSettings ? "Hide settings" : "Show settings"}
                             aria-expanded={showSettings}
                         >
@@ -594,37 +596,37 @@ export default function NotificationsPage() {
 
                 {/* Filter Tabs */}
                 <Tabs value={filter} onValueChange={(v) => setFilter(v as NotificationFilter)} className="w-full">
-                    <TabsList className="w-full justify-start rounded-none border-b bg-transparent h-auto p-0 overflow-x-auto">
+                    <TabsList className="w-full justify-start rounded-none border-b-0 bg-transparent h-auto p-0 overflow-x-auto flex-nowrap">
                         <TabsTrigger
                             value="all"
-                            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent text-sm px-4 whitespace-nowrap"
+                            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-sm px-4 py-3 font-medium whitespace-nowrap"
                         >
                             All
                         </TabsTrigger>
                         <TabsTrigger
                             value="mentions"
-                            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent text-sm px-4 whitespace-nowrap"
+                            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-sm px-4 py-3 font-medium whitespace-nowrap"
                         >
                             <AtSign className="h-4 w-4 mr-2" aria-hidden="true" />
                             Mentions
                         </TabsTrigger>
                         <TabsTrigger
                             value="likes"
-                            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent text-sm px-4 whitespace-nowrap"
+                            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-sm px-4 py-3 font-medium whitespace-nowrap"
                         >
                             <Heart className="h-4 w-4 mr-2" aria-hidden="true" />
                             Likes
                         </TabsTrigger>
                         <TabsTrigger
                             value="comments"
-                            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent text-sm px-4 whitespace-nowrap"
+                            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-sm px-4 py-3 font-medium whitespace-nowrap"
                         >
                             <MessageCircle className="h-4 w-4 mr-2" aria-hidden="true" />
                             Comments
                         </TabsTrigger>
                         <TabsTrigger
                             value="follows"
-                            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent text-sm px-4 whitespace-nowrap"
+                            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-sm px-4 py-3 font-medium whitespace-nowrap"
                         >
                             <UserPlus className="h-4 w-4 mr-2" aria-hidden="true" />
                             Follows
@@ -634,10 +636,10 @@ export default function NotificationsPage() {
 
                 {/* Settings Panel (expandable) */}
                 {showSettings && (
-                    <div className="border-t py-3 px-3 sm:px-4 bg-muted/50 space-y-2">
+                    <div className="border-t py-3 px-4 sm:px-6 bg-muted/30 space-y-3">
                         <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-2 min-w-0">
-                                <Bell className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
+                                <Bell className="h-4 w-4 flex-shrink-0 text-muted-foreground" aria-hidden="true" />
                                 <span className="text-sm font-medium">Push notifications</span>
                             </div>
                             <Button variant="outline" size="sm" aria-label="Enable push notifications">
@@ -646,7 +648,7 @@ export default function NotificationsPage() {
                         </div>
                         <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-2 min-w-0">
-                                <BellOff className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
+                                <BellOff className="h-4 w-4 flex-shrink-0 text-muted-foreground" aria-hidden="true" />
                                 <span className="text-sm font-medium">Pause all notifications</span>
                             </div>
                             <Button variant="outline" size="sm" aria-label="Pause all notifications">
