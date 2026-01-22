@@ -150,7 +150,7 @@ function TrendingCategory({
     );
 }
 
-// User Card Component
+// User Card Component with proper follow functionality
 function UserCard({
     user,
     onFollow
@@ -158,11 +158,68 @@ function UserCard({
     user: typeof suggestedUsers[0];
     onFollow: (id: string) => void;
 }) {
-    const [isFollowing, setIsFollowing] = React.useState(false);
+    const { loggedInUser } = useAppContext();
+    const [followStatus, setFollowStatus] = React.useState<'none' | 'pending' | 'approved'>('none');
+    const [isLoading, setIsLoading] = React.useState(false);
+    const supabase = createClient();
+    const { toast } = useToast();
 
-    const handleFollow = () => {
-        setIsFollowing(!isFollowing);
-        onFollow(user.id);
+    const handleFollow = async () => {
+        if (!loggedInUser) {
+            toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to follow users.' });
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            if (followStatus === 'none') {
+                // Follow the user using RPC
+                const { data, error } = await supabase.rpc('request_follow', {
+                    target_user_id: user.id,
+                });
+
+                if (error) {
+                    toast({ variant: 'destructive', title: 'Error', description: 'Failed to follow user.' });
+                    return;
+                }
+
+                const newStatus = data?.status || 'approved';
+                setFollowStatus(newStatus);
+
+                if (newStatus === 'pending') {
+                    toast({ title: 'Request Sent', description: 'Your follow request has been sent.' });
+                } else {
+                    toast({ title: 'Following', description: `You are now following ${user.name}.` });
+                }
+                onFollow(user.id);
+            } else {
+                // Unfollow using RPC
+                const { error } = await supabase.rpc('unfollow_user', {
+                    target_user_id: user.id,
+                });
+
+                if (error) {
+                    toast({ variant: 'destructive', title: 'Error', description: 'Failed to unfollow user.' });
+                    return;
+                }
+
+                setFollowStatus('none');
+                toast({ title: 'Unfollowed', description: `You have unfollowed ${user.name}.` });
+            }
+        } catch (err) {
+            console.error('Follow error:', err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const getButtonText = () => {
+        if (isLoading) return '...';
+        switch (followStatus) {
+            case 'approved': return 'Following';
+            case 'pending': return 'Requested';
+            default: return 'Follow';
+        }
     };
 
     return (
@@ -192,12 +249,13 @@ function UserCard({
                         </p>
                     </div>
                     <Button
-                        variant={isFollowing ? "outline" : "default"}
+                        variant={followStatus === 'none' ? 'default' : 'outline'}
                         size="sm"
                         onClick={handleFollow}
+                        disabled={isLoading}
                         className="flex-shrink-0"
                     >
-                        {isFollowing ? 'Following' : 'Follow'}
+                        {getButtonText()}
                     </Button>
                 </div>
             </CardContent>

@@ -5,13 +5,16 @@ export interface Profile {
   id: string;
   username: string;
   full_name?: string;
+  name?: string;
   avatar_url?: string;
   bio?: string;
   follower_count: number;
   following_count: number;
-  post_count?: number; // Added to match usage
+  post_count?: number;
   is_following: boolean;
-  verified?: boolean;  // Added for verified badge
+  follow_status?: 'none' | 'pending' | 'approved';
+  verified?: boolean;
+  is_private?: boolean;
 }
 
 export interface Post {

@@ -164,8 +164,12 @@ export function ProfileView({ profile, posts, followers, following, session }: P
             {session?.user && session.user.id !== profile.id && (
               <FollowButton
                 profileId={profile.id}
-                isFollowing={profile.is_following}
                 currentUserId={session.user.id}
+                initialStatus={
+                  profile.follow_status === 'approved' ? 'approved' :
+                    profile.follow_status === 'pending' ? 'pending' :
+                      profile.is_following ? 'approved' : 'none'
+                }
               />
             )}
           </div>
