@@ -66,7 +66,7 @@ export function ProfileView({ profile, posts, followers, following, session }: P
       });
 
       if (chatId) {
-        router.push(`/chats?id=${chatId}`);
+        router.push(`/chat/${chatId}`);
         return;
       }
 
@@ -77,7 +77,7 @@ export function ProfileView({ profile, posts, followers, following, session }: P
 
       if (createError) throw createError;
       if (newChatId) {
-        router.push(`/chats?id=${newChatId}`);
+        router.push(`/chat/${newChatId}`);
       }
     } catch (error: any) {
       console.error('Error handling message:', error);
