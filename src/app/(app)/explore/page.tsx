@@ -107,7 +107,16 @@ const transformPost = (dbPost: any): PostType => {
         savedBy: [],
         repostedBy: [],
         isPinned: dbPost.is_pinned,
-        isPromoted: dbPost.is_promoted
+        isPromoted: dbPost.is_promoted,
+        collaborators: (dbPost.post_collaborators || [])
+            .filter((c: any) => c.status === 'accepted')
+            .map((c: any) => ({
+                id: c.user.id,
+                name: c.user.name,
+                username: c.user.username,
+                avatar: c.user.avatar_url || '/placeholder-user.jpg',
+                verified: c.user.verified
+            }))
     };
 };
 
@@ -415,7 +424,12 @@ export default function ExplorePage() {
                     *,
                     author:user_id (id, name, username, avatar_url, verified)
                 ),
-                user_likes:post_likes!post_id(user_id)
+                user_likes:post_likes!post_id(user_id),
+                post_collaborators:post_collaborators!post_id (
+                    user_id,
+                    status,
+                    user:user_id (id, name, username, avatar_url, verified)
+                )
             `)
             .order('created_at', { ascending: false });
 

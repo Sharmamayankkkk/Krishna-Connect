@@ -447,14 +447,54 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             }
 
             // Insert into DB
-            const { error: insertError } = await supabase
+            const { data, error: insertError } = await supabase
                 .from('posts')
                 .insert({
                     user_id: user.id,
                     content,
                     media_urls: uploadedMedia,
                     poll
-                });
+                })
+                .select()
+                .single();
+
+            if (insertError) throw insertError;
+
+            const newPostId = (data as any).id;
+
+            // Handle Collaborators
+            if (collaborators.length > 0) {
+                // 1. Insert into post_collaborators
+                const { error: collabError } = await supabase
+                    .from('post_collaborators')
+                    .insert(
+                        collaborators.map(c => ({
+                            post_id: newPostId,
+                            user_id: c.id,
+                            status: 'pending'
+                        }))
+                    );
+
+                if (collabError) console.error('Error adding collaborators:', collabError);
+
+                // 2. Send Notifications
+                // Assuming 'notifications' table structure matches what we expect
+                // We'll insert a notification for each collaborator
+                const notifications = collaborators.map(c => ({
+                    user_id: c.id, // To whom
+                    type: 'collaboration_request',
+                    actor_id: user.id, // From whom
+                    entity_id: newPostId,
+                    created_at: new Date().toISOString(),
+                    is_read: false
+                }));
+
+                const { error: notifError } = await supabase
+                    .from('notifications')
+                    .insert(notifications);
+
+                if (notifError) console.error('Error sending notifications:', notifError);
+            }
 
             if (insertError) throw insertError;
 
@@ -752,7 +792,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                 {pollOptions.map((option, index) => (
                                     <div key={index} className="flex gap-2">
                                         <Input
-                                            placeholder={`Choice ${index + 1}`}
+                                            placeholder={`Choice ${index + 1} `}
                                             value={option}
                                             onChange={(e) => updatePollOption(index, e.target.value)}
                                             maxLength={100}
@@ -848,7 +888,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                     {preview.type === 'gif' || preview.type === 'image' ? (
                                         <Image
                                             src={preview.url}
-                                            alt={preview.alt || `Preview ${index + 1}`}
+                                            alt={preview.alt || `Preview ${index + 1} `}
                                             fill
                                             className="object-cover"
                                             unoptimized={preview.type === 'gif'}
@@ -1094,8 +1134,8 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                                 stroke="currentColor"
                                                 strokeWidth="2"
                                                 fill="none"
-                                                strokeDasharray={`${2 * Math.PI * 14}`}
-                                                strokeDashoffset={`${2 * Math.PI * 14 * (1 - Math.min(characterPercentage, 100) / 100)}`}
+                                                strokeDasharray={`${2 * Math.PI * 14} `}
+                                                strokeDashoffset={`${2 * Math.PI * 14 * (1 - Math.min(characterPercentage, 100) / 100)} `}
                                                 className={cn(
                                                     "transition-all",
                                                     isOverLimit ? "text-red-500" :

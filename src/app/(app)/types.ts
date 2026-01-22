@@ -131,6 +131,8 @@ export type NotificationType = {
     createdAt: string;
     read: boolean;
     status?: 'pending' | 'accepted' | 'declined';
+    postContent?: string;
+    postMediaType?: 'image' | 'video' | 'gif';
 };
 
 export type TrendingTopic = {

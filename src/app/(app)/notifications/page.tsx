@@ -180,7 +180,32 @@ const NotificationItem = React.memo(({
                         ) : (
                             <p className="text-xs sm:text-sm font-semibold text-red-600">You have declined this collaboration.</p>
                         )}
+                        {/* Link to post */}
                     </div>
+                )}
+
+                {/* Post Preview logic */}
+                {notification.postId && (notification.postContent || notification.postMediaType) && (
+                    <Link href={`/post/${notification.postId}`} className="block mt-2">
+                        <div className="border rounded-md p-3 bg-muted/30 text-xs sm:text-sm hover:bg-muted/60 transition-colors">
+                            {/* Small indicator of what this is */}
+                            <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
+                                {notification.type === 'collaboration_request' && (
+                                    <span className="font-medium text-xs uppercase tracking-wider">Collaboration Request</span>
+                                )}
+                            </div>
+
+                            {/* Preview Content */}
+                            {notification.postContent && (
+                                <p className="line-clamp-2 italic text-muted-foreground">"{notification.postContent}"</p>
+                            )}
+                            {notification.postMediaType && !notification.postContent && (
+                                <p className="italic text-muted-foreground flex items-center gap-1">
+                                    <span className="capitalize">{notification.postMediaType}</span> attachment
+                                </p>
+                            )}
+                        </div>
+                    </Link>
                 )}
 
                 {/* Standard action buttons (always visible on mobile, hover on desktop) */}
@@ -324,7 +349,7 @@ export default function NotificationsPage() {
             if (data) {
                 console.log('Fetched notifications:', data.length);
                 // Transform database notifications to UI format
-                const transformedNotifications: NotificationType[] = data.map((n: any) => ({
+                let transformedNotifications: NotificationType[] = data.map((n: any) => ({
                     id: n.id.toString(),
                     type: mapNotificationType(n.type),
                     fromUser: {
@@ -338,8 +363,35 @@ export default function NotificationsPage() {
                     commentId: undefined,
                     text: undefined,
                     createdAt: n.created_at,
-                    read: n.is_read
+                    read: n.is_read,
+                    postContent: n.post_content,
+                    postMediaType: n.post_media_type as any
                 }));
+
+                // Fetch collaboration statuses
+                const collabRequests = transformedNotifications.filter(n => n.type === 'collaboration_request');
+                if (collabRequests.length > 0) {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (user) {
+                        const postIds = collabRequests.map(n => n.postId).filter(Boolean);
+                        const { data: collabs } = await supabase
+                            .from('post_collaborators')
+                            .select('post_id, status')
+                            .in('post_id', postIds)
+                            .eq('user_id', user.id);
+
+                        if (collabs) {
+                            const statusMap = new Map(collabs.map(c => [c.post_id, c.status]));
+                            transformedNotifications = transformedNotifications.map(n => {
+                                if (n.type === 'collaboration_request' && n.postId) {
+                                    const status = statusMap.get(n.postId);
+                                    return { ...n, status: status as any || 'pending' };
+                                }
+                                return n;
+                            });
+                        }
+                    }
+                }
 
                 setNotifications(transformedNotifications);
             }
@@ -397,7 +449,8 @@ export default function NotificationsPage() {
             'new_comment': 'comment',
             'new_repost': 'repost',
             'follow_request': 'follow',
-            'new_follower': 'follow'
+            'new_follower': 'follow',
+            'collaboration_request': 'collaboration_request'
         };
         return typeMap[dbType] || 'follow'; // Default fallback
     };
@@ -498,25 +551,85 @@ export default function NotificationsPage() {
         });
     }, [toast]);
 
-    const handleAcceptCollaboration = React.useCallback((id: string) => {
+    const handleAcceptCollaboration = React.useCallback(async (id: string) => {
+        const notification = notifications.find(n => n.id === id);
+        if (!notification || !notification.postId) return;
+
+        const supabase = (await import('@/lib/supabase/client')).createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Optimistic update
         setNotifications(prev =>
             prev.map(n => n.id === id ? { ...n, status: 'accepted', read: true } : n)
         );
-        toast({
-            title: "✓ Collaboration accepted!",
-            description: "You are now a collaborator on the post."
-        });
-    }, [toast]);
 
-    const handleDeclineCollaboration = React.useCallback((id: string) => {
+        const { error } = await supabase
+            .from('post_collaborators')
+            .update({ status: 'accepted' })
+            .eq('post_id', notification.postId)
+            .eq('user_id', user.id);
+
+        if (error) {
+            console.error('Error accepting collaboration:', error);
+            // Revert
+            setNotifications(prev =>
+                prev.map(n => n.id === id ? { ...n, status: 'pending', read: false } : n)
+            );
+            toast({
+                title: "Error",
+                description: "Failed to accept collaboration",
+                variant: 'destructive'
+            });
+        } else {
+            toast({
+                title: "✓ Collaboration accepted!",
+                description: "You are now a collaborator on the post."
+            });
+            // Mark notification as read
+            supabase.rpc('mark_notification_as_read', { p_notification_id: parseInt(id) });
+        }
+    }, [notifications, toast]);
+
+    const handleDeclineCollaboration = React.useCallback(async (id: string) => {
+        const notification = notifications.find(n => n.id === id);
+        if (!notification || !notification.postId) return;
+
+        const supabase = (await import('@/lib/supabase/client')).createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Optimistic update
         setNotifications(prev =>
             prev.map(n => n.id === id ? { ...n, status: 'declined', read: true } : n)
         );
-        toast({
-            title: "✗ Collaboration declined.",
-            variant: 'destructive'
-        });
-    }, [toast]);
+
+        const { error } = await supabase
+            .from('post_collaborators')
+            .update({ status: 'declined' })
+            .eq('post_id', notification.postId)
+            .eq('user_id', user.id);
+
+        if (error) {
+            console.error('Error declining collaboration:', error);
+            // Revert
+            setNotifications(prev =>
+                prev.map(n => n.id === id ? { ...n, status: 'pending', read: false } : n)
+            );
+            toast({
+                title: "Error",
+                description: "Failed to decline collaboration",
+                variant: 'destructive'
+            });
+        } else {
+            toast({
+                title: "✗ Collaboration declined.",
+                variant: 'destructive'
+            });
+            // Mark notification as read
+            supabase.rpc('mark_notification_as_read', { p_notification_id: parseInt(id) });
+        }
+    }, [notifications, toast]);
 
     const handleClearAll = React.useCallback(async () => {
         const supabase = (await import('@/lib/supabase/client')).createClient();
