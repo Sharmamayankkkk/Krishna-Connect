@@ -241,7 +241,7 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
   };
 
   const handleShare = () => {
-    const postUrl = `${window.location.origin}/post/${post?.id}`;
+    const postUrl = `${window.location.origin}/${author?.username}/post/${post?.id}`;
     if (navigator.share) {
       navigator.share({
         title: `Post by ${author?.username}`,
@@ -257,7 +257,7 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
   };
 
   const handleCopyLink = () => {
-    const postUrl = `${window.location.origin}/post/${post?.id}`;
+    const postUrl = `${window.location.origin}/${author?.username}/post/${post?.id}`;
     navigator.clipboard.writeText(postUrl);
     toast({ description: 'Link copied to clipboard!' });
   };
