@@ -40,6 +40,7 @@ import { cn, getAvatarUrl } from '@/lib/utils';
 import { PollType, PostType, CommentType, ReplyType, MediaType } from '../types';
 import { VideoPlayer } from './video-player';
 import { ImageViewerDialog } from './image-viewer';
+import { EditPostDialog } from './edit-post-dialog';
 import { useAppContext } from '@/providers/app-provider';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from "@/components/ui/skeleton";
@@ -48,7 +49,7 @@ interface PostCardProps {
     post: PostType;
     onComment: (postId: string, commentText: string, parentCommentId?: string) => void;
     onDelete: (postId: string) => void;
-    onEdit: (postId: string, newContent: string) => void;
+    onEdit: (updatedPost: PostType) => void;
     onLikeToggle: (postId: string) => void;
     onSaveToggle: (postId: string) => void;
     onCommentLikeToggle: (postId: string, commentId: string, isReply?: boolean) => void;
@@ -100,44 +101,7 @@ const DeleteConfirmDialog = ({ open, onOpenChange, onConfirm, itemType = "post" 
     );
 };
 
-const EditPostDialog = ({ post, open, onOpenChange, onSave }: { post: PostType; open: boolean; onOpenChange: (open: boolean) => void; onSave: (newContent: string) => void }) => {
-    const [editedContent, setEditedContent] = React.useState(post.content);
 
-    React.useEffect(() => {
-        if (open) setEditedContent(post.content);
-    }, [open, post.content]);
-
-    const handleSave = () => {
-        if (editedContent.trim()) {
-            onSave(editedContent.trim());
-            onOpenChange(false);
-        }
-    };
-
-    return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[525px]">
-                <DialogHeader>
-                    <DialogTitle>Edit Post</DialogTitle>
-                </DialogHeader>
-                <Textarea
-                    value={editedContent}
-                    onChange={(e) => setEditedContent(e.target.value)}
-                    className="min-h-[150px]"
-                    placeholder="What's on your mind?"
-                />
-                <DialogFooter>
-                    <DialogClose asChild>
-                        <Button variant="ghost">Cancel</Button>
-                    </DialogClose>
-                    <Button onClick={handleSave} disabled={!editedContent.trim()}>
-                        Save Changes
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
-};
 
 const ReportDialog = ({ open, onOpenChange, onReport }: { open: boolean; onOpenChange: (open: boolean) => void; onReport: () => void }) => {
     const [reportReason, setReportReason] = React.useState('');
@@ -171,12 +135,43 @@ const ReportDialog = ({ open, onOpenChange, onReport }: { open: boolean; onOpenC
     );
 };
 
+const QuoteDialog = ({ open, onOpenChange, onQuote }: { open: boolean; onOpenChange: (open: boolean) => void; onQuote: (text: string) => void }) => {
+    const [quoteText, setQuoteText] = React.useState('');
+
+    const handleSubmit = () => {
+        if (quoteText.trim()) {
+            onQuote(quoteText.trim());
+            setQuoteText('');
+        }
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Quote Post</DialogTitle>
+                </DialogHeader>
+                <Textarea
+                    placeholder="Add a comment..."
+                    value={quoteText}
+                    onChange={(e) => setQuoteText(e.target.value)}
+                    className="min-h-[100px]"
+                />
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+                    <Button onClick={handleSubmit}>Quote</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
 const EmbeddedPost = ({ post }: { post: NonNullable<PostType['originalPost']> }) => {
     return (
         <div className="mt-2 border rounded-xl p-3 hover:bg-muted/50 transition-colors">
             <div className="flex items-center gap-2 text-sm">
                 <Avatar className="h-5 w-5">
-                    <AvatarImage src={post.author.avatar} />
+                    <AvatarImage src={post.author.avatar ?? undefined} />
                     <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <Link href={`/profile/${post.author.username}`} className="font-bold hover:underline truncate">
@@ -1003,9 +998,7 @@ export function PostCard({
         onDelete(post.id);
     };
 
-    const handleEdit = (newContent: string) => {
-        onEdit(post.id, newContent);
-    };
+
 
     const handleSave = () => {
         onSaveToggle(post.id);
@@ -1055,12 +1048,7 @@ export function PostCard({
                 onConfirm={handleDelete}
                 itemType="post"
             />
-            <EditPostDialog
-                post={post}
-                open={isEditOpen}
-                onOpenChange={setIsEditOpen}
-                onSave={handleEdit}
-            />
+
             <CommentsSheet
                 post={post}
                 open={isCommentsOpen}
@@ -1315,6 +1303,44 @@ export function PostCard({
                     </div>
                 </div>
             </article>
+
+            {/* Dialogs */}
+            <DeleteConfirmDialog
+                open={isDeleteOpen}
+                onOpenChange={setIsDeleteOpen}
+                onConfirm={handleDelete}
+            />
+
+            <EditPostDialog
+                post={post}
+                open={isEditOpen}
+                onOpenChange={setIsEditOpen}
+                onPostUpdated={onEdit}
+            />
+
+            <ReportDialog
+                open={isReportOpen}
+                onOpenChange={setIsReportOpen}
+                onReport={handleReport}
+            />
+
+            <HareKrishnaVideoModal
+                isOpen={isHareKrishnaVideoOpen}
+                onClose={() => setIsHareKrishnaVideoOpen(false)}
+            />
+
+            <ImageViewerDialog
+                open={isImageViewerOpen}
+                onOpenChange={setIsImageViewerOpen}
+                media={media || []}
+                startIndex={imageViewerStartIndex}
+            />
+
+            <QuoteDialog
+                open={isQuoteOpen}
+                onOpenChange={setIsQuoteOpen}
+                onQuote={handleQuote}
+            />
         </>
     );
 }

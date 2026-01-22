@@ -72,7 +72,7 @@ interface VerificationRequest {
 // Pricing constants
 const PRICES = {
     monthly: { regular: 499, discounted: 399 },
-    yearly: { regular: 5988, discounted: 5888 }
+    yearly: { regular: 4990, discounted: 4890 }
 };
 
 export default function GetVerifiedPage() {

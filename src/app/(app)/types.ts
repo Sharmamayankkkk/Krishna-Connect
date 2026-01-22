@@ -46,6 +46,7 @@ export type MediaType = {
     thumbnailUrl?: string;
     width?: number;
     height?: number;
+    file?: File;
 };
 
 export type PollOptionType = {

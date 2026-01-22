@@ -703,14 +703,10 @@ export default function ExplorePage() {
         });
     };
 
-    const handlePostEdited = (postId: string, newContent: string) => {
+    const handlePostEdited = (updatedPost: PostType) => {
         const updatePost = (post: PostType) => {
-            if (post.id === postId) {
-                return {
-                    ...post,
-                    content: newContent,
-                    editedAt: new Date().toISOString()
-                };
+            if (post.id === updatedPost.id) {
+                return updatedPost;
             }
             return post;
         };
