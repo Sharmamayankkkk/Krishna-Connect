@@ -81,7 +81,10 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
       if (data) {
         // Transform data to match Comment type if needed, or cast if structure matches
         // The type expects 'profiles' property which is joined by user_id
+        console.log('Fetched comments:', data);
         setComments(data as unknown as Comment[]);
+      } else {
+        console.log('Fetched comments but data is null/empty');
       }
     };
 

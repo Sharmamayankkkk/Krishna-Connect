@@ -19,7 +19,8 @@ import {
   Mail,
   Flag,
   Ban,
-  Loader2
+  Loader2,
+  Share2
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { PostCard } from "@/app/(app)/explore/components/post-card";
@@ -118,6 +119,29 @@ export function ProfileView({ profile, posts, followers, following, session }: P
     }
   };
 
+  const handleShare = async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${displayName} (@${profile.username})`,
+          text: `Check out ${displayName}'s profile on Krishna Connect!`,
+          url: url
+        });
+      } catch (err) {
+        console.error('Error sharing:', err);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(url);
+        toast({ title: "Link copied", description: "Profile link copied to clipboard." });
+      } catch (err) {
+        console.error('Error copying link:', err);
+        toast({ variant: "destructive", title: "Error", description: "Failed to copy link." });
+      }
+    }
+  };
+
   // Helper to construct full URLs
   const getImageUrl = (url?: string) => {
     if (!url) return undefined;
@@ -146,10 +170,48 @@ export function ProfileView({ profile, posts, followers, following, session }: P
   const displayName = profile.name || profile.full_name || profile.username;
   const joinDate = profile.created_at ? format(new Date(profile.created_at), 'MMMM yyyy') : null;
 
-  // Filter posts for different tabs
-  const userPosts = posts.filter(p => !(p as any).is_reply && !(p as any).parent_id);
-  const userReplies = posts.filter(p => (p as any).is_reply || (p as any).parent_id);
-  const mediaPosts = posts.filter(p => p.media_urls && p.media_urls.length > 0);
+  // State for posts to allow local mutations (likes, deletes)
+  const [localPosts, setLocalPosts] = useState<Post[]>(posts);
+
+  const handleLike = async (postId: string) => {
+    if (!session?.user) return;
+
+    // Optimistic Update
+    setLocalPosts(currentPosts => currentPosts.map(p => {
+      if (p.id === postId) {
+        // Cast to any to avoid type errors with likedBy
+        const postAny = p as any;
+        const isLiked = postAny.likedBy.includes(session.user.id);
+        const newLikedBy = isLiked
+          ? postAny.likedBy.filter((id: string) => id !== session.user.id)
+          : [...postAny.likedBy, session.user.id];
+
+        return {
+          ...p,
+          likedBy: newLikedBy,
+          stats: {
+            ...p.stats,
+            likes: newLikedBy.length
+          }
+        } as Post;
+      }
+      return p;
+    }));
+
+    try {
+      const { error } = await supabase.rpc('toggle_post_like', { p_post_id: Number(postId) });
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      toast({ variant: "destructive", title: "Error", description: "Failed to update like." });
+      router.refresh(); // Revert on error
+    }
+  };
+
+  // Filter posts based on local state
+  const userPosts = localPosts.filter(p => !(p as any).is_reply && !(p as any).parent_id);
+  const userReplies = localPosts.filter(p => (p as any).is_reply || (p as any).parent_id);
+  const mediaPosts = localPosts.filter(p => p.media_urls && p.media_urls.length > 0);
 
   return (
     <div className="min-h-screen">
@@ -202,7 +264,7 @@ export function ProfileView({ profile, posts, followers, following, session }: P
         </div>
       </header>
 
-      {/* Banner Image - 16:9 mobile, fixed height desktop */}
+      {/* Banner Image */}
       <div
         className="relative w-full bg-slate-800 cursor-pointer aspect-[16/9] md:aspect-auto md:h-[320px]"
         onClick={() => setIsBannerViewerOpen(true)}
@@ -216,7 +278,6 @@ export function ProfileView({ profile, posts, followers, following, session }: P
         />
       </div>
 
-      {/* Banner Fullscreen Viewer */}
       {isBannerViewerOpen && (
         <div
           className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center cursor-pointer"
@@ -243,9 +304,7 @@ export function ProfileView({ profile, posts, followers, following, session }: P
 
       {/* Profile Info Section */}
       <div className="px-4 pb-3">
-        {/* Avatar & Action Buttons Row */}
         <div className="flex justify-between items-start">
-          {/* Avatar - overlapping banner */}
           <div className="-mt-16 sm:-mt-20">
             <Avatar className="h-24 w-24 sm:h-32 sm:w-32 border-4 border-background bg-background">
               <AvatarImage
@@ -259,16 +318,20 @@ export function ProfileView({ profile, posts, followers, following, session }: P
             </Avatar>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex items-center gap-2 mt-3">
             {isOwnProfile ? (
-              <Button
-                variant="outline"
-                className="rounded-full font-semibold"
-                onClick={() => setIsEditProfileOpen(true)}
-              >
-                Edit profile
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  className="rounded-full font-semibold"
+                  onClick={() => setIsEditProfileOpen(true)}
+                >
+                  Edit profile
+                </Button>
+                <Button variant="outline" size="icon" className="rounded-full" onClick={handleShare}>
+                  <Share2 className="h-5 w-5" />
+                </Button>
+              </>
             ) : (
               <>
                 <DropdownMenu>
@@ -288,6 +351,10 @@ export function ProfileView({ profile, posts, followers, following, session }: P
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+
+                <Button variant="outline" size="icon" className="rounded-full" onClick={handleShare}>
+                  <Share2 className="h-5 w-5" />
+                </Button>
 
                 <Button
                   variant="outline"
@@ -316,7 +383,6 @@ export function ProfileView({ profile, posts, followers, following, session }: P
           </div>
         </div>
 
-        {/* Name & Username */}
         <div className="mt-3">
           <h2 className="text-xl font-bold flex items-center gap-1">
             {displayName}
@@ -333,12 +399,10 @@ export function ProfileView({ profile, posts, followers, following, session }: P
           <p className="text-muted-foreground">@{profile.username}</p>
         </div>
 
-        {/* Bio */}
         {profile.bio && (
           <p className="mt-3 text-sm sm:text-base whitespace-pre-wrap">{profile.bio}</p>
         )}
 
-        {/* Metadata Row */}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-sm text-muted-foreground">
           {profile.location && (
             <span className="flex items-center gap-1">
@@ -365,7 +429,6 @@ export function ProfileView({ profile, posts, followers, following, session }: P
           )}
         </div>
 
-        {/* Following/Followers Stats */}
         <div className="flex items-center gap-4 mt-3">
           <Link href={`/profile/${profile.username}/connections?type=following`} className="hover:underline">
             <span className="font-bold">{profile.following_count || 0}</span>
@@ -378,31 +441,18 @@ export function ProfileView({ profile, posts, followers, following, session }: P
         </div>
       </div>
 
-      {/* Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="w-full h-auto p-0 bg-transparent border-b rounded-none justify-start">
-          <TabsTrigger
-            value="posts"
-            className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent py-4 font-semibold"
-          >
+          <TabsTrigger value="posts" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
             Posts
           </TabsTrigger>
-          <TabsTrigger
-            value="replies"
-            className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent py-4 font-semibold"
-          >
+          <TabsTrigger value="replies" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
             Replies
           </TabsTrigger>
-          <TabsTrigger
-            value="media"
-            className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent py-4 font-semibold"
-          >
+          <TabsTrigger value="media" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
             Media
           </TabsTrigger>
-          <TabsTrigger
-            value="likes"
-            className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent py-4 font-semibold"
-          >
+          <TabsTrigger value="likes" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
             Likes
           </TabsTrigger>
         </TabsList>
@@ -423,9 +473,11 @@ export function ProfileView({ profile, posts, followers, following, session }: P
                     createdAt: (post as any).createdAt || (post as any).created_at,
                     likedBy: (post as any).likedBy || [],
                     repostedBy: (post as any).repostedBy || [],
-                    author: post.author ? { ...post.author, avatar: (post.author as any).avatar || (post.author as any).avatar_url } : profileUser
+                    author: post.author ? { ...post.author, avatar: (post.author as any).avatar || (post.author as any).avatar_url } : profileUser,
+                    media: post.media_urls || []
                   } as any}
                   onDelete={handleDeletePost}
+                  onLike={handleLike}
                 />
               ))}
             </div>
@@ -448,7 +500,8 @@ export function ProfileView({ profile, posts, followers, following, session }: P
                     createdAt: (post as any).createdAt || (post as any).created_at,
                     likedBy: (post as any).likedBy || [],
                     repostedBy: (post as any).repostedBy || [],
-                    author: post.author ? { ...post.author, avatar: (post.author as any).avatar || (post.author as any).avatar_url } : profileUser
+                    author: post.author ? { ...post.author, avatar: (post.author as any).avatar || (post.author as any).avatar_url } : profileUser,
+                    media: post.media_urls || []
                   } as any}
                   onDelete={handleDeletePost}
                 />
@@ -493,6 +546,6 @@ export function ProfileView({ profile, posts, followers, following, session }: P
           </div>
         </TabsContent>
       </Tabs>
-    </div >
+    </div>
   );
 }

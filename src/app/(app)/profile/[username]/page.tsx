@@ -1,6 +1,7 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
+import { Metadata, ResolvingMetadata } from "next";
 import { ProfileView } from "./components/profile-view";
 import { User, Session } from "@supabase/supabase-js";
 import { Profile } from "@/types";
@@ -14,6 +15,73 @@ interface ProfilePageProps {
   params: Promise<{
     username: string;
   }>;
+}
+
+export async function generateMetadata(
+  props: ProfilePageProps,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const params = await props.params;
+  const { username } = params;
+
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  );
+
+  // Fetch profile for metadata - try case insensitive match
+  // We use a simpler fetch here than the main page for performance
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('name, username, bio, avatar_url, banner_url')
+    .ilike('username', username)
+    .maybeSingle();
+
+  if (!profile) {
+    return {
+      title: 'Profile Not Found',
+    };
+  }
+
+  const displayName = profile.name || profile.username;
+  const title = `${displayName} (@${profile.username}) | Krishna Connect`;
+  const description = profile.bio || `Check out ${displayName}'s profile on Krishna Connect.`;
+
+  // Construct absolute image URL for OG
+  let imageUrl = '/logo.png'; // Fallback
+  if (profile.avatar_url) {
+    if (profile.avatar_url.startsWith('http')) {
+      imageUrl = profile.avatar_url;
+    } else {
+      imageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/attachments/${profile.avatar_url}`;
+    }
+  }
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [imageUrl],
+      type: 'profile',
+      username: profile.username,
+    },
+    twitter: {
+      card: 'summary',
+      title,
+      description,
+      images: [imageUrl],
+    }
+  };
 }
 
 export default async function ProfilePage(props: ProfilePageProps) {
@@ -158,8 +226,9 @@ export default async function ProfilePage(props: ProfilePageProps) {
       .select(`
           *, 
           author:user_id(id, name, username, avatar_url, verified), 
-          likes:post_likes(count), 
-          comments:comments!post_id(count)
+          liked_by_users:post_likes(user_id),
+          comments:comments!post_id(count),
+          reposts:post_reposts(count)
        `)
       .eq('user_id', profile.id)
       .order('created_at', { ascending: false });
@@ -167,15 +236,16 @@ export default async function ProfilePage(props: ProfilePageProps) {
     if (rawPosts) {
       posts = rawPosts.map(p => ({
         ...p,
-        author: p.author || profile, // Use fetched profile as author if join missing
+        author: p.author || profile,
+        likedBy: (p.liked_by_users as any[] || []).map((l: any) => l.user_id),
         stats: {
-          likes: (p.likes as any)?.[0]?.count || 0,
+          likes: (p.liked_by_users as any[] || []).length,
           comments: (p.comments as any)?.[0]?.count || 0,
+          reposts: (p.reposts as any)?.[0]?.count || 0,
           reshares: 0,
           views: 0
         },
-        likes: [], // Explicitly empty for now to match type
-        comments: []
+        comments: [] // PostCard renders stats, comments list loaded in sheet
       }));
     }
   }

@@ -118,7 +118,7 @@ export function CommentSheet({ post, open, onOpenChange, onComment }: CommentShe
         .from('comments')
         .select(`
           *,
-          profiles (*)
+          profiles!user_id (*)
         `)
         .eq('post_id', post.id)
         .order('created_at', { ascending: true });
@@ -227,8 +227,8 @@ export function CommentSheet({ post, open, onOpenChange, onComment }: CommentShe
         {/* Comment List */}
         <ScrollArea className="flex-1 -mx-6 px-6">
           <div className="py-4 space-y-6">
-            {post.comments.length > 0 ? (
-              post.comments.map(comment => (
+            {comments.length > 0 ? (
+              comments.map(comment => (
                 <CommentCard key={comment.id} comment={comment} post={post} />
               ))
             ) : (
