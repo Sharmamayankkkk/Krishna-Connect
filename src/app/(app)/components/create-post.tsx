@@ -587,7 +587,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                         placeholder="What is happening?!"
                         className={cn(
                             "w-full resize-none border-none bg-transparent text-base sm:text-lg placeholder:text-muted-foreground focus:outline-none",
-                            isOverLimit && "text-red-500"
+                            isOverLimit && !isVerified && "text-red-500"
                         )}
                         minRows={1}
                         maxRows={15}
@@ -764,8 +764,8 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                         </div>
                     )}
 
-                    {/* Character Limit Warning */}
-                    {characterCount > MAX_CHARACTERS * 0.75 && (
+                    {/* Character Limit Warning - hide for verified users */}
+                    {!isVerified && characterCount > MAX_CHARACTERS * 0.75 && (
                         <div className="flex items-center gap-2 text-sm">
                             {isOverLimit && <AlertCircle className="h-4 w-4 text-red-500" />}
                             <span className={getCharacterColor()}>
@@ -957,9 +957,9 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                             </Button>
                         </div>
 
-                        {/* Character Counter & Post Button */}
+                        {/* Character Counter & Post Button - hide counter for verified users */}
                         <div className="flex items-center gap-3">
-                            {characterCount > 0 && (
+                            {!isVerified && characterCount > 0 && (
                                 <div className="flex items-center gap-2">
                                     <div className="relative w-8 h-8">
                                         <svg className="w-8 h-8 transform -rotate-90">

@@ -57,7 +57,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       await Notification.requestPermission()
     }
   }, [])
-  
+
   const resetState = useCallback(() => {
     setSession(null)
     setLoggedInUser(null)
@@ -71,96 +71,101 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const fetchInitialData = useCallback(async (user: AuthUser) => {
     try {
-        const { data: profile, error: profileError } = await supabaseRef.current
-            .from("profiles")
-            .select("*")
-            .eq("id", user.id)
-            .single();
+      const { data: profile, error: profileError } = await supabaseRef.current
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
 
-        if (profileError || !profile) {
-            console.error("Failed to fetch profile:", profileError);
-            toast({ variant: "destructive", title: "Authentication Error", description: "Could not fetch your profile. Please log in again." });
-            await supabaseRef.current.auth.signOut();
-            return;
-        }
-        
-        const fullUserProfile = { ...profile, email: user.email } as User;
-        const savedTheme = localStorage.getItem('themeSettings');
-        if (savedTheme) {
-          try {
-            const parsedTheme = JSON.parse(savedTheme);
-            setThemeSettingsState(current => ({...current, ...parsedTheme}));
-          } catch(e) {
-            console.error("Failed to parse theme settings from localStorage", e);
-          }
-        }
-        setLoggedInUser(fullUserProfile);
-
-        const [
-            { data: allUsersData },
-            { data: dmRequestsData },
-            { data: blockedData },
-            { data: participantRecords }
-        ] = await Promise.all([
-            supabaseRef.current.from("profiles").select("*"),
-            supabaseRef.current.from("dm_requests").select("*, from:profiles!from_user_id(*), to:profiles!to_user_id(*)").or(`from_user_id.eq.${user.id},to_user_id.eq.${user.id}`),
-            supabaseRef.current.from("blocked_users").select("blocked_id").eq("blocker_id", user.id),
-            supabaseRef.current.from('participants').select('chat_id').eq('user_id', user.id)
-        ]);
-        
-        setAllUsers((allUsersData as User[]) || []);
-        setDmRequests((dmRequestsData as DmRequest[]) || []);
-        setBlockedUsers(blockedData?.map((b) => b.blocked_id) || []);
-
-        const chatIds = participantRecords?.map(p => p.chat_id) || [];
-        if (chatIds.length > 0) {
-            const { data: chatsData } = await supabaseRef.current
-                .from('chats')
-                .select('*, participants:participants!chat_id(*, profiles!user_id(*))')
-                .in('id', chatIds);
-            
-            const initialChats = (chatsData || []).map(c => ({...c, messages: [], unreadCount: 0})) as Chat[];
-            
-            const { data: lastMessages } = await supabaseRef.current.rpc('get_last_messages_for_chats', { p_chat_ids: chatIds });
-            if (lastMessages) {
-                const chatsMap = new Map(initialChats.map(c => [c.id, c]));
-                (lastMessages as any[]).forEach(msg => {
-                    const chat = chatsMap.get(msg.chat_id);
-                    if (chat) {
-                        chat.last_message_content = msg.content || msg.attachment_metadata?.name || 'No messages yet';
-                        chat.last_message_timestamp = msg.created_at;
-                    }
-                });
-                setChats(sortChats(Array.from(chatsMap.values())));
-            } else {
-              setChats(sortChats(initialChats));
-            }
-        }
-        await requestNotificationPermission();
-    } catch (error: any) {
-        toast({
-            variant: "destructive",
-            title: "Error Loading Data",
-            description: error.message || "Failed to load application data. Please try again.",
-        });
+      if (profileError || !profile) {
+        console.error("Failed to fetch profile:", profileError);
+        toast({ variant: "destructive", title: "Authentication Error", description: "Could not fetch your profile. Please log in again." });
         await supabaseRef.current.auth.signOut();
+        return;
+      }
+
+      const fullUserProfile = {
+        ...profile,
+        email: user.email,
+        // Map DB column 'verified' to TypeScript 'is_verified'
+        is_verified: profile.verified ?? false
+      } as User;
+      const savedTheme = localStorage.getItem('themeSettings');
+      if (savedTheme) {
+        try {
+          const parsedTheme = JSON.parse(savedTheme);
+          setThemeSettingsState(current => ({ ...current, ...parsedTheme }));
+        } catch (e) {
+          console.error("Failed to parse theme settings from localStorage", e);
+        }
+      }
+      setLoggedInUser(fullUserProfile);
+
+      const [
+        { data: allUsersData },
+        { data: dmRequestsData },
+        { data: blockedData },
+        { data: participantRecords }
+      ] = await Promise.all([
+        supabaseRef.current.from("profiles").select("*"),
+        supabaseRef.current.from("dm_requests").select("*, from:profiles!from_user_id(*), to:profiles!to_user_id(*)").or(`from_user_id.eq.${user.id},to_user_id.eq.${user.id}`),
+        supabaseRef.current.from("blocked_users").select("blocked_id").eq("blocker_id", user.id),
+        supabaseRef.current.from('participants').select('chat_id').eq('user_id', user.id)
+      ]);
+
+      setAllUsers((allUsersData as User[]) || []);
+      setDmRequests((dmRequestsData as DmRequest[]) || []);
+      setBlockedUsers(blockedData?.map((b) => b.blocked_id) || []);
+
+      const chatIds = participantRecords?.map(p => p.chat_id) || [];
+      if (chatIds.length > 0) {
+        const { data: chatsData } = await supabaseRef.current
+          .from('chats')
+          .select('*, participants:participants!chat_id(*, profiles!user_id(*))')
+          .in('id', chatIds);
+
+        const initialChats = (chatsData || []).map(c => ({ ...c, messages: [], unreadCount: 0 })) as Chat[];
+
+        const { data: lastMessages } = await supabaseRef.current.rpc('get_last_messages_for_chats', { p_chat_ids: chatIds });
+        if (lastMessages) {
+          const chatsMap = new Map(initialChats.map(c => [c.id, c]));
+          (lastMessages as any[]).forEach(msg => {
+            const chat = chatsMap.get(msg.chat_id);
+            if (chat) {
+              chat.last_message_content = msg.content || msg.attachment_metadata?.name || 'No messages yet';
+              chat.last_message_timestamp = msg.created_at;
+            }
+          });
+          setChats(sortChats(Array.from(chatsMap.values())));
+        } else {
+          setChats(sortChats(initialChats));
+        }
+      }
+      await requestNotificationPermission();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error Loading Data",
+        description: error.message || "Failed to load application data. Please try again.",
+      });
+      await supabaseRef.current.auth.signOut();
     }
   }, [toast, requestNotificationPermission]);
-  
+
   useEffect(() => {
     // This effect runs once on initial mount to check for a session
     const initializeApp = async () => {
-        const { data: { session: currentSession } } = await supabaseRef.current.auth.getSession();
-        
-        if (currentSession) {
-            setSession(currentSession);
-            await fetchInitialData(currentSession.user);
-        }
-        
-        // Mark the app as ready only after the initial check is complete.
-        setIsReady(true);
+      const { data: { session: currentSession } } = await supabaseRef.current.auth.getSession();
+
+      if (currentSession) {
+        setSession(currentSession);
+        await fetchInitialData(currentSession.user);
+      }
+
+      // Mark the app as ready only after the initial check is complete.
+      setIsReady(true);
     };
-    
+
     initializeApp();
 
     // This listener only handles live auth events (login/logout) after the app is running.
@@ -171,11 +176,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
           router.push('/login');
         } else if (event === "SIGNED_IN") {
           setSession(newSession);
-          if(newSession?.user) fetchInitialData(newSession.user);
+          if (newSession?.user) fetchInitialData(newSession.user);
         }
       }
     );
-  
+
     return () => {
       authListener.subscription.unsubscribe();
       subscriptionsRef.current.forEach((sub) => sub.unsubscribe());
@@ -258,10 +263,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }),
       supabaseRef.current.channel('public:chats')
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'chats' }, payload => {
-            setChats(current => current.map(c => c.id === payload.new.id ? {...c, ...payload.new} : c))
+          setChats(current => current.map(c => c.id === payload.new.id ? { ...c, ...payload.new } : c))
         })
     ];
-    
+
     channels.forEach(c => c.subscribe());
     subscriptionsRef.current = channels;
 
@@ -300,18 +305,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!loggedInUser) return;
     const { error } = await supabaseRef.current.from("participants").delete().match({ chat_id: chatId, user_id: loggedInUser.id })
     if (error) {
-        toast({ variant: "destructive", title: "Error leaving group", description: error.message })
+      toast({ variant: "destructive", title: "Error leaving group", description: error.message })
     } else {
-        setChats(current => current.filter(c => c.id !== chatId));
+      setChats(current => current.filter(c => c.id !== chatId));
     }
   }, [loggedInUser, toast])
 
   const deleteGroup = useCallback(async (chatId: number) => {
     const { error } = await supabaseRef.current.from("chats").delete().eq("id", chatId)
     if (error) {
-        toast({ variant: "destructive", title: "Error deleting group", description: error.message })
+      toast({ variant: "destructive", title: "Error deleting group", description: error.message })
     } else {
-        setChats(current => current.filter(c => c.id !== chatId));
+      setChats(current => current.filter(c => c.id !== chatId));
     }
   }, [toast])
 
