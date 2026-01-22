@@ -96,12 +96,12 @@ function PostDetailCard({ post, onCommentClick }: { post: Post, onCommentClick: 
   const router = useRouter();
 
   const isLiked = useMemo(() => {
-    if (!loggedInUser) return false;
+    if (!loggedInUser || !post.likedBy) return false;
     return post.likedBy.includes(loggedInUser.id);
   }, [post.likedBy, loggedInUser]);
 
   const isReposted = useMemo(() => {
-    if (!loggedInUser) return false;
+    if (!loggedInUser || !post.repostedBy) return false;
     return post.repostedBy.includes(loggedInUser.id);
   }, [post.repostedBy, loggedInUser]);
 
