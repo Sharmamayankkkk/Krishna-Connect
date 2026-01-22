@@ -854,6 +854,10 @@ export function PostCard({
     const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
     const [isEditOpen, setIsEditOpen] = React.useState(false);
     const [showRepostMenu, setShowRepostMenu] = React.useState(false);
+    const [isExpanded, setIsExpanded] = React.useState(false);
+
+    // Truncation settings for Read More feature
+    const MAX_CONTENT_LENGTH = 280;
 
     // Computed states
     const isPostAuthor = loggedInUser?.id === author.id;
@@ -1088,11 +1092,31 @@ export function PostCard({
                             </DropdownMenu>
                         </div>
 
-                        {content && (
-                            <div className="whitespace-pre-wrap text-sm sm:text-base break-words mt-1">
-                                {parseContent(content, () => setIsHareKrishnaVideoOpen(true))}
-                            </div>
-                        )}
+                        {content && (() => {
+                            const shouldTruncate = content.length > MAX_CONTENT_LENGTH && !isExpanded;
+                            const displayContent = shouldTruncate
+                                ? content.slice(0, MAX_CONTENT_LENGTH).trim() + '...'
+                                : content;
+
+                            return (
+                                <div className="mt-1">
+                                    <div className="whitespace-pre-wrap text-sm sm:text-base break-words">
+                                        {parseContent(displayContent, () => setIsHareKrishnaVideoOpen(true))}
+                                    </div>
+                                    {content.length > MAX_CONTENT_LENGTH && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setIsExpanded(!isExpanded);
+                                            }}
+                                            className="text-primary hover:underline text-sm font-medium mt-1"
+                                        >
+                                            {isExpanded ? 'Show less' : 'Read more...'}
+                                        </button>
+                                    )}
+                                </div>
+                            );
+                        })()}
 
                         {originalPost && <EmbeddedPost post={originalPost} />}
 

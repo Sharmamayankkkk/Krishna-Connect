@@ -1,0 +1,461 @@
+{
+    "version": "1.0",
+    "lastUpdated": "2026-01-22",
+    "promotions": [
+        {
+            "id": "promo_verification_001",
+            "type": "text_post",
+            "active": true,
+            "priority": 1,
+            "content": {
+                "text": "✨ Get verified on Krishna Connect! Join our community of verified devotees and unlock exclusive features. Apply now!",
+                "author": {
+                    "name": "Krishna Connect",
+                    "username": "krishnaconnect",
+                    "avatar": "/logo.png",
+                    "verified": true
+                }
+            },
+            "cta": {
+                "label": "Get Verified",
+                "url": "/get-verified"
+            },
+            "targeting": {
+                "all": true
+            },
+            "schedule": {
+                "start": null,
+                "end": null
+            }
+        },
+        {
+            "id": "promo_events_002",
+            "type": "image_banner",
+            "active": true,
+            "priority": 2,
+            "content": {
+                "text": "🎉 Join our upcoming community events! Connect with devotees worldwide through live sessions, kirtans, and spiritual discussions.",
+                "imageUrl": "/banners/events-promo.jpg",
+                "author": {
+                    "name": "KCS Events",
+                    "username": "kcsevents",
+                    "avatar": "/logo.png",
+                    "verified": true
+                }
+            },
+            "cta": {
+                "label": "View Events",
+                "url": "/events"
+            },
+            "targeting": {
+                "all": true
+            },
+            "schedule": {
+                "start": null,
+                "end": null
+            }
+        },
+        {
+            "id": "promo_groups_003",
+            "type": "text_post",
+            "active": true,
+            "priority": 3,
+            "content": {
+                "text": "🙏 Discover spiritual groups! Join study circles, kirtan groups, and satsang communities. Find your sangha today.",
+                "author": {
+                    "name": "Krishna Connect",
+                    "username": "krishnaconnect",
+                    "avatar": "/logo.png",
+                    "verified": true
+                }
+            },
+            "cta": {
+                "label": "Explore Groups",
+                "url": "/groups"
+            },
+            "targeting": {
+                "all": true
+            },
+            "schedule": {
+                "start": null,
+                "end": null
+            }
+        },
+        {
+            "id": "promo_product_004",
+            "type": "product_showcase",
+            "active": true,
+            "priority": 4,
+            "content": {
+                "text": "📿 Handcrafted Tulsi Mala from Vrindavan. Made by local artisans with love and devotion. Perfect for japa meditation.",
+                "imageUrl": "/products/tulsi-mala.jpg",
+                "productName": "Original Tulsi Japa Mala",
+                "price": "₹299",
+                "originalPrice": "₹499",
+                "discount": "40% OFF",
+                "author": {
+                    "name": "KCS Store",
+                    "username": "kcsstore",
+                    "avatar": "/logo.png",
+                    "verified": true
+                }
+            },
+            "cta": {
+                "label": "Shop Now",
+                "url": "/store/tulsi-mala"
+            },
+            "targeting": {
+                "all": true
+            },
+            "schedule": {
+                "start": null,
+                "end": null
+            }
+        },
+        {
+            "id": "promo_course_005",
+            "type": "image_banner",
+            "active": true,
+            "priority": 5,
+            "content": {
+                "text": "📖 Learn the Bhagavad Gita in 30 Days! Join our structured online course with Q&A sessions, quizzes, and certification.",
+                "imageUrl": "/banners/gita-course.jpg",
+                "author": {
+                    "name": "KCS Academy",
+                    "username": "kcsacademy",
+                    "avatar": "/logo.png",
+                    "verified": true
+                }
+            },
+            "cta": {
+                "label": "Enroll Free",
+                "url": "/courses/bhagavad-gita-30-days"
+            },
+            "targeting": {
+                "all": true
+            },
+            "schedule": {
+                "start": null,
+                "end": null
+            }
+        },
+        {
+            "id": "promo_video_006",
+            "type": "video_promo",
+            "active": true,
+            "priority": 6,
+            "content": {
+                "text": "🎬 Watch our latest documentary: 'The Holy Land of Vrindavan' - A spiritual journey through the sacred groves.",
+                "videoUrl": "/videos/vrindavan-doc-trailer.mp4",
+                "thumbnailUrl": "/thumbnails/vrindavan-doc.jpg",
+                "duration": "2:34",
+                "author": {
+                    "name": "KCS Media",
+                    "username": "kcsmedia",
+                    "avatar": "/logo.png",
+                    "verified": true
+                }
+            },
+            "cta": {
+                "label": "Watch Full Video",
+                "url": "/live/vrindavan-documentary"
+            },
+            "targeting": {
+                "all": true
+            },
+            "schedule": {
+                "start": null,
+                "end": null
+            }
+        },
+        {
+            "id": "promo_donation_007",
+            "type": "donation_appeal",
+            "active": true,
+            "priority": 7,
+            "content": {
+                "text": "🙏 Support the Annadana program! Help us serve 10,000 free meals daily to the needy at our temples across India.",
+                "imageUrl": "/banners/annadana.jpg",
+                "raised": "₹4,50,000",
+                "goal": "₹10,00,000",
+                "percentComplete": 45,
+                "author": {
+                    "name": "KCS Foundation",
+                    "username": "kcsfoundation",
+                    "avatar": "/logo.png",
+                    "verified": true
+                }
+            },
+            "cta": {
+                "label": "Donate Now",
+                "url": "/donate/annadana"
+            },
+            "targeting": {
+                "all": true
+            },
+            "schedule": {
+                "start": null,
+                "end": null
+            }
+        },
+        {
+            "id": "promo_poll_008",
+            "type": "poll_promo",
+            "active": true,
+            "priority": 8,
+            "content": {
+                "text": "📊 What spiritual topic should we cover in our next Live Session? Vote now and let your voice be heard!",
+                "pollOptions": [
+                    {
+                        "id": "1",
+                        "text": "Karma Yoga",
+                        "votes": 234
+                    },
+                    {
+                        "id": "2",
+                        "text": "Bhakti practices",
+                        "votes": 456
+                    },
+                    {
+                        "id": "3",
+                        "text": "Meditation techniques",
+                        "votes": 321
+                    },
+                    {
+                        "id": "4",
+                        "text": "Vedic philosophy",
+                        "votes": 189
+                    }
+                ],
+                "totalVotes": 1200,
+                "author": {
+                    "name": "Krishna Connect",
+                    "username": "krishnaconnect",
+                    "avatar": "/logo.png",
+                    "verified": true
+                }
+            },
+            "cta": null,
+            "targeting": {
+                "all": true
+            },
+            "schedule": {
+                "start": null,
+                "end": null
+            }
+        },
+        {
+            "id": "promo_app_009",
+            "type": "app_install",
+            "active": true,
+            "priority": 9,
+            "content": {
+                "text": "📱 Download our mobile app for the best experience! Get push notifications, offline access, and exclusive mobile features.",
+                "imageUrl": "/banners/app-promo.png",
+                "appStoreUrl": "https://apps.apple.com/app/krishna-connect",
+                "playStoreUrl": "https://play.google.com/store/apps/details?id=com.krishnaconnect",
+                "author": {
+                    "name": "Krishna Connect",
+                    "username": "krishnaconnect",
+                    "avatar": "/logo.png",
+                    "verified": true
+                }
+            },
+            "cta": {
+                "label": "Download App",
+                "url": "/download"
+            },
+            "targeting": {
+                "platform": "web"
+            },
+            "schedule": {
+                "start": null,
+                "end": null
+            }
+        },
+        {
+            "id": "promo_live_010",
+            "type": "live_event",
+            "active": true,
+            "priority": 10,
+            "content": {
+                "text": "🔴 LIVE NOW: Morning Mangal Aarti from ISKCON Mayapur! Join thousands of devotees in this divine experience.",
+                "thumbnailUrl": "/thumbnails/live-aarti.jpg",
+                "viewerCount": 3420,
+                "isLive": true,
+                "author": {
+                    "name": "ISKCON Mayapur",
+                    "username": "iskconmayapur",
+                    "avatar": "/temples/mayapur.jpg",
+                    "verified": true
+                }
+            },
+            "cta": {
+                "label": "Join Live",
+                "url": "/live/mayapur-aarti"
+            },
+            "targeting": {
+                "all": true
+            },
+            "schedule": {
+                "start": "2026-01-01T04:30:00+05:30",
+                "end": "2026-12-31T06:00:00+05:30"
+            }
+        },
+        {
+            "id": "promo_quote_011",
+            "type": "inspirational_quote",
+            "active": true,
+            "priority": 11,
+            "content": {
+                "text": "\"One who sees inaction in action, and action in inaction, is intelligent among men.\"\n\n— Bhagavad Gita 4.18",
+                "backgroundImageUrl": "/backgrounds/gita-verse.jpg",
+                "author": {
+                    "name": "Daily Gita Wisdom",
+                    "username": "dailygita",
+                    "avatar": "/logo.png",
+                    "verified": true
+                }
+            },
+            "cta": {
+                "label": "Read Commentary",
+                "url": "/scripture/gita/4/18"
+            },
+            "targeting": {
+                "all": true
+            },
+            "schedule": {
+                "start": null,
+                "end": null
+            }
+        },
+        {
+            "id": "promo_challenge_012",
+            "type": "challenge_promo",
+            "active": true,
+            "priority": 12,
+            "content": {
+                "text": "🏆 Join the 21-Day Japa Challenge! Complete 16 rounds daily and win exclusive badges. 2,340 devotees already participating!",
+                "imageUrl": "/challenges/japa-challenge.jpg",
+                "participants": 2340,
+                "daysRemaining": 14,
+                "author": {
+                    "name": "KCS Challenges",
+                    "username": "kcschallenges",
+                    "avatar": "/logo.png",
+                    "verified": true
+                }
+            },
+            "cta": {
+                "label": "Join Challenge",
+                "url": "/challenges/21-day-japa"
+            },
+            "targeting": {
+                "all": true
+            },
+            "schedule": {
+                "start": "2026-01-01",
+                "end": "2026-01-31"
+            }
+        },
+        {
+            "id": "promo_referral_013",
+            "type": "referral_program",
+            "active": true,
+            "priority": 13,
+            "content": {
+                "text": "👥 Invite friends, earn rewards! Get 1 month free verification for every 5 friends who join Krishna Connect.",
+                "author": {
+                    "name": "Krishna Connect",
+                    "username": "krishnaconnect",
+                    "avatar": "/logo.png",
+                    "verified": true
+                }
+            },
+            "cta": {
+                "label": "Invite Friends",
+                "url": "/settings/referrals"
+            },
+            "targeting": {
+                "all": true
+            },
+            "schedule": {
+                "start": null,
+                "end": null
+            }
+        },
+        {
+            "id": "promo_festival_014",
+            "type": "festival_announcement",
+            "active": false,
+            "priority": 14,
+            "content": {
+                "text": "🪔 Janmashtami Special! Join us for 24-hour kirtan marathon, special darshan timings, and community feast. Register now!",
+                "imageUrl": "/festivals/janmashtami.jpg",
+                "festivalDate": "2026-08-25",
+                "eventLocation": "All ISKCON Temples",
+                "author": {
+                    "name": "KCS Festivals",
+                    "username": "kcsfestivals",
+                    "avatar": "/logo.png",
+                    "verified": true
+                }
+            },
+            "cta": {
+                "label": "Register",
+                "url": "/events/janmashtami-2026"
+            },
+            "targeting": {
+                "all": true
+            },
+            "schedule": {
+                "start": "2026-08-01",
+                "end": "2026-08-25"
+            }
+        },
+        {
+            "id": "promo_carousel_015",
+            "type": "carousel",
+            "active": true,
+            "priority": 15,
+            "content": {
+                "text": "📸 Explore sacred temples around the world through our photo gallery!",
+                "images": [
+                    {
+                        "url": "/temples/vrindavan.jpg",
+                        "caption": "Sri Vrindavan Dham"
+                    },
+                    {
+                        "url": "/temples/mayapur.jpg",
+                        "caption": "ISKCON Mayapur"
+                    },
+                    {
+                        "url": "/temples/puri.jpg",
+                        "caption": "Jagannath Puri"
+                    },
+                    {
+                        "url": "/temples/tirupati.jpg",
+                        "caption": "Tirumala Tirupati"
+                    }
+                ],
+                "author": {
+                    "name": "Temple Tours",
+                    "username": "templetours",
+                    "avatar": "/logo.png",
+                    "verified": true
+                }
+            },
+            "cta": {
+                "label": "View All Temples",
+                "url": "/explore/temples"
+            },
+            "targeting": {
+                "all": true
+            },
+            "schedule": {
+                "start": null,
+                "end": null
+            }
+        }
+    ]
+}

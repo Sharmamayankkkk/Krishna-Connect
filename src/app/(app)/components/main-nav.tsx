@@ -3,7 +3,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { MessageSquare, Calendar, Users, Compass, Bell, LayoutDashboard, Trophy } from 'lucide-react'
+import { MessageSquare, Calendar, Users, Compass, Bell, LayoutDashboard, Trophy, Sparkles } from 'lucide-react'
 import {
   SidebarMenu,
   SidebarMenuItem,
@@ -99,6 +99,12 @@ export function MainNav() {
       label: 'Groups',
       icon: Users,
       isActive: pathname.startsWith('/groups'),
+    },
+    {
+      href: '/get-verified',
+      label: 'Get Verified',
+      icon: Sparkles,
+      isActive: pathname.startsWith('/get-verified'),
     }
   ]
 

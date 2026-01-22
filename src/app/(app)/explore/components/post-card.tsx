@@ -93,6 +93,10 @@ export function PostCard({ post, onLike, onRepost, onQuote, onDelete }: PostCard
   const [isCommentSheetOpen, setIsCommentSheetOpen] = useState(false);
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
   const [imageViewerIndex, setImageViewerIndex] = useState(0);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Truncation settings - show Read More for posts longer than this
+  const MAX_CONTENT_LENGTH = 280;
 
   const isLiked = useMemo(() => {
     if (!loggedInUser || !post.likedBy) return false;
@@ -200,12 +204,33 @@ export function PostCard({ post, onLike, onRepost, onQuote, onDelete }: PostCard
                 <PostMenu post={post} onDelete={onDelete} />
               </div>
 
-              {/* Content */}
-              {post.content && (
-                <p className="whitespace-pre-wrap text-foreground/90 mt-1 text-sm sm:text-base break-words">
-                  {post.content}
-                </p>
-              )}
+              {/* Content with Read More for long posts */}
+              {post.content && (() => {
+                const shouldTruncate = post.content.length > MAX_CONTENT_LENGTH && !isExpanded;
+                const displayContent = shouldTruncate
+                  ? post.content.slice(0, MAX_CONTENT_LENGTH).trim() + '...'
+                  : post.content;
+
+                return (
+                  <div className="mt-1">
+                    <p className="whitespace-pre-wrap text-foreground/90 text-sm sm:text-base break-words">
+                      {displayContent}
+                    </p>
+                    {post.content.length > MAX_CONTENT_LENGTH && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          setIsExpanded(!isExpanded);
+                        }}
+                        className="text-primary hover:underline text-sm font-medium mt-1"
+                      >
+                        {isExpanded ? 'Show less' : 'Read more...'}
+                      </button>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Media Gallery */}
               {post.media && post.media.length > 0 && <MediaGallery media={post.media} onImageClick={(url) => {
@@ -272,7 +297,7 @@ export function PostCard({ post, onLike, onRepost, onQuote, onDelete }: PostCard
                   onClick={handleLike}
                 >
                   <Heart className={cn("h-4 w-4 sm:h-5 sm:w-5", isLiked && "fill-red-500")} />
-                  <span className="text-xs sm:text-sm">{post.likedBy.length}</span>
+                  <span className="text-xs sm:text-sm">{post.stats?.likes || 0}</span>
                 </Button>
 
                 <Button variant="ghost" size="icon" className="flex items-center gap-1.5 text-sm h-8 w-8 sm:w-auto" disabled>

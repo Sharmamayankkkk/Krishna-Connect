@@ -44,6 +44,8 @@ import {
 } from '../feed-algorithm';
 import { QuotePostDialog } from './components/quote-post-dialog';
 import { createClient } from '@/lib/supabase/client';
+import { PromotedPostCard, PromotedContent, getActivePromotions } from './components/promoted-post-card';
+import promotedContentData from '@/../public/data/promoted_content.json';
 
 const POSTS_PER_PAGE = 10;
 const SCROLL_THRESHOLD = 500;
@@ -101,7 +103,7 @@ const transformPost = (dbPost: any): PostType => {
         },
         comments: transformedComments,
         originalPost: dbPost.quote_of ? transformPost(dbPost.quote_of) : null,
-        likedBy: dbPost.user_likes?.length ? [dbPost.user_likes[0].user_id] : [], // Check if current user liked
+        likedBy: (dbPost.user_likes || []).map((like: any) => like.user_id), // All users who liked this post
         savedBy: [],
         repostedBy: [],
         isPinned: dbPost.is_pinned,
@@ -342,6 +344,15 @@ export default function ExplorePage() {
     const [isQuoteDialogOpen, setIsQuoteDialogOpen] = React.useState(false);
     const [postToQuote, setPostToQuote] = React.useState<PostType | null>(null);
 
+    // Promoted content
+    const [promotions, setPromotions] = React.useState<PromotedContent[]>([]);
+
+    // Load promotions on mount
+    React.useEffect(() => {
+        const active = getActivePromotions(promotedContentData.promotions as PromotedContent[]);
+        setPromotions(active);
+    }, []);
+
     // User interactions
     const [userInteractions, setUserInteractions] = React.useState<UserInteractions>({
         userId: loggedInUser?.id || '',
@@ -440,11 +451,13 @@ export default function ExplorePage() {
     }, []);
 
     // Reactive Feed Filter: Apply filter when posts or filter settings change
+    // NOTE: Intentionally NOT including userInteractions to prevent feed shuffle on like/save
     React.useEffect(() => {
         if (allPosts.length > 0) {
             applyFeedFilter(allPosts, feedFilter);
         }
-    }, [allPosts, feedFilter, userInteractions]); // Re-run when posts or filter changes
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [allPosts, feedFilter]); // Only re-run when posts are fetched or filter tab changes
 
 
     // Scroll detection
@@ -1454,6 +1467,13 @@ export default function ExplorePage() {
                                                     onPollVote={handlePollVote}
                                                     onPromote={handlePromoteClick}
                                                 />
+                                                {/* Inject promoted content every 5 posts */}
+                                                {(index + 1) % 5 === 0 && promotions[Math.floor(index / 5) % promotions.length] && (
+                                                    <PromotedPostCard
+                                                        promotion={promotions[Math.floor(index / 5) % promotions.length]}
+                                                    />
+                                                )}
+                                                {/* Google Ads every 10 posts */}
                                                 {(index + 1) % 10 === 0 && index > 0 && (
                                                     <div className="my-4 border-t border-b">
                                                         <GoogleAd slot="7825657340" />
