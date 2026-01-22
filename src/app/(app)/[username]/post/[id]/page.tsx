@@ -313,11 +313,21 @@ export default function SinglePostPage() {
     const likes = (postData.likes || []).map((l: any) => l.user_id);
     const reposts = (postData.reposts || []).map((r: any) => r.user_id);
 
+    // Map author avatar_url to avatar for compatibility
+    const author = postData.author ? {
+      ...postData.author,
+      avatar: postData.author.avatar_url || postData.author.avatar || '',
+    } : { id: '', name: 'Unknown', username: 'unknown', avatar: '' };
+
     return {
       ...postData,
+      id: String(postData.id),
+      createdAt: postData.created_at || postData.createdAt,
+      media: postData.media_urls || [],
       media_urls: postData.media_urls || [],
       likedBy: likes,
       repostedBy: reposts,
+      savedBy: [],
       stats: {
         comments: comments.reduce((acc: number, c: any) => acc + 1 + (c.replies?.length || 0), 0),
         likes: likes.length,
@@ -328,8 +338,14 @@ export default function SinglePostPage() {
         reshares: 0
       },
       comments: comments,
-      author: postData.author,
-      originalPost: postData.quote_of_id ? { ...postData.quote_of, author: postData.quote_of.author } : null
+      author: author,
+      originalPost: postData.quote_of_id && postData.quote_of ? {
+        ...postData.quote_of,
+        author: postData.quote_of.author ? {
+          ...postData.quote_of.author,
+          avatar: postData.quote_of.author.avatar_url || postData.quote_of.author.avatar || '',
+        } : { id: '', name: 'Unknown', username: 'unknown', avatar: '' }
+      } : null
     }
   }
 
