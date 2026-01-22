@@ -241,22 +241,24 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
   };
 
   const handleShare = () => {
+    const postUrl = `${window.location.origin}/post/${post?.id}`;
     if (navigator.share) {
       navigator.share({
         title: `Post by ${author?.username}`,
-        url: window.location.href,
+        url: postUrl,
       }).catch(() => {
-        navigator.clipboard.writeText(window.location.href);
+        navigator.clipboard.writeText(postUrl);
         toast({ description: 'Link copied to clipboard!' });
       });
     } else {
-      navigator.clipboard.writeText(window.location.href);
+      navigator.clipboard.writeText(postUrl);
       toast({ description: 'Link copied to clipboard!' });
     }
   };
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
+    const postUrl = `${window.location.origin}/post/${post?.id}`;
+    navigator.clipboard.writeText(postUrl);
     toast({ description: 'Link copied to clipboard!' });
   };
 

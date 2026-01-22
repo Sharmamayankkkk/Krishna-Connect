@@ -1161,7 +1161,8 @@ export function PostCard({
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
                                         <DropdownMenuItem onClick={() => {
-                                            navigator.clipboard.writeText(window.location.href);
+                                            const postUrl = `${window.location.origin}/post/${post.id}`;
+                                            navigator.clipboard.writeText(postUrl);
                                             toast({ title: "Link copied to clipboard!" });
                                         }}>
                                             Copy link to post
