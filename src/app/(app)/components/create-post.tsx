@@ -30,7 +30,13 @@ import {
     Sparkles,
     Search,
     Pencil,
-    Users
+    Users,
+    Bold,
+    Italic,
+    Heading2,
+    List,
+    ListOrdered,
+    Minus
 } from 'lucide-react';
 import { CollaborativePostDialog, type Collaborator } from './collaborative-post-dialog';
 import { useAppContext } from '@/providers/app-provider';
@@ -488,7 +494,51 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             e.preventDefault();
             handlePost();
         }
+        // Keyboard shortcuts for formatting
+        if (e.ctrlKey || e.metaKey) {
+            if (e.key === 'b' || e.key === 'B') {
+                e.preventDefault();
+                formatBold();
+            } else if (e.key === 'i' || e.key === 'I') {
+                e.preventDefault();
+                formatItalic();
+            }
+        }
     };
+
+    // Formatting helper - inserts markdown syntax at cursor position
+    const insertFormatting = (prefix: string, suffix: string = '', placeholder: string = '') => {
+        const textarea = textareaRef.current;
+        if (!textarea) return;
+
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const selectedText = content.substring(start, end);
+        const textToInsert = selectedText || placeholder;
+        const newContent = content.substring(0, start) + prefix + textToInsert + suffix + content.substring(end);
+
+        setContent(newContent);
+
+        // Smart cursor placement - select placeholder for easy replacement
+        setTimeout(() => {
+            textarea.focus();
+            if (selectedText) {
+                const cursorPos = start + prefix.length + textToInsert.length + suffix.length;
+                textarea.setSelectionRange(cursorPos, cursorPos);
+            } else if (placeholder) {
+                const selectStart = start + prefix.length;
+                const selectEnd = selectStart + placeholder.length;
+                textarea.setSelectionRange(selectStart, selectEnd);
+            }
+        }, 0);
+    };
+
+    const formatBold = () => insertFormatting('**', '**', 'text');
+    const formatItalic = () => insertFormatting('*', '*', 'text');
+    const formatHeading = () => insertFormatting('## ', '', 'Heading');
+    const formatBulletList = () => insertFormatting('- ', '', 'item');
+    const formatNumberedList = () => insertFormatting('1. ', '', 'item');
+    const formatHorizontalLine = () => insertFormatting('\n---\n', '', '');
 
     if (!loggedInUser) {
         return null;
@@ -580,6 +630,71 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                             </AlertDescription>
                         </Alert>
                     )}
+
+                    {/* Formatting Toolbar */}
+                    <div className="flex items-center gap-1 pb-2 border-b mb-2">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={formatBold}
+                            title="Bold (Ctrl+B)"
+                        >
+                            <Bold className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={formatItalic}
+                            title="Italic (Ctrl+I)"
+                        >
+                            <Italic className="h-4 w-4" />
+                        </Button>
+                        <div className="w-px h-5 bg-border mx-1" />
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={formatHeading}
+                            title="Heading"
+                        >
+                            <Heading2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={formatBulletList}
+                            title="Bullet List"
+                        >
+                            <List className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={formatNumberedList}
+                            title="Numbered List"
+                        >
+                            <ListOrdered className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={formatHorizontalLine}
+                            title="Horizontal Line"
+                        >
+                            <Minus className="h-4 w-4" />
+                        </Button>
+                    </div>
 
                     {/* Text Input */}
                     <TextareaAutosize

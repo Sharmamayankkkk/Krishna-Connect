@@ -613,56 +613,170 @@ const CommentsSheet = ({
 // --- CONTENT PARSING & MEDIA GRID ---
 
 const parseContent = (content: string, onHareKrishnaClick: () => void) => {
-    const regex = /(#\w+)|(https?:\/\/[^\s]+)|((?:Hare|HARE|hare)\s+(?:Krishna|KRISHNA|krishna|Kṛṣṇa))/gi;
-    const elements: (string | React.ReactNode)[] = [];
-    let lastIndex = 0;
-    let match;
+    // First pass: Parse markdown formatting
+    const parseMarkdown = (text: string): React.ReactNode[] => {
+        const result: React.ReactNode[] = [];
 
-    while ((match = regex.exec(content)) !== null) {
-        if (match.index > lastIndex) {
-            elements.push(content.substring(lastIndex, match.index));
+        // Split by lines to handle headings and lists
+        const lines = text.split('\n');
+        let listItems: { type: 'ul' | 'ol', items: string[] } | null = null;
+
+        lines.forEach((line, lineIndex) => {
+            const lineKey = `line-${lineIndex}`;
+
+            // Check for horizontal rule
+            if (line.trim() === '---') {
+                if (listItems) {
+                    result.push(renderList(listItems, `list-${lineIndex}`));
+                    listItems = null;
+                }
+                result.push(<hr key={lineKey} className="my-3 border-muted" />);
+                return;
+            }
+
+            // Check for heading (## Heading)
+            const headingMatch = line.match(/^(#{1,3})\s+(.+)$/);
+            if (headingMatch) {
+                if (listItems) {
+                    result.push(renderList(listItems, `list-${lineIndex}`));
+                    listItems = null;
+                }
+                const level = headingMatch[1].length;
+                const headingText = headingMatch[2];
+                const HeadingTag = `h${level + 1}` as keyof JSX.IntrinsicElements;
+                const className = level === 1 ? 'text-xl font-bold mt-2' : level === 2 ? 'text-lg font-semibold mt-2' : 'text-base font-semibold mt-1';
+                result.push(<HeadingTag key={lineKey} className={className}>{parseInlineFormatting(headingText)}</HeadingTag>);
+                return;
+            }
+
+            // Check for bullet list (- item or * item)
+            const bulletMatch = line.match(/^[-*]\s+(.+)$/);
+            if (bulletMatch) {
+                if (!listItems || listItems.type !== 'ul') {
+                    if (listItems) {
+                        result.push(renderList(listItems, `list-${lineIndex}`));
+                    }
+                    listItems = { type: 'ul', items: [] };
+                }
+                listItems.items.push(bulletMatch[1]);
+                return;
+            }
+
+            // Check for numbered list (1. item)
+            const numberedMatch = line.match(/^\d+\.\s+(.+)$/);
+            if (numberedMatch) {
+                if (!listItems || listItems.type !== 'ol') {
+                    if (listItems) {
+                        result.push(renderList(listItems, `list-${lineIndex}`));
+                    }
+                    listItems = { type: 'ol', items: [] };
+                }
+                listItems.items.push(numberedMatch[1]);
+                return;
+            }
+
+            // End any ongoing list
+            if (listItems) {
+                result.push(renderList(listItems, `list-${lineIndex}`));
+                listItems = null;
+            }
+
+            // Regular line with inline formatting
+            if (line.trim()) {
+                result.push(<span key={lineKey}>{parseInlineFormatting(line)}</span>);
+            }
+
+            // Add line break between lines (except last)
+            if (lineIndex < lines.length - 1 && line.trim()) {
+                result.push(<br key={`br-${lineIndex}`} />);
+            }
+        });
+
+        // Render any remaining list
+        if (listItems) {
+            result.push(renderList(listItems, 'list-final'));
         }
 
-        const matchedText = match[0];
-        const key = `${match.index}-${matchedText}`;
+        return result;
+    };
 
-        if (matchedText.startsWith('#')) {
-            elements.push(
-                <Link key={key} href={`/explore/tags/${matchedText.substring(1)}`} className="text-primary hover:underline">
-                    {matchedText}
-                </Link>
-            );
-        } else if (matchedText.startsWith('http')) {
-            elements.push(
-                <a key={key} href={matchedText} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all">
-                    {matchedText}
-                </a>
-            );
-        } else {
-            elements.push(
-                <span
-                    key={key}
-                    onClick={onHareKrishnaClick}
-                    className="inline-block cursor-pointer transition-transform hover:scale-105 font-semibold"
-                    style={{
-                        background: 'linear-gradient(135deg, #0a4d68 0%, #1e8bc3 20%, #16c79a 40%, #11d3bc 60%, #7ee8fa 80%, #eaf9ff 100%)',
-                        WebkitBackgroundClip: 'text',
-                        backgroundClip: 'text',
-                        color: 'transparent'
-                    }}
-                >
-                    {matchedText}
-                </span>
-            );
+    // Render list helper
+    const renderList = (list: { type: 'ul' | 'ol', items: string[] }, key: string) => {
+        const ListTag = list.type === 'ul' ? 'ul' : 'ol';
+        return (
+            <ListTag key={key} className={list.type === 'ul' ? 'list-disc pl-5 my-1' : 'list-decimal pl-5 my-1'}>
+                {list.items.map((item, i) => (
+                    <li key={`${key}-item-${i}`}>{parseInlineFormatting(item)}</li>
+                ))}
+            </ListTag>
+        );
+    };
+
+    // Parse inline formatting (bold, italic) and special content
+    const parseInlineFormatting = (text: string): React.ReactNode[] => {
+        // Combined regex for bold, italic, hashtags, URLs, and Hare Krishna
+        const regex = /(\*\*([^*]+)\*\*)|(\*([^*]+)\*)|(#\w+)|(https?:\/\/[^\s]+)|((?:Hare|HARE|hare)\s+(?:Krishna|KRISHNA|krishna|Kṛṣṇa))/gi;
+        const elements: React.ReactNode[] = [];
+        let lastIndex = 0;
+        let match;
+        let matchIndex = 0;
+
+        while ((match = regex.exec(text)) !== null) {
+            if (match.index > lastIndex) {
+                elements.push(text.substring(lastIndex, match.index));
+            }
+
+            const key = `inline-${matchIndex++}`;
+
+            if (match[1]) {
+                // Bold (**text**)
+                elements.push(<strong key={key} className="font-bold">{match[2]}</strong>);
+            } else if (match[3]) {
+                // Italic (*text*)
+                elements.push(<em key={key} className="italic">{match[4]}</em>);
+            } else if (match[5]) {
+                // Hashtag
+                elements.push(
+                    <Link key={key} href={`/explore/tags/${match[5].substring(1)}`} className="text-primary hover:underline">
+                        {match[5]}
+                    </Link>
+                );
+            } else if (match[6]) {
+                // URL
+                elements.push(
+                    <a key={key} href={match[6]} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all">
+                        {match[6]}
+                    </a>
+                );
+            } else if (match[7]) {
+                // Hare Krishna
+                elements.push(
+                    <span
+                        key={key}
+                        onClick={onHareKrishnaClick}
+                        className="inline-block cursor-pointer transition-transform hover:scale-105 font-semibold"
+                        style={{
+                            background: 'linear-gradient(135deg, #0a4d68 0%, #1e8bc3 20%, #16c79a 40%, #11d3bc 60%, #7ee8fa 80%, #eaf9ff 100%)',
+                            WebkitBackgroundClip: 'text',
+                            backgroundClip: 'text',
+                            color: 'transparent'
+                        }}
+                    >
+                        {match[7]}
+                    </span>
+                );
+            }
+            lastIndex = regex.lastIndex;
         }
-        lastIndex = regex.lastIndex;
-    }
 
-    if (lastIndex < content.length) {
-        elements.push(content.substring(lastIndex));
-    }
+        if (lastIndex < text.length) {
+            elements.push(text.substring(lastIndex));
+        }
 
-    return elements;
+        return elements;
+    };
+
+    return parseMarkdown(content);
 };
 
 const MediaGrid = ({ media, onMediaClick }: { media: PostType['media'], onMediaClick: (index: number) => void }) => {
