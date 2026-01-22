@@ -367,11 +367,11 @@ export function ProfileView({ profile, posts, followers, following, session }: P
 
         {/* Following/Followers Stats */}
         <div className="flex items-center gap-4 mt-3">
-          <Link href={`/profile/${profile.username}/following`} className="hover:underline">
+          <Link href={`/profile/${profile.username}/connections?type=following`} className="hover:underline">
             <span className="font-bold">{profile.following_count || 0}</span>
             <span className="text-muted-foreground ml-1">Following</span>
           </Link>
-          <Link href={`/profile/${profile.username}/followers`} className="hover:underline">
+          <Link href={`/profile/${profile.username}/connections?type=followers`} className="hover:underline">
             <span className="font-bold">{profile.follower_count || 0}</span>
             <span className="text-muted-foreground ml-1">Followers</span>
           </Link>
