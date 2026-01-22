@@ -5,11 +5,13 @@ import { notFound, redirect } from 'next/navigation';
 export const dynamic = 'force-dynamic';
 
 interface PageProps {
-    params: { username: string };
-    searchParams: { type?: string };
+    params: Promise<{ username: string }>;
+    searchParams: Promise<{ type?: string }>;
 }
 
-export default async function ConnectionsPage({ params, searchParams }: PageProps) {
+export default async function ConnectionsPage(props: PageProps) {
+    const params = await props.params;
+    const searchParams = await props.searchParams;
     const supabase = createClient();
     const { username } = params;
     const decodeUsername = decodeURIComponent(username);
@@ -36,6 +38,23 @@ export default async function ConnectionsPage({ params, searchParams }: PageProp
     if (!profile) {
         notFound();
     }
+
+    // 1a. Fetch Counts Real-time (since profile counts might be stale)
+    const { count: followerCount } = await supabase
+        .from('relationships')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_two_id', profile.id)
+        .eq('status', 'approved');
+
+    const { count: followingCount } = await supabase
+        .from('relationships')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_one_id', profile.id)
+        .eq('status', 'approved');
+
+    // Override profile counts with real values
+    profile.follower_count = followerCount || 0;
+    profile.following_count = followingCount || 0;
 
     // 2. Fetch List based on type
     // Use 'relationships' table.
