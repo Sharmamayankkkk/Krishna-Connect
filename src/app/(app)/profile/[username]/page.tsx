@@ -96,10 +96,15 @@ export default async function ProfilePage(props: ProfilePageProps) {
           // Map potential column names for bio and verified
           bio: foundMatch.bio || foundMatch.description || '',
           verified: foundMatch.is_verified || foundMatch.verified || false,
+          banner_url: foundMatch.banner_url || null,
+          location: foundMatch.location || null,
+          website: foundMatch.website || null,
+          created_at: foundMatch.created_at || null,
           follower_count: 0,
           following_count: 0,
           post_count: 0,
-          is_following: false
+          is_following: false,
+          follow_status: 'none'
         } as Profile;
       }
     }

@@ -1,116 +1,129 @@
-
 'use client';
 
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FollowButton } from "./follow-button";
-import { UserCard } from "./user-card";
+import { EditProfileDialog } from "./edit-profile-dialog";
+import { ReportDialog } from "./report-dialog";
 import { PostDetailDialog } from "../../../components/post-detail-dialog";
 import type { Profile } from "@/types";
-import type { Post, User, Message as Comment } from "@/lib/types";
-import { Grid3x3, Heart, MessageCircle } from "lucide-react";
-import { useAppContext } from "@/providers/app-provider";
+import type { Post, User } from "@/lib/types";
+import {
+  ArrowLeft,
+  CalendarDays,
+  Link as LinkIcon,
+  MapPin,
+  MoreHorizontal,
+  Mail,
+  Flag,
+  Ban,
+  Loader2
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { PostCard } from "@/app/(app)/explore/components/post-card";
+import { format } from "date-fns";
+import Image from "next/image";
+import Link from "next/link";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { createClient } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 interface ProfileViewProps {
   profile: Profile;
-  posts: Post[]; // Expecting richer Post type
-  followers: User[];
-  following: User[];
+  posts: Post[];
+  followers: any[];
+  following: any[];
   session: any;
 }
 
-function PostGrid({ posts, onPostClick }: { posts: Post[]; onPostClick: (post: Post) => void; }) {
-  if (!posts || posts.length === 0) {
-    return (
-      <div className="text-center text-muted-foreground p-12">
-        <Grid3x3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
-        <p className="font-semibold">No posts yet</p>
-        <p className="text-sm mt-1">When they post, you'll see their photos here.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="grid grid-cols-3 gap-1">
-      {posts.map(post => {
-        // Determine image/media URL
-        const mediaUrl = post.image_url || (post.media_urls && post.media_urls.length > 0 ? post.media_urls[0].url : null);
-        const isVideo = mediaUrl?.match(/\.(mp4|webm|mov)$/i);
-
-        if (!mediaUrl) {
-          // Text-only post fallback
-          return (
-            <button
-              key={post.id}
-              onClick={() => onPostClick(post)}
-              className="relative group aspect-square overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm bg-muted flex items-center justify-center p-2 text-center"
-            >
-              <div className="text-xs text-muted-foreground line-clamp-3 leading-tight px-1">
-                {post.content}
-              </div>
-            </button>
-          );
-        }
-
-        return (
-          <button
-            key={post.id}
-            onClick={() => onPostClick(post)}
-            className="relative group aspect-square overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm bg-black"
-          >
-            {isVideo ? (
-              <video
-                src={mediaUrl}
-                className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                muted
-                loop
-                playsInline
-                onMouseOver={e => e.currentTarget.play()}
-                onMouseOut={e => e.currentTarget.pause()}
-              />
-            ) : (
-              <img
-                src={mediaUrl}
-                alt="Post thumbnail"
-                className="w-full h-full object-cover transition-transform group-hover:scale-105"
-              />
-            )}
-
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity pointer-events-none">
-              <div className="text-white flex items-center space-x-4">
-                <div className="flex items-center font-semibold">
-                  <Heart className="w-5 h-5 mr-1.5 fill-white" />
-                  {post.stats?.likes || 0}
-                </div>
-                <div className="flex items-center font-semibold">
-                  <MessageCircle className="w-5 h-5 mr-1.5 fill-white" />
-                  {post.stats?.comments || 0}
-                </div>
-              </div>
-            </div>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
 export function ProfileView({ profile, posts, followers, following, session }: ProfileViewProps) {
-  // Helper to construct avatar URL
-  const getAvatarUrl = (url?: string) => {
-    if (!url) return undefined;
-    if (url.startsWith('http')) return url;
-    // Assuming 'attachments' bucket based on user screenshot
-    return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/attachments/${url}`;
-  };
-
+  const router = useRouter();
+  const supabase = createClient();
+  const { toast } = useToast();
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [isPostDialogOpen, setIsPostDialogOpen] = useState(false);
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
+  const [isBannerViewerOpen, setIsBannerViewerOpen] = useState(false);
+  const [isMessageLoading, setIsMessageLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("posts");
 
-  // Import BadgeCheck inside component or top level? Top level preferred but I can't add imports easily with replace_content unless I include top.
-  // I'll add `import { ... BadgeCheck }` via top level update or use existing imports.
-  // Existing imports: Grid3x3, Heart, MessageCircle. I need BadgeCheck.
+  const handleMessage = async () => {
+    if (!session?.user) return;
+    setIsMessageLoading(true);
+    console.log("Debug HandleMessage:", { targetId: profile.id, userId: session.user.id });
+    try {
+      // Check for existing DM
+      const { data: chatId, error } = await supabase.rpc('get_dm_chat_id', {
+        target_user_id: profile.id
+      });
+
+      if (chatId) {
+        router.push(`/chats?id=${chatId}`);
+        return;
+      }
+
+      // Create new DM if none exists
+      const { data: newChatId, error: createError } = await supabase.rpc('create_dm_chat', {
+        target_user_id: profile.id
+      });
+
+      if (createError) throw createError;
+      if (newChatId) {
+        router.push(`/chats?id=${newChatId}`);
+      }
+    } catch (error: any) {
+      console.error('Error handling message:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error?.message || "Failed to start chat."
+      });
+    } finally {
+      setIsMessageLoading(false);
+    }
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    try {
+      const { error } = await supabase.from('posts').delete().eq('id', postId);
+      if (error) throw error;
+      toast({ title: "Post deleted" });
+      router.refresh();
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      toast({ variant: "destructive", title: "Error", description: "Failed to delete post." });
+    }
+  };
+
+  const handleBlock = async () => {
+    try {
+      const { error } = await supabase.rpc('block_user', {
+        target_user_id: profile.id
+      });
+      if (error) throw error;
+      toast({ title: "Blocked", description: `@${profile.username} has been blocked.` });
+      // Optionally redirect or refresh
+      router.refresh();
+    } catch (error) {
+      console.error('Error blocking user:', error);
+      toast({ variant: "destructive", title: "Error", description: "Failed to block user." });
+    }
+  };
+
+  // Helper to construct full URLs
+  const getImageUrl = (url?: string) => {
+    if (!url) return undefined;
+    if (url.startsWith('http')) return url;
+    return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/attachments/${url}`;
+  };
 
   const handlePostClick = (post: Post) => {
     setSelectedPost(post);
@@ -118,17 +131,28 @@ export function ProfileView({ profile, posts, followers, following, session }: P
   };
 
   // Convert Profile to User format for PostDetailDialog
-  const profileUser: User = {
+  const profileUser = {
     id: profile.id,
     username: profile.username,
-    name: profile.full_name || profile.username,
-    avatar_url: getAvatarUrl(profile.avatar_url) || '',
+    name: profile.name || profile.full_name || profile.username,
+    avatar_url: getImageUrl(profile.avatar_url) || '',
+    avatar: getImageUrl(profile.avatar_url) || '',
     is_admin: false,
-    is_verified: profile.verified || false
+    is_verified: profile.verified || false,
+    verified: profile.verified || false
   };
 
+  const isOwnProfile = session?.user?.id === profile.id;
+  const displayName = profile.name || profile.full_name || profile.username;
+  const joinDate = profile.created_at ? format(new Date(profile.created_at), 'MMMM yyyy') : null;
+
+  // Filter posts for different tabs
+  const userPosts = posts.filter(p => !(p as any).is_reply && !(p as any).parent_id);
+  const userReplies = posts.filter(p => (p as any).is_reply || (p as any).parent_id);
+  const mediaPosts = posts.filter(p => p.media_urls && p.media_urls.length > 0);
+
   return (
-    <div className="container mx-auto p-4 max-w-4xl">
+    <div className="min-h-screen">
       <PostDetailDialog
         open={isPostDialogOpen}
         onOpenChange={setIsPostDialogOpen}
@@ -137,93 +161,338 @@ export function ProfileView({ profile, posts, followers, following, session }: P
         initialComments={[]}
       />
 
-      <div className="flex flex-col items-center md:flex-row md:items-start space-x-0 md:space-x-8 mb-8">
-        <Avatar className="h-32 w-32 mb-4 md:mb-0">
-          <AvatarImage src={getAvatarUrl(profile.avatar_url)} alt={`${profile.username}'s avatar`} className="object-cover" />
-          <AvatarFallback className="text-4xl">{profile.username?.[0]?.toUpperCase()}</AvatarFallback>
-        </Avatar>
-        <div className="text-center md:text-left flex-1">
-          <div className="flex flex-col md:flex-row items-center gap-2 mb-4">
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              {profile.username}
+      {isOwnProfile && (
+        <EditProfileDialog
+          open={isEditProfileOpen}
+          onOpenChange={setIsEditProfileOpen}
+          profile={profile}
+        />
+      )}
+
+      <ReportDialog
+        open={isReportDialogOpen}
+        onOpenChange={setIsReportDialogOpen}
+        targetUserId={profile.id}
+        targetUsername={profile.username}
+      />
+
+      {/* Sticky Header */}
+      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b">
+        <div className="flex items-center gap-6 px-4 h-14">
+          <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full">
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div className="flex-1">
+            <h1 className="font-bold text-lg leading-tight flex items-center gap-1">
+              {displayName}
               {profile.verified && (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="w-6 h-6 text-blue-500"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M8.603 3.799A4.49 4.49 0 0112 2.25c1.357 0 2.573.6 3.397 1.549a4.49 4.49 0 013.498 1.307 4.491 4.491 0 011.307 3.497A4.49 4.49 0 0121.75 12a4.49 4.49 0 01-1.549 3.397 4.491 4.491 0 01-1.307 3.497 4.491 4.491 0 01-3.497 1.307A4.49 4.49 0 0112 21.75a4.49 4.49 0 01-3.397-1.549 4.49 4.49 0 01-3.498-1.306 4.491 4.491 0 01-1.307-3.498A4.49 4.49 0 012.25 12c0-1.357.6-2.573 1.549-3.397a4.49 4.49 0 011.307-3.497 4.491 4.491 0 013.497-1.307zm7.007 6.387a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                <Image
+                  src="/user_Avatar/verified.png"
+                  alt="Verified"
+                  width={18}
+                  height={18}
+                  className="inline-block"
+                />
               )}
             </h1>
-            {session?.user && session.user.id !== profile.id && (
-              <FollowButton
-                profileId={profile.id}
-                currentUserId={session.user.id}
-                initialStatus={
-                  profile.follow_status === 'approved' ? 'approved' :
-                    profile.follow_status === 'pending' ? 'pending' :
-                      profile.is_following ? 'approved' : 'none'
-                }
+            <p className="text-sm text-muted-foreground">
+              {profile.post_count || posts.length} posts
+            </p>
+          </div>
+        </div>
+      </header>
+
+      {/* Banner Image - 16:9 mobile, fixed height desktop */}
+      <div
+        className="relative w-full bg-slate-800 cursor-pointer aspect-[16/9] md:aspect-auto md:h-[320px]"
+        onClick={() => setIsBannerViewerOpen(true)}
+      >
+        <Image
+          src={profile.banner_url ? (getImageUrl(profile.banner_url) || '/background/banner.jpg') : '/background/banner.jpg'}
+          alt="Profile banner"
+          fill
+          className="object-cover"
+          priority
+        />
+      </div>
+
+      {/* Banner Fullscreen Viewer */}
+      {isBannerViewerOpen && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center cursor-pointer"
+          onClick={() => setIsBannerViewerOpen(false)}
+        >
+          <button
+            className="absolute top-4 right-4 text-white hover:bg-white/10 rounded-full p-2 transition-colors"
+            onClick={() => setIsBannerViewerOpen(false)}
+          >
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <Image
+            src={profile.banner_url ? (getImageUrl(profile.banner_url) || '/background/banner.jpg') : '/background/banner.jpg'}
+            alt="Profile banner"
+            width={1200}
+            height={675}
+            className="max-w-full max-h-[90vh] object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+
+      {/* Profile Info Section */}
+      <div className="px-4 pb-3">
+        {/* Avatar & Action Buttons Row */}
+        <div className="flex justify-between items-start">
+          {/* Avatar - overlapping banner */}
+          <div className="-mt-16 sm:-mt-20">
+            <Avatar className="h-24 w-24 sm:h-32 sm:w-32 border-4 border-background bg-background">
+              <AvatarImage
+                src={getImageUrl(profile.avatar_url)}
+                alt={`${profile.username}'s avatar`}
+                className="object-cover"
               />
+              <AvatarFallback className="text-3xl sm:text-4xl bg-muted">
+                {profile.username?.[0]?.toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2 mt-3">
+            {isOwnProfile ? (
+              <Button
+                variant="outline"
+                className="rounded-full font-semibold"
+                onClick={() => setIsEditProfileOpen(true)}
+              >
+                Edit profile
+              </Button>
+            ) : (
+              <>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="rounded-full">
+                      <MoreHorizontal className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleBlock} className="text-destructive">
+                      <Ban className="mr-2 h-4 w-4" />
+                      Block @{profile.username}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setIsReportDialogOpen(true)}>
+                      <Flag className="mr-2 h-4 w-4" />
+                      Report @{profile.username}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="rounded-full"
+                  onClick={handleMessage}
+                  disabled={isMessageLoading}
+                >
+                  {isMessageLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Mail className="h-5 w-5" />}
+                </Button>
+
+                {session?.user && (
+                  <FollowButton
+                    profileId={profile.id}
+                    currentUserId={session.user.id}
+                    initialStatus={
+                      profile.follow_status === 'approved' ? 'approved' :
+                        profile.follow_status === 'pending' ? 'pending' :
+                          profile.is_following ? 'approved' : 'none'
+                    }
+                    className="rounded-full font-semibold"
+                  />
+                )}
+              </>
             )}
           </div>
+        </div>
 
-          <div className="flex justify-center md:justify-start space-x-8 mb-4">
-            <div className="text-center md:text-left">
-              <span className="font-bold block text-lg">{posts?.length || 0}</span>
-              <span className="text-muted-foreground text-sm">posts</span>
-            </div>
-            <div className="text-center md:text-left">
-              <span className="font-bold block text-lg">{profile.follower_count}</span>
-              <span className="text-muted-foreground text-sm">followers</span>
-            </div>
-            <div className="text-center md:text-left">
-              <span className="font-bold block text-lg">{profile.following_count}</span>
-              <span className="text-muted-foreground text-sm">following</span>
-            </div>
-          </div>
+        {/* Name & Username */}
+        <div className="mt-3">
+          <h2 className="text-xl font-bold flex items-center gap-1">
+            {displayName}
+            {profile.verified && (
+              <Image
+                src="/user_Avatar/verified.png"
+                alt="Verified"
+                width={20}
+                height={20}
+                className="inline-block"
+              />
+            )}
+          </h2>
+          <p className="text-muted-foreground">@{profile.username}</p>
+        </div>
 
-          <div className="max-w-md mx-auto md:mx-0">
-            <p className="font-semibold">{profile.full_name}</p>
-            <p className="whitespace-pre-wrap">{profile.bio || "No bio yet."}</p>
-          </div>
+        {/* Bio */}
+        {profile.bio && (
+          <p className="mt-3 text-sm sm:text-base whitespace-pre-wrap">{profile.bio}</p>
+        )}
+
+        {/* Metadata Row */}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-sm text-muted-foreground">
+          {profile.location && (
+            <span className="flex items-center gap-1">
+              <MapPin className="h-4 w-4" />
+              {profile.location}
+            </span>
+          )}
+          {profile.website && (
+            <a
+              href={profile.website.startsWith('http') ? profile.website : `https://${profile.website}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-primary hover:underline"
+            >
+              <LinkIcon className="h-4 w-4" />
+              {profile.website.replace(/^https?:\/\//, '')}
+            </a>
+          )}
+          {joinDate && (
+            <span className="flex items-center gap-1">
+              <CalendarDays className="h-4 w-4" />
+              Joined {joinDate}
+            </span>
+          )}
+        </div>
+
+        {/* Following/Followers Stats */}
+        <div className="flex items-center gap-4 mt-3">
+          <Link href={`/profile/${profile.username}/following`} className="hover:underline">
+            <span className="font-bold">{profile.following_count || 0}</span>
+            <span className="text-muted-foreground ml-1">Following</span>
+          </Link>
+          <Link href={`/profile/${profile.username}/followers`} className="hover:underline">
+            <span className="font-bold">{profile.follower_count || 0}</span>
+            <span className="text-muted-foreground ml-1">Followers</span>
+          </Link>
         </div>
       </div>
 
-      <Tabs defaultValue="posts" className="w-full">
-        <TabsList className="w-full justify-around border-t rounded-none h-12 bg-transparent">
-          <TabsTrigger value="posts" className="flex-1 rounded-none data-[state=active]:border-t-2 data-[state=active]:border-primary data-[state=active]:shadow-none uppercase text-xs tracking-widest">
-            <Grid3x3 className="h-4 w-4 mr-2" /> Posts
+      {/* Content Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="w-full h-auto p-0 bg-transparent border-b rounded-none justify-start">
+          <TabsTrigger
+            value="posts"
+            className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent py-4 font-semibold"
+          >
+            Posts
           </TabsTrigger>
-          <TabsTrigger value="followers" className="flex-1 rounded-none data-[state=active]:border-t-2 data-[state=active]:border-primary data-[state=active]:shadow-none uppercase text-xs tracking-widest">
-            Followers
+          <TabsTrigger
+            value="replies"
+            className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent py-4 font-semibold"
+          >
+            Replies
           </TabsTrigger>
-          <TabsTrigger value="following" className="flex-1 rounded-none data-[state=active]:border-t-2 data-[state=active]:border-primary data-[state=active]:shadow-none uppercase text-xs tracking-widest">
-            Following
+          <TabsTrigger
+            value="media"
+            className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent py-4 font-semibold"
+          >
+            Media
+          </TabsTrigger>
+          <TabsTrigger
+            value="likes"
+            className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent py-4 font-semibold"
+          >
+            Likes
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="posts" className="mt-4">
-          <PostGrid posts={posts} onPostClick={handlePostClick} />
+
+        <TabsContent value="posts" className="mt-0">
+          {userPosts.length === 0 ? (
+            <div className="py-12 text-center">
+              <p className="text-xl font-bold mb-1">No posts yet</p>
+              <p className="text-muted-foreground">When {isOwnProfile ? 'you post' : `@${profile.username} posts`}, it will show up here.</p>
+            </div>
+          ) : (
+            <div className="divide-y">
+              {userPosts.map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={{
+                    ...post,
+                    createdAt: (post as any).createdAt || (post as any).created_at,
+                    likedBy: (post as any).likedBy || [],
+                    repostedBy: (post as any).repostedBy || [],
+                    author: post.author ? { ...post.author, avatar: (post.author as any).avatar || (post.author as any).avatar_url } : profileUser
+                  } as any}
+                  onDelete={handleDeletePost}
+                />
+              ))}
+            </div>
+          )}
         </TabsContent>
-        <TabsContent value="followers">
-          <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
-            <p className="font-semibold">Feature Coming Soon</p>
-            <p className="text-sm">Follower list is under development.</p>
-          </div>
+
+        <TabsContent value="replies" className="mt-0">
+          {userReplies.length === 0 ? (
+            <div className="py-12 text-center">
+              <p className="text-xl font-bold mb-1">No replies yet</p>
+              <p className="text-muted-foreground">When {isOwnProfile ? 'you reply' : `@${profile.username} replies`} to a post, it will show up here.</p>
+            </div>
+          ) : (
+            <div className="divide-y">
+              {userReplies.map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={{
+                    ...post,
+                    createdAt: (post as any).createdAt || (post as any).created_at,
+                    likedBy: (post as any).likedBy || [],
+                    repostedBy: (post as any).repostedBy || [],
+                    author: post.author ? { ...post.author, avatar: (post.author as any).avatar || (post.author as any).avatar_url } : profileUser
+                  } as any}
+                  onDelete={handleDeletePost}
+                />
+              ))}
+            </div>
+          )}
         </TabsContent>
-        <TabsContent value="following">
-          <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
-            <p className="font-semibold">Feature Coming Soon</p>
-            <p className="text-sm">Following list is under development.</p>
+
+        <TabsContent value="media" className="mt-0">
+          {mediaPosts.length === 0 ? (
+            <div className="py-12 text-center">
+              <p className="text-xl font-bold mb-1">No media yet</p>
+              <p className="text-muted-foreground">Photos and videos will appear here.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-0.5">
+              {mediaPosts.map((post) => {
+                const mediaUrl = post.media_urls?.[0]?.url || post.image_url;
+                return mediaUrl ? (
+                  <button
+                    key={post.id}
+                    onClick={() => handlePostClick(post)}
+                    className="aspect-square relative overflow-hidden bg-muted hover:opacity-90 transition-opacity"
+                  >
+                    <Image
+                      src={mediaUrl}
+                      alt="Media"
+                      fill
+                      className="object-cover"
+                    />
+                  </button>
+                ) : null;
+              })}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="likes" className="mt-0">
+          <div className="py-12 text-center">
+            <p className="text-xl font-bold mb-1">Coming Soon</p>
+            <p className="text-muted-foreground">Liked posts will appear here.</p>
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+    </div >
   );
 }

@@ -95,12 +95,12 @@ export function PostCard({ post, onLike, onRepost, onQuote, onDelete }: PostCard
   const [imageViewerIndex, setImageViewerIndex] = useState(0);
 
   const isLiked = useMemo(() => {
-    if (!loggedInUser) return false;
+    if (!loggedInUser || !post.likedBy) return false;
     return post.likedBy.includes(loggedInUser.id);
   }, [post.likedBy, loggedInUser]);
 
   const isReposted = useMemo(() => {
-    if (!loggedInUser) return false;
+    if (!loggedInUser || !post.repostedBy) return false;
     return post.repostedBy.includes(loggedInUser.id);
   }, [post.repostedBy, loggedInUser]);
 
@@ -191,10 +191,13 @@ export function PostCard({ post, onLike, onRepost, onQuote, onDelete }: PostCard
                   </Link>
                   <span className="text-sm text-muted-foreground flex-shrink-0 hidden sm:inline">·</span>
                   <span className="text-xs sm:text-sm text-muted-foreground flex-shrink-0 whitespace-nowrap ml-auto sm:ml-0">
-                    {formatDistanceToNow(new Date(post.createdAt), { addSuffix: false }).replace('about ', '')}
+                    {(post.createdAt || (post as any).created_at)
+                      ? formatDistanceToNow(new Date(post.createdAt || (post as any).created_at), { addSuffix: false }).replace('about ', '')
+                      : ''
+                    }
                   </span>
                 </div>
-                <PostMenu post={post} />
+                <PostMenu post={post} onDelete={onDelete} />
               </div>
 
               {/* Content */}

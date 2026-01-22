@@ -7,7 +7,11 @@ export interface Profile {
   full_name?: string;
   name?: string;
   avatar_url?: string;
+  banner_url?: string;
   bio?: string;
+  location?: string;
+  website?: string;
+  created_at?: string;
   follower_count: number;
   following_count: number;
   post_count?: number;

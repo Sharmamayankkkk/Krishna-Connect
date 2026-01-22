@@ -297,18 +297,34 @@ export default function SinglePostPage() {
   const username = params.username;
 
   const formatPost = (postData: any): Post => {
-    const comments = (postData.comments || []).map((comment: any) => ({
-      ...comment,
-      author: comment.author,
-      likes: (comment.likes || []).length,
-      likedBy: (comment.likes || []).map((l: any) => l.user_id),
-      replies: (comment.replies || []).map((reply: any) => ({
-        ...reply,
-        author: reply.author,
-        likes: (reply.likes || []).length,
-        likedBy: (reply.likes || []).map((l: any) => l.user_id),
-      }))
-    })).sort((a: any, b: any) => new Date(b.createdAt || b.created_at).getTime() - new Date(a.createdAt || a.created_at).getTime());
+    const comments = (postData.comments || []).map((comment: any) => {
+      // Format comment author
+      const commentAuthor = comment.author ? {
+        ...comment.author,
+        avatar: comment.author.avatar_url || comment.author.avatar || '',
+      } : { id: 'unknown', name: 'Unknown', username: 'unknown', avatar: '' };
+
+      return {
+        ...comment,
+        author: commentAuthor,
+        likes: (comment.likes || []).length,
+        likedBy: (comment.likes || []).map((l: any) => l.user_id),
+        replies: (comment.replies || []).map((reply: any) => {
+          // Format reply author
+          const replyAuthor = reply.author ? {
+            ...reply.author,
+            avatar: reply.author.avatar_url || reply.author.avatar || '',
+          } : { id: 'unknown', name: 'Unknown', username: 'unknown', avatar: '' };
+
+          return {
+            ...reply,
+            author: replyAuthor,
+            likes: (reply.likes || []).length,
+            likedBy: (reply.likes || []).map((l: any) => l.user_id),
+          };
+        })
+      };
+    }).sort((a: any, b: any) => new Date(b.createdAt || b.created_at).getTime() - new Date(a.createdAt || a.created_at).getTime());
 
     const likes = (postData.likes || []).map((l: any) => l.user_id);
     const reposts = (postData.reposts || []).map((r: any) => r.user_id);
@@ -441,7 +457,7 @@ export default function SinglePostPage() {
               <div>
                 {post.comments && post.comments.length > 0 ? (
                   post.comments.map((comment) => (
-                    <PostCard key={comment.id} post={{ ...comment, author: comment.user } as any} />
+                    <PostCard key={comment.id} post={comment as any} />
                   ))
                 ) : (
                   <div className="p-10 text-center">
