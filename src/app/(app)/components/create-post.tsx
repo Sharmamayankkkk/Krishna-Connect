@@ -101,7 +101,9 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
 
     const characterCount = content.length;
     const characterPercentage = (characterCount / MAX_CHARACTERS) * 100;
-    const isOverLimit = characterCount > MAX_CHARACTERS;
+    // Verified users have no character limit - they're premium!
+    const isVerified = loggedInUser?.is_verified ?? false;
+    const isOverLimit = !isVerified && characterCount > MAX_CHARACTERS;
     const canPost = (content.trim().length > 0 || mediaPreviews.length > 0 || isPollMode) && !isOverLimit;
 
     // Auto-save draft
@@ -127,7 +129,8 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     const validatePost = (): boolean => {
         const newErrors: string[] = [];
 
-        if (isOverLimit) {
+        // Skip character limit check for verified users
+        if (isOverLimit && !isVerified) {
             newErrors.push(`Post is ${characterCount - MAX_CHARACTERS} characters over the limit`);
         }
 

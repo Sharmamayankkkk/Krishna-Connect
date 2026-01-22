@@ -154,7 +154,7 @@ export default async function ProfilePage(props: ProfilePageProps) {
           *, 
           author:user_id(id, name, username, avatar_url, verified), 
           likes:post_likes(count), 
-          comments:comments(count)
+          comments:comments!post_id(count)
        `)
       .eq('user_id', profile.id)
       .order('created_at', { ascending: false });

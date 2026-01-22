@@ -6,10 +6,22 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Users, Plus, Search, UserPlus, Check } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    DialogFooter,
+} from "@/components/ui/dialog";
+import { Users, Plus, Search, UserPlus, Check, Eye, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 interface Group {
     id: string;
@@ -28,12 +40,19 @@ interface Group {
 
 export default function GroupsPage() {
     const { toast } = useToast();
+    const router = useRouter();
     const [publicGroups, setPublicGroups] = useState<Group[]>([]);
     const [myGroups, setMyGroups] = useState<Group[]>([]);
     const [suggestedGroups, setSuggestedGroups] = useState<Group[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState("all");
+
+    // Group creation state
+    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+    const [isCreating, setIsCreating] = useState(false);
+    const [newGroupName, setNewGroupName] = useState("");
+    const [newGroupDescription, setNewGroupDescription] = useState("");
 
     // Fetch all groups
     useEffect(() => {
@@ -151,6 +170,75 @@ export default function GroupsPage() {
         }
     };
 
+    // Create a new group
+    const handleCreateGroup = async () => {
+        if (!newGroupName.trim()) {
+            toast({
+                title: "Name required",
+                description: "Please enter a group name",
+                variant: "destructive"
+            });
+            return;
+        }
+
+        setIsCreating(true);
+        const supabase = createClient();
+
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error("Not authenticated");
+
+            // Insert the group
+            const { data: newGroup, error } = await supabase
+                .from('groups')
+                .insert({
+                    name: newGroupName.trim(),
+                    description: newGroupDescription.trim(),
+                    created_by: user.id,
+                    is_public: true
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            // Auto-join as admin
+            await supabase
+                .from('group_members')
+                .insert({
+                    group_id: newGroup.id,
+                    user_id: user.id,
+                    role: 'admin'
+                });
+
+            toast({
+                title: "✓ Group created!",
+                description: `${newGroupName} has been created successfully`
+            });
+
+            // Reset form and close dialog
+            setNewGroupName("");
+            setNewGroupDescription("");
+            setIsCreateDialogOpen(false);
+
+            // Refresh groups list
+            fetchGroups();
+
+            // Navigate to the new group
+            router.push(`/group/${newGroup.id}`);
+
+        } catch (error: any) {
+            console.error('Error creating group:', error);
+            toast({
+                title: "Error creating group",
+                description: error.message || "Failed to create group",
+                variant: "destructive"
+            });
+        } finally {
+            setIsCreating(false);
+        }
+    };
+
     // Filter groups by search query
     const filterGroups = (groups: Group[]) => {
         if (!searchQuery) return groups;
@@ -181,14 +269,23 @@ export default function GroupsPage() {
                 </p>
                 {showJoinButton && (
                     group.is_member ? (
-                        <Button
-                            className="w-full"
-                            variant="outline"
-                            onClick={() => handleLeaveGroup(group.id)}
-                        >
-                            <Check className="h-4 w-4 mr-2" />
-                            Joined
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button
+                                className="flex-1"
+                                onClick={() => router.push(`/group/${group.id}`)}
+                            >
+                                <Eye className="h-4 w-4 mr-2" />
+                                View Group
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleLeaveGroup(group.id)}
+                                title="Leave group"
+                            >
+                                <Check className="h-4 w-4" />
+                            </Button>
+                        </div>
                     ) : (
                         <Button
                             className="w-full"
@@ -220,9 +317,51 @@ export default function GroupsPage() {
                         <h1 className="text-3xl font-bold tracking-tight mb-1">Groups</h1>
                         <p className="text-muted-foreground">Discover and join groups in the community</p>
                     </div>
-                    <Button>
-                        <Plus className="mr-2 h-4 w-4" /> Create Group
-                    </Button>
+                    <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button>
+                                <Plus className="mr-2 h-4 w-4" /> Create Group
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                            <DialogHeader>
+                                <DialogTitle>Create New Group</DialogTitle>
+                                <DialogDescription>
+                                    Create a community group for people with shared interests.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="grid gap-4 py-4">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="name">Group Name</Label>
+                                    <Input
+                                        id="name"
+                                        placeholder="Enter group name..."
+                                        value={newGroupName}
+                                        onChange={(e) => setNewGroupName(e.target.value)}
+                                    />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="description">Description</Label>
+                                    <Textarea
+                                        id="description"
+                                        placeholder="What is this group about?"
+                                        value={newGroupDescription}
+                                        onChange={(e) => setNewGroupDescription(e.target.value)}
+                                        rows={3}
+                                    />
+                                </div>
+                            </div>
+                            <DialogFooter>
+                                <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                                    Cancel
+                                </Button>
+                                <Button onClick={handleCreateGroup} disabled={isCreating}>
+                                    {isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    {isCreating ? 'Creating...' : 'Create Group'}
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                 </div>
 
                 {/* Search */}

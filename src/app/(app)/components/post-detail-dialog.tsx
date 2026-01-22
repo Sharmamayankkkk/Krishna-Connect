@@ -65,7 +65,7 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
         .from('comments')
         .select(`
           *,
-          profiles (*)
+          profiles!user_id (*)
         `)
         .eq('post_id', post.id)
         .order('created_at', { ascending: true });
