@@ -178,7 +178,7 @@ export function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDi
                         onClick={() => bannerInputRef.current?.click()}
                     >
                         <Image
-                            src={bannerPreview || (profile.banner_url ? getImageUrl(profile.banner_url) : '/background/banner.jpg') || '/background/banner.jpg'}
+                            src={bannerPreview || (profile.banner_url ? getImageUrl(profile.banner_url) : '/background/banner.png') || '/background/banner.png'}
                             alt="Banner"
                             fill
                             className="object-cover"

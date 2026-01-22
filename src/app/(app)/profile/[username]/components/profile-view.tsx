@@ -208,7 +208,7 @@ export function ProfileView({ profile, posts, followers, following, session }: P
         onClick={() => setIsBannerViewerOpen(true)}
       >
         <Image
-          src={profile.banner_url ? (getImageUrl(profile.banner_url) || '/background/banner.jpg') : '/background/banner.jpg'}
+          src={profile.banner_url ? (getImageUrl(profile.banner_url) || '/background/banner.png') : '/background/banner.png'}
           alt="Profile banner"
           fill
           className="object-cover"
@@ -231,7 +231,7 @@ export function ProfileView({ profile, posts, followers, following, session }: P
             </svg>
           </button>
           <Image
-            src={profile.banner_url ? (getImageUrl(profile.banner_url) || '/background/banner.jpg') : '/background/banner.jpg'}
+            src={profile.banner_url ? (getImageUrl(profile.banner_url) || '/background/banner.png') : '/background/banner.png'}
             alt="Profile banner"
             width={1200}
             height={675}
