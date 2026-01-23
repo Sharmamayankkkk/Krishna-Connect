@@ -88,6 +88,19 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={cn("font-sans antialiased", inter.variable)} suppressHydrationWarning>
         <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-ZRN1L5GXJ4"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-ZRN1L5GXJ4');
+          `}
+        </Script>
+        <Script
           id="adsbygoogle-script"
           async
           src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID}`}
