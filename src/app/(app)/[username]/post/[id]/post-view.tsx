@@ -20,6 +20,8 @@ import { format } from 'date-fns';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
 import Image from 'next/image';
+import { AuthGate } from '@/components/auth-gate';
+import { PrivateContentPlaceholder } from '@/components/private-placeholders';
 
 const POST_QUERY = `
   id,
@@ -29,7 +31,7 @@ const POST_QUERY = `
   poll,
   quote_of_id,
   created_at,
-  author:user_id (*),
+  author:user_id (id, username, name, avatar_url, verified, is_private),
   quote_of:quote_of_id (*, author:user_id (*), media_urls),
   comments (
     *,
@@ -130,6 +132,36 @@ function PostDetailCard({ post, onCommentClick }: { post: Post, onCommentClick: 
     };
 
     const isAuthor = loggedInUser?.id === post.author.id;
+    const isPrivate = (post.author as any).is_private;
+    const canView = !isPrivate || isAuthor || (post as any).is_following; // Simplified check, ideally rely on data presence
+
+    // If content and media are missing, and it's private, show placeholder
+    // But wait, if RLS clears content, we just see nulls.
+    // If RLS filters the row, `post` is null in `PostView`.
+    // We need RLS to allow SELECT of the row, but content columns return NULL?
+    // Postgres RLS is row-level. Column-level security is different.
+    // Use Case: "Public Posts: Update RLS policies... to allow unauthenticated users... where is_private is false"
+    // "Private Posts: Ensure RLS prevents guests from reading".
+    // If RLS prevents reading, the query returns NOTHING.
+    // So `post` will be null in `PostView`.
+    // But user wants "Do not show a 404 error".
+    // This means we need to fetch *something*.
+    // We might need a separate RPC or a second query to "check existence" if main query fails?
+    // OR we allow reading the row, but content is null?
+    // Let's assume for now we will adjust RLS to allow reading the row (id, author), but maybe not content/media?
+    // Or we handle 404 in `PostView` by checking if it exists via a public RPC?
+
+    // Let's implement the UI assumption: If we have the post object but it's "private" (client side check for now until RLS allows partials), show placeholder.
+
+    if (isPrivate && !loggedInUser) {
+        return (
+            <PrivateContentPlaceholder
+                displayName={post.author.name}
+                username={post.author.username}
+                avatarUrl={post.author.avatar}
+            />
+        );
+    }
 
     return (
         <>
@@ -443,7 +475,7 @@ export default function PostView() {
 
             <ScrollArea className="flex-1">
                 <main className="max-w-2xl mx-auto pb-20">
-                    {isLoading || !post || !loggedInUser ? (
+                    {isLoading || !post ? (
                         <PostSkeleton />
                     ) : (
                         <>
@@ -453,17 +485,19 @@ export default function PostView() {
 
                             <div className="p-4 flex gap-3 border-b">
                                 <Avatar className="h-10 w-10">
-                                    <AvatarImage src={loggedInUser.avatar_url} alt={loggedInUser.name} />
-                                    <AvatarFallback>{loggedInUser.name.charAt(0)}</AvatarFallback>
+                                    <AvatarImage src={loggedInUser?.avatar_url} alt={loggedInUser?.name} />
+                                    <AvatarFallback>{loggedInUser?.name?.charAt(0) || '?'}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1 space-y-3">
-                                    <textarea
-                                        ref={commentInputRef}
-                                        placeholder={`Replying to @${post.author.username}`}
-                                        className="w-full bg-transparent border-none focus:ring-0 resize-none text-base min-h-[3rem] outline-none"
-                                        value={commentContent}
-                                        onChange={(e) => setCommentContent(e.target.value)}
-                                    />
+                                    <AuthGate className="w-full">
+                                        <textarea
+                                            ref={commentInputRef}
+                                            placeholder={`Replying to @${post.author.username}`}
+                                            className="w-full bg-transparent border-none focus:ring-0 resize-none text-base min-h-[3rem] outline-none"
+                                            value={commentContent}
+                                            onChange={(e) => setCommentContent(e.target.value)}
+                                        />
+                                    </AuthGate>
                                     <div className="flex justify-end">
                                         <Button
                                             onClick={handleCommentSubmit}

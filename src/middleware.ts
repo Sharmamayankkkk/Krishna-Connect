@@ -55,10 +55,31 @@ export async function middleware(request: NextRequest) {
   
   // If there's no session, redirect unauthenticated users to the login page
   if (!session) {
+    // Allow access to public profile and post pages
+    // Regex matches:
+    // 1. /post/[id] (Redirect page)
+    // 2. /profile/[username] (Profile page)
+    // 3. /[username]/post/[id] (Post page)
+    const isProfilePage = /^\/profile\/[^\/]+$/.test(pathname);
+    const isPostPage = /^\/[^\/]+\/post\/[^\/]+$/.test(pathname);
+    const isRedirectPage = /^\/post\/[^\/]+$/.test(pathname);
+
+    if (isProfilePage || isPostPage || isRedirectPage) {
+      return response;
+    }
+
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     url.searchParams.set('next', pathname) // Save the intended destination
-    return NextResponse.redirect(url)
+    const redirectResponse = NextResponse.redirect(url)
+    
+    // Copy cookies from initial response to redirect response
+    const allCookies = response.cookies.getAll()
+    allCookies.forEach(cookie => {
+      redirectResponse.cookies.set(cookie.name, cookie.value, cookie) // Use cookie options if needed, but value is key
+    })
+    
+    return redirectResponse
   }
 
   // If there is a session, handle profile completion and other redirects
@@ -72,12 +93,28 @@ export async function middleware(request: NextRequest) {
   
   // If profile is not complete, force redirect to complete-profile page
   if (!isProfileComplete && pathname !== '/complete-profile') {
-    return NextResponse.redirect(new URL('/complete-profile', request.url));
+    const redirectResponse = NextResponse.redirect(new URL('/complete-profile', request.url));
+    
+    // Copy cookies
+    const allCookies = response.cookies.getAll()
+    allCookies.forEach(cookie => {
+      redirectResponse.cookies.set(cookie.name, cookie.value, cookie)
+    })
+    
+    return redirectResponse
   }
   
   // If profile is complete, redirect away from auth pages to the main app
   if (isProfileComplete && (pathname === '/login' || pathname === '/signup' || pathname === '/complete-profile')) {
-    return NextResponse.redirect(new URL('/explore', request.url));
+    const redirectResponse = NextResponse.redirect(new URL('/explore', request.url));
+    
+    // Copy cookies
+    const allCookies = response.cookies.getAll()
+    allCookies.forEach(cookie => {
+      redirectResponse.cookies.set(cookie.name, cookie.value, cookie)
+    })
+
+    return redirectResponse
   }
 
   return response

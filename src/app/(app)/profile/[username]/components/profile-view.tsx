@@ -35,6 +35,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { createClient } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { PrivateContentPlaceholder } from "@/components/private-placeholders";
+import { AuthGate } from "@/components/auth-gate";
 
 interface ProfileViewProps {
   profile: Profile;
@@ -356,17 +358,19 @@ export function ProfileView({ profile, posts, followers, following, session }: P
                   <Share2 className="h-5 w-5" />
                 </Button>
 
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="rounded-full"
-                  onClick={handleMessage}
-                  disabled={isMessageLoading}
-                >
-                  {isMessageLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Mail className="h-5 w-5" />}
-                </Button>
+                <AuthGate>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="rounded-full"
+                    onClick={handleMessage}
+                    disabled={isMessageLoading}
+                  >
+                    {isMessageLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Mail className="h-5 w-5" />}
+                  </Button>
+                </AuthGate>
 
-                {session?.user && (
+                {session?.user ? (
                   <FollowButton
                     profileId={profile.id}
                     currentUserId={session.user.id}
@@ -377,6 +381,12 @@ export function ProfileView({ profile, posts, followers, following, session }: P
                     }
                     className="rounded-full font-semibold"
                   />
+                ) : (
+                  <AuthGate>
+                    <Button className="rounded-full font-semibold">
+                      Follow
+                    </Button>
+                  </AuthGate>
                 )}
               </>
             )}
@@ -441,111 +451,120 @@ export function ProfileView({ profile, posts, followers, following, session }: P
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="w-full h-auto p-0 bg-transparent border-b rounded-none justify-start">
-          <TabsTrigger value="posts" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
-            Posts
-          </TabsTrigger>
-          <TabsTrigger value="replies" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
-            Replies
-          </TabsTrigger>
-          <TabsTrigger value="media" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
-            Media
-          </TabsTrigger>
-          <TabsTrigger value="likes" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
-            Likes
-          </TabsTrigger>
-        </TabsList>
+      {/* Private Account Lock Screen OR Public Feed */}
+      {(profile.is_private && !profile.is_following && !isOwnProfile) ? (
+        <PrivateContentPlaceholder
+          isProfile
+          displayName={displayName}
+          username={profile.username}
+        />
+      ) : (
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="w-full h-auto p-0 bg-transparent border-b rounded-none justify-start">
+            <TabsTrigger value="posts" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
+              Posts
+            </TabsTrigger>
+            <TabsTrigger value="replies" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
+              Replies
+            </TabsTrigger>
+            <TabsTrigger value="media" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
+              Media
+            </TabsTrigger>
+            <TabsTrigger value="likes" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
+              Likes
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="posts" className="mt-0">
-          {userPosts.length === 0 ? (
-            <div className="py-12 text-center">
-              <p className="text-xl font-bold mb-1">No posts yet</p>
-              <p className="text-muted-foreground">When {isOwnProfile ? 'you post' : `@${profile.username} posts`}, it will show up here.</p>
-            </div>
-          ) : (
-            <div className="divide-y">
-              {userPosts.map((post) => (
-                <PostCard
-                  key={post.id}
-                  post={{
-                    ...post,
-                    createdAt: (post as any).createdAt || (post as any).created_at,
-                    likedBy: (post as any).likedBy || [],
-                    repostedBy: (post as any).repostedBy || [],
-                    author: post.author ? { ...post.author, avatar: (post.author as any).avatar || (post.author as any).avatar_url } : profileUser,
-                    media: post.media_urls || []
-                  } as any}
-                  onDelete={handleDeletePost}
-                  onLike={handleLike}
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="replies" className="mt-0">
-          {userReplies.length === 0 ? (
-            <div className="py-12 text-center">
-              <p className="text-xl font-bold mb-1">No replies yet</p>
-              <p className="text-muted-foreground">When {isOwnProfile ? 'you reply' : `@${profile.username} replies`} to a post, it will show up here.</p>
-            </div>
-          ) : (
-            <div className="divide-y">
-              {userReplies.map((post) => (
-                <PostCard
-                  key={post.id}
-                  post={{
-                    ...post,
-                    createdAt: (post as any).createdAt || (post as any).created_at,
-                    likedBy: (post as any).likedBy || [],
-                    repostedBy: (post as any).repostedBy || [],
-                    author: post.author ? { ...post.author, avatar: (post.author as any).avatar || (post.author as any).avatar_url } : profileUser,
-                    media: post.media_urls || []
-                  } as any}
-                  onDelete={handleDeletePost}
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="media" className="mt-0">
-          {mediaPosts.length === 0 ? (
-            <div className="py-12 text-center">
-              <p className="text-xl font-bold mb-1">No media yet</p>
-              <p className="text-muted-foreground">Photos and videos will appear here.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-3 gap-0.5">
-              {mediaPosts.map((post) => {
-                const mediaUrl = post.media_urls?.[0]?.url || post.image_url;
-                return mediaUrl ? (
-                  <button
+          <TabsContent value="posts" className="mt-0">
+            {userPosts.length === 0 ? (
+              <div className="py-12 text-center">
+                <p className="text-xl font-bold mb-1">No posts yet</p>
+                <p className="text-muted-foreground">When {isOwnProfile ? 'you post' : `@${profile.username} posts`}, it will show up here.</p>
+              </div>
+            ) : (
+              <div className="divide-y">
+                {userPosts.map((post) => (
+                  <PostCard
                     key={post.id}
-                    onClick={() => handlePostClick(post)}
-                    className="aspect-square relative overflow-hidden bg-muted hover:opacity-90 transition-opacity"
-                  >
-                    <Image
-                      src={mediaUrl}
-                      alt="Media"
-                      fill
-                      className="object-cover"
-                    />
-                  </button>
-                ) : null;
-              })}
-            </div>
-          )}
-        </TabsContent>
+                    post={{
+                      ...post,
+                      createdAt: (post as any).createdAt || (post as any).created_at,
+                      likedBy: (post as any).likedBy || [],
+                      repostedBy: (post as any).repostedBy || [],
+                      author: post.author ? { ...post.author, avatar: (post.author as any).avatar || (post.author as any).avatar_url } : profileUser,
+                      media: post.media_urls || []
+                    } as any}
+                    onDelete={handleDeletePost}
+                    onLike={handleLike}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
 
-        <TabsContent value="likes" className="mt-0">
-          <div className="py-12 text-center">
-            <p className="text-xl font-bold mb-1">Coming Soon</p>
-            <p className="text-muted-foreground">Liked posts will appear here.</p>
-          </div>
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="replies" className="mt-0">
+            {userReplies.length === 0 ? (
+              <div className="py-12 text-center">
+                <p className="text-xl font-bold mb-1">No replies yet</p>
+                <p className="text-muted-foreground">When {isOwnProfile ? 'you reply' : `@${profile.username} replies`} to a post, it will show up here.</p>
+              </div>
+            ) : (
+              <div className="divide-y">
+                {userReplies.map((post) => (
+                  <PostCard
+                    key={post.id}
+                    post={{
+                      ...post,
+                      createdAt: (post as any).createdAt || (post as any).created_at,
+                      likedBy: (post as any).likedBy || [],
+                      repostedBy: (post as any).repostedBy || [],
+                      author: post.author ? { ...post.author, avatar: (post.author as any).avatar || (post.author as any).avatar_url } : profileUser,
+                      media: post.media_urls || []
+                    } as any}
+                    onDelete={handleDeletePost}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="media" className="mt-0">
+            {mediaPosts.length === 0 ? (
+              <div className="py-12 text-center">
+                <p className="text-xl font-bold mb-1">No media yet</p>
+                <p className="text-muted-foreground">Photos and videos will appear here.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-0.5">
+                {mediaPosts.map((post) => {
+                  const mediaUrl = post.media_urls?.[0]?.url || post.image_url;
+                  return mediaUrl ? (
+                    <button
+                      key={post.id}
+                      onClick={() => handlePostClick(post)}
+                      className="aspect-square relative overflow-hidden bg-muted hover:opacity-90 transition-opacity"
+                    >
+                      <Image
+                        src={mediaUrl}
+                        alt="Media"
+                        fill
+                        className="object-cover"
+                      />
+                    </button>
+                  ) : null;
+                })}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="likes" className="mt-0">
+            <div className="py-12 text-center">
+              <p className="text-xl font-bold mb-1">Coming Soon</p>
+              <p className="text-muted-foreground">Liked posts will appear here.</p>
+            </div>
+          </TabsContent>
+        </Tabs>
+      )}
     </div>
   );
 }
