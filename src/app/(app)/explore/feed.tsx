@@ -35,6 +35,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { GoogleAd } from '@/components/ads/google-ad';
+import { GoogleInFeedAd } from '@/components/ads/google-in-feed-ad';
 import { PromotePostDialog } from '@/components/promote-post-dialog';
 import {
     generateSmartFeed,
@@ -1517,11 +1518,9 @@ export default function Feed() {
                                                         promotion={promotions[Math.floor(index / 5) % promotions.length]}
                                                     />
                                                 )}
-                                                {/* Google Ads every 10 posts */}
-                                                {(index + 1) % 10 === 0 && index > 0 && (
-                                                    <div className="my-4 border-t border-b">
-                                                        <GoogleAd slot="7825657340" />
-                                                    </div>
+                                                {/* Google In-Feed Ads every 7 posts (avoiding 0) */}
+                                                {(index + 1) % 7 === 0 && (
+                                                    <GoogleInFeedAd />
                                                 )}
                                             </React.Fragment>
                                         ))}
