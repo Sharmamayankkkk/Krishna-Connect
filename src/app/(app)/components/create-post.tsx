@@ -9,11 +9,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import TextareaAutosize from 'react-textarea-autosize';
+// import TextareaAutosize from 'react-textarea-autosize';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import { Grid } from '@giphy/react-components';
 import { GiphyFetch } from '@giphy/js-fetch-api';
 import { ImageEditor } from '@/components/image-editor';
+import { SmartTextarea } from '@/components/smart-textarea';
 import {
     Image as ImageIcon,
     Video,
@@ -764,19 +765,20 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                     </div>
 
                     {/* Text Input */}
-                    <TextareaAutosize
+                    {/* Text Input */}
+                    <SmartTextarea
                         ref={textareaRef}
                         placeholder="What is happening?!"
                         className={cn(
-                            "w-full resize-none border-none bg-transparent text-base sm:text-lg placeholder:text-muted-foreground focus:outline-none",
+                            "w-full resize-none border-none bg-transparent text-base sm:text-lg placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus-visible:ring-0",
                             isOverLimit && !isVerified && "text-red-500"
                         )}
-                        minRows={1}
-                        maxRows={15}
+                        rows={1}
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
                         onKeyDown={handleKeyDown}
                         disabled={isPosting}
+                        maxLength={MAX_CHARACTERS + 10} // small buffer
                     />
 
                     {/* block to display collaborators */}

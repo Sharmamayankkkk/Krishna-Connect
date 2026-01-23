@@ -123,8 +123,8 @@ const transformPost = (dbPost: any): PostType => {
     };
 };
 
-// Mock user data for suggestions (Removed)
-const suggestedUsers: any[] = [];
+// Mock user data replaced by RPC
+// const suggestedUsers: any[] = [];
 
 type SearchFilter = 'all' | 'posts' | 'users' | 'hashtags' | 'media';
 type FeedFilter = 'foryou' | 'following' | 'latest';
@@ -170,7 +170,15 @@ function UserCard({
     onFollow,
     isFollowing
 }: {
-    user: typeof suggestedUsers[0];
+    user: {
+        id: string;
+        name: string;
+        username: string;
+        avatar: string;
+        verified: boolean;
+        followers: number;
+        bio?: string;
+    };
     onFollow: (id: string) => void;
     isFollowing?: boolean;
 }) {
@@ -313,6 +321,58 @@ function HashtagCard({
     );
 }
 
+// Trending Topics List Component fetching from Supabase
+function TrendingTopicsList({ onHashtagClick }: { onHashtagClick: (tag: string) => void }) {
+    const [topics, setTopics] = React.useState<any[]>([]);
+    const [loading, setLoading] = React.useState(true);
+
+    React.useEffect(() => {
+        const fetchTopics = async () => {
+            const supabase = createClient();
+            const { data, error } = await supabase.rpc('get_trending_topics');
+            if (!error && data) {
+                setTopics(data);
+            }
+            setLoading(false);
+        };
+        fetchTopics();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="grid gap-3 md:grid-cols-2">
+                {[1, 2, 3, 4].map(i => (
+                    <Skeleton key={i} className="h-20 w-full rounded-xl" />
+                ))}
+            </div>
+        );
+    }
+
+    if (topics.length === 0) {
+        return (
+            <div className="p-8 text-center bg-muted/30 rounded-xl border border-dashed text-muted-foreground">
+                <Hash className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p>No trending topics yet</p>
+                <p className="text-xs">Be the first to start a trend!</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="grid gap-3 md:grid-cols-2">
+            {topics.map(topic => (
+                <div key={topic.id} onClick={() => onHashtagClick(topic.hashtag)}>
+                    <HashtagCard
+                        hashtag={topic.hashtag}
+                        posts={topic.posts_count}
+                        category={topic.category}
+                    />
+                </div>
+            ))}
+        </div>
+    );
+}
+
 // Main Explore Page (Feed)
 export default function Feed() {
     const {
@@ -373,6 +433,26 @@ export default function Feed() {
         mutedWords: [],
         lastSeenPostTime: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString()
     });
+
+    const [suggestedUsers, setSuggestedUsers] = React.useState<any[]>([]);
+
+    React.useEffect(() => {
+        const fetchSuggested = async () => {
+            if (exploreMode !== 'discover') return;
+            const supabase = createClient();
+            const { data, error } = await supabase.rpc('get_who_to_follow', { limit_count: 4 });
+            if (!error && data) {
+                // Enhance with dummy follower counts if missing from view
+                const enhanced = data.map((u: any) => ({
+                    ...u,
+                    followers: Math.floor(Math.random() * 1000) + 100, // Mock count for now
+                    avatar: u.avatar_url || '/placeholder-user.jpg'
+                }));
+                setSuggestedUsers(enhanced);
+            }
+        };
+        fetchSuggested();
+    }, [exploreMode]);
 
     const scrollContainerRef = React.useRef<HTMLDivElement>(null);
     const newPostsCheckInterval = React.useRef<NodeJS.Timeout | null>(null);
@@ -1535,65 +1615,57 @@ export default function Feed() {
 
                         {/* DISCOVER MODE */}
                         {exploreMode === 'discover' && (
-                            <div className="p-4 space-y-6">
+                            <div className="p-4 space-y-8">
 
-                                {/* Trending Topics */}
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle className="flex items-center gap-2">
+                                {/* 1. KCS News Section */}
+                                <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-100 dark:from-blue-950/30 dark:to-indigo-950/30 dark:border-blue-900/50">
+                                    <CardContent className="p-6 flex items-start gap-4">
+                                        <div className="p-3 bg-blue-100 dark:bg-blue-900/50 rounded-full shrink-0">
+                                            <TrendingUp className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <h3 className="font-semibold text-lg text-blue-900 dark:text-blue-100">KCS News</h3>
+                                            <p className="text-blue-700 dark:text-blue-300">
+                                                Curated spiritual news and local community updates are coming soon. Stay tuned for daily inspirations!
+                                            </p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* 2. Trending Topics */}
+                                <div>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h2 className="text-xl font-bold flex items-center gap-2">
                                             <Flame className="h-5 w-5 text-orange-500" />
-                                            Trending Now
-                                        </CardTitle>
-                                        <CardDescription>Popular topics in the community</CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="space-y-2">
-                                        {/* Trending topics removed */}
-                                    </CardContent>
-                                </Card>
+                                            Trending Topics
+                                        </h2>
+                                    </div>
 
-                                {/* Suggested Users */}
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle className="flex items-center gap-2">
-                                            <Users className="h-5 w-5" />
-                                            Suggested for You
-                                        </CardTitle>
-                                        <CardDescription>People you might want to follow</CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="space-y-3">
-                                        {suggestedUsers.slice(0, 3).map(user => (
-                                            <UserCard key={user.id} user={user} onFollow={handleFollowUser} />
-                                        ))}
-                                    </CardContent>
-                                </Card>
-
-                                {/* Popular Categories */}
-                                <div className="grid gap-4 md:grid-cols-2">
-                                    <TrendingCategory
-                                        icon={Hash}
-                                        title="Devotional Posts"
-                                        count="2.5K posts today"
-                                        trend="↑ 12%"
-                                    />
-                                    <TrendingCategory
-                                        icon={Video}
-                                        title="Kirtan Videos"
-                                        count="456 videos"
-                                        trend="↑ 8%"
-                                    />
-                                    <TrendingCategory
-                                        icon={ImageIcon}
-                                        title="Temple Photos"
-                                        count="1.2K images"
-                                        trend="↑ 15%"
-                                    />
-                                    <TrendingCategory
-                                        icon={Users}
-                                        title="Community Events"
-                                        count="23 active"
-                                        trend="New"
-                                    />
+                                    {/* Using real data structure relative to migration */}
+                                    <TrendingTopicsList onHashtagClick={(tag) => {
+                                        setExploreMode('feed');
+                                        // future: setFeedFilter('hashtag'); setHashtagFilter(tag);
+                                        toast({ title: "Filtering by #" + tag, description: "Feature coming in next update" });
+                                    }} />
                                 </div>
+
+                                {/* 3. Suggested People */}
+                                <div>
+                                    <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                                        <Users className="h-5 w-5 text-green-500" />
+                                        Who to follow
+                                    </h2>
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                        {suggestedUsers.length > 0 ? suggestedUsers.map(user => (
+                                            <UserCard key={user.id} user={user} onFollow={handleFollowUser} />
+                                        )) : (
+                                            <div className="col-span-2 text-center py-8 text-muted-foreground bg-muted/30 rounded-lg border border-dashed">
+                                                No suggestions available right now
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
                             </div>
                         )}
 

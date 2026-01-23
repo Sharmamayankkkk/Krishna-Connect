@@ -45,6 +45,7 @@ import { useAppContext } from '@/providers/app-provider';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthGuard } from '@/hooks/use-auth-guard';
 import { Skeleton } from "@/components/ui/skeleton";
+import { RichTextRenderer } from '@/components/rich-text-renderer';
 
 interface PostCardProps {
     post: PostType;
@@ -727,8 +728,8 @@ const parseContent = (content: string, onHareKrishnaClick: () => void) => {
 
     // Parse inline formatting (bold, italic) and special content
     const parseInlineFormatting = (text: string): React.ReactNode[] => {
-        // Combined regex for bold, italic, hashtags, URLs, and Hare Krishna
-        const regex = /(\*\*([^*]+)\*\*)|(\*([^*]+)\*)|(#\w+)|(https?:\/\/[^\s]+)|((?:Hare|HARE|hare)\s+(?:Krishna|KRISHNA|krishna|Kṛṣṇa))/gi;
+        // Combined regex for bold, italic, hashtags, mentions, URLs, and Hare Krishna
+        const regex = /(\*\*([^*]+)\*\*)|(\*([^*]+)\*)|(#\w+)|(@\w+)|(https?:\/\/[^\s]+)|((?:Hare|HARE|hare)\s+(?:Krishna|KRISHNA|krishna|Kṛṣṇa))/gi;
         const elements: React.ReactNode[] = [];
         let lastIndex = 0;
         let match;
@@ -750,18 +751,26 @@ const parseContent = (content: string, onHareKrishnaClick: () => void) => {
             } else if (match[5]) {
                 // Hashtag
                 elements.push(
-                    <Link key={key} href={`/explore/tags/${match[5].substring(1)}`} className="text-primary hover:underline">
+                    <Link key={key} href={`/explore/tags/${match[5].substring(1)}`} className="text-primary hover:underline font-medium">
                         {match[5]}
                     </Link>
                 );
             } else if (match[6]) {
-                // URL
+                // Mention (@username)
+                const username = match[6].substring(1);
                 elements.push(
-                    <a key={key} href={match[6]} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all">
+                    <Link key={key} href={`/profile/${username}`} className="text-blue-500 hover:underline font-medium">
                         {match[6]}
-                    </a>
+                    </Link>
                 );
             } else if (match[7]) {
+                // URL
+                elements.push(
+                    <a key={key} href={match[7]} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all">
+                        {match[7]}
+                    </a>
+                );
+            } else if (match[8]) {
                 // Hare Krishna
                 elements.push(
                     <span
@@ -775,7 +784,7 @@ const parseContent = (content: string, onHareKrishnaClick: () => void) => {
                             color: 'transparent'
                         }}
                     >
-                        {match[7]}
+                        {match[8]}
                     </span>
                 );
             }
@@ -1223,8 +1232,11 @@ export function PostCard({
 
                             return (
                                 <div className="mt-1">
-                                    <div className="whitespace-pre-wrap text-sm sm:text-base break-words">
-                                        {parseContent(displayContent, () => setIsHareKrishnaVideoOpen(true))}
+                                    <div className="text-sm sm:text-base">
+                                        <RichTextRenderer
+                                            content={displayContent}
+                                            onHareKrishnaClick={() => setIsHareKrishnaVideoOpen(true)}
+                                        />
                                     </div>
                                     {content.length > MAX_CONTENT_LENGTH && (
                                         <button
