@@ -45,6 +45,7 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PollType, MediaType, DraftPost, createEmptyPoll, createDraft } from '../types';
 import { createClient } from '@/lib/supabase/client';
+import { useAuthGuard } from '@/hooks/use-auth-guard';
 
 interface CreatePostProps {
     onPostCreated: (content: string, invitedUserIds: string[], media?: MediaType[], poll?: PollType) => void;
@@ -580,8 +581,34 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     const formatNumberedList = () => insertFormatting('1. ', '', 'item');
     const formatHorizontalLine = () => insertFormatting('\n---\n', '', '');
 
+    // --- Guest View (Fake Composer) ---
+    const { requireAuth } = useAuthGuard();
+
     if (!loggedInUser) {
-        return null;
+        return (
+            <div
+                className="flex w-full gap-3 sm:gap-4 p-3 sm:p-4 border-b bg-background cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => requireAuth(() => { }, "Log in to post")}
+            >
+                <Avatar className="h-10 w-10 sm:h-11 sm:w-11 flex-shrink-0">
+                    <AvatarFallback>G</AvatarFallback>
+                </Avatar>
+                <div className="flex-1 space-y-3">
+                    <div className="w-full h-12 rounded-md border border-input bg-transparent px-3 py-2 text-sm text-muted-foreground flex items-center">
+                        What is happening?!
+                    </div>
+                    <div className="flex items-center gap-4 text-muted-foreground">
+                        <ImageIcon className="h-5 w-5" />
+                        <Video className="h-5 w-5" />
+                        <BarChart3 className="h-5 w-5" />
+                        <Smile className="h-5 w-5" />
+                        <div className="ml-auto">
+                            <Button size="sm" disabled className="opacity-50">Post</Button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     return (

@@ -20,6 +20,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Loader2, Heart, MessageSquareReply, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { useAuthGuard } from '@/hooks/use-auth-guard';
 
 interface CommentSheetProps {
   post: Post;
@@ -197,7 +198,8 @@ export function CommentSheet({ post, open, onOpenChange, onComment }: CommentShe
     }
   };
 
-  if (!loggedInUser) return null;
+  // if (!loggedInUser) return null; // Removed for guest view
+  const { requireAuth } = useAuthGuard();
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -243,20 +245,31 @@ export function CommentSheet({ post, open, onOpenChange, onComment }: CommentShe
         <SheetFooter className="mt-auto border-t -mx-6 px-6 pt-4 bg-background">
           <div className="flex gap-3 w-full">
             <Avatar className="h-9 w-9">
-              <AvatarImage src={loggedInUser.avatar_url} alt={loggedInUser.name} />
-              <AvatarFallback>{loggedInUser.name.charAt(0)}</AvatarFallback>
+              <AvatarImage src={loggedInUser?.avatar_url || '/placeholder-user.jpg'} alt={loggedInUser?.name || 'Guest'} />
+              <AvatarFallback>{loggedInUser ? loggedInUser.name.charAt(0) : 'G'}</AvatarFallback>
             </Avatar>
             <div className="flex-1 flex items-center gap-2">
-              <Textarea
-                placeholder="Post your reply"
-                className="text-base"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                disabled={isPosting}
-              />
-              <Button onClick={handleComment} disabled={!content.trim() || isPosting} size="icon">
-                {isPosting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              </Button>
+              {!loggedInUser ? (
+                <div
+                  className="w-full border rounded-md px-3 py-2 text-muted-foreground bg-transparent text-base sm:text-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => requireAuth(() => { }, "Log in to reply")}
+                >
+                  Post your reply
+                </div>
+              ) : (
+                <>
+                  <Textarea
+                    placeholder="Post your reply"
+                    className="text-base"
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    disabled={isPosting}
+                  />
+                  <Button onClick={handleComment} disabled={!content.trim() || isPosting} size="icon">
+                    {isPosting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </SheetFooter>

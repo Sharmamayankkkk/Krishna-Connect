@@ -43,6 +43,7 @@ import { ImageViewerDialog } from './image-viewer';
 import { EditPostDialog } from './edit-post-dialog';
 import { useAppContext } from '@/providers/app-provider';
 import { useToast } from '@/hooks/use-toast';
+import { useAuthGuard } from '@/hooks/use-auth-guard';
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface PostCardProps {
@@ -222,6 +223,7 @@ const QuotePostDialog = ({ post, open, onOpenChange, onQuote }: { post: PostType
 // --- POLL COMPONENT ---
 const PollDisplay = ({ poll, postId, onVote, hasVoted }: { poll: PollType; postId: string; onVote: (optionId: string) => void; hasVoted: boolean }) => {
     const { loggedInUser } = useAppContext();
+    const { requireAuth } = useAuthGuard();
     const [selectedOption, setSelectedOption] = React.useState<string | null>(null);
 
     const userVotedOptions = poll.options.filter(opt =>
@@ -233,13 +235,15 @@ const PollDisplay = ({ poll, postId, onVote, hasVoted }: { poll: PollType; postI
     const showResults = hasUserVoted || isPollEnded;
 
     const handleVote = (optionId: string) => {
-        if (!hasUserVoted && !isPollEnded) {
-            if (poll.allowMultipleChoices) {
-                onVote(optionId);
-            } else {
-                setSelectedOption(optionId);
+        requireAuth(() => {
+            if (!hasUserVoted && !isPollEnded) {
+                if (poll.allowMultipleChoices) {
+                    onVote(optionId);
+                } else {
+                    setSelectedOption(optionId);
+                }
             }
-        }
+        }, "Log in to vote");
     };
 
     const submitVote = () => {
@@ -374,6 +378,7 @@ const CommentsSheet = ({
     isPostAuthor: boolean;
 }) => {
     const { loggedInUser } = useAppContext();
+    const { requireAuth } = useAuthGuard();
     const [commentText, setCommentText] = React.useState('');
     const [replyingTo, setReplyingTo] = React.useState<CommentType | ReplyType | null>(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
@@ -463,7 +468,7 @@ const CommentsSheet = ({
                                 variant="ghost"
                                 size="icon"
                                 className={cn("h-8 w-8", isLiked && "text-red-500")}
-                                onClick={() => onCommentLikeToggle(post.id, comment.id, isReply)}
+                                onClick={() => requireAuth(() => onCommentLikeToggle(post.id, comment.id, isReply), "Log in to like comment")}
                             >
                                 <Heart className={cn("h-4 w-4", isLiked && "fill-current")} />
                             </Button>
@@ -577,27 +582,40 @@ const CommentsSheet = ({
                                 </Button>
                             </div>
                         )}
-                        <form onSubmit={handleSubmit} className="flex items-center gap-2 w-full">
-                            <Avatar className="h-9 w-9 flex-shrink-0">
-                                <AvatarImage src={loggedInUser?.avatar_url} />
-                                <AvatarFallback>{loggedInUser?.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <Input
-                                ref={inputRef}
-                                placeholder={replyingTo ? `Replying to ${replyingTo.user.username}...` : `Add a comment...`}
-                                className="flex-1 rounded-full"
-                                value={commentText}
-                                onChange={(e) => setCommentText(e.target.value)}
-                            />
-                            <Button
-                                type="submit"
-                                size="icon"
-                                className="rounded-full flex-shrink-0"
-                                disabled={!commentText.trim()}
+                        {/* Conditional Guest Input */}
+                        {!loggedInUser ? (
+                            <div
+                                className="w-full flex items-center justify-between p-3 border rounded-full bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors"
+                                onClick={() => requireAuth(() => { }, "Log in to comment")}
                             >
-                                <SendHorizonal className="h-4 w-4" />
-                            </Button>
-                        </form>
+                                <span className="text-sm text-muted-foreground ml-2">Log in to comment...</span>
+                                <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full" disabled>
+                                    <SendHorizonal className="h-4 w-4 opacity-50" />
+                                </Button>
+                            </div>
+                        ) : (
+                            <form onSubmit={handleSubmit} className="flex items-center gap-2 w-full">
+                                <Avatar className="h-9 w-9 flex-shrink-0">
+                                    <AvatarImage src={loggedInUser?.avatar_url} />
+                                    <AvatarFallback>{loggedInUser?.name.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <Input
+                                    ref={inputRef}
+                                    placeholder={replyingTo ? `Replying to ${replyingTo.user.username}...` : `Add a comment...`}
+                                    className="flex-1 rounded-full"
+                                    value={commentText}
+                                    onChange={(e) => setCommentText(e.target.value)}
+                                />
+                                <Button
+                                    type="submit"
+                                    size="icon"
+                                    className="rounded-full flex-shrink-0"
+                                    disabled={!commentText.trim()}
+                                >
+                                    <SendHorizonal className="h-4 w-4" />
+                                </Button>
+                            </form>
+                        )}
                     </div>
                 </SheetContent>
             </Sheet>
@@ -951,6 +969,7 @@ export function PostCard({
 }: PostCardProps) {
     const { author, createdAt, content, media, stats, originalPost, editedAt, poll, isRepost, isPromoted } = post;
     const { loggedInUser } = useAppContext();
+    const { requireAuth } = useAuthGuard();
     const { toast } = useToast();
 
     // State for all modals and dialogs
@@ -1001,16 +1020,18 @@ export function PostCard({
 
 
     const handleSave = () => {
-        onSaveToggle(post.id);
+        requireAuth(() => onSaveToggle(post.id), "Log in to bookmark");
     };
 
     const handleLike = () => {
-        onLikeToggle(post.id);
+        requireAuth(() => onLikeToggle(post.id), "Log in to like");
     };
 
     const handleRepost = () => {
-        onRepost(post.id);
-        setShowRepostMenu(false);
+        requireAuth(() => {
+            onRepost(post.id);
+            setShowRepostMenu(false);
+        }, "Log in to repost");
     };
 
     const handleRepostWithQuote = () => {

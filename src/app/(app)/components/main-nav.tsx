@@ -13,6 +13,8 @@ import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useAuthGuard } from '@/hooks/use-auth-guard'
+import { useAppContext } from '@/providers/app-provider'
 
 export function MainNav() {
   const pathname = usePathname()
@@ -108,6 +110,21 @@ export function MainNav() {
     }
   ]
 
+  const { loggedInUser } = useAppContext()
+  const { requireAuth } = useAuthGuard()
+
+  const handleLinkClick = (e: React.MouseEvent, href: string) => {
+    // Public routes that guests can access
+    const publicRoutes = ['/', '/explore', '/get-verified'];
+    if (publicRoutes.some(route => href === route || href.startsWith(route + '/'))) return;
+
+    // Check auth for everything else
+    if (!loggedInUser) {
+      e.preventDefault();
+      requireAuth(() => { }, "Log in to access this feature");
+    }
+  };
+
   return (
     <nav>
       <SidebarMenu>
@@ -118,7 +135,11 @@ export function MainNav() {
               isActive={item.isActive}
               className="w-full justify-start text-sm font-medium h-11"
             >
-              <Link href={item.href} className="flex items-center">
+              <Link
+                href={item.href}
+                className="flex items-center"
+                onClick={(e) => handleLinkClick(e, item.href)}
+              >
                 <item.icon className="h-5 w-5 mr-3" />
                 <span>{item.label}</span>
                 {item.href === '/notifications' && unreadCount > 0 && (

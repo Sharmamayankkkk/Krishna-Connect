@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { CheckCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { useAuthGuard } from '@/hooks/use-auth-guard';
 
 interface PollComponentProps {
   post: Post;
@@ -33,10 +34,14 @@ export function PollComponent({ post, onVote }: PollComponentProps) {
     return poll.options.reduce((acc, opt) => acc + opt.votes, 0);
   }, [poll.options]);
 
+  const { requireAuth } = useAuthGuard();
+
   const handleVote = (optionId: string) => {
-    if (!userVote && onVote) {
-      onVote(post.id, optionId);
-    }
+    requireAuth(() => {
+      if (!userVote && onVote) {
+        onVote(post.id, optionId);
+      }
+    }, "Log in to vote");
   };
 
   const endsAt = new Date(poll.endsAt || 0);

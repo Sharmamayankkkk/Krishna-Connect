@@ -109,7 +109,9 @@ export default function RootLayout({
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+        </Providers>
         <SpeedInsights />
         <Analytics />
         <script

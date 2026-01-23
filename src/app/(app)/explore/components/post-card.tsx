@@ -35,6 +35,7 @@ import { CommentSheet } from './comment-sheet';
 import { QuotedPostCard } from './quoted-post-card';
 import { ImageViewerDialog } from '../../components/image-viewer';
 import { PollComponent } from './poll-component';
+import { useAuthGuard } from '@/hooks/use-auth-guard';
 
 // --- Media Gallery Component ---
 function MediaGallery({ media, onImageClick }: { media: Media[], onImageClick: (url: string) => void }) {
@@ -90,6 +91,7 @@ interface PostCardProps {
 export function PostCard({ post, onLike, onRepost, onQuote, onDelete }: PostCardProps) {
   const router = useRouter();
   const { loggedInUser } = useAppContext();
+  const { requireAuth } = useAuthGuard();
   const [isCommentSheetOpen, setIsCommentSheetOpen] = useState(false);
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
   const [imageViewerIndex, setImageViewerIndex] = useState(0);
@@ -119,25 +121,31 @@ export function PostCard({ post, onLike, onRepost, onQuote, onDelete }: PostCard
   const handleLike = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    if (onLike) {
-      onLike(post.id);
-    }
+    requireAuth(() => {
+      if (onLike) {
+        onLike(post.id);
+      }
+    }, "Log in to like this post");
   };
 
   const handleRepost = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    if (onRepost) {
-      onRepost(post.id);
-    }
+    requireAuth(() => {
+      if (onRepost) {
+        onRepost(post.id);
+      }
+    }, "Log in to repost");
   };
 
   const handleQuote = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    if (onQuote) {
-      onQuote(post);
-    }
+    requireAuth(() => {
+      if (onQuote) {
+        onQuote(post);
+      }
+    }, "Log in to quote this post");
   };
 
   return (
@@ -327,12 +335,32 @@ function PostMenu({ post, onDelete }: { post: Post, onDelete?: (postId: string) 
     e.preventDefault();
   };
 
+  // Guard: Hide menu for guests entirely if they try to access
+  // Actually, for "Hide Report/Block", since we don't have those implemented in the menu yet, 
+  // and the menu only shows Edit/Delete if owner.
+  // We can just return null if not logged in.
+  if (!loggedInUser) return null;
+
   if (post.author.id !== loggedInUser?.id) {
+    // This is where Report/Block would go.
+    // For now, if we return null, it hides the menu completely for non-owners (including registered users).
+    // The previous code returned the button but empty menu?
+    // Let's restore previous behavior for loggedIn users (render button) 
+    // but guests get null.
+
+    // Previous code:
+    /*
     return (
       <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 shrink-0" onClick={handleMenuClick}>
         <MoreHorizontal className="h-4 w-4" />
       </Button>
     );
+    */
+    // Since the previous code literally just returned a button with NO dropdown logic attached to it for non-owners,
+    // it was effectively a dummy button.
+    // I will hide it for now to be clean, or keep it if it's a placeholder.
+    // Given requirement "Hide Report and Block", and they aren't there, hiding the button is safest.
+    return null;
   }
 
   const handleDelete = (e: React.MouseEvent) => {
