@@ -1260,6 +1260,9 @@ export default function Feed() {
         });
     };
 
+    // Mobile Search State
+    const [isMobileSearchOpen, setIsMobileSearchOpen] = React.useState(false);
+
     return (
         <>
             <PromotePostDialog
@@ -1273,10 +1276,10 @@ export default function Feed() {
                 {/* Header with Search */}
                 <header className="sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
                     <div className="flex items-center gap-4 p-4">
-                        <SidebarTrigger className="md:hidden" />
+                        <SidebarTrigger className={cn("md:hidden", isMobileSearchOpen && "hidden")} />
 
                         {/* Mode Toggle */}
-                        <div className="flex gap-2 mr-2">
+                        <div className={cn("flex gap-2 mr-2", isMobileSearchOpen ? "hidden md:flex" : "flex")}>
                             <Button
                                 variant={exploreMode === 'feed' ? 'default' : 'ghost'}
                                 size="sm"
@@ -1298,24 +1301,42 @@ export default function Feed() {
                         </div>
 
                         {/* Search Bar */}
-                        <div className="relative flex-1 max-w-2xl">
-                            <GlobalSearchBar
-                                placeholder="Search posts, users, hashtags..."
-                                className="w-full"
-                            />
+                        <div className="relative flex-1 max-w-2xl flex items-center justify-end">
+                            {/* Mobile Search Icon Trigger */}
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className={cn("md:hidden", isMobileSearchOpen && "hidden")}
+                                onClick={() => setIsMobileSearchOpen(true)}
+                            >
+                                <Search className="h-5 w-5" />
+                            </Button>
+
+                            {/* Full Search Bar (Visible on Desktop OR when Mobile Search is Open) */}
+                            <div className={cn(
+                                "w-full transition-all duration-200",
+                                isMobileSearchOpen ? "block absolute inset-0 bg-background z-30 flex items-center px-4" : "hidden md:block"
+                            )}>
+                                <div className="flex w-full items-center gap-2">
+                                    <GlobalSearchBar
+                                        placeholder="Search posts, users, hashtags..."
+                                        className="flex-1 min-w-0 max-w-none"
+                                        autoFocus={isMobileSearchOpen}
+                                    />
+                                    {isMobileSearchOpen && (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => setIsMobileSearchOpen(false)}
+                                            className="shrink-0"
+                                        >
+                                            Cancel
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
                         </div>
 
-                        {/* Notifications */}
-                        {exploreMode === 'feed' && (
-                            <Button variant="ghost" size="icon" className="relative">
-                                <Bell className="h-5 w-5" />
-                                {unreadCount > 0 && (
-                                    <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">
-                                        {unreadCount}
-                                    </Badge>
-                                )}
-                            </Button>
-                        )}
                     </div>
 
                     {/* Feed Filter Tabs */}

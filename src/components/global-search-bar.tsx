@@ -24,9 +24,10 @@ interface GlobalSearchBarProps {
     value?: string
     onChange?: (value: string) => void
     placeholder?: string
+    autoFocus?: boolean
 }
 
-export function GlobalSearchBar({ className, value, onChange, placeholder = "Search..." }: GlobalSearchBarProps) {
+export function GlobalSearchBar({ className, value, onChange, placeholder = "Search...", autoFocus }: GlobalSearchBarProps) {
     const router = useRouter()
     const [internalQuery, setInternalQuery] = React.useState("")
     const query = value !== undefined ? value : internalQuery
@@ -109,6 +110,7 @@ export function GlobalSearchBar({ className, value, onChange, placeholder = "Sea
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                     type="search"
+                    autoFocus={autoFocus}
                     placeholder={placeholder}
                     className="pl-9 pr-8 w-full bg-muted/50"
                     value={query}
