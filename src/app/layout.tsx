@@ -19,8 +19,10 @@ const APP_DEFAULT_TITLE = "Krishna Connect";
 const APP_TITLE_TEMPLATE = "%s | Krishna Connect";
 const APP_DESCRIPTION = "A modern, real-time chat application for the conscious community, now powered by AI.";
 const APP_URL = "https://krishnaconnect.com";
+const APP_DEFAULT_URL = new URL(APP_URL);
 
 export const metadata: Metadata = {
+  metadataBase: APP_DEFAULT_URL,
   applicationName: APP_NAME,
   title: {
     default: APP_DEFAULT_TITLE,
