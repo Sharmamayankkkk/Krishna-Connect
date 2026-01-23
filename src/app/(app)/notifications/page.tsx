@@ -25,6 +25,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { NotificationType } from '../types';
+import { PushNotificationManager } from '../components/push-notification-manager';
 
 type NotificationFilter = 'all' | 'mentions' | 'likes' | 'comments' | 'follows';
 
@@ -751,13 +752,12 @@ export default function NotificationsPage() {
                 {showSettings && (
                     <div className="border-t py-3 px-4 sm:px-6 bg-muted/30 space-y-3">
                         <div className="flex items-center justify-between gap-2">
+                            {/* Push Notification Manager */}
                             <div className="flex items-center gap-2 min-w-0">
                                 <Bell className="h-4 w-4 flex-shrink-0 text-muted-foreground" aria-hidden="true" />
                                 <span className="text-sm font-medium">Push notifications</span>
                             </div>
-                            <Button variant="outline" size="sm" aria-label="Enable push notifications">
-                                Enable
-                            </Button>
+                            <PushNotificationManager />
                         </div>
                         <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-2 min-w-0">

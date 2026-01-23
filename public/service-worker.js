@@ -5,7 +5,7 @@ const APP_SHELL_URLS = [
     // Validated Logo paths from your screenshot
     '/logo/light_KCS.svg',
     '/logo/light_KCS.png',
-    '/logo/dark_KCS.png', 
+    '/logo/dark_KCS.png',
     '/logo/krishna_connect.png',
     // Validated Background paths (Fixes the "folder" error)
     '/chat-bg/light.png',
@@ -59,7 +59,7 @@ self.addEventListener('fetch', event => {
 
     // Don't cache API calls, AdSense, or external domains.
     if (url.origin !== self.location.origin || event.request.url.includes('/api/')) {
-        return; 
+        return;
     }
 
     // Navigation requests (HTML pages) -> Network first, fallback to cache, then offline page
@@ -72,6 +72,7 @@ self.addEventListener('fetch', event => {
         return;
     }
 
+    // ... existing fetch listener ...
     // Asset requests (Images, CSS, JS) -> Cache first, then Network
     event.respondWith(
         caches.match(event.request).then(cachedResponse => {
@@ -96,6 +97,54 @@ self.addEventListener('fetch', event => {
                 // Optional: Return a placeholder image here if an image fetch fails
                 throw error;
             });
+        })
+    );
+});
+
+// ============================================================================
+// PUSH NOTIFICATIONS
+// ============================================================================
+
+self.addEventListener('push', function (event) {
+    if (event.data) {
+        const data = event.data.json();
+        const options = {
+            body: data.body,
+            icon: data.icon || '/logo/krishna_connect.png',
+            badge: '/logo/krishna_connect.png', // Small icon for android/desktop status bar
+            vibrate: [100, 50, 100],
+            data: {
+                dateOfArrival: Date.now(),
+                primaryKey: '2',
+                url: data.url || '/'
+            },
+            actions: [
+                { action: 'explore', title: 'View' }
+            ]
+        };
+        event.waitUntil(
+            self.registration.showNotification(data.title, options)
+        );
+    }
+});
+
+self.addEventListener('notificationclick', function (event) {
+    event.notification.close();
+    event.waitUntil(
+        clients.matchAll({
+            type: 'window'
+        }).then(function (clientList) {
+            // If a window is already open, focus it
+            for (var i = 0; i < clientList.length; i++) {
+                var client = clientList[i];
+                if (client.url === event.notification.data.url && 'focus' in client) {
+                    return client.focus();
+                }
+            }
+            // Otherwise open a new window
+            if (clients.openWindow) {
+                return clients.openWindow(event.notification.data.url);
+            }
         })
     );
 });
