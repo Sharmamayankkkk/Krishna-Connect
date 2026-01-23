@@ -48,6 +48,7 @@ import { createClient } from '@/lib/supabase/client';
 import { PromotedPostCard, PromotedContent, getActivePromotions } from './components/promoted-post-card';
 import promotedContentData from '@/../public/data/promoted_content.json';
 import { LoginWall } from '@/components/login-wall';
+import { GlobalSearchBar } from "@/components/global-search-bar"
 
 const POSTS_PER_PAGE = 10;
 const SCROLL_THRESHOLD = 500;
@@ -166,13 +167,17 @@ function TrendingCategory({
 // User Card Component with proper follow functionality
 function UserCard({
     user,
-    onFollow
+    onFollow,
+    isFollowing
 }: {
     user: typeof suggestedUsers[0];
     onFollow: (id: string) => void;
+    isFollowing?: boolean;
 }) {
     const { loggedInUser } = useAppContext();
-    const [followStatus, setFollowStatus] = React.useState<'none' | 'pending' | 'approved'>('none');
+    const [followStatus, setFollowStatus] = React.useState<'none' | 'pending' | 'approved'>(
+        isFollowing ? 'approved' : 'none'
+    );
     const [isLoading, setIsLoading] = React.useState(false);
     const supabase = createClient();
     const { toast } = useToast();
@@ -320,15 +325,6 @@ export default function Feed() {
     // Mode management
     const [exploreMode, setExploreMode] = React.useState<ExploreMode>('feed');
 
-    // Search state
-    const [searchQuery, setSearchQuery] = React.useState('');
-    const [activeFilter, setActiveFilter] = React.useState<SearchFilter>('all');
-    const [recentSearches, setRecentSearches] = React.useState<string[]>([
-        'Bhagavad Gita',
-        'Morning prayers',
-        'Temple events'
-    ]);
-
     // Feed state
     const [allPosts, setAllPosts] = React.useState<PostType[]>([]);
     const [visiblePosts, setVisiblePosts] = React.useState<PostType[]>([]);
@@ -380,27 +376,6 @@ export default function Feed() {
 
     const scrollContainerRef = React.useRef<HTMLDivElement>(null);
     const newPostsCheckInterval = React.useRef<NodeJS.Timeout | null>(null);
-
-    // Filtered search results
-    const searchResults = React.useMemo(() => {
-        if (!searchQuery) return { posts: [], users: [], hashtags: [] };
-
-        const query = searchQuery.toLowerCase();
-
-        const posts = allPosts.filter(p =>
-            p.content.toLowerCase().includes(query) ||
-            p.author.name.toLowerCase().includes(query)
-        );
-
-        const users = suggestedUsers.filter(u =>
-            u.name.toLowerCase().includes(query) ||
-            u.username.toLowerCase().includes(query) ||
-            u.bio.toLowerCase().includes(query)
-        );
-
-        const hashtags: { id: string; hashtag: string; postsCount: number; category?: string }[] = [];
-        return { posts, users, hashtags };
-    }, [searchQuery, allPosts]);
 
     // Initial fetch from Supabase
     const fetchPosts = React.useCallback(async () => {
@@ -710,23 +685,6 @@ export default function Feed() {
             applyFeedFilter(allPosts, filter);
             setIsLoadingMore(false);
         }, 300);
-    };
-
-    // Search handlers
-    const handleSearch = (query: string) => {
-        setSearchQuery(query);
-        if (query) {
-            setExploreMode('search');
-            if (!recentSearches.includes(query)) {
-                setRecentSearches(prev => [query, ...prev.slice(0, 4)]);
-            }
-        } else {
-            setExploreMode('feed');
-        }
-    };
-
-    const clearRecentSearch = (search: string) => {
-        setRecentSearches(prev => prev.filter(s => s !== search));
     };
 
     const handleFollowUser = (userId: string) => {
@@ -1324,7 +1282,6 @@ export default function Feed() {
                                 size="sm"
                                 onClick={() => {
                                     setExploreMode('feed');
-                                    setSearchQuery('');
                                 }}
                             >
                                 <Home className="h-4 w-4 mr-2" />
@@ -1342,26 +1299,10 @@ export default function Feed() {
 
                         {/* Search Bar */}
                         <div className="relative flex-1 max-w-2xl">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                            <Input
+                            <GlobalSearchBar
                                 placeholder="Search posts, users, hashtags..."
-                                className="pl-10 pr-10 h-12 text-base"
-                                value={searchQuery}
-                                onChange={(e) => handleSearch(e.target.value)}
+                                className="w-full"
                             />
-                            {searchQuery && (
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="absolute right-1 top-1/2 -translate-y-1/2"
-                                    onClick={() => {
-                                        setSearchQuery('');
-                                        setExploreMode('feed');
-                                    }}
-                                >
-                                    <X className="h-4 w-4" />
-                                </Button>
-                            )}
                         </div>
 
                         {/* Notifications */}
@@ -1378,7 +1319,7 @@ export default function Feed() {
                     </div>
 
                     {/* Feed Filter Tabs */}
-                    {exploreMode === 'feed' && !searchQuery && (
+                    {exploreMode === 'feed' && (
                         <Tabs value={feedFilter} onValueChange={(v) => handleFilterChange(v as FeedFilter)} className="w-full">
                             <TabsList className="w-full justify-start rounded-none border-b bg-transparent h-auto p-0 px-4">
                                 <TabsTrigger
@@ -1406,50 +1347,10 @@ export default function Feed() {
                         </Tabs>
                     )}
 
-                    {/* Search Filter Tabs */}
-                    {searchQuery && (
-                        <Tabs value={activeFilter} onValueChange={(v) => setActiveFilter(v as SearchFilter)} className="w-full">
-                            <TabsList className="w-full justify-start rounded-none border-b bg-transparent h-auto p-0 px-4">
-                                <TabsTrigger
-                                    value="all"
-                                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-                                >
-                                    All
-                                </TabsTrigger>
-                                <TabsTrigger
-                                    value="posts"
-                                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-                                >
-                                    Posts ({searchResults.posts.length})
-                                </TabsTrigger>
-                                <TabsTrigger
-                                    value="users"
-                                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-                                >
-                                    <Users className="h-4 w-4 mr-2" />
-                                    People ({searchResults.users.length})
-                                </TabsTrigger>
-                                <TabsTrigger
-                                    value="hashtags"
-                                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-                                >
-                                    <Hash className="h-4 w-4 mr-2" />
-                                    Tags ({searchResults.hashtags.length})
-                                </TabsTrigger>
-                                <TabsTrigger
-                                    value="media"
-                                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-                                >
-                                    <ImageIcon className="h-4 w-4 mr-2" />
-                                    Media
-                                </TabsTrigger>
-                            </TabsList>
-                        </Tabs>
-                    )}
                 </header>
 
                 {/* New Posts Banner */}
-                {showNewPostsBanner && newPostsCount > 0 && exploreMode === 'feed' && !searchQuery && (
+                {showNewPostsBanner && newPostsCount > 0 && exploreMode === 'feed' && (
                     <div className="sticky top-[130px] z-10 px-4 py-2 bg-primary/10 border-b">
                         <Button
                             variant="ghost"
@@ -1464,8 +1365,10 @@ export default function Feed() {
 
                 <main className="flex-1 overflow-y-auto">
                     <div className="max-w-4xl mx-auto">
+
+
                         {/* FEED MODE */}
-                        {exploreMode === 'feed' && !searchQuery && (
+                        {exploreMode === 'feed' && (
                             <div ref={scrollContainerRef}>
                                 <CreatePost onPostCreated={handlePostCreated} />
 
@@ -1610,53 +1513,8 @@ export default function Feed() {
                         )}
 
                         {/* DISCOVER MODE */}
-                        {exploreMode === 'discover' && !searchQuery && (
+                        {exploreMode === 'discover' && (
                             <div className="p-4 space-y-6">
-                                {/* Recent Searches */}
-                                {recentSearches.length > 0 && (
-                                    <Card>
-                                        <CardHeader>
-                                            <div className="flex items-center justify-between">
-                                                <CardTitle className="flex items-center gap-2">
-                                                    <Clock className="h-5 w-5" />
-                                                    Recent Searches
-                                                </CardTitle>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => setRecentSearches([])}
-                                                >
-                                                    Clear all
-                                                </Button>
-                                            </div>
-                                        </CardHeader>
-                                        <CardContent className="space-y-2">
-                                            {recentSearches.map((search, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="flex items-center justify-between p-2 rounded-lg hover:bg-muted cursor-pointer group"
-                                                    onClick={() => handleSearch(search)}
-                                                >
-                                                    <div className="flex items-center gap-2">
-                                                        <Search className="h-4 w-4 text-muted-foreground" />
-                                                        <span className="text-sm">{search}</span>
-                                                    </div>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-6 w-6 opacity-0 group-hover:opacity-100"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            clearRecentSearch(search);
-                                                        }}
-                                                    >
-                                                        <X className="h-3 w-3" />
-                                                    </Button>
-                                                </div>
-                                            ))}
-                                        </CardContent>
-                                    </Card>
-                                )}
 
                                 {/* Trending Topics */}
                                 <Card>
@@ -1685,10 +1543,6 @@ export default function Feed() {
                                         {suggestedUsers.slice(0, 3).map(user => (
                                             <UserCard key={user.id} user={user} onFollow={handleFollowUser} />
                                         ))}
-                                        <Button variant="ghost" className="w-full" onClick={() => handleSearch('')}>
-                                            See more suggestions
-                                            <ArrowRight className="h-4 w-4 ml-2" />
-                                        </Button>
                                     </CardContent>
                                 </Card>
 
@@ -1722,176 +1576,6 @@ export default function Feed() {
                             </div>
                         )}
 
-                        {/* SEARCH RESULTS MODE */}
-                        {searchQuery && (
-                            <div className="p-4">
-                                <Tabs value={activeFilter} onValueChange={(v) => setActiveFilter(v as SearchFilter)}>
-                                    {/* All Results */}
-                                    <TabsContent value="all" className="mt-0 space-y-6">
-                                        {searchResults.users.length > 0 && (
-                                            <div>
-                                                <h3 className="text-lg font-semibold mb-3">People</h3>
-                                                <div className="space-y-3">
-                                                    {searchResults.users.slice(0, 3).map(user => (
-                                                        <UserCard key={user.id} user={user} onFollow={handleFollowUser} />
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {searchResults.hashtags.length > 0 && (
-                                            <div>
-                                                <h3 className="text-lg font-semibold mb-3">Hashtags</h3>
-                                                <div className="space-y-2">
-                                                    {searchResults.hashtags.map(tag => (
-                                                        <HashtagCard
-                                                            key={tag.id}
-                                                            hashtag={tag.hashtag}
-                                                            posts={tag.postsCount}
-                                                            category={tag.category}
-                                                        />
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {searchResults.posts.length > 0 && (
-                                            <div>
-                                                <h3 className="text-lg font-semibold mb-3">Posts</h3>
-                                                <div className="space-y-0 border rounded-lg overflow-hidden">
-                                                    {searchResults.posts.slice(0, 5).map(post => (
-                                                        <PostCard
-                                                            key={post.id}
-                                                            post={post}
-                                                            onComment={handleCommentCreated}
-                                                            onDelete={handlePostDeleted}
-                                                            onEdit={handlePostEdited}
-                                                            onLikeToggle={handlePostLikeToggle}
-                                                            onSaveToggle={handlePostSaveToggle}
-                                                            onCommentLikeToggle={handleCommentLikeToggle}
-                                                            onCommentPinToggle={handleCommentPinToggle}
-                                                            onCommentHideToggle={handleCommentHideToggle}
-                                                            onCommentDelete={handleCommentDeleted}
-                                                            onQuotePost={handleQuotePost}
-                                                            onRepost={handleRepost}
-                                                            onPollVote={handlePollVote}
-                                                            onPromote={handlePromoteClick}
-                                                        />
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {searchResults.posts.length === 0 &&
-                                            searchResults.users.length === 0 &&
-                                            searchResults.hashtags.length === 0 && (
-                                                <div className="text-center py-12">
-                                                    <Search className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                                                    <h3 className="text-lg font-semibold mb-2">No results found</h3>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Try searching for something else
-                                                    </p>
-                                                </div>
-                                            )}
-                                    </TabsContent>
-
-                                    {/* Posts Only */}
-                                    <TabsContent value="posts" className="mt-0">
-                                        {searchResults.posts.length > 0 ? (
-                                            <div className="space-y-0 border rounded-lg overflow-hidden">
-                                                {searchResults.posts.map(post => (
-                                                    <PostCard
-                                                        key={post.id}
-                                                        post={post}
-                                                        onComment={handleCommentCreated}
-                                                        onDelete={handlePostDeleted}
-                                                        onEdit={handlePostEdited}
-                                                        onLikeToggle={handlePostLikeToggle}
-                                                        onSaveToggle={handlePostSaveToggle}
-                                                        onCommentLikeToggle={handleCommentLikeToggle}
-                                                        onCommentPinToggle={handleCommentPinToggle}
-                                                        onCommentHideToggle={handleCommentHideToggle}
-                                                        onCommentDelete={handleCommentDeleted}
-                                                        onQuotePost={handleQuotePost}
-                                                        onRepost={handleRepost}
-                                                        onPollVote={handlePollVote}
-                                                        onPromote={handlePromoteClick}
-                                                    />
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className="text-center py-12">
-                                                <Search className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                                                <p className="text-sm text-muted-foreground">No posts found</p>
-                                            </div>
-                                        )}
-                                    </TabsContent>
-
-                                    {/* Users Only */}
-                                    <TabsContent value="users" className="mt-0">
-                                        {searchResults.users.length > 0 ? (
-                                            <div className="space-y-3">
-                                                {searchResults.users.map(user => (
-                                                    <UserCard key={user.id} user={user} onFollow={handleFollowUser} />
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className="text-center py-12">
-                                                <Users className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                                                <p className="text-sm text-muted-foreground">No users found</p>
-                                            </div>
-                                        )}
-                                    </TabsContent>
-
-                                    {/* Hashtags Only */}
-                                    <TabsContent value="hashtags" className="mt-0">
-                                        {searchResults.hashtags.length > 0 ? (
-                                            <div className="space-y-2">
-                                                {searchResults.hashtags.map(tag => (
-                                                    <HashtagCard
-                                                        key={tag.id}
-                                                        hashtag={tag.hashtag}
-                                                        posts={tag.postsCount}
-                                                        category={tag.category}
-                                                    />
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className="text-center py-12">
-                                                <Hash className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                                                <p className="text-sm text-muted-foreground">No hashtags found</p>
-                                            </div>
-                                        )}
-                                    </TabsContent>
-
-                                    {/* Media Only */}
-                                    <TabsContent value="media" className="mt-0">
-                                        <div className="grid grid-cols-3 gap-1">
-                                            {searchResults.posts
-                                                .filter(p => p.media.length > 0)
-                                                .flatMap(p => p.media)
-                                                .slice(0, 12)
-                                                .map((media, idx) => (
-                                                    <div key={idx} className="aspect-square bg-muted relative group cursor-pointer">
-                                                        <img
-                                                            src={media.url}
-                                                            alt={media.alt || ''}
-                                                            className="w-full h-full object-cover"
-                                                        />
-                                                    </div>
-                                                ))
-                                            }
-                                        </div>
-                                        {searchResults.posts.filter(p => p.media.length > 0).length === 0 && (
-                                            <div className="text-center py-12">
-                                                <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                                                <p className="text-sm text-muted-foreground">No media found</p>
-                                            </div>
-                                        )}
-                                    </TabsContent>
-                                </Tabs>
-                            </div>
-                        )}
                     </div>
                 </main>
 
