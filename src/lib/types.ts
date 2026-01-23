@@ -10,6 +10,7 @@ export type User = {
   is_admin: boolean;
   is_private?: boolean;
   is_verified?: boolean;
+  has_set_privacy?: boolean;
 };
 
 export type Media = {
@@ -199,4 +200,5 @@ export interface AppContextType {
   setThemeSettings: (newSettings: Partial<ThemeSettings>) => void
   isReady: boolean
   resetUnreadCount: (chatId: number) => void
+  refreshProfile: () => Promise<void>
 }

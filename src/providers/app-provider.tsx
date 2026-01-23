@@ -8,6 +8,7 @@ import { Icons } from "@/components/icons"
 import { useToast } from "@/hooks/use-toast"
 import type { Session, RealtimePostgresChangesPayload, User as AuthUser } from "@supabase/supabase-js"
 import { usePathname, useRouter } from "next/navigation"
+import { PrivacySetupModal } from "@/components/privacy-setup-modal"
 
 const AppContext = createContext<AppContextType | undefined>(undefined)
 
@@ -189,6 +190,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+
+  useEffect(() => {
+    if (loggedInUser && !loggedInUser.has_set_privacy) {
+      setShowPrivacyModal(true);
+    } else {
+      setShowPrivacyModal(false);
+    }
+  }, [loggedInUser]);
+
+  const refreshProfile = useCallback(async () => {
+    if (session?.user) {
+      await fetchInitialData(session.user);
+    }
+  }, [session, fetchInitialData]);
 
   const handleNewMessage = useCallback(
     async (payload: RealtimePostgresChangesPayload<Message>) => {
@@ -398,9 +415,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     sendDmRequest, addChat, updateUser, leaveGroup, deleteGroup,
     blockUser, unblockUser, reportUser, forwardMessage,
     themeSettings, setThemeSettings, isReady, resetUnreadCount,
+    refreshProfile
   }
 
-  return <AppContext.Provider value={value}>{children}</AppContext.Provider>
+  return (
+    <AppContext.Provider value={value}>
+      {children}
+      <PrivacySetupModal open={showPrivacyModal} onOpenChange={setShowPrivacyModal} />
+    </AppContext.Provider>
+  )
 }
 
 export function useAppContext() {

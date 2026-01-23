@@ -2,6 +2,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -117,108 +118,135 @@ export default function SignupPage() {
   };
 
   return (
-    <Card className="mx-auto w-full max-w-sm">
-      <CardHeader className="text-center">
-        <div className="mb-4 flex justify-center">
-          <Icons.logo className="h-12 w-12 text-primary" />
-        </div>
-        <CardTitle className="text-2xl font-bold">Create an Account</CardTitle>
-        <CardDescription>Enter your details below to join Krishna Connect</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSignup} className="space-y-4">
-          {error && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Signup Failed</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          <div className="space-y-2">
-            <Label htmlFor="full-name">Full Name</Label>
-            <Input id="full-name" placeholder="John Doe" required value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
-            <Input id="username" placeholder="johndoe" required value={username} onChange={(e) => setUsername(e.target.value)} disabled={isLoading} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="krishna@connect.com" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground"
-                onClick={() => setShowPassword(prev => !prev)}
-                aria-label="Toggle password visibility"
-              >
-                {showPassword ? <EyeOff /> : <Eye />}
-              </Button>
+    <div
+      className="relative min-h-screen w-full flex flex-col lg:flex-row items-center justify-center bg-cover bg-center"
+      style={{ backgroundImage: "url(/background/c2.png)" }}
+    >
+      <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/50 to-background/70 lg:bg-gradient-to-r lg:from-transparent lg:via-transparent lg:to-background/50" />
+
+      {/* Form Wrapper */}
+      <div className="relative z-10 w-full lg:w-1/2 flex items-center justify-center p-2 my-8 lg:my-0">
+        <Card className="w-full max-w-md border-0 shadow-none bg-transparent lg:bg-card lg:shadow-lg lg:border">
+          <CardHeader className="text-center space-y-2">
+            <div className="flex justify-center lg:hidden mb-2">
+              <Icons.logo className="h-12 w-12 text-primary" />
             </div>
-          </div>
-          <div className="space-y-2">
-            <Label>Gender</Label>
-            <RadioGroup value={gender} onValueChange={(value: 'male' | 'female') => setGender(value)} className="flex items-center space-x-4 pt-1" disabled={isLoading}>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="male" id="male" />
-                <Label htmlFor="male" className="font-normal">Prabhuji (Male)</Label>
+            <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
+            <CardDescription>Enter your details to join Krishna Connect</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSignup} className="space-y-4">
+              {error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Signup Failed</AlertTitle>
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="full-name">Full Name</Label>
+                <Input id="full-name" placeholder="John Doe" required value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} />
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="female" id="female" />
-                <Label htmlFor="female" className="font-normal">Mataji (Female)</Label>
+              <div className="space-y-2">
+                <Label htmlFor="username">Username</Label>
+                <Input id="username" placeholder="johndoe" required value={username} onChange={(e) => setUsername(e.target.value)} disabled={isLoading} />
               </div>
-            </RadioGroup>
-          </div>
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Create Account
-          </Button>
-        </form>
-        <div className="relative my-4">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-2 text-muted-foreground">Or sign up with</span>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <Button variant="outline" onClick={() => handleOAuthLogin('google')} disabled={isLoading}><Icons.google className="mr-2 h-4 w-4" />Google</Button>
-          <Button variant="outline" onClick={() => handleOAuthLogin('facebook')} disabled={isLoading}><Icons.facebook className="mr-2 h-4 w-4" />Facebook</Button>
-        </div>
-        <div className="mt-4 text-center text-sm">
-          Already have an account?{' '}
-          <Link href="/login" className="underline">
-            Login
-          </Link>
-        </div>
-      </CardContent>
-      <CardFooter className="text-center text-xs text-muted-foreground">
-        <p>
-          By creating an account, you agree to our{' '}
-          <Link href="/terms-and-conditions" className="underline hover:text-primary">
-            Terms &amp; Conditions
-          </Link>{' '}
-          and{' '}
-          <Link href="/privacy-policy" className="underline hover:text-primary">
-            Privacy Policy
-          </Link>
-          .
-        </p>
-      </CardFooter>
-    </Card>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" placeholder="krishna@connect.com" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={isLoading}
+                    className="pr-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground"
+                    onClick={() => setShowPassword(prev => !prev)}
+                    aria-label="Toggle password visibility"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Gender</Label>
+                <RadioGroup value={gender} onValueChange={(value: 'male' | 'female') => setGender(value)} className="flex items-center space-x-4 pt-1" disabled={isLoading}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="male" id="male" />
+                    <Label htmlFor="male" className="font-normal cursor-pointer">Prabhuji (Male)</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="female" id="female" />
+                    <Label htmlFor="female" className="font-normal cursor-pointer">Mataji (Female)</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Create Account
+              </Button>
+            </form>
+
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">Or sign up with</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Button variant="outline" onClick={() => handleOAuthLogin('google')} disabled={isLoading}><Icons.google className="mr-2 h-4 w-4" />Google</Button>
+              <Button variant="outline" onClick={() => handleOAuthLogin('facebook')} disabled={isLoading}><Icons.facebook className="mr-2 h-4 w-4" />Facebook</Button>
+            </div>
+
+            <div className="mt-4 text-center text-sm">
+              Already have an account?{' '}
+              <Link href="/login" className="font-bold text-primary hover:underline">
+                Login
+              </Link>
+            </div>
+          </CardContent>
+          <CardFooter className="justify-center text-center text-xs text-muted-foreground">
+            <p>
+              By creating an account, you agree to our{' '}
+              <Link href="/terms-and-conditions" className="underline hover:text-primary">
+                Terms
+              </Link>{' '}
+              and{' '}
+              <Link href="/privacy-policy" className="underline hover:text-primary">
+                Privacy Policy
+              </Link>
+              .
+            </p>
+          </CardFooter>
+        </Card>
+      </div>
+
+      {/* Image Wrapper */}
+      <div className="relative z-10 w-full lg:w-1/2 flex items-center justify-center mt-6 lg:mt-0 hidden lg:flex">
+        <Image
+          src="/background/c1.png"
+          alt="Krishna and gopas"
+          width={800}
+          height={600}
+          className="object-contain rounded-lg w-full max-w-lg"
+          priority
+        />
+      </div>
+    </div>
   );
 }
