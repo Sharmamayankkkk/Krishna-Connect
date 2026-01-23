@@ -63,8 +63,9 @@ export async function middleware(request: NextRequest) {
     const isProfilePage = /^\/profile\/[^\/]+$/.test(pathname);
     const isPostPage = /^\/[^\/]+\/post\/[^\/]+$/.test(pathname);
     const isRedirectPage = /^\/post\/[^\/]+$/.test(pathname);
+    const isExplorePage = pathname === '/explore';
 
-    if (isProfilePage || isPostPage || isRedirectPage) {
+    if (isProfilePage || isPostPage || isRedirectPage || isExplorePage) {
       return response;
     }
 

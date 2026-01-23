@@ -46,6 +46,7 @@ import { QuotePostDialog } from './components/quote-post-dialog';
 import { createClient } from '@/lib/supabase/client';
 import { PromotedPostCard, PromotedContent, getActivePromotions } from './components/promoted-post-card';
 import promotedContentData from '@/../public/data/promoted_content.json';
+import { LoginWall } from '@/components/login-wall';
 
 const POSTS_PER_PAGE = 10;
 const SCROLL_THRESHOLD = 500;
@@ -405,35 +406,14 @@ export default function ExplorePage() {
         setIsInitialLoading(true);
         const supabase = createClient();
 
+        // Use RPC for secure feed fetching
         const { data, error } = await supabase
-            .from('posts')
-            .select(`
-                *,
-                author:user_id (id, name, username, avatar_url, verified),
-                likes:post_likes(count),
-                comments:comments(count),
-                reposts:post_reposts(count),
-                post_comments:comments (
-                    id,
-                    user_id,
-                    content,
-                    created_at,
-                    profiles:user_id (id, name, username, avatar_url, verified)
-                ),
-                quote_of:quote_of_id (
-                    *,
-                    author:user_id (id, name, username, avatar_url, verified)
-                ),
-                user_likes:post_likes!post_id(user_id),
-                post_collaborators:post_collaborators!post_id (
-                    user_id,
-                    status,
-                    user:user_id (id, name, username, avatar_url, verified)
-                )
-            `)
-            .order('created_at', { ascending: false });
+            .rpc('get_home_feed', {
+                p_limit: 30,
+                p_offset: 0
+            });
 
-        console.log('[Explore] Fetched posts:', { data, error, count: data?.length });
+        console.log('[Explore] Fetched posts via RPC:', { data, error, count: data?.length });
 
         if (error) {
             console.error('Error fetching posts:', error);
@@ -447,8 +427,62 @@ export default function ExplorePage() {
         }
 
         if (data) {
-            const transformedPosts = data.map(transformPost);
-            setAllPosts(transformedPosts);
+            // Need to fetch associated data (author, likes, etc) since RPC returns raw post rows
+            // OR ensure RPC returns joined data.
+            // The RPC returns `SETOF posts`. This means it returns raw post rows.
+            // We need to fetch the relations. 
+            // Supabase client allows chaining on RPC? 
+            // supabase.rpc(...).select('*, author:user_id(...)') DOES work if the return type is a table/view.
+
+            // Let's try chaining the select to the RPC call.
+            const { data: enrichedData, error: enrichedError } = await supabase
+                .rpc('get_home_feed', { p_limit: 30, p_offset: 0 })
+                .select(`
+                    *,
+                    author:user_id (id, name, username, avatar_url, verified),
+                    likes:post_likes(count),
+                    comments:comments(count),
+                    reposts:post_reposts(count),
+                    post_comments:comments (
+                        id,
+                        user_id,
+                        content,
+                        created_at,
+                        profiles:user_id (id, name, username, avatar_url, verified)
+                    ),
+                    quote_of:quote_of_id (
+                        *,
+                        author:user_id (id, name, username, avatar_url, verified)
+                    ),
+                    user_likes:post_likes!post_id(user_id),
+                    post_collaborators:post_collaborators!post_id (
+                        user_id,
+                        status,
+                        user:user_id (id, name, username, avatar_url, verified)
+                    )
+                `);
+
+            if (enrichedError) {
+                console.error('Error fetching enriched posts:', enrichedError);
+                setIsInitialLoading(false);
+                return;
+            }
+
+            if (enrichedData) {
+                const transformedPosts = enrichedData.map(transformPost);
+                setAllPosts(transformedPosts);
+
+                // For guests, we stop here (Scroll Gate)
+                // For logged in users, we might load more later
+                // But current architecture uses 'allPosts' + client side pagination 'visiblePosts'.
+                // If we use RPC, we are doing server side pagination.
+                // Hybrid approach for now to minimize refactor risk:
+                // 1. Load initial batch (30).
+                // 2. Set hasMore based on login status.
+
+                setSortedFeed(transformedPosts); // Initial sort is just what we got
+                setVisiblePosts(transformedPosts); // Show all 30
+            }
         }
         setIsInitialLoading(false);
     }, [toast]);
@@ -1507,6 +1541,8 @@ export default function ExplorePage() {
                                                 {isLoadingMore && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                                 {isLoadingMore ? 'Loading...' : 'Load More Posts'}
                                             </Button>
+                                        ) : !loggedInUser ? (
+                                            <LoginWall />
                                         ) : (
                                             <div className="space-y-4">
                                                 <div className="flex flex-col items-center justify-center py-8 space-y-3">
