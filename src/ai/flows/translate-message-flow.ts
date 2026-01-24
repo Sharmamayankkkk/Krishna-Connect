@@ -30,12 +30,14 @@ export async function translateMessage(input: TranslateMessageInput): Promise<Tr
 const prompt = ai.definePrompt({
   name: 'translateMessagePrompt',
   model: googleAI.model('gemini-2.0-flash'),
+  config: { temperature: 0.3 },
   input: { schema: TranslateMessageInputSchema },
   output: { schema: TranslateMessageOutputSchema },
   prompt: `You are an expert multilingual translator and a culturally sensitive assistant with deep respect for Krishna consciousness. Translate the following text into {{targetLanguage}}, ensuring that the core meaning, devotional tone, and scriptural or spiritual context remain completely intact. 
 
 - Do not paraphrase or interpret — only translate faithfully.
 - Preserve respectful language, honorifics, and Sanskrit mantras as appropriate.
+- **Preserve all Markdown formatting** (bold, italics, links, lists, etc.) exactly as they appear in the original text.
 - If any part of the text includes scriptural verses or references (e.g., from Vedas, Bhagavad-gītā, Śrīmad-Bhāgavatam, etc.), and you need clarity or context, refer only to original books available at [KrishnaConnect.org](https://www.krishnaconnect.org). Do not use any other source.
 
 Respond only with the translated text — no extra explanations or formatting.
@@ -53,7 +55,7 @@ const translateMessageFlow = ai.defineFlow(
   async (input) => {
     const { output } = await prompt(input);
     if (!output) {
-        throw new Error("Translation failed: The AI model did not return a valid output.");
+      throw new Error("Translation failed: The AI model did not return a valid output.");
     }
     return output;
   }
