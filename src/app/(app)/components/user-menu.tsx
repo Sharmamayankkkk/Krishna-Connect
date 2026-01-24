@@ -1,14 +1,6 @@
-
-'use client';
-
 import Link from "next/link";
-import { MoreHorizontal, BarChart3, Bookmark } from "lucide-react";
+import { MoreHorizontal, BarChart3, Bookmark, Settings, LogOut, User } from "lucide-react";
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -78,10 +70,16 @@ export function UserMenu() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56 mb-2" side="top" align="start">
-        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        <div className="p-2">
+          <p className="text-sm font-medium leading-none">{loggedInUser.name}</p>
+          <p className="text-xs text-muted-foreground mt-1">@{loggedInUser.username}</p>
+        </div>
         <DropdownMenuSeparator />
         <Link href="/profile">
-          <DropdownMenuItem>Profile</DropdownMenuItem>
+          <DropdownMenuItem>
+            <User className="mr-2 h-4 w-4" />
+            Profile
+          </DropdownMenuItem>
         </Link>
         <Link href="/bookmarks">
           <DropdownMenuItem>
@@ -96,10 +94,16 @@ export function UserMenu() {
           </DropdownMenuItem>
         </Link>
         <Link href="/settings">
-          <DropdownMenuItem>Settings</DropdownMenuItem>
+          <DropdownMenuItem>
+            <Settings className="mr-2 h-4 w-4" />
+            Settings
+          </DropdownMenuItem>
         </Link>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+        <DropdownMenuItem onClick={handleLogout}>
+          <LogOut className="mr-2 h-4 w-4" />
+          Logout
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <div className="p-1">
           <ThemeToggle />

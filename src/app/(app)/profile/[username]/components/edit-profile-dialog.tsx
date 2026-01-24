@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Camera, Loader2, X } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Camera, Loader2, X, Lock, Globe } from 'lucide-react';
 import { createClient } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
@@ -30,6 +31,7 @@ export function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDi
     const [bio, setBio] = useState(profile.bio || '');
     const [location, setLocation] = useState(profile.location || '');
     const [website, setWebsite] = useState(profile.website || '');
+    const [isPrivate, setIsPrivate] = useState(profile.is_private || false);
 
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -107,11 +109,13 @@ export function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDi
                 p_location: location || null,
                 p_website: website || null,
                 p_avatar_url: avatarUrl || null,
-                p_banner_url: bannerUrl || null
+                p_banner_url: bannerUrl || null,
+                p_is_private: isPrivate
             });
 
             if (error) {
-                // Fallback to direct update if RPC doesn't exist
+                // Fallback to direct update if RPC doesn't exist or signature mismatch
+                console.warn('RPC update failed, falling back to direct update:', error);
                 const { error: updateError } = await supabase
                     .from('profiles')
                     .update({
@@ -120,7 +124,8 @@ export function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDi
                         location,
                         website,
                         avatar_url: avatarUrl,
-                        banner_url: bannerUrl
+                        banner_url: bannerUrl,
+                        is_private: isPrivate
                     })
                     .eq('id', profile.id);
 
@@ -224,7 +229,7 @@ export function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDi
                 </div>
 
                 {/* Form */}
-                <div className="p-4 pt-16 space-y-4">
+                <div className="p-4 pt-16 space-y-4 max-h-[60vh] overflow-y-auto">
                     <div className="space-y-2">
                         <Label htmlFor="name">Name</Label>
                         <Input
@@ -268,6 +273,22 @@ export function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDi
                             onChange={(e) => setWebsite(e.target.value)}
                             placeholder="https://yourwebsite.com"
                             maxLength={100}
+                        />
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 border rounded-lg bg-muted/50">
+                        <div className="space-y-0.5">
+                            <div className="flex items-center gap-2">
+                                <Label className="text-base">Private Account</Label>
+                                {isPrivate ? <Lock className="h-3 w-3 text-muted-foreground" /> : <Globe className="h-3 w-3 text-muted-foreground" />}
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                                Only your followers will be able to see your photos and videos.
+                            </p>
+                        </div>
+                        <Switch
+                            checked={isPrivate}
+                            onCheckedChange={setIsPrivate}
                         />
                     </div>
                 </div>
