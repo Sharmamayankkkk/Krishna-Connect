@@ -1,7 +1,7 @@
 "use client";
 
 import { useAppContext } from "@/providers/app-provider";
-import { ChatList } from "../components/chat-list";
+import { ChatList } from "@/components/features/chat/chat-list";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";

@@ -39,12 +39,12 @@ import {
     ListOrdered,
     Minus
 } from 'lucide-react';
-import { CollaborativePostDialog, type Collaborator } from './collaborative-post-dialog';
+import { CollaborativePostDialog, type Collaborator } from './dialogs/collaborative-post-dialog';
 import { useAppContext } from '@/providers/app-provider';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
-import { PollType, MediaType, DraftPost, createEmptyPoll, createDraft } from '../types';
+import { PollType, MediaType, DraftPost, createEmptyPoll, createDraft } from '@/app/(app)/types';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthGuard } from '@/hooks/use-auth-guard';
 

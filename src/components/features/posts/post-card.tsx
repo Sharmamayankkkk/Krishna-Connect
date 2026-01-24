@@ -37,10 +37,10 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn, getAvatarUrl } from '@/lib/utils';
-import { PollType, PostType, CommentType, ReplyType, MediaType } from '../types';
-import { VideoPlayer } from './video-player';
-import { ImageViewerDialog } from './image-viewer';
-import { EditPostDialog } from './edit-post-dialog';
+import { PollType, PostType, CommentType, ReplyType, MediaType } from '@/lib/types';
+import { VideoPlayer } from '../media/video-player';
+import { ImageViewerDialog } from '../media/image-viewer';
+import { EditPostDialog } from './dialogs/edit-post-dialog';
 import { useAppContext } from '@/providers/app-provider';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthGuard } from '@/hooks/use-auth-guard';

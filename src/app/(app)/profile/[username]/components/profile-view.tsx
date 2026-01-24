@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FollowButton } from "./follow-button";
 import { EditProfileDialog } from "./edit-profile-dialog";
 import { ReportDialog } from "./report-dialog";
-import { PostDetailDialog } from "../../../components/post-detail-dialog";
+import { PostDetailDialog } from "@/components/features/posts/dialogs/post-detail-dialog";
 import type { Profile } from "@/types";
 import type { Post, User } from "@/lib/types";
 import {
@@ -23,7 +23,7 @@ import {
   Share2
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { PostCard } from "@/app/(app)/explore/components/post-card";
+import { PostCard } from "@/components/features/posts/post-card";
 import { format } from "date-fns";
 import Image from "next/image";
 import Link from "next/link";
@@ -536,7 +536,18 @@ export function ProfileView({ profile, posts, followers, following, session }: P
                       media: post.media_urls || []
                     } as any}
                     onDelete={handleDeletePost}
-                    onLike={handleLike}
+                    onLikeToggle={(id) => handleLike(id)}
+                    onComment={() => { }}
+                    onEdit={() => { }}
+                    onSaveToggle={() => { }}
+                    onCommentLikeToggle={() => { }}
+                    onCommentPinToggle={() => { }}
+                    onCommentHideToggle={() => { }}
+                    onCommentDelete={() => { }}
+                    onQuotePost={() => { }}
+                    onRepost={() => { }}
+                    onPollVote={() => { }}
+                    onPromote={() => { }}
                   />
                 ))}
               </div>
@@ -563,6 +574,18 @@ export function ProfileView({ profile, posts, followers, following, session }: P
                       media: post.media_urls || []
                     } as any}
                     onDelete={handleDeletePost}
+                    onLikeToggle={(id) => handleLike(id)}
+                    onComment={() => { }}
+                    onEdit={() => { }}
+                    onSaveToggle={() => { }}
+                    onCommentLikeToggle={() => { }}
+                    onCommentPinToggle={() => { }}
+                    onCommentHideToggle={() => { }}
+                    onCommentDelete={() => { }}
+                    onQuotePost={() => { }}
+                    onRepost={() => { }}
+                    onPollVote={() => { }}
+                    onPromote={() => { }}
                   />
                 ))}
               </div>

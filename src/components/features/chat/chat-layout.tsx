@@ -12,9 +12,9 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { Icons } from "@/components/icons"
 import type { Chat } from "@/lib/types"
-import { UserMenu } from "./user-menu"
+import { UserMenu } from "../../layout/user-menu"
 import { ChatList } from "./chat-list"
-import { MainNav } from "./main-nav"
+import { MainNav } from "../../layout/main-nav"
 
 interface ChatLayoutProps {
   chats: Chat[],

@@ -25,7 +25,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { NotificationType } from '../types';
-import { PushNotificationManager } from '../components/push-notification-manager';
+import { PushNotificationManager } from '@/components/layout/push-notification-manager';
 
 type NotificationFilter = 'all' | 'mentions' | 'likes' | 'comments' | 'follows';
 

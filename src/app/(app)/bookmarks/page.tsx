@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { PostCard } from '../components/post-card';
+import { PostCard } from '@/components/features/posts/post-card';
 import { PostType } from '../types';
 import { useRouter } from 'next/navigation';
 

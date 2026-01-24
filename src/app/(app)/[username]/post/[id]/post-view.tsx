@@ -8,13 +8,13 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAppContext } from '@/providers/app-provider';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { ArrowLeft, Loader2, MessageSquare, Repeat2, Heart, BarChart2, Upload, MoreHorizontal, Trash2, Edit2, Repeat, Quote, Share2 } from 'lucide-react';
-import { PostCard, PostSkeleton } from '@/app/(app)/explore/components/post-card';
+import { PostCard, PostSkeleton } from '@/components/features/posts/post-card';
 import { Separator } from '@/components/ui/separator';
 import type { PostType as Post, CommentType as Comment, MediaType as Media } from '@/lib/types';
 import { createClient, cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { PollComponent } from '@/app/(app)/explore/components/poll-component';
-import { ImageViewerDialog } from '@/app/(app)/components/image-viewer';
+import { ImageViewerDialog } from '@/components/features/media/image-viewer';
 import { QuotedPostCard } from '@/app/(app)/explore/components/quoted-post-card';
 import { format } from 'date-fns';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -516,7 +516,23 @@ export default function PostView() {
                             <div>
                                 {post.comments && post.comments.length > 0 ? (
                                     post.comments.map((comment) => (
-                                        <PostCard key={comment.id} post={comment as any} />
+                                        <PostCard
+                                            key={comment.id}
+                                            post={comment as any}
+                                            onLikeToggle={() => { }}
+                                            onComment={() => { }}
+                                            onDelete={() => { }}
+                                            onEdit={() => { }}
+                                            onSaveToggle={() => { }}
+                                            onCommentLikeToggle={() => { }}
+                                            onCommentPinToggle={() => { }}
+                                            onCommentHideToggle={() => { }}
+                                            onCommentDelete={() => { }}
+                                            onQuotePost={() => { }}
+                                            onRepost={() => { }}
+                                            onPollVote={() => { }}
+                                            onPromote={() => { }}
+                                        />
                                     ))
                                 ) : (
                                     <div className="p-10 text-center">

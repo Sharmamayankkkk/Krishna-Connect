@@ -26,8 +26,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import type { Chat } from '@/lib/types';
 import { useAppContext } from '@/providers/app-provider';
-import { CreateGroupDialog } from './create-group-dialog';
-import { NewChatDialog } from './new-chat-dialog';
+import { CreateGroupDialog } from './dialogs/create-group-dialog';
+import { NewChatDialog } from './dialogs/new-chat-dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';

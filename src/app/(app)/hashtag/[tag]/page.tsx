@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { PostCard, PostSkeleton } from "@/app/(app)/components/post-card";
+import { PostCard, PostSkeleton } from "@/components/features/posts/post-card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Hash } from "lucide-react";
 import { useRouter } from "next/navigation";

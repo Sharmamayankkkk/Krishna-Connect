@@ -28,8 +28,8 @@ import {
 } from 'lucide-react';
 import { useAppContext } from '@/providers/app-provider';
 import { PostType, CommentType, ReplyType, PollType, NotificationType } from '../types';
-import { PostCard, PostSkeleton } from '../components/post-card';
-import { CreatePost } from '../components/create-post';
+import { PostCard, PostSkeleton } from '@/components/features/posts/post-card';
+import { CreatePost } from '@/components/features/posts/create-post';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';

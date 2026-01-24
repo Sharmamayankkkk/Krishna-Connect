@@ -1,7 +1,7 @@
 
 'use client';
 
-import { ChatLayout } from './chat-layout';
+import { ChatLayout } from '../features/chat/chat-layout';
 import { useAppContext } from '@/providers/app-provider';
 import React from 'react';
 

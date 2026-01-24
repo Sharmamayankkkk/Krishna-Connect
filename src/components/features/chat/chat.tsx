@@ -25,18 +25,18 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAppContext } from '@/providers/app-provider';
 import EmojiPicker, { EmojiClickData, SkinTones } from 'emoji-picker-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { VoiceNotePlayer } from './voice-note-player';
+import { VoiceNotePlayer } from '../media/voice-note-player';
 import { format, isSameDay, isToday, isYesterday } from 'date-fns';
-import { RequestDmDialog } from './request-dm-dialog';
+import { RequestDmDialog } from '../../dialogs/request-dm-dialog';
 import { Badge } from '@/components/ui/badge';
-import { ForwardMessageDialog } from './forward-message-dialog';
-import { ReportDialog } from './report-dialog';
-import { PinnedMessagesDialog } from './pinned-messages-dialog';
-import { LinkPreview } from './link-preview';
-import { ImageViewerDialog } from './image-viewer';
-import { MessageInfoDialog } from './message-info-dialog';
+import { ForwardMessageDialog } from './dialogs/forward-message-dialog';
+import { ReportDialog } from '../../dialogs/report-dialog';
+import { PinnedMessagesDialog } from './dialogs/pinned-messages-dialog';
+import { LinkPreview } from '../posts/link-preview';
+import { ImageViewerDialog } from '../media/image-viewer';
+import { MessageInfoDialog } from './dialogs/message-info-dialog';
 import { ChatInput } from './chat-input';
-import { TranslateDialog } from './translate-dialog';
+import { TranslateDialog } from '../../dialogs/translate-dialog';
 
 interface ChatProps {
     chat: Chat;
