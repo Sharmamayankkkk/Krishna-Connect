@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/utils';
 import { ConnectionsView } from './components/connections-view';
 import { notFound, redirect } from 'next/navigation';
+import { Lock } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,6 +38,33 @@ export default async function ConnectionsPage(props: PageProps) {
 
     if (!profile) {
         notFound();
+    }
+
+    // Privacy Check
+    const isPrivate = profile.is_private;
+    const isOwnProfile = currentUserId === profile.id;
+
+    if (isPrivate && !isOwnProfile) {
+        // Check if current user follows target
+        const { data: relationship } = await supabase
+            .from('relationships')
+            .select('status')
+            .eq('user_one_id', currentUserId)
+            .eq('user_two_id', profile.id)
+            .eq('status', 'approved')
+            .maybeSingle();
+
+        if (!relationship) {
+            return (
+                <div className="container mx-auto p-4 flex flex-col items-center justify-center min-h-[50vh] text-center space-y-4">
+                    <div className="bg-muted p-4 rounded-full">
+                        <Lock className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <h1 className="text-2xl font-bold">This account is private</h1>
+                    <p className="text-muted-foreground">Follow this account to see their {type}.</p>
+                </div>
+            );
+        }
     }
 
     // 1a. Fetch Counts Real-time (since profile counts might be stale)
@@ -118,7 +146,7 @@ export default async function ConnectionsPage(props: PageProps) {
         }));
     }
 
-    const isOwnProfile = currentUserId === profile.id;
+
 
     return (
         <ConnectionsView

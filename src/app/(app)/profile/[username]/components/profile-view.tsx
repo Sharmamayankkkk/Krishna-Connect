@@ -37,6 +37,12 @@ import { createClient } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { PrivateContentPlaceholder } from "@/components/private-placeholders";
 import { AuthGate } from "@/components/auth-gate";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ProfileViewProps {
   profile: Profile;
@@ -57,6 +63,9 @@ export function ProfileView({ profile, posts, followers, following, session }: P
   const [isBannerViewerOpen, setIsBannerViewerOpen] = useState(false);
   const [isMessageLoading, setIsMessageLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("posts");
+
+  const canViewConnections = !profile.is_private || profile.is_following || (session?.user?.id === profile.id);
+  const canMessage = !profile.is_private || profile.is_following;
 
   const handleMessage = async () => {
     if (!session?.user) return;
@@ -359,15 +368,32 @@ export function ProfileView({ profile, posts, followers, following, session }: P
                 </Button>
 
                 <AuthGate>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="rounded-full"
-                    onClick={handleMessage}
-                    disabled={isMessageLoading}
-                  >
-                    {isMessageLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Mail className="h-5 w-5" />}
-                  </Button>
+                  {canMessage ? (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="rounded-full"
+                      onClick={handleMessage}
+                      disabled={isMessageLoading}
+                    >
+                      {isMessageLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Mail className="h-5 w-5" />}
+                    </Button>
+                  ) : (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span tabIndex={0}>
+                            <Button variant="outline" size="icon" className="rounded-full" disabled>
+                              <Mail className="h-5 w-5" />
+                            </Button>
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Follow to message</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                 </AuthGate>
 
                 {session?.user ? (
@@ -440,14 +466,29 @@ export function ProfileView({ profile, posts, followers, following, session }: P
         </div>
 
         <div className="flex items-center gap-4 mt-3">
-          <Link href={`/profile/${profile.username}/connections?type=following`} className="hover:underline">
-            <span className="font-bold">{profile.following_count || 0}</span>
-            <span className="text-muted-foreground ml-1">Following</span>
-          </Link>
-          <Link href={`/profile/${profile.username}/connections?type=followers`} className="hover:underline">
-            <span className="font-bold">{profile.follower_count || 0}</span>
-            <span className="text-muted-foreground ml-1">Followers</span>
-          </Link>
+          {canViewConnections ? (
+            <Link href={`/profile/${profile.username}/connections?type=following`} className="hover:underline">
+              <span className="font-bold">{profile.following_count || 0}</span>
+              <span className="text-muted-foreground ml-1">Following</span>
+            </Link>
+          ) : (
+            <div className="cursor-default opacity-70">
+              <span className="font-bold">{profile.following_count || 0}</span>
+              <span className="text-muted-foreground ml-1">Following</span>
+            </div>
+          )}
+
+          {canViewConnections ? (
+            <Link href={`/profile/${profile.username}/connections?type=followers`} className="hover:underline">
+              <span className="font-bold">{profile.follower_count || 0}</span>
+              <span className="text-muted-foreground ml-1">Followers</span>
+            </Link>
+          ) : (
+            <div className="cursor-default opacity-70">
+              <span className="font-bold">{profile.follower_count || 0}</span>
+              <span className="text-muted-foreground ml-1">Followers</span>
+            </div>
+          )}
         </div>
       </div>
 
