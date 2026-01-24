@@ -1,5 +1,5 @@
 export type User = {
-  user_metadata: any;
+  user_metadata?: any;
   id: string; // uuid
   avatar_url: string;
   name: string;

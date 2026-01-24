@@ -230,7 +230,7 @@ export function ProfileView({ profile, posts, followers, following, session }: P
         open={isPostDialogOpen}
         onOpenChange={setIsPostDialogOpen}
         post={selectedPost}
-        author={selectedPost?.author ? { ...selectedPost.author, is_admin: false } as User : profileUser}
+        author={selectedPost?.author ? { ...selectedPost.author, is_admin: false, user_metadata: {} } as User : profileUser}
         initialComments={[]}
       />
 
