@@ -1,87 +1,88 @@
-'use client';
+"use client"
 
-import { Shield, Lock, Eye, AtSign } from 'lucide-react';
+import { useState } from "react"
+import { useAppContext } from "@/providers/app-provider"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { createClient } from "@/lib/utils"
 
-export default function PrivacySettingsPage() {
+export default function PrivacyPage() {
+  const { loggedInUser, blockedUsers, unblockUser, allUsers, updateUser } = useAppContext()
+  const supabase = createClient()
+
+  const isPrivate = loggedInUser?.is_private || false
+  const [loading, setLoading] = useState(false)
+
+  const handlePrivacyToggle = async (checked: boolean) => {
+    setLoading(true)
+    try {
+      await updateUser({ is_private: checked });
+      // Also update settings json just in case? Or rely on columns? 
+      // The prompt asked to sync with `profiles.settings` but `is_private` is a column.
+      // We will stick to the column for now as it influences RLS.
+      await supabase.from('profiles').update({ is_private: checked }).eq('id', loggedInUser?.id);
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const blockedList = allUsers.filter(u => blockedUsers.includes(u.id))
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold">Privacy & Visibility</h2>
-        <p className="text-muted-foreground">
-          Manage how your profile and content are seen by others.
+        <h3 className="text-lg font-medium">Privacy</h3>
+        <p className="text-sm text-muted-foreground">
+          Manage your account privacy and blocked users.
         </p>
       </div>
-
-      <div className="space-y-6">
-        {/* Account Visibility */}
-        <div className="border-t pt-6">
-          <h3 className="text-lg font-semibold flex items-center">
-            <Lock className="h-5 w-5 mr-2" />
-            Account Visibility
-          </h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Make your account private. If you do, only people you approve can see your posts and stories.
-          </p>
-          <div className="flex items-center space-x-2">
-            {/* <Switch id="private-account" /> */}
-            <label htmlFor="private-account" className="font-medium">Private Account</label>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between rounded-lg border p-4">
+          <div className="space-y-0.5">
+            <Label className="text-base">Private Account</Label>
+            <p className="text-sm text-muted-foreground block">
+              Only people you approve can see your photos and videos. Your existing followers won't be affected.
+            </p>
           </div>
+          <Switch
+            checked={isPrivate}
+            onCheckedChange={handlePrivacyToggle}
+            disabled={loading}
+          />
         </div>
 
-        {/* Tagging Permissions */}
-        <div className="border-t pt-6">
-          <h3 className="text-lg font-semibold flex items-center">
-            <AtSign className="h-5 w-5 mr-2" />
-            Tagging Permissions
-          </h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Choose who can tag or mention you in their posts.
-          </p>
-          <div className="space-y-2">
-            {/* <RadioGroup defaultValue="everyone">
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="everyone" id="tag-everyone" />
-                <Label htmlFor="tag-everyone">Everyone</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="following" id="tag-following" />
-                <Label htmlFor="tag-following">People you follow</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="none" id="tag-none" />
-                <Label htmlFor="tag-none">No one</Label>
-              </div>
-            </RadioGroup> */}
-          </div>
-        </div>
-
-        {/* Direct Message Settings */}
-        <div className="border-t pt-6">
-          <h3 className="text-lg font-semibold flex items-center">
-            <Shield className="h-5 w-5 mr-2" />
-            Direct Messages
-          </h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Control who can send you direct message requests.
-          </p>
-           <div className="space-y-2">
-            {/* <RadioGroup defaultValue="everyone">
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="everyone" id="dm-everyone" />
-                <Label htmlFor="dm-everyone">Everyone</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="following" id="dm-following" />
-                <Label htmlFor="dm-following">People you follow</orLabel>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="none" id="dm-none" />
-                <Label htmlFor="dm-none">No one</Label>
-              </div>
-            </RadioGroup> */}
-          </div>
+        <div className="pt-4">
+          <h4 className="mb-4 text-sm font-medium">Blocked Users</h4>
+          {blockedList.length === 0 ? (
+            <p className="text-sm text-muted-foreground">You haven't blocked anyone yet.</p>
+          ) : (
+            <div className="space-y-4">
+              {blockedList.map(user => (
+                <div key={user.id} className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user.avatar_url} />
+                      <AvatarFallback>{user.username[0]}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-medium">{user.name}</p>
+                      <p className="text-xs text-muted-foreground">@{user.username}</p>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => unblockUser(user.id)}>
+                    Unblock
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
-  );
+  )
 }

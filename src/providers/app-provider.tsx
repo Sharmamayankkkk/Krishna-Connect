@@ -2,13 +2,14 @@
 "use client"
 
 import { createContext, useContext, useState, type ReactNode, useEffect, useCallback, useRef } from "react"
-import type { User, Chat, ThemeSettings, Message, DmRequest, AppContextType } from "@/lib/types"
+import type { User, Chat, ThemeSettings, Message, DmRequest, AppContextType, UserSettings } from "@/lib/types"
 import { createClient } from "@/lib/utils"
 import { Icons } from "@/components/icons"
 import { useToast } from "@/hooks/use-toast"
 import type { Session, RealtimePostgresChangesPayload, User as AuthUser } from "@supabase/supabase-js"
 import { usePathname, useRouter } from "next/navigation"
 import { PrivacySetupModal } from "@/components/privacy-setup-modal"
+import { useTheme } from "next-themes"
 
 const AppContext = createContext<AppContextType | undefined>(undefined)
 
@@ -52,6 +53,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast()
   const router = useRouter()
   const pathname = usePathname()
+  const { setTheme } = useTheme()
 
   const requestNotificationPermission = useCallback(async () => {
     if ("Notification" in window && Notification.permission === "default") {
@@ -290,12 +292,75 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [loggedInUser, session, handleNewMessage, fetchInitialData]);
 
   const setThemeSettings = useCallback(async (newSettings: Partial<ThemeSettings>) => {
-    if (!loggedInUser) return;
-    const updatedSettings = { ...themeSettings, ...newSettings };
-    setThemeSettingsState(updatedSettings);
-    localStorage.setItem('themeSettings', JSON.stringify(updatedSettings));
-    toast({ title: 'Theme settings updated locally.' });
+    // 1. Update local state
+    const updated = { ...themeSettings, ...newSettings };
+    setThemeSettingsState(updated);
+    localStorage.setItem('themeSettings', JSON.stringify(updated));
+
+    // 2. Persist to DB if logged in
+    if (loggedInUser) {
+      const currentSettings = loggedInUser.settings || {};
+      const updatedChatPrefs = { ...currentSettings.chat_preferences, ...newSettings };
+      // We only want to save valid keys for chat prefs, but ThemeSettings matches mostly.
+
+      const finalSettings = {
+        ...currentSettings,
+        chat_preferences: updatedChatPrefs as any // cast for now, strictly should match
+      };
+
+      // Optimistically update user
+      setLoggedInUser(prev => prev ? { ...prev, settings: finalSettings } : null);
+
+      // Fire and forget update
+      supabaseRef.current.from('profiles').update({ settings: finalSettings }).eq('id', loggedInUser.id).then(({ error }) => {
+        if (error) console.error("Failed to persist theme settings", error);
+      });
+    }
+
+    toast({ title: 'Theme settings updated.' });
   }, [loggedInUser, themeSettings, toast]);
+
+  // Sync DB theme settings to local state on load
+  useEffect(() => {
+    if (loggedInUser?.settings?.chat_preferences) {
+      setThemeSettingsState(prev => ({ ...prev, ...loggedInUser.settings!.chat_preferences }));
+    }
+  }, [loggedInUser]);
+
+  const updateSettings = useCallback(async (newSettings: Partial<UserSettings>) => {
+    if (!loggedInUser) return;
+
+    // 1. Optimistic Update
+    const currentSettings = loggedInUser.settings || {};
+    const updatedSettings = { ...currentSettings, ...newSettings };
+
+    setLoggedInUser(prev => prev ? { ...prev, settings: updatedSettings } : null);
+
+    // 2. Sync Theme if changed
+    if (newSettings.theme) {
+      setTheme(newSettings.theme);
+    }
+
+    // 3. Persist to DB
+    const { error } = await supabaseRef.current
+      .from('profiles')
+      .update({ settings: updatedSettings })
+      .eq('id', loggedInUser.id);
+
+    if (error) {
+      console.error("Failed to persist settings:", error);
+      toast({ variant: "destructive", title: "Failed to save settings" });
+      // We could revert here, but for now we'll just notify
+    }
+  }, [loggedInUser, setTheme, toast]);
+
+  // Sync DB theme to local theme on login/load
+  useEffect(() => {
+    if (loggedInUser?.settings?.theme) {
+      setTheme(loggedInUser.settings.theme);
+    }
+  }, [loggedInUser?.settings?.theme, setTheme]);
+
 
   const addChat = useCallback((newChat: Chat) => {
     setChats((currentChats) => {
@@ -415,7 +480,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     sendDmRequest, addChat, updateUser, leaveGroup, deleteGroup,
     blockUser, unblockUser, reportUser, forwardMessage,
     themeSettings, setThemeSettings, isReady, resetUnreadCount,
-    refreshProfile
+    refreshProfile, updateSettings
   }
 
   return (

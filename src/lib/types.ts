@@ -12,7 +12,27 @@ export type User = {
   is_private?: boolean;
   is_verified?: boolean;
   has_set_privacy?: boolean;
+  settings?: UserSettings; // JSONB column
 };
+
+export interface UserSettings {
+  theme?: 'light' | 'dark' | 'system';
+  notifications?: {
+    email: boolean;
+    push: boolean;
+  };
+  privacy?: {
+    show_online_status: boolean;
+    allow_dms_from_strangers: boolean;
+  };
+  chat_preferences?: {
+    outgoingBubbleColor: string;
+    incomingBubbleColor: string;
+    usernameColor: string;
+    chatWallpaper: string | null;
+    wallpaperBrightness: number;
+  };
+}
 
 export type Media = {
   type: string;
@@ -202,6 +222,7 @@ export interface AppContextType {
   isReady: boolean
   resetUnreadCount: (chatId: number) => void
   refreshProfile: () => Promise<void>
+  updateSettings: (settings: Partial<UserSettings>) => Promise<void>
 }
 
 // --- Types moved from src/app/(app)/data.ts ---
