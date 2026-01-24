@@ -43,7 +43,7 @@ export type Post = {
   likes: string[]; // array of user IDs
   reposts: string[]; // array of user IDs
   quote_of?: Post;
-  poll?: any; 
+  poll?: any;
 };
 
 export type Reaction = {
@@ -77,7 +77,7 @@ export type Message = {
   chat_id: number; // bigint
   user_id: string; // uuid
   content: string | null;
-  profiles: User; 
+  profiles: User;
   attachment_url: string | null;
   attachment_metadata: AttachmentMetadata | null;
   is_edited: boolean;
@@ -103,13 +103,13 @@ export type Chat = {
   id: number; // bigint
   created_at: string; // timestamp with time zone
   type: 'dm' | 'group' | 'channel';
-  name?: string; 
+  name?: string;
   avatar_url?: string;
   created_by?: string; // uuid
   description?: string;
   participants: Participant[];
   messages: Message[];
-  
+
   // Group-specific fields from DB
   is_public: boolean;
   history_visible: boolean;
@@ -151,7 +151,7 @@ export type Report = {
 
 export type ThemeSettings = {
   outgoingBubbleColor: string;
-  incomingBubbleColor:string;
+  incomingBubbleColor: string;
   usernameColor: string;
   chatWallpaper: string | null;
   wallpaperBrightness: number;
@@ -202,3 +202,167 @@ export interface AppContextType {
   resetUnreadCount: (chatId: number) => void
   refreshProfile: () => Promise<void>
 }
+
+// --- Types moved from src/app/(app)/data.ts ---
+
+export type UserType = {
+  id: string;
+  name: string;
+  username: string;
+  avatar: string;
+  bio?: string;
+  verified?: boolean;
+  followersCount?: number;
+  followingCount?: number;
+};
+
+export type ReplyType = {
+  id: string;
+  user: UserType;
+  text: string;
+  isPinned: boolean;
+  likes: number;
+  isHidden: boolean;
+  createdAt: string;
+  editedAt?: string;
+  likedBy: string[];
+};
+
+export type CommentType = {
+  [x: string]: any;
+  id: string;
+  user: UserType;
+  text: string;
+  isPinned: boolean;
+  likes: number;
+  isHidden: boolean;
+  replies: ReplyType[];
+  createdAt: string;
+  editedAt?: string;
+  likedBy: string[];
+};
+
+export type MediaType = {
+  type: 'image' | 'video' | 'gif';
+  url: string;
+  alt?: string;
+  thumbnailUrl?: string;
+  width?: number;
+  height?: number;
+};
+
+export type PollOptionType = {
+  id: string;
+  text: string;
+  votes: number;
+  votedBy: string[];
+};
+
+export type PollType = {
+  id: string;
+  question: string;
+  options: PollOptionType[];
+  totalVotes: number;
+  endsAt: string;
+  allowMultipleChoices: boolean;
+};
+
+export type CollaborationRequest = {
+  userId: string;
+  status: 'pending' | 'accepted' | 'declined';
+};
+
+export type PostAnalyticsType = {
+  impressions: number;
+  reach: number;
+  engagementRate: number;
+  profileVisits: number;
+  followerGrowth: number;
+  demographics: {
+    topLocations: { location: string; percentage: number }[];
+    ageRange: { range: string; percentage: number }[];
+    gender: { male: number; female: number; other: number };
+  };
+  trafficSources: { source: string; percentage: number }[];
+  engagementByType: {
+    likes: number;
+    comments: number;
+    reposts: number;
+    bookmarks: number;
+  },
+  viewsOverTime: { date: string; views: number }[];
+};
+
+export type PostType = {
+  id: string;
+  author: UserType;
+  createdAt: string;
+  content: string;
+  media: MediaType[];
+  poll?: PollType;
+  stats: {
+    comments: number;
+    reshares: number;
+    reposts: number;
+    likes: number;
+    views: number;
+    bookmarks: number;
+  };
+  comments: CommentType[];
+  originalPost: Omit<PostType, 'originalPost' | 'comments' | 'stats' | 'poll'> | null;
+  editedAt?: string;
+  likedBy: string[];
+  savedBy: string[];
+  repostedBy: string[];
+  isPinned?: boolean;
+  isRepost?: boolean;
+  repostOf?: string;
+  isPromoted?: boolean;
+  collaborators?: UserType[];
+  pendingCollaborators?: CollaborationRequest[];
+  analytics?: PostAnalyticsType;
+};
+
+export type NotificationType = {
+  id: string;
+  type: 'like' | 'comment' | 'repost' | 'quote' | 'follow' | 'mention' | 'poll_vote' | 'collaboration_request';
+  fromUser: UserType;
+  postId?: string;
+  commentId?: string;
+  text?: string;
+  createdAt: string;
+  read: boolean;
+  status?: 'pending' | 'accepted' | 'declined';
+};
+
+export type UserRelationship = {
+  userId: string;
+  following: string[];
+  followers: string[];
+  blockedUsers: string[];
+  mutedUsers: string[];
+};
+
+export type BookmarkCollection = {
+  id: string;
+  name: string;
+  postIds: string[];
+  createdAt: string;
+  isPrivate: boolean;
+};
+
+export type TrendingTopic = {
+  id: string;
+  hashtag: string;
+  postsCount: number;
+  category?: string;
+};
+
+export type DraftPost = {
+  id: string;
+  content: string;
+  media: MediaType[];
+  poll?: PollType;
+  createdAt: string;
+  updatedAt: string;
+};

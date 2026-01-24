@@ -11,6 +11,7 @@ import { getAvatarUrl } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import UserIdentity from '@/components/shared/user-identity';
 
 interface UserCardProps {
     user: {
@@ -65,30 +66,15 @@ export function UserCard({ user, currentUserId, isOwnProfile, listType, onRemove
 
     return (
         <div className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => router.push(`/profile/${user.username}`)}>
-            <div className="flex items-start gap-3 flex-1 min-w-0">
-                <Avatar className="h-10 w-10 sm:h-12 sm:w-12 border">
-                    <AvatarImage src={getAvatarUrl(user.avatar_url)} alt={displayName} className="object-cover" />
-                    <AvatarFallback>{displayName[0]?.toUpperCase()}</AvatarFallback>
-                </Avatar>
-
-                <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1">
-                        <span className="font-bold truncate text-sm sm:text-base hover:underline">{displayName}</span>
-                        {user.verified && (
-                            <Image
-                                src="/user_Avatar/verified.png"
-                                alt="Verified"
-                                width={16}
-                                height={16}
-                                className="flex-shrink-0"
-                            />
-                        )}
-                    </div>
-                    <div className="text-muted-foreground text-sm truncate">@{user.username}</div>
-                    {user.bio && (
-                        <p className="text-sm mt-1 line-clamp-1 break-words text-foreground/80">{user.bio}</p>
-                    )}
-                </div>
+            <div className="flex-1 min-w-0">
+                <UserIdentity
+                    user={user}
+                    size="md"
+                    className="mb-1"
+                />
+                {user.bio && (
+                    <p className="text-sm text-foreground/80 line-clamp-1 break-words ml-[52px]">{user.bio}</p>
+                )}
             </div>
 
             <div className="flex items-center gap-2 pl-2" onClick={(e) => e.stopPropagation()}>

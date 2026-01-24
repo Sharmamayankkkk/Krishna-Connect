@@ -56,7 +56,7 @@ export async function generateMetadata(
   const description = profile.bio || `Check out ${displayName}'s profile on Krishna Connect.`;
 
   // Construct absolute image URL for OG
-  let imageUrl = '/logo.png'; // Fallback
+  let imageUrl = 'logo\Srila-Prabhupada.png'; // Fallback
   if (profile.avatar_url) {
     if (profile.avatar_url.startsWith('http')) {
       imageUrl = profile.avatar_url;

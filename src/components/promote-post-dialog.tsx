@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { PostType } from '@/app/(app)/data';
+import { PostType } from '@/lib/types';
 import { Zap, X } from 'lucide-react';
 
 interface PromotePostDialogProps {
@@ -36,12 +36,12 @@ export function PromotePostDialog({ post, isOpen, onClose, onConfirm }: PromoteP
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-[480px]">
                 <DialogHeader>
-                    <DialogTitle className="flex items-center"><Zap className="h-5 w-5 mr-2 text-primary"/> Promote Your Post</DialogTitle>
+                    <DialogTitle className="flex items-center"><Zap className="h-5 w-5 mr-2 text-primary" /> Promote Your Post</DialogTitle>
                     <DialogDescription>
                         Boost this post to reach a wider, relevant audience beyond your followers.
                     </DialogDescription>
                 </DialogHeader>
-                
+
                 <div className="grid gap-6 py-4">
                     {/* Post Preview */}
                     <div>
@@ -57,13 +57,13 @@ export function PromotePostDialog({ post, isOpen, onClose, onConfirm }: PromoteP
                     <div>
                         <Label className="text-sm font-medium">Choose Your Budget</Label>
                         <p className='text-xs text-muted-foreground mb-3'>A higher budget will show your post to more people.</p>
-                        <RadioGroup 
-                            defaultValue="25" 
+                        <RadioGroup
+                            defaultValue="25"
                             onValueChange={(value) => setSelectedBudget(parseInt(value))}
                             className="grid grid-cols-3 gap-4"
                         >
                             {budgetOptions.map(option => (
-                                <Label 
+                                <Label
                                     key={option.value}
                                     htmlFor={`budget-${option.value}`}
                                     className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-primary"
@@ -84,7 +84,7 @@ export function PromotePostDialog({ post, isOpen, onClose, onConfirm }: PromoteP
                     <div className='flex gap-2'>
                         <Button variant="ghost" onClick={onClose}>Cancel</Button>
                         <Button onClick={handleConfirm}>
-                            <Zap className='h-4 w-4 mr-2'/>
+                            <Zap className='h-4 w-4 mr-2' />
                             Promote for ${selectedBudget}
                         </Button>
                     </div>

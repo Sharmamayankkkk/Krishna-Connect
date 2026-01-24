@@ -7,13 +7,15 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Zap, BarChart2, ExternalLink } from 'lucide-react';
 import { useAppContext } from '@/providers/app-provider';
-import { PostType, dummyPosts } from '@/app/(app)/data';
+import { PostType } from '@/lib/types';
+
+const dummyPosts: PostType[] = [];
 import { PromotePostDialog } from '@/components/promote-post-dialog';
 import { useToast } from '@/hooks/use-toast';
 
 // This page will be conditionally rendered based on the feature flag
 
-type PromotedPost = PostType & { promotion: { impressions: number; clicks: number; status: string }};
+type PromotedPost = PostType & { promotion: { impressions: number; clicks: number; status: string } };
 
 export default function PromotionsSettingsPage() {
     const { loggedInUser } = useAppContext();
@@ -24,7 +26,7 @@ export default function PromotionsSettingsPage() {
     const [selectedPost, setSelectedPost] = React.useState<PostType | null>(null);
 
     // State for active promotions
-    const [activePromotions, setActivePromotions] = React.useState<PromotedPost[]>(() => 
+    const [activePromotions, setActivePromotions] = React.useState<PromotedPost[]>(() =>
         (dummyPosts.filter(p => p.isPromoted) as PromotedPost[]).filter(p => p.author.id === loggedInUser?.id)
     );
 
@@ -32,9 +34,9 @@ export default function PromotionsSettingsPage() {
     const isMonetizationEnabled = process.env.NEXT_PUBLIC_ENABLE_MONETIZATION === 'true';
 
     // Filter to get only the logged-in user's posts that are not reposts
-    const userPosts = React.useMemo(() => 
+    const userPosts = React.useMemo(() =>
         dummyPosts.filter(p => p.author.id === loggedInUser?.id && !p.isRepost && !p.isPromoted)
-    , [loggedInUser]);
+        , [loggedInUser]);
 
     const handlePromoteClick = (post: PostType) => {
         setSelectedPost(post);
@@ -48,10 +50,10 @@ export default function PromotionsSettingsPage() {
         const newPromotion: PromotedPost = {
             ...postToPromote,
             isPromoted: true, // Set the flag
-            promotion: { 
+            promotion: {
                 impressions: Math.floor(Math.random() * 500), // Start with some initial mock data
                 clicks: Math.floor(Math.random() * 20),
-                status: 'Active' 
+                status: 'Active'
             }
         };
 
@@ -67,7 +69,7 @@ export default function PromotionsSettingsPage() {
     if (!isMonetizationEnabled) {
         return (
             <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-                 <Card>
+                <Card>
                     <CardHeader>
                         <CardTitle>Promotions</CardTitle>
                         <CardDescription>The ability to promote posts is currently unavailable.</CardDescription>
@@ -82,7 +84,7 @@ export default function PromotionsSettingsPage() {
 
     return (
         <>
-            <PromotePostDialog 
+            <PromotePostDialog
                 isOpen={isDialogOpen}
                 onClose={() => setIsDialogOpen(false)}
                 post={selectedPost}
@@ -115,7 +117,7 @@ export default function PromotionsSettingsPage() {
                         <CardContent>
                             <div className="text-2xl font-bold">{(activePromotions.reduce((sum, p) => sum + p.promotion.impressions, 0) || 0).toLocaleString()}</div>
                             <p className="text-xs text-muted-foreground">
-                            Total views on your promoted posts.
+                                Total views on your promoted posts.
                             </p>
                         </CardContent>
                     </Card>
@@ -178,7 +180,7 @@ export default function PromotionsSettingsPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                            {userPosts.length > 0 ? (
+                                {userPosts.length > 0 ? (
                                     userPosts.map(post => (
                                         <TableRow key={`post-to-promote-${post.id}`}>
                                             <TableCell className='truncate' style={{ maxWidth: 300 }}>{post.content || "(No content)"}</TableCell>

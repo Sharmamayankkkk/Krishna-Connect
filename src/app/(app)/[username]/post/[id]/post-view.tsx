@@ -10,7 +10,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { ArrowLeft, Loader2, MessageSquare, Repeat2, Heart, BarChart2, Upload, MoreHorizontal, Trash2, Edit2, Repeat, Quote, Share2 } from 'lucide-react';
 import { PostCard, PostSkeleton } from '@/app/(app)/explore/components/post-card';
 import { Separator } from '@/components/ui/separator';
-import type { PostType as Post, CommentType as Comment, MediaType as Media } from '@/app/(app)/data';
+import type { PostType as Post, CommentType as Comment, MediaType as Media } from '@/lib/types';
 import { createClient, cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { PollComponent } from '@/app/(app)/explore/components/poll-component';

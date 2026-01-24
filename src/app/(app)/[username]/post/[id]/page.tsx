@@ -60,7 +60,7 @@ export async function generateMetadata(
 
   // Determine OG Image
   // Priority: Post Media -> Author Avatar -> Default Logo
-  let imageUrl = '/logo.png';
+  let imageUrl = 'logo\Srila-Prabhupada.png';
   if (post.media_urls && Array.isArray(post.media_urls) && post.media_urls.length > 0) {
     // If it's an image attachment
     const firstMedia = post.media_urls[0];
