@@ -53,10 +53,15 @@ const translateMessageFlow = ai.defineFlow(
     outputSchema: TranslateMessageOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
-    if (!output) {
-      throw new Error("Translation failed: The AI model did not return a valid output.");
+    try {
+      const { output } = await prompt(input);
+      if (!output) {
+        throw new Error("Translation failed: The AI model did not return a valid output.");
+      }
+      return output;
+    } catch (error) {
+      console.error("Critical Translation Error:", error);
+      throw error; // Re-throw to be handled by caller, but now it's logged on server
     }
-    return output;
   }
 );
