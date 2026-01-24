@@ -16,7 +16,7 @@ import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { QuotedPostCard } from './quoted-post-card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import type { PostType } from '../../data';
+import type { PostType } from '@/lib/types';
 
 interface QuotePostDialogProps {
   open: boolean;

@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAppContext } from '@/providers/app-provider';
-import type { PostType as Post, CommentType as Comment } from '../../data';
+import type { PostType as Post, CommentType as Comment } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
 import { Loader2, Heart, MessageSquareReply, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';

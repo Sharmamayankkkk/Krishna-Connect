@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { PostType } from '../../data';
+import type { PostType } from '@/lib/types';
 import { format } from 'date-fns';
 import Image from 'next/image';
 

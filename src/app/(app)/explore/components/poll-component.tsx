@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import type { PostType as Post, PollType as Poll, PollOptionType as PollOption } from '../../data';
+import type { PostType as Post, PollType as Poll, PollOptionType as PollOption } from '@/lib/types';
 import { useAppContext } from '@/providers/app-provider';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';

@@ -26,7 +26,7 @@ import {
   Quote,
 } from 'lucide-react';
 import { useAppContext } from '@/providers/app-provider';
-import type { PostType as Post, MediaType as Media } from '../../data';
+import type { PostType as Post, MediaType as Media } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
