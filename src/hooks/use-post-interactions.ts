@@ -29,7 +29,7 @@ export function usePostInteractions({ loggedInUser, updatePost, onDeletePost }: 
             likedBy: newLikedBy,
             stats: {
                 ...post.stats,
-                likes: newLikedBy.length
+                likes: isLiked ? Math.max(0, post.stats.likes - 1) : post.stats.likes + 1
             }
         };
         updatePost(updatedPost);
@@ -66,7 +66,7 @@ export function usePostInteractions({ loggedInUser, updatePost, onDeletePost }: 
             repostedBy: newRepostedBy,
             stats: {
                 ...post.stats,
-                reposts: newRepostedBy.length
+                reposts: isReposted ? Math.max(0, post.stats.reposts - 1) : post.stats.reposts + 1
             },
             isReposted: !isReposted
         };
@@ -101,7 +101,7 @@ export function usePostInteractions({ loggedInUser, updatePost, onDeletePost }: 
             savedBy: newSavedBy,
             stats: {
                 ...post.stats,
-                bookmarks: newSavedBy.length
+                bookmarks: isSaved ? Math.max(0, post.stats.bookmarks - 1) : post.stats.bookmarks + 1
             }
         };
         updatePost(updatedPost);

@@ -1,24 +1,29 @@
 {
     "version": "1.0",
-    "lastUpdated": "2026-01-22",
+    "lastUpdated": "2026-01-25",
     "promotions": [
         {
-            "id": "promo_verification_001",
-            "type": "text_post",
+            "id": "promo_books_101",
+            "type": "product_showcase",
             "active": true,
             "priority": 1,
             "content": {
-                "text": "✨ Get verified on Krishna Connect! Join our community of verified devotees and unlock exclusive features. Apply now!",
+                "text": "📚 Bhagavad Gita As It Is Original (deluxe pocket edition)",
+                "imageUrl": "https://madhavstore.com/cdn/shop/files/Bhagavad-Gita-As-It-Is-Original-deluxe-pocket-edition.jpg",
+                "productName": "Bhagavad Gita As It Is Original (deluxe pocket edition)",
+                "price": "₹299",
+                "originalPrice": "₹399",
+                "discount": null,
                 "author": {
-                    "name": "Krishna Connect",
-                    "username": "krishnaconnect",
-                    "avatar": "/logo/Srila-Prabhupada.png",
+                    "name": "Madhav Store",
+                    "username": "madhavstore",
+                    "avatar": "/logo/favicon.png",
                     "verified": true
                 }
             },
             "cta": {
-                "label": "Get Verified",
-                "url": "/get-verified"
+                "label": "View Book",
+                "url": "https://madhavstore.com/products/bhagavad-gita-as-it-is-original-deluxe-pocket-edition"
             },
             "targeting": {
                 "all": true
@@ -29,23 +34,27 @@
             }
         },
         {
-            "id": "promo_events_002",
-            "type": "image_banner",
+            "id": "promo_books_102",
+            "type": "product_showcase",
             "active": true,
             "priority": 2,
             "content": {
-                "text": "🎉 Join our upcoming community events! Connect with devotees worldwide through live sessions, kirtans, and spiritual discussions.",
-                "imageUrl": "/banners/events-promo.jpg",
+                "text": "📚 Krishna: The Supreme Personality of Godhead (2 Volumes)",
+                "imageUrl": "https://madhavstore.com/cdn/shop/files/Krishna-Supreme-Personality-2-Volumes.jpg",
+                "productName": "Krishna: The Supreme Personality of Godhead | Original 2 Volumes",
+                "price": "₹1,199",
+                "originalPrice": "₹1,500",
+                "discount": "20% OFF",
                 "author": {
-                    "name": "KCS Events",
-                    "username": "kcsevents",
-                    "avatar": "/logo/Srila-Prabhupada.png",
+                    "name": "Madhav Store",
+                    "username": "madhavstore",
+                    "avatar": "/logo/favicon.png",
                     "verified": true
                 }
             },
             "cta": {
-                "label": "View Events",
-                "url": "/events"
+                "label": "View Book",
+                "url": "https://madhavstore.com/products/krishna-the-supreme-personality-of-godhead-original-2-volumes"
             },
             "targeting": {
                 "all": true
@@ -56,22 +65,27 @@
             }
         },
         {
-            "id": "promo_groups_003",
-            "type": "text_post",
+            "id": "promo_books_103",
+            "type": "product_showcase",
             "active": true,
             "priority": 3,
             "content": {
-                "text": "🙏 Discover spiritual groups! Join study circles, kirtan groups, and satsang communities. Find your sangha today.",
+                "text": "📚 3 Original Unedited Best Selling Small Books of Srila Prabhupada",
+                "imageUrl": "https://madhavstore.com/cdn/shop/files/3-Original-Unedited-Best-Selling-Small-Books.jpg",
+                "productName": "3 Original Unedited Best Selling Small Books of Srila Prabhupada",
+                "price": "₹249",
+                "originalPrice": "₹399",
+                "discount": "38% OFF",
                 "author": {
-                    "name": "Krishna Connect",
-                    "username": "krishnaconnect",
-                    "avatar": "/logo/Srila-Prabhupada.png",
+                    "name": "Madhav Store",
+                    "username": "madhavstore",
+                    "avatar": "/logo/favicon.png",
                     "verified": true
                 }
             },
             "cta": {
-                "label": "Explore Groups",
-                "url": "/groups"
+                "label": "View Set",
+                "url": "https://madhavstore.com/products/3-original-unedited-best-selling-small-books-of-srila-prabhupada"
             },
             "targeting": {
                 "all": true
@@ -82,27 +96,27 @@
             }
         },
         {
-            "id": "promo_product_004",
+            "id": "promo_books_104",
             "type": "product_showcase",
             "active": true,
             "priority": 4,
             "content": {
-                "text": "📿 Handcrafted Tulsi Mala from Vrindavan. Made by local artisans with love and devotion. Perfect for japa meditation.",
-                "imageUrl": "/products/tulsi-mala.jpg",
-                "productName": "Original Tulsi Japa Mala",
-                "price": "₹299",
-                "originalPrice": "₹499",
-                "discount": "40% OFF",
+                "text": "📚 Original Srimad Bhagavatam Mini Set",
+                "imageUrl": "https://madhavstore.com/cdn/shop/files/Original-Srimad-Bhagavatam-Mini-Set.jpg",
+                "productName": "Original Srimad Bhagavatam Mini Set",
+                "price": "₹999",
+                "originalPrice": "₹1,499",
+                "discount": "33% OFF",
                 "author": {
-                    "name": "KCS Store",
-                    "username": "kcsstore",
-                    "avatar": "/logo/Srila-Prabhupada.png",
+                    "name": "Madhav Store",
+                    "username": "madhavstore",
+                    "avatar": "/logo/favicon.png",
                     "verified": true
                 }
             },
             "cta": {
-                "label": "Shop Now",
-                "url": "/store/tulsi-mala"
+                "label": "View Set",
+                "url": "https://madhavstore.com/products/original-srimad-bhagavatam-mini-set"
             },
             "targeting": {
                 "all": true
@@ -113,23 +127,27 @@
             }
         },
         {
-            "id": "promo_course_005",
-            "type": "image_banner",
+            "id": "promo_deity_105",
+            "type": "product_showcase",
             "active": true,
             "priority": 5,
             "content": {
-                "text": "📖 Learn the Bhagavad Gita in 30 Days! Join our structured online course with Q&A sessions, quizzes, and certification.",
-                "imageUrl": "/banners/gita-course.jpg",
+                "text": "👗 For Radha Krishna – Beautiful Deity Dress",
+                "imageUrl": "https://madhavstore.com/cdn/shop/files/for-radha-krishna-dress.jpg",
+                "productName": "Radha Krishna Deity Dress",
+                "price": "₹1,099",
+                "originalPrice": "₹1,299",
+                "discount": "15% OFF",
                 "author": {
-                    "name": "KCS Academy",
-                    "username": "kcsacademy",
-                    "avatar": "/logo/Srila-Prabhupada.png",
+                    "name": "Madhav Store",
+                    "username": "madhavstore",
+                    "avatar": "/logo/favicon.png",
                     "verified": true
                 }
             },
             "cta": {
-                "label": "Enroll Free",
-                "url": "/courses/bhagavad-gita-30-days"
+                "label": "View Dress",
+                "url": "https://madhavstore.com/collections/deity-dresses-jellwery/products/for-radha-krishna"
             },
             "targeting": {
                 "all": true
@@ -140,25 +158,27 @@
             }
         },
         {
-            "id": "promo_video_006",
-            "type": "video_promo",
+            "id": "promo_deity_106",
+            "type": "product_showcase",
             "active": true,
             "priority": 6,
             "content": {
-                "text": "🎬 Watch our latest documentary: 'The Holy Land of Vrindavan' - A spiritual journey through the sacred groves.",
-                "videoUrl": "/videos/vrindavan-doc-trailer.mp4",
-                "thumbnailUrl": "/thumbnails/vrindavan-doc.jpg",
-                "duration": "2:34",
+                "text": "👗 For Laddu Gopal – Deity Dress",
+                "imageUrl": "https://madhavstore.com/cdn/shop/files/for-laddu-gopal-dress.jpg",
+                "productName": "Laddu Gopal Deity Dress",
+                "price": "₹999",
+                "originalPrice": null,
+                "discount": null,
                 "author": {
-                    "name": "KCS Media",
-                    "username": "kcsmedia",
-                    "avatar": "/logo/Srila-Prabhupada.png",
+                    "name": "Madhav Store",
+                    "username": "madhavstore",
+                    "avatar": "/logo/favicon.png",
                     "verified": true
                 }
             },
             "cta": {
-                "label": "Watch Full Video",
-                "url": "/live/vrindavan-documentary"
+                "label": "View Dress",
+                "url": "https://madhavstore.com/collections/deity-dresses-jellwery/products/for-laddu-gopal"
             },
             "targeting": {
                 "all": true
@@ -169,26 +189,27 @@
             }
         },
         {
-            "id": "promo_donation_007",
-            "type": "donation_appeal",
+            "id": "promo_deity_107",
+            "type": "product_showcase",
             "active": true,
             "priority": 7,
             "content": {
-                "text": "🙏 Support the Annadana program! Help us serve 10,000 free meals daily to the needy at our temples across India.",
-                "imageUrl": "/banners/annadana.jpg",
-                "raised": "₹4,50,000",
-                "goal": "₹10,00,000",
-                "percentComplete": 45,
+                "text": "👗 For Jagannath Baldeva Subhadra – Dress Set",
+                "imageUrl": "https://madhavstore.com/cdn/shop/files/for-jagannath-baldeva-subhadra.jpg",
+                "productName": "Jagannath Baldeva Subhadra Dress Set",
+                "price": "₹1,299",
+                "originalPrice": null,
+                "discount": null,
                 "author": {
-                    "name": "KCS Foundation",
-                    "username": "kcsfoundation",
-                    "avatar": "/logo/Srila-Prabhupada.png",
+                    "name": "Madhav Store",
+                    "username": "madhavstore",
+                    "avatar": "/logo/favicon.png",
                     "verified": true
                 }
             },
             "cta": {
-                "label": "Donate Now",
-                "url": "/donate/annadana"
+                "label": "View Dress Set",
+                "url": "https://madhavstore.com/collections/deity-dresses-jellwery/products/for-jagannath-baldeva-subhadra"
             },
             "targeting": {
                 "all": true
@@ -199,255 +220,27 @@
             }
         },
         {
-            "id": "promo_poll_008",
-            "type": "poll_promo",
+            "id": "promo_deity_108",
+            "type": "product_showcase",
             "active": true,
             "priority": 8,
             "content": {
-                "text": "📊 What spiritual topic should we cover in our next Live Session? Vote now and let your voice be heard!",
-                "pollOptions": [
-                    {
-                        "id": "1",
-                        "text": "Karma Yoga",
-                        "votes": 234
-                    },
-                    {
-                        "id": "2",
-                        "text": "Bhakti practices",
-                        "votes": 456
-                    },
-                    {
-                        "id": "3",
-                        "text": "Meditation techniques",
-                        "votes": 321
-                    },
-                    {
-                        "id": "4",
-                        "text": "Vedic philosophy",
-                        "votes": 189
-                    }
-                ],
-                "totalVotes": 1200,
+                "text": "👗 For Sri Sri Gaura Nitai – Dress Attire",
+                "imageUrl": "https://madhavstore.com/cdn/shop/files/for-sri-sri-gaura-nitai.jpg",
+                "productName": "Sri Sri Gaura Nitai Dress",
+                "price": "₹1,199",
+                "originalPrice": null,
+                "discount": null,
                 "author": {
-                    "name": "Krishna Connect",
-                    "username": "krishnaconnect",
-                    "avatar": "/logo/Srila-Prabhupada.png",
-                    "verified": true
-                }
-            },
-            "cta": null,
-            "targeting": {
-                "all": true
-            },
-            "schedule": {
-                "start": null,
-                "end": null
-            }
-        },
-        {
-            "id": "promo_app_009",
-            "type": "app_install",
-            "active": true,
-            "priority": 9,
-            "content": {
-                "text": "📱 Download our mobile app for the best experience! Get push notifications, offline access, and exclusive mobile features.",
-                "imageUrl": "/banners/app-promo.png",
-                "appStoreUrl": "https://apps.apple.com/app/krishna-connect",
-                "playStoreUrl": "https://play.google.com/store/apps/details?id=com.krishnaconnect",
-                "author": {
-                    "name": "Krishna Connect",
-                    "username": "krishnaconnect",
-                    "avatar": "/logo/Srila-Prabhupada.png",
+                    "name": "Madhav Store",
+                    "username": "madhavstore",
+                    "avatar": "/logo/favicon.png",
                     "verified": true
                 }
             },
             "cta": {
-                "label": "Download App",
-                "url": "/download"
-            },
-            "targeting": {
-                "platform": "web"
-            },
-            "schedule": {
-                "start": null,
-                "end": null
-            }
-        },
-        {
-            "id": "promo_live_010",
-            "type": "live_event",
-            "active": true,
-            "priority": 10,
-            "content": {
-                "text": "🔴 LIVE NOW: Morning Mangal Aarti from ISKCON Mayapur! Join thousands of devotees in this divine experience.",
-                "thumbnailUrl": "/thumbnails/live-aarti.jpg",
-                "viewerCount": 3420,
-                "isLive": true,
-                "author": {
-                    "name": "ISKCON Mayapur",
-                    "username": "iskconmayapur",
-                    "avatar": "/temples/mayapur.jpg",
-                    "verified": true
-                }
-            },
-            "cta": {
-                "label": "Join Live",
-                "url": "/live/mayapur-aarti"
-            },
-            "targeting": {
-                "all": true
-            },
-            "schedule": {
-                "start": "2026-01-01T04:30:00+05:30",
-                "end": "2026-12-31T06:00:00+05:30"
-            }
-        },
-        {
-            "id": "promo_quote_011",
-            "type": "inspirational_quote",
-            "active": true,
-            "priority": 11,
-            "content": {
-                "text": "\"One who sees inaction in action, and action in inaction, is intelligent among men.\"\n\n— Bhagavad Gita 4.18",
-                "backgroundImageUrl": "/backgrounds/gita-verse.jpg",
-                "author": {
-                    "name": "Daily Gita Wisdom",
-                    "username": "dailygita",
-                    "avatar": "/logo/Srila-Prabhupada.png",
-                    "verified": true
-                }
-            },
-            "cta": {
-                "label": "Read Commentary",
-                "url": "/scripture/gita/4/18"
-            },
-            "targeting": {
-                "all": true
-            },
-            "schedule": {
-                "start": null,
-                "end": null
-            }
-        },
-        {
-            "id": "promo_challenge_012",
-            "type": "challenge_promo",
-            "active": true,
-            "priority": 12,
-            "content": {
-                "text": "🏆 Join the 21-Day Japa Challenge! Complete 16 rounds daily and win exclusive badges. 2,340 devotees already participating!",
-                "imageUrl": "/challenges/japa-challenge.jpg",
-                "participants": 2340,
-                "daysRemaining": 14,
-                "author": {
-                    "name": "KCS Challenges",
-                    "username": "kcschallenges",
-                    "avatar": "/logo/Srila-Prabhupada.png",
-                    "verified": true
-                }
-            },
-            "cta": {
-                "label": "Join Challenge",
-                "url": "/challenges/21-day-japa"
-            },
-            "targeting": {
-                "all": true
-            },
-            "schedule": {
-                "start": "2026-01-01",
-                "end": "2026-01-31"
-            }
-        },
-        {
-            "id": "promo_referral_013",
-            "type": "referral_program",
-            "active": true,
-            "priority": 13,
-            "content": {
-                "text": "👥 Invite friends, earn rewards! Get 1 month free verification for every 5 friends who join Krishna Connect.",
-                "author": {
-                    "name": "Krishna Connect",
-                    "username": "krishnaconnect",
-                    "avatar": "/logo/Srila-Prabhupada.png",
-                    "verified": true
-                }
-            },
-            "cta": {
-                "label": "Invite Friends",
-                "url": "/settings/referrals"
-            },
-            "targeting": {
-                "all": true
-            },
-            "schedule": {
-                "start": null,
-                "end": null
-            }
-        },
-        {
-            "id": "promo_festival_014",
-            "type": "festival_announcement",
-            "active": false,
-            "priority": 14,
-            "content": {
-                "text": "🪔 Janmashtami Special! Join us for 24-hour kirtan marathon, special darshan timings, and community feast. Register now!",
-                "imageUrl": "/festivals/janmashtami.jpg",
-                "festivalDate": "2026-08-25",
-                "eventLocation": "All ISKCON Temples",
-                "author": {
-                    "name": "KCS Festivals",
-                    "username": "kcsfestivals",
-                    "avatar": "/logo/Srila-Prabhupada.png",
-                    "verified": true
-                }
-            },
-            "cta": {
-                "label": "Register",
-                "url": "/events/janmashtami-2026"
-            },
-            "targeting": {
-                "all": true
-            },
-            "schedule": {
-                "start": "2026-08-01",
-                "end": "2026-08-25"
-            }
-        },
-        {
-            "id": "promo_carousel_015",
-            "type": "carousel",
-            "active": true,
-            "priority": 15,
-            "content": {
-                "text": "📸 Explore sacred temples around the world through our photo gallery!",
-                "images": [
-                    {
-                        "url": "/temples/vrindavan.jpg",
-                        "caption": "Sri Vrindavan Dham"
-                    },
-                    {
-                        "url": "/temples/mayapur.jpg",
-                        "caption": "ISKCON Mayapur"
-                    },
-                    {
-                        "url": "/temples/puri.jpg",
-                        "caption": "Jagannath Puri"
-                    },
-                    {
-                        "url": "/temples/tirupati.jpg",
-                        "caption": "Tirumala Tirupati"
-                    }
-                ],
-                "author": {
-                    "name": "Temple Tours",
-                    "username": "templetours",
-                    "avatar": "/logo/Srila-Prabhupada.png",
-                    "verified": true
-                }
-            },
-            "cta": {
-                "label": "View All Temples",
-                "url": "/explore/temples"
+                "label": "View Attire",
+                "url": "https://madhavstore.com/collections/deity-dresses-jellwery/products/for-sri-sri-gaura-nitai"
             },
             "targeting": {
                 "all": true
