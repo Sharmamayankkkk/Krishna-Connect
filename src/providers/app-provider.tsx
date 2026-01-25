@@ -1,8 +1,8 @@
 
 "use client"
 
-import { createContext, useContext, useState, type ReactNode, useEffect, useCallback, useRef } from "react"
-import type { User, Chat, ThemeSettings, Message, DmRequest, AppContextType, UserSettings } from "@/lib/types"
+import { useState, type ReactNode, useEffect, useCallback, useRef } from "react"
+import type { User, Chat, ThemeSettings, Message, DmRequest, UserSettings } from "@/lib/types"
 import { createClient } from "@/lib/utils"
 import { Icons } from "@/components/icons"
 import { useToast } from "@/hooks/use-toast"

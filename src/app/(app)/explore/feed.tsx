@@ -63,13 +63,7 @@ export default function Feed() {
     const [feedFilter, setFeedFilter] = React.useState<FeedFilter>('foryou');
     const [showNewPostsBanner, setShowNewPostsBanner] = React.useState(false);
     const [newPostsCount, setNewPostsCount] = React.useState(0);
-    const [isCaughtUp, setIsCaughtUp] = React.useState(false);
     const [showScrollTop, setShowScrollTop] = React.useState(false);
-    const [isRefreshing, setIsRefreshing] = React.useState(false);
-
-    // Notifications
-    const [notifications, setNotifications] = React.useState<NotificationType[]>([]);
-    const [unreadCount, setUnreadCount] = React.useState(0);
 
     // Promotion Dialog
     const [isPromotionDialogOpen, setIsPromotionDialogOpen] = React.useState(false);
@@ -93,6 +87,9 @@ export default function Feed() {
 
     React.useEffect(() => {
         const fetchSuggested = async () => {
+            // ... implementation ...
+            if (exploreMode !== 'discover') return;
+            // ... existing code ...
             if (exploreMode !== 'discover') return;
             const supabase = createClient();
             const { data, error } = await supabase.rpc('get_who_to_follow', { limit_count: 4 });
@@ -184,10 +181,7 @@ export default function Feed() {
     }, [fetchPosts]);
 
     // Initialize Notifications (Empty for now until real notifications implemented)
-    React.useEffect(() => {
-        setNotifications([]);
-        setUnreadCount(0);
-    }, []);
+
 
     // Reactive Feed Filter: Apply filter when posts or filter settings change
     // NOTE: Intentionally NOT including userInteractions to prevent feed shuffle on like/save
@@ -218,7 +212,6 @@ export default function Feed() {
             case 'foryou':
                 const smartFeed = generateSmartFeed(posts, userInteractions);
                 filteredPosts = smartFeed.feed;
-                setIsCaughtUp(smartFeed.isCaughtUp);
                 setNewPostsCount(smartFeed.newPostsCount);
                 break;
 
@@ -322,20 +315,7 @@ export default function Feed() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // Refresh feed
-    const handleRefresh = async () => {
-        setIsRefreshing(true);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        const updatedInteractions = updateLastSeenTime(userInteractions);
-        setUserInteractions(updatedInteractions);
-        applyFeedFilter(allPosts, feedFilter);
-        setIsRefreshing(false);
-        setShowNewPostsBanner(false);
-        toast({
-            title: "Feed refreshed",
-            description: "You're all caught up!"
-        });
-    };
+
 
     // Load more posts
     const handleLoadMore = () => {
@@ -405,10 +385,12 @@ export default function Feed() {
             media: [],
             stats: { comments: 0, reshares: 0, reposts: 0, likes: 0, views: 0, bookmarks: 0 },
             comments: [],
-            originalPost: (({ comments, stats, poll, originalPost: _, ...cleanPost }) => cleanPost)(originalPost),
+            originalPost: (({ originalPost: _, ...cleanPost }) => cleanPost)(originalPost),
             likedBy: [],
             savedBy: [],
             repostedBy: [],
+            isPromoted: false,
+            poll: undefined,
         };
         const updateOriginalPost = (post: PostType) => {
             if (post.id === originalPostId) {

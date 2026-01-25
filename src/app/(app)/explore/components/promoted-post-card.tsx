@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Megaphone, ExternalLink, ArrowRight } from 'lucide-react';
+import { Megaphone, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Types matching promoted_content.json structure
