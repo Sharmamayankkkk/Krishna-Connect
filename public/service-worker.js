@@ -1,149 +1,164 @@
-const CACHE_NAME = 'kcs-app-v4'; // Incremented version to force update
-const APP_SHELL_URLS = [
+const CACHE_NAME = 'kcs-app-v5-dynamic';
+const STATIC_CACHE = 'kcs-static-v5';
+
+const APP_SHELL = [
     '/',
     '/manifest.json',
-    // Validated Logo paths from your screenshot
+    '/favicon.ico',
     '/logo/light_KCS.svg',
     '/logo/light_KCS.png',
     '/logo/dark_KCS.png',
     '/logo/krishna_connect.png',
-    // Validated Background paths (Fixes the "folder" error)
     '/chat-bg/light.png',
     '/chat-bg/dark.png',
     '/chat-bg/BG_3.svg',
-    '/chat-bg/BG_4.png',
-    // User Avatars (Keeping your original requests)
     '/user_Avatar/male.png',
     '/user_Avatar/female.png'
 ];
 
-// Install event: precache the app shell
-self.addEventListener('install', event => {
-    console.log('[Service Worker] Install');
+// Install Event: Precache Core Assets
+self.addEventListener('install', (event) => {
+    console.log('[Service Worker] Installing New Version...');
+    // Force the waiting service worker to become the active service worker.
+    self.skipWaiting();
+
     event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => {
-            console.log('[Service Worker] Pre-caching app shell');
-            return cache.addAll(APP_SHELL_URLS);
-        }).then(() => {
-            return self.skipWaiting();
+        caches.open(STATIC_CACHE).then((cache) => {
+            console.log('[Service Worker] Caching App Shell');
+            return cache.addAll(APP_SHELL);
         })
     );
 });
 
-// Activate event: clean up old caches
-self.addEventListener('activate', event => {
-    console.log('[Service Worker] Activate');
+// Activate Event: Clean up old caches
+self.addEventListener('activate', (event) => {
+    console.log('[Service Worker] Activated');
+    // Tell the active service worker to take control of the page immediately.
     event.waitUntil(
-        caches.keys().then(cacheNames => {
-            return Promise.all(
-                cacheNames.map(cacheName => {
-                    if (cacheName !== CACHE_NAME) {
-                        console.log('[Service Worker] Deleting old cache:', cacheName);
-                        return caches.delete(cacheName);
-                    }
-                })
-            );
-        }).then(() => {
-            return self.clients.claim();
-        })
-    );
-});
-
-// Fetch event: serve assets from cache or network with improved logic
-self.addEventListener('fetch', event => {
-    if (event.request.method !== 'GET') {
-        return;
-    }
-
-    const url = new URL(event.request.url);
-
-    // Don't cache API calls, AdSense, or external domains.
-    if (url.origin !== self.location.origin || event.request.url.includes('/api/')) {
-        return;
-    }
-
-    // Navigation requests (HTML pages) -> Network first, fallback to cache, then offline page
-    if (event.request.mode === 'navigate') {
-        event.respondWith(
-            fetch(event.request).catch(() => {
-                return caches.match('/'); // Fallback to the root page for SPA
-            })
-        );
-        return;
-    }
-
-    // ... existing fetch listener ...
-    // Asset requests (Images, CSS, JS) -> Cache first, then Network
-    event.respondWith(
-        caches.match(event.request).then(cachedResponse => {
-            if (cachedResponse) {
-                return cachedResponse;
-            }
-
-            return fetch(event.request).then(networkResponse => {
-                // Check if we received a valid response before caching.
-                if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-                    return networkResponse;
-                }
-
-                const responseToCache = networkResponse.clone();
-                caches.open(CACHE_NAME).then(cache => {
-                    cache.put(event.request, responseToCache);
-                });
-
-                return networkResponse;
-            }).catch(error => {
-                console.error('[Service Worker] Fetch failed:', error);
-                // Optional: Return a placeholder image here if an image fetch fails
-                throw error;
+        clients.claim().then(() => {
+            return caches.keys().then((cacheNames) => {
+                return Promise.all(
+                    cacheNames.map((cacheName) => {
+                        if (cacheName !== CACHE_NAME && cacheName !== STATIC_CACHE) {
+                            console.log('[Service Worker] Deleting Old Cache:', cacheName);
+                            return caches.delete(cacheName);
+                        }
+                    })
+                );
             });
         })
     );
 });
 
-// ============================================================================
-// PUSH NOTIFICATIONS
-// ============================================================================
+// Helper: Network First strategy for HTML/Data
+async function networkFirst(request) {
+    try {
+        const networkResponse = await fetch(request);
+        if (networkResponse.ok) {
+            const cache = await caches.open(CACHE_NAME);
+            cache.put(request, networkResponse.clone());
+        }
+        return networkResponse;
+    } catch (error) {
+        const cachedResponse = await caches.match(request);
+        return cachedResponse || Response.error();
+    }
+}
 
-self.addEventListener('push', function (event) {
-    if (event.data) {
+// Helper: Stale While Revalidate for Static Assets
+async function staleWhileRevalidate(request) {
+    const cachedResponse = await caches.match(request);
+    const fetchPromise = fetch(request).then((networkResponse) => {
+        if (networkResponse.ok) {
+            caches.open(STATIC_CACHE).then((cache) => {
+                cache.put(request, networkResponse.clone());
+            });
+        }
+        return networkResponse;
+    });
+    return cachedResponse || fetchPromise;
+}
+
+// Fetch Event
+self.addEventListener('fetch', (event) => {
+    const url = new URL(event.request.url);
+
+    // Ignore non-GET requests
+    if (event.request.method !== 'GET') return;
+
+    // Ignore API calls, Chrome Extensions, and internal Next.js middleware calls
+    if (
+        url.pathname.startsWith('/api') ||
+        url.protocol === 'chrome-extension:' ||
+        url.pathname.includes('/_next/static/development') // Don't cache dev scripts excessively
+    ) {
+        return;
+    }
+
+    // Strategy Selection
+    if (event.request.mode === 'navigate') {
+        // HTML Pages: Network First (Fresh content matters)
+        event.respondWith(networkFirst(event.request));
+    } else if (
+        APP_SHELL.some(path => url.pathname.endsWith(path)) ||
+        url.pathname.startsWith('/_next/static') ||
+        url.pathname.match(/\.(js|css|png|jpg|jpeg|svg|ico|woff2)$/)
+    ) {
+        // Static Assets: Stale While Revalidate (Speed matters)
+        event.respondWith(staleWhileRevalidate(event.request));
+    } else {
+        // Default: Network First
+        event.respondWith(networkFirst(event.request));
+    }
+});
+
+// Push Notifications
+self.addEventListener('push', (event) => {
+    if (!event.data) return;
+
+    try {
         const data = event.data.json();
         const options = {
             body: data.body,
             icon: data.icon || '/logo/krishna_connect.png',
-            badge: '/logo/krishna_connect.png', // Small icon for android/desktop status bar
+            image: data.image,
+            badge: '/logo/krishna_connect.png',
             vibrate: [100, 50, 100],
             data: {
-                dateOfArrival: Date.now(),
-                primaryKey: '2',
-                url: data.url || '/'
+                url: data.url || '/',
+                timestamp: Date.now()
             },
-            actions: [
-                { action: 'explore', title: 'View' }
-            ]
+            actions: data.actions || [
+                { action: 'open', title: 'Open' }
+            ],
+            tag: data.tag || 'default-notification',
+            renotify: true
         };
+
         event.waitUntil(
-            self.registration.showNotification(data.title, options)
+            self.registration.showNotification(data.title || 'New Notification', options)
         );
+    } catch (e) {
+        console.error('Error handling push event:', e);
     }
 });
 
-self.addEventListener('notificationclick', function (event) {
+self.addEventListener('notificationclick', (event) => {
     event.notification.close();
+
+    const targetUrl = event.notification.data?.url || '/';
+
     event.waitUntil(
-        clients.matchAll({
-            type: 'window'
-        }).then(function (clientList) {
-            // If a window is already open, focus it
-            for (var i = 0; i < clientList.length; i++) {
-                var client = clientList[i];
-                if (client.url === event.notification.data.url && 'focus' in client) {
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+            // Check if open
+            for (const client of clientList) {
+                if (client.url === targetUrl && 'focus' in client) {
                     return client.focus();
                 }
             }
-            // Otherwise open a new window
+            // If not, open new
             if (clients.openWindow) {
-                return clients.openWindow(event.notification.data.url);
+                return clients.openWindow(targetUrl);
             }
         })
     );

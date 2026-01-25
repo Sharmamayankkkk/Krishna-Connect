@@ -2,10 +2,10 @@
 'use client';
 
 import { ChatLayout } from '../features/chat/chat-layout';
-import { useAppContext } from '@/providers/app-provider';
+import { useAppContext } from '@/providers/app-context';
 import React from 'react';
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export default function AppShell({ children }: { children: React.ReactNode }) {
   const { chats } = useAppContext();
 
   return (

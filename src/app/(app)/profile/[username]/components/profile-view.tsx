@@ -37,6 +37,8 @@ import { createClient } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { PrivateContentPlaceholder } from "@/components/private-placeholders";
 import { AuthGate } from "@/components/auth-gate";
+import { usePostInteractions } from "@/hooks/use-post-interactions";
+import type { PostType } from "@/lib/types";
 import {
   Tooltip,
   TooltipContent,
@@ -49,10 +51,10 @@ interface ProfileViewProps {
   posts: Post[];
   followers: any[];
   following: any[];
-  session: any;
+  currentUser: any;
 }
 
-export function ProfileView({ profile, posts, followers, following, session }: ProfileViewProps) {
+export function ProfileView({ profile, posts, followers, following, currentUser }: ProfileViewProps) {
   const router = useRouter();
   const supabase = createClient();
   const { toast } = useToast();
@@ -64,13 +66,13 @@ export function ProfileView({ profile, posts, followers, following, session }: P
   const [isMessageLoading, setIsMessageLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("posts");
 
-  const canViewConnections = !profile.is_private || profile.is_following || (session?.user?.id === profile.id);
+  const canViewConnections = !profile.is_private || profile.is_following || (currentUser?.id === profile.id);
   const canMessage = !profile.is_private || profile.is_following;
 
   const handleMessage = async () => {
-    if (!session?.user) return;
+    if (!currentUser) return;
     setIsMessageLoading(true);
-    console.log("Debug HandleMessage:", { targetId: profile.id, userId: session.user.id });
+    console.log("Debug HandleMessage:", { targetId: profile.id, userId: currentUser.id });
     try {
       // Check for existing DM
       const { data: chatId, error } = await supabase.rpc('get_dm_chat_id', {
@@ -103,17 +105,7 @@ export function ProfileView({ profile, posts, followers, following, session }: P
     }
   };
 
-  const handleDeletePost = async (postId: string) => {
-    try {
-      const { error } = await supabase.from('posts').delete().eq('id', postId);
-      if (error) throw error;
-      toast({ title: "Post deleted" });
-      router.refresh();
-    } catch (error) {
-      console.error('Error deleting post:', error);
-      toast({ variant: "destructive", title: "Error", description: "Failed to delete post." });
-    }
-  };
+
 
   const handleBlock = async () => {
     try {
@@ -177,46 +169,45 @@ export function ProfileView({ profile, posts, followers, following, session }: P
     verified: profile.verified || false
   };
 
-  const isOwnProfile = session?.user?.id === profile.id;
+  const isOwnProfile = currentUser?.id === profile.id;
   const displayName = profile.name || profile.full_name || profile.username;
   const joinDate = profile.created_at ? format(new Date(profile.created_at), 'MMMM yyyy') : null;
 
   // State for posts to allow local mutations (likes, deletes)
   const [localPosts, setLocalPosts] = useState<Post[]>(posts);
 
-  const handleLike = async (postId: string) => {
-    if (!session?.user) return;
+  const loggedInUser = currentUser ? {
+    id: currentUser.id,
+    name: currentUser.user_metadata?.name || currentUser.email,
+    username: currentUser.user_metadata?.username || currentUser.email?.split('@')[0],
+    avatar: currentUser.user_metadata?.avatar_url || ''
+  } : null;
 
-    // Optimistic Update
-    setLocalPosts(currentPosts => currentPosts.map(p => {
-      if (p.id === postId) {
-        // Cast to any to avoid type errors with likedBy
-        const postAny = p as any;
-        const isLiked = postAny.likedBy.includes(session.user.id);
-        const newLikedBy = isLiked
-          ? postAny.likedBy.filter((id: string) => id !== session.user.id)
-          : [...postAny.likedBy, session.user.id];
+  const updatePost = (updatedPost: PostType) => {
+    setLocalPosts((prev: any[]) => prev.map((p) => p.id === updatedPost.id ? updatedPost : p));
+  };
 
-        return {
-          ...p,
-          likedBy: newLikedBy,
-          stats: {
-            ...p.stats,
-            likes: newLikedBy.length
-          }
-        } as Post;
-      }
-      return p;
-    }));
-
-    try {
-      const { error } = await supabase.rpc('toggle_post_like', { p_post_id: Number(postId) });
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error toggling like:', error);
-      toast({ variant: "destructive", title: "Error", description: "Failed to update like." });
-      router.refresh(); // Revert on error
+  const {
+    handlePostLikeToggle,
+    handleRepost,
+    handlePostSaveToggle,
+    handlePostDeleted,
+    handlePollVote,
+    handleCommentSubmit,
+    handleCommentLikeToggle,
+    handleCommentDelete,
+    handleCommentPinToggle,
+    handleCommentHideToggle
+  } = usePostInteractions({
+    loggedInUser,
+    updatePost,
+    onDeletePost: (postId) => {
+      setLocalPosts((prev) => prev.filter((p) => p.id !== postId));
     }
+  });
+
+  const handleDeletePost = (id: string) => {
+    handlePostDeleted(id);
   };
 
   // Filter posts based on local state
@@ -396,10 +387,10 @@ export function ProfileView({ profile, posts, followers, following, session }: P
                   )}
                 </AuthGate>
 
-                {session?.user ? (
+                {currentUser ? (
                   <FollowButton
                     profileId={profile.id}
-                    currentUserId={session.user.id}
+                    currentUserId={currentUser.id}
                     initialStatus={
                       profile.follow_status === 'approved' ? 'approved' :
                         profile.follow_status === 'pending' ? 'pending' :
@@ -536,17 +527,17 @@ export function ProfileView({ profile, posts, followers, following, session }: P
                       media: post.media_urls || []
                     } as any}
                     onDelete={handleDeletePost}
-                    onLikeToggle={(id) => handleLike(id)}
-                    onComment={() => { }}
+                    onLikeToggle={() => handlePostLikeToggle(post as any)}
+                    onComment={(postId, text, parentId) => handleCommentSubmit(post as any, text, parentId)}
                     onEdit={() => { }}
-                    onSaveToggle={() => { }}
-                    onCommentLikeToggle={() => { }}
-                    onCommentPinToggle={() => { }}
-                    onCommentHideToggle={() => { }}
-                    onCommentDelete={() => { }}
+                    onSaveToggle={() => handlePostSaveToggle(post as any)}
+                    onCommentLikeToggle={(pid, cid, reply) => handleCommentLikeToggle(post as any, cid, reply)}
+                    onCommentPinToggle={(pid, cid) => handleCommentPinToggle(post as any, cid)}
+                    onCommentHideToggle={(pid, cid, reply) => handleCommentHideToggle(post as any, cid, reply)}
+                    onCommentDelete={(pid, cid, reply, parent) => handleCommentDelete(post as any, cid, reply, parent)}
                     onQuotePost={() => { }}
-                    onRepost={() => { }}
-                    onPollVote={() => { }}
+                    onRepost={() => handleRepost(post as any)}
+                    onPollVote={(optionId) => handlePollVote(post as any, optionId)}
                     onPromote={() => { }}
                   />
                 ))}
@@ -574,17 +565,17 @@ export function ProfileView({ profile, posts, followers, following, session }: P
                       media: post.media_urls || []
                     } as any}
                     onDelete={handleDeletePost}
-                    onLikeToggle={(id) => handleLike(id)}
-                    onComment={() => { }}
+                    onLikeToggle={() => handlePostLikeToggle(post as any)}
+                    onComment={(postId, text, parentId) => handleCommentSubmit(post as any, text, parentId)} // Navigate to detail?
                     onEdit={() => { }}
-                    onSaveToggle={() => { }}
-                    onCommentLikeToggle={() => { }}
-                    onCommentPinToggle={() => { }}
-                    onCommentHideToggle={() => { }}
-                    onCommentDelete={() => { }}
+                    onSaveToggle={() => handlePostSaveToggle(post as any)}
+                    onCommentLikeToggle={(pid, cid, reply) => handleCommentLikeToggle(post as any, cid, reply)}
+                    onCommentPinToggle={(pid, cid) => handleCommentPinToggle(post as any, cid)}
+                    onCommentHideToggle={(pid, cid, reply) => handleCommentHideToggle(post as any, cid, reply)}
+                    onCommentDelete={(pid, cid, reply, parent) => handleCommentDelete(post as any, cid, reply, parent)}
                     onQuotePost={() => { }}
-                    onRepost={() => { }}
-                    onPollVote={() => { }}
+                    onRepost={() => handleRepost(post as any)}
+                    onPollVote={(optionId) => handlePollVote(post as any, optionId)}
                     onPromote={() => { }}
                   />
                 ))}

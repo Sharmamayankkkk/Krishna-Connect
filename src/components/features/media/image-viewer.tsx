@@ -10,7 +10,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { X, Download, ZoomIn, ZoomOut, RotateCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
-import { PostType } from '@/app/(app)/types';
+import { PostType } from '@/lib/types';
 import { VideoPlayer } from './video-player';
 
 interface ImageViewerDialogProps {

@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Icons } from '@/components/icons';
 import { useRouter } from 'next/navigation';
 import { Lock, Globe, Loader2 } from 'lucide-react';
-import { useAppContext } from '@/providers/app-provider';
+import { useAppContext } from '@/providers/app-context';
 
 interface PrivacySetupModalProps {
     open: boolean;

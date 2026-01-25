@@ -1,6 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
-import { PostType } from '@/app/(app)/types'
+import { PostType } from '@/lib/types'
 
 interface PostData {
   id: number;
@@ -54,7 +54,7 @@ const transformPostData = (post: PostData): PostType => {
 
 const fetchPosts = async ({ pageParam = null }: { pageParam?: number | null }) => {
   const supabase = createClient();
-  
+
   const { data, error } = await supabase.rpc('get_posts_paginated', {
     p_limit: 20,
     p_cursor: pageParam,

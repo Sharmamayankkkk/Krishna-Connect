@@ -16,7 +16,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { Search, X, CheckCircle2, Circle, Loader2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
-import { UserType } from '@/app/(app)/types';
+import { UserType } from '@/lib/types';
 import { useAppContext } from '@/providers/app-provider';
 
 // Reusing UserType but ensuring Collaborator matches what we need

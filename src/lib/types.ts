@@ -271,6 +271,7 @@ export type MediaType = {
   thumbnailUrl?: string;
   width?: number;
   height?: number;
+  file?: File;
 };
 
 export type PollOptionType = {
@@ -355,6 +356,8 @@ export type NotificationType = {
   createdAt: string;
   read: boolean;
   status?: 'pending' | 'accepted' | 'declined';
+  postContent?: string;
+  postMediaType?: 'image' | 'video' | 'gif';
 };
 
 export type UserRelationship = {
@@ -387,4 +390,35 @@ export type DraftPost = {
   poll?: PollType;
   createdAt: string;
   updatedAt: string;
+};
+// Utility Functions
+
+export const generateId = (prefix: 'post' | 'comment' | 'reply' | 'poll' | 'notif' | 'draft'): string => {
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+};
+
+export const createEmptyPoll = (question: string, options: string[], endsInHours: number = 24): PollType => {
+  return {
+    id: generateId('poll'),
+    question,
+    options: options.map((text, index) => ({
+      id: `opt_${Date.now()}_${index}`,
+      text,
+      votes: 0,
+      votedBy: []
+    })),
+    totalVotes: 0,
+    endsAt: new Date(Date.now() + 1000 * 60 * 60 * endsInHours).toISOString(),
+    allowMultipleChoices: false
+  };
+};
+
+export const createDraft = (content: string, media: MediaType[] = []): DraftPost => {
+  return {
+    id: generateId('draft'),
+    content,
+    media,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
 };

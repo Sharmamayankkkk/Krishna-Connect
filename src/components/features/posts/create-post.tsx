@@ -44,7 +44,7 @@ import { useAppContext } from '@/providers/app-provider';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
-import { PollType, MediaType, DraftPost, createEmptyPoll, createDraft } from '@/app/(app)/types';
+import { PollType, MediaType, DraftPost, createEmptyPoll, createDraft } from '@/lib/types';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthGuard } from '@/hooks/use-auth-guard';
 

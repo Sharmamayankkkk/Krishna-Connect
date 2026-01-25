@@ -22,6 +22,17 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { AuthGate } from '@/components/auth-gate';
 import { PrivateContentPlaceholder } from '@/components/private-placeholders';
+import { usePostInteractions } from '@/hooks/use-post-interactions';
+
+interface PostDetailCardProps {
+    post: Post;
+    onCommentClick: () => void;
+    onLikeToggle: () => void;
+    onRepost: () => void;
+    onSaveToggle: () => void;
+    onQuote: () => void;
+    onDelete: () => void;
+}
 
 const POST_QUERY = `
   id,
@@ -90,7 +101,15 @@ function MediaGallery({ media, onImageClick }: { media: Media[], onImageClick: (
 }
 
 // --- Main Detail Card for the Post ---
-function PostDetailCard({ post, onCommentClick }: { post: Post, onCommentClick: () => void }) {
+function PostDetailCard({
+    post,
+    onCommentClick,
+    onLikeToggle,
+    onRepost,
+    onSaveToggle,
+    onQuote,
+    onDelete
+}: PostDetailCardProps) {
     const { loggedInUser } = useAppContext();
     const { toast } = useToast();
     const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
@@ -110,24 +129,25 @@ function PostDetailCard({ post, onCommentClick }: { post: Post, onCommentClick: 
     const handleLike = (e: React.MouseEvent) => {
         e.stopPropagation();
         e.preventDefault();
-        toast({ title: 'Liked!' });
+        onLikeToggle();
     };
 
     const handleRepost = (e: React.MouseEvent) => {
         e.stopPropagation();
         e.preventDefault();
-        toast({ title: 'Reposted!' });
+        onRepost();
     };
 
     const handleQuote = (e: React.MouseEvent) => {
         e.stopPropagation();
         e.preventDefault();
+        onQuote();
     };
 
     const handleDelete = (e: React.MouseEvent) => {
         e.stopPropagation();
         e.preventDefault();
-        toast({ title: 'Deleted!' });
+        onDelete();
         router.back();
     };
 
@@ -344,6 +364,32 @@ export default function PostView() {
     const postId = Number(params.id);
     const username = params.username;
 
+    const updatePost = (updatedPost: Post) => {
+        setPost(updatedPost);
+    };
+
+    const interactionUser = loggedInUser ? {
+        id: loggedInUser.id,
+        name: loggedInUser.name,
+        username: loggedInUser.username,
+        avatar: loggedInUser.avatar_url,
+        verified: loggedInUser.is_verified
+    } : null;
+
+    const {
+        handlePostLikeToggle,
+        handleRepost,
+        handlePostSaveToggle,
+        handlePostDeleted,
+        handlePollVote,
+        handleCommentLikeToggle,
+        handleCommentDelete
+    } = usePostInteractions({
+        loggedInUser: interactionUser,
+        updatePost,
+        onDeletePost: () => router.back()
+    });
+
     const formatPost = (postData: any): Post => {
         const comments = (postData.comments || []).map((comment: any) => {
             // Format comment author
@@ -479,7 +525,15 @@ export default function PostView() {
                         <PostSkeleton />
                     ) : (
                         <>
-                            <PostDetailCard post={post} onCommentClick={handleCommentClick} />
+                            <PostDetailCard
+                                post={post}
+                                onCommentClick={handleCommentClick}
+                                onLikeToggle={() => handlePostLikeToggle(post)}
+                                onRepost={() => handleRepost(post)}
+                                onSaveToggle={() => handlePostSaveToggle(post)}
+                                onQuote={() => { }} // TODO: Implement quote for detail view if needed or handle logic
+                                onDelete={() => handlePostDeleted(post.id)}
+                            />
 
                             <Separator />
 
@@ -519,12 +573,12 @@ export default function PostView() {
                                         <PostCard
                                             key={comment.id}
                                             post={comment as any}
-                                            onLikeToggle={() => { }}
-                                            onComment={() => { }}
-                                            onDelete={() => { }}
+                                            onLikeToggle={() => handleCommentLikeToggle(post, comment.id)}
+                                            onComment={() => { }} // Reply to comment?
+                                            onDelete={() => handleCommentDelete(post, comment.id)}
                                             onEdit={() => { }}
                                             onSaveToggle={() => { }}
-                                            onCommentLikeToggle={() => { }}
+                                            onCommentLikeToggle={() => { }} // Recursive?
                                             onCommentPinToggle={() => { }}
                                             onCommentHideToggle={() => { }}
                                             onCommentDelete={() => { }}

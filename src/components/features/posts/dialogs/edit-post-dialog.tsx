@@ -25,7 +25,7 @@ import { useAppContext } from '@/providers/app-provider';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
-import { PostType, MediaType } from '@/app/(app)/types';
+import { PostType, MediaType } from '@/lib/types';
 import { createClient } from '@/lib/supabase/client';
 
 interface EditPostDialogProps {

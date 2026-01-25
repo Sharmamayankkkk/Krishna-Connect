@@ -27,7 +27,7 @@ import {
     Home
 } from 'lucide-react';
 import { useAppContext } from '@/providers/app-provider';
-import { PostType, CommentType, ReplyType, PollType, NotificationType } from '../types';
+import { PostType, CommentType, ReplyType, PollType, NotificationType } from '@/lib/types';
 import { PostCard, PostSkeleton } from '@/components/features/posts/post-card';
 import { CreatePost } from '@/components/features/posts/create-post';
 import { SidebarTrigger } from '@/components/ui/sidebar';

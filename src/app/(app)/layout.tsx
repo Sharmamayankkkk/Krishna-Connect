@@ -1,6 +1,6 @@
 
 import type React from "react"
-import { AppShell } from "@/components/layout/app-shell"
+import AppShell from "@/components/layout/app-shell"
 import { SidebarProvider } from "@/components/ui/sidebar"
 
 // The main layout is now a server component, which allows

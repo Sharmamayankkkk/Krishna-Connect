@@ -7,7 +7,7 @@ import { PostCard, PostSkeleton } from "@/components/features/posts/post-card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Hash } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { PostType } from "@/app/(app)/types";
+import { PostType } from "@/lib/types";
 
 export default function HashtagPage() {
     const params = useParams();

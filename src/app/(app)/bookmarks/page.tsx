@@ -20,7 +20,7 @@ import {
 
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { PostCard } from '@/components/features/posts/post-card';
-import { PostType } from '../types';
+import { PostType } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 
 // Type for bookmark collections

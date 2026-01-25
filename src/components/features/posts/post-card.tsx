@@ -41,7 +41,7 @@ import { PollType, PostType, CommentType, ReplyType, MediaType } from '@/lib/typ
 import { VideoPlayer } from '../media/video-player';
 import { ImageViewerDialog } from '../media/image-viewer';
 import { EditPostDialog } from './dialogs/edit-post-dialog';
-import { useAppContext } from '@/providers/app-provider';
+import { useAppContext } from '@/providers/app-context';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthGuard } from '@/hooks/use-auth-guard';
 import { Skeleton } from "@/components/ui/skeleton";
@@ -998,9 +998,9 @@ export function PostCard({
 
     // Computed states
     const isPostAuthor = loggedInUser?.id === author.id;
-    const isLiked = loggedInUser ? post.likedBy.includes(loggedInUser.id) : false;
-    const isSaved = loggedInUser ? post.savedBy.includes(loggedInUser.id) : false;
-    const isReposted = loggedInUser ? post.repostedBy.includes(loggedInUser.id) : false;
+    const isLiked = loggedInUser && post.likedBy ? post.likedBy.includes(loggedInUser.id) : false;
+    const isSaved = loggedInUser && post.savedBy ? post.savedBy.includes(loggedInUser.id) : false;
+    const isReposted = loggedInUser && post.repostedBy ? post.repostedBy.includes(loggedInUser.id) : false;
 
     // Handlers
     const handleMediaClick = (index: number) => {

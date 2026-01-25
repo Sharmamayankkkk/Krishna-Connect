@@ -120,9 +120,8 @@ export default async function ProfilePage(props: ProfilePageProps) {
     }
   );
 
-  // Get the current user's session
-  const { data: { session } } = await supabase.auth.getSession();
-  const user = session?.user;
+  // Get the current user's session securely
+  const { data: { user } } = await supabase.auth.getUser();
 
 
   // Fetch the profile data
@@ -238,12 +237,16 @@ export default async function ProfilePage(props: ProfilePageProps) {
         ...p,
         author: p.author || profile,
         likedBy: (p.liked_by_users as any[] || []).map((l: any) => l.user_id),
+        savedBy: [],
+        repostedBy: [],
+        media: p.media_urls || [],
         stats: {
           likes: (p.liked_by_users as any[] || []).length,
           comments: (p.comments as any)?.[0]?.count || 0,
           reposts: (p.reposts as any)?.[0]?.count || 0,
           reshares: 0,
-          views: 0
+          views: 0,
+          bookmarks: 0
         },
         comments: [] // PostCard renders stats, comments list loaded in sheet
       }));
@@ -258,7 +261,7 @@ export default async function ProfilePage(props: ProfilePageProps) {
       posts={posts}
       followers={followers}
       following={following}
-      session={session}
+      currentUser={user}
     />
 
   );

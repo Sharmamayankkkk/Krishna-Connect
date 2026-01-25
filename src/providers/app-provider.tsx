@@ -11,7 +11,8 @@ import { usePathname, useRouter } from "next/navigation"
 import { PrivacySetupModal } from "@/components/privacy-setup-modal"
 import { useTheme } from "next-themes"
 
-const AppContext = createContext<AppContextType | undefined>(undefined)
+import { AppContext } from "./app-context"
+
 
 const sortChats = (chatArray: Chat[]) => {
   return [...(chatArray || [])].sort((a, b) => {
@@ -491,10 +492,5 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
 }
 
-export function useAppContext() {
-  const context = useContext(AppContext)
-  if (context === undefined) {
-    throw new Error("useAppContext must be used within an AppProvider")
-  }
-  return context
-}
+// Hook is now exported from app-context.tsx
+export { useAppContext } from "./app-context"
