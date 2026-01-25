@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button';
 
 interface VideoPlayerProps {
   src: string;
+  poster?: string;
 }
 
-export function VideoPlayer({ src }: VideoPlayerProps) {
+export function VideoPlayer({ src, poster }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -32,7 +33,7 @@ export function VideoPlayer({ src }: VideoPlayerProps) {
       threshold: 0.5, // Trigger when 50% of the video is visible/hidden
     });
     observerRef.current.observe(videoElement);
-    
+
     const handlePlay = () => setIsPlaying(true);
     const handlePause = () => setIsPlaying(false);
 
@@ -76,12 +77,12 @@ export function VideoPlayer({ src }: VideoPlayerProps) {
       setProgress(currentProgress);
     }
   };
-  
+
   const handleFullScreen = (e: React.MouseEvent) => {
-      e.stopPropagation();
-      if (videoRef.current?.requestFullscreen) {
-          videoRef.current.requestFullscreen();
-      }
+    e.stopPropagation();
+    if (videoRef.current?.requestFullscreen) {
+      videoRef.current.requestFullscreen();
+    }
   }
 
   return (
@@ -94,10 +95,11 @@ export function VideoPlayer({ src }: VideoPlayerProps) {
         muted={isMuted}
         loop
         playsInline
+        poster={poster}
       />
       <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
         <div className="bg-black/50 p-3 rounded-full">
-           {isPlaying ? <Pause className="h-8 w-8 text-white fill-white" /> : <Play className="h-8 w-8 text-white fill-white" />}
+          {isPlaying ? <Pause className="h-8 w-8 text-white fill-white" /> : <Play className="h-8 w-8 text-white fill-white" />}
         </div>
       </div>
 
@@ -106,14 +108,13 @@ export function VideoPlayer({ src }: VideoPlayerProps) {
           {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
         </Button>
         <div className="relative h-1 flex-1 bg-white/30 rounded-full">
-            <div className="absolute h-1 bg-white rounded-full" style={{ width: `${progress}%` }} />
+          <div className="absolute h-1 bg-white rounded-full" style={{ width: `${progress}%` }} />
         </div>
         <Button variant="ghost" size="icon" onClick={handleFullScreen} className="h-8 w-8 text-white hover:bg-white/20">
-            <Maximize className="h-5 w-5" />
+          <Maximize className="h-5 w-5" />
         </Button>
       </div>
     </div>
   );
 }
 
-    

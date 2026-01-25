@@ -1,254 +1,830 @@
 {
-    "version": "1.0",
-    "lastUpdated": "2026-01-25",
     "promotions": [
         {
-            "id": "promo_books_101",
+            "author": "His Divine Grace A.C. Bhaktivedanta Swami Srila Prabhupada",
+            "author_citation": "https://madhavstore.com/collections/books",
             "type": "product_showcase",
-            "active": true,
-            "priority": 1,
-            "content": {
-                "text": "📚 Bhagavad Gita As It Is Original (deluxe pocket edition)",
-                "imageUrl": "https://madhavstore.com/cdn/shop/files/Bhagavad-Gita-As-It-Is-Original-deluxe-pocket-edition.jpg",
-                "productName": "Bhagavad Gita As It Is Original (deluxe pocket edition)",
-                "price": "₹299",
-                "originalPrice": "₹399",
-                "discount": null,
-                "author": {
-                    "name": "Madhav Store",
-                    "username": "madhavstore",
-                    "avatar": "/logo/favicon.png",
-                    "verified": true
-                }
-            },
-            "cta": {
-                "label": "View Book",
-                "url": "https://madhavstore.com/products/bhagavad-gita-as-it-is-original-deluxe-pocket-edition"
-            },
-            "targeting": {
-                "all": true
-            },
-            "schedule": {
-                "start": null,
-                "end": null
-            }
+            "type_citation": "https://madhavstore.com/collections/books",
+            "product_name": "Bhagavad Gita As It Is Original ( deluxe pocket edition )",
+            "product_name_citation": "https://madhavstore.com/products/bhagavad-gita-as-it-is-original",
+            "image_url": "https://madhavstore.com/cdn/shop/files/Untitled_design_20230809_132043_0000.png",
+            "image_url_citation": "https://madhavstore.com/products/bhagavad-gita-as-it-is-original",
+            "price": "Rs. 299.00",
+            "price_citation": "https://madhavstore.com/products/bhagavad-gita-as-it-is-original",
+            "direct_store_link": "https://madhavstore.com/products/bhagavad-gita-as-it-is-original",
+            "direct_store_link_citation": "https://madhavstore.com/products/bhagavad-gita-as-it-is-original"
         },
         {
-            "id": "promo_books_102",
-            "type": "product_showcase",
-            "active": true,
-            "priority": 2,
-            "content": {
-                "text": "📚 Krishna: The Supreme Personality of Godhead (2 Volumes)",
-                "imageUrl": "https://madhavstore.com/cdn/shop/files/Krishna-Supreme-Personality-2-Volumes.jpg",
-                "productName": "Krishna: The Supreme Personality of Godhead | Original 2 Volumes",
-                "price": "₹1,199",
-                "originalPrice": "₹1,500",
-                "discount": "20% OFF",
-                "author": {
-                    "name": "Madhav Store",
-                    "username": "madhavstore",
-                    "avatar": "/logo/favicon.png",
-                    "verified": true
-                }
-            },
-            "cta": {
-                "label": "View Book",
-                "url": "https://madhavstore.com/products/krishna-the-supreme-personality-of-godhead-original-2-volumes"
-            },
-            "targeting": {
-                "all": true
-            },
-            "schedule": {
-                "start": null,
-                "end": null
-            }
+            "author": "His Divine Grace A.C. Bhaktivedanta Swami Srila Prabhupada",
+            "author_citation": "https://madhavstore.com/collections/books",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/books",
+            "product_name": "Krishna : The Supreme Personality of Godhead | Original 2 Volumes Delux Edition",
+            "product_name_citation": "https://madhavstore.com/products/krishna-the-supreme-personality-of-godhead-original-2-volumes-delux-edition",
+            "image_url": "https://madhavstore.com/cdn/shop/files/20230809_132253_0000.png",
+            "image_url_citation": "https://madhavstore.com/products/krishna-the-supreme-personality-of-godhead-original-2-volumes-delux-edition",
+            "price": "Rs. 1,199.00",
+            "price_citation": "https://madhavstore.com/products/krishna-the-supreme-personality-of-godhead-original-2-volumes-delux-edition",
+            "direct_store_link": "https://madhavstore.com/products/krishna-the-supreme-personality-of-godhead-original-2-volumes-delux-edition",
+            "direct_store_link_citation": "https://madhavstore.com/products/krishna-the-supreme-personality-of-godhead-original-2-volumes-delux-edition"
         },
         {
-            "id": "promo_books_103",
+            "author": "His Divine Grace A.C. Bhaktivedanta Swami Srila Prabhupada",
+            "author_citation": "https://madhavstore.com/collections/books",
             "type": "product_showcase",
-            "active": true,
-            "priority": 3,
-            "content": {
-                "text": "📚 3 Original Unedited Best Selling Small Books of Srila Prabhupada",
-                "imageUrl": "https://madhavstore.com/cdn/shop/files/3-Original-Unedited-Best-Selling-Small-Books.jpg",
-                "productName": "3 Original Unedited Best Selling Small Books of Srila Prabhupada",
-                "price": "₹249",
-                "originalPrice": "₹399",
-                "discount": "38% OFF",
-                "author": {
-                    "name": "Madhav Store",
-                    "username": "madhavstore",
-                    "avatar": "/logo/favicon.png",
-                    "verified": true
-                }
-            },
-            "cta": {
-                "label": "View Set",
-                "url": "https://madhavstore.com/products/3-original-unedited-best-selling-small-books-of-srila-prabhupada"
-            },
-            "targeting": {
-                "all": true
-            },
-            "schedule": {
-                "start": null,
-                "end": null
-            }
+            "type_citation": "https://madhavstore.com/collections/books",
+            "product_name": "3 Original Unedited Best Selling Small Books of Srila Prabhupada",
+            "product_name_citation": "https://madhavstore.com/products/combo-of-5-original-unedited-best-selling-small-books-of-srila-prabhupada",
+            "image_url": "https://madhavstore.com/cdn/shop/files/Untitled-design_20240509_131523_0000.png",
+            "image_url_citation": "https://madhavstore.com/products/combo-of-5-original-unedited-best-selling-small-books-of-srila-prabhupada",
+            "price": "Rs. 249.00",
+            "price_citation": "https://madhavstore.com/products/combo-of-5-original-unedited-best-selling-small-books-of-srila-prabhupada",
+            "direct_store_link": "https://madhavstore.com/products/combo-of-5-original-unedited-best-selling-small-books-of-srila-prabhupada",
+            "direct_store_link_citation": "https://madhavstore.com/products/combo-of-5-original-unedited-best-selling-small-books-of-srila-prabhupada"
         },
         {
-            "id": "promo_books_104",
-            "type": "product_showcase",
-            "active": true,
-            "priority": 4,
-            "content": {
-                "text": "📚 Original Srimad Bhagavatam Mini Set",
-                "imageUrl": "https://madhavstore.com/cdn/shop/files/Original-Srimad-Bhagavatam-Mini-Set.jpg",
-                "productName": "Original Srimad Bhagavatam Mini Set",
-                "price": "₹999",
-                "originalPrice": "₹1,499",
-                "discount": "33% OFF",
-                "author": {
-                    "name": "Madhav Store",
-                    "username": "madhavstore",
-                    "avatar": "/logo/favicon.png",
-                    "verified": true
-                }
-            },
-            "cta": {
-                "label": "View Set",
-                "url": "https://madhavstore.com/products/original-srimad-bhagavatam-mini-set"
-            },
-            "targeting": {
-                "all": true
-            },
-            "schedule": {
-                "start": null,
-                "end": null
-            }
+            "author": "His Divine Grace A.C. Bhaktivedanta Swami Srila Prabhupada",
+            "author_citation": "https://madhavstore.com/collections/books",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/books",
+            "product_name": "Original Srimad Bhagavatam Mini Set",
+            "product_name_citation": "https://madhavstore.com/products/srimad-bhagavatam-mini-set",
+            "image_url": "https://madhavstore.com/cdn/shop/files/20230809_125042_0000.png",
+            "image_url_citation": "https://madhavstore.com/products/srimad-bhagavatam-mini-set",
+            "price": "Rs. 999.00",
+            "price_citation": "https://madhavstore.com/products/srimad-bhagavatam-mini-set",
+            "direct_store_link": "https://madhavstore.com/products/srimad-bhagavatam-mini-set",
+            "direct_store_link_citation": "https://madhavstore.com/products/srimad-bhagavatam-mini-set"
         },
         {
-            "id": "promo_deity_105",
+            "author": "His Divine Grace A.C. Bhaktivedanta Swami Srila Prabhupada",
+            "author_citation": "https://madhavstore.com/collections/books",
             "type": "product_showcase",
-            "active": true,
-            "priority": 5,
-            "content": {
-                "text": "👗 For Radha Krishna – Beautiful Deity Dress",
-                "imageUrl": "https://madhavstore.com/cdn/shop/files/for-radha-krishna-dress.jpg",
-                "productName": "Radha Krishna Deity Dress",
-                "price": "₹1,099",
-                "originalPrice": "₹1,299",
-                "discount": "15% OFF",
-                "author": {
-                    "name": "Madhav Store",
-                    "username": "madhavstore",
-                    "avatar": "/logo/favicon.png",
-                    "verified": true
-                }
-            },
-            "cta": {
-                "label": "View Dress",
-                "url": "https://madhavstore.com/collections/deity-dresses-jellwery/products/for-radha-krishna"
-            },
-            "targeting": {
-                "all": true
-            },
-            "schedule": {
-                "start": null,
-                "end": null
-            }
+            "type_citation": "https://madhavstore.com/collections/books",
+            "product_name": "Original Srimad Bhagavatam Delux Edition Complete Set",
+            "product_name_citation": "https://madhavstore.com/products/srimad-bhagavatam-delux-edition-complete-set",
+            "image_url": "https://madhavstore.com/cdn/shop/files/Untitled_design_20230809_125310_0000.png",
+            "image_url_citation": "https://madhavstore.com/products/srimad-bhagavatam-delux-edition-complete-set",
+            "price": "Rs. 8,999.00",
+            "price_citation": "https://madhavstore.com/products/srimad-bhagavatam-delux-edition-complete-set",
+            "direct_store_link": "https://madhavstore.com/products/srimad-bhagavatam-delux-edition-complete-set",
+            "direct_store_link_citation": "https://madhavstore.com/products/srimad-bhagavatam-delux-edition-complete-set"
         },
         {
-            "id": "promo_deity_106",
-            "type": "product_showcase",
-            "active": true,
-            "priority": 6,
-            "content": {
-                "text": "👗 For Laddu Gopal – Deity Dress",
-                "imageUrl": "https://madhavstore.com/cdn/shop/files/for-laddu-gopal-dress.jpg",
-                "productName": "Laddu Gopal Deity Dress",
-                "price": "₹999",
-                "originalPrice": null,
-                "discount": null,
-                "author": {
-                    "name": "Madhav Store",
-                    "username": "madhavstore",
-                    "avatar": "/logo/favicon.png",
-                    "verified": true
-                }
-            },
-            "cta": {
-                "label": "View Dress",
-                "url": "https://madhavstore.com/collections/deity-dresses-jellwery/products/for-laddu-gopal"
-            },
-            "targeting": {
-                "all": true
-            },
-            "schedule": {
-                "start": null,
-                "end": null
-            }
+            "author": "His Divine Grace A.C. Bhaktivedanta Swami Srila Prabhupada",
+            "author_citation": "https://madhavstore.com/collections/books",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/books",
+            "product_name": "Sri Chaitanya Caritamrta 17 Volumes Set | 1974 Original Unedited Edition of Srila Prabhupada",
+            "product_name_citation": "https://madhavstore.com/products/sri-chaitanya-caritamrta-17-volumes-set-1974-original-unedited-edition-of-srila-prabhupada",
+            "image_url": "https://madhavstore.com/cdn/shop/files/Untitled_design_20230809_125420_0000.png",
+            "image_url_citation": "https://madhavstore.com/products/sri-chaitanya-caritamrta-17-volumes-set-1974-original-unedited-edition-of-srila-prabhupada",
+            "price": "Rs. 9,999.00",
+            "price_citation": "https://madhavstore.com/products/sri-chaitanya-caritamrta-17-volumes-set-1974-original-unedited-edition-of-srila-prabhupada",
+            "direct_store_link": "https://madhavstore.com/products/sri-chaitanya-caritamrta-17-volumes-set-1974-original-unedited-edition-of-srila-prabhupada",
+            "direct_store_link_citation": "https://madhavstore.com/products/sri-chaitanya-caritamrta-17-volumes-set-1974-original-unedited-edition-of-srila-prabhupada"
         },
         {
-            "id": "promo_deity_107",
+            "author": "His Divine Grace A.C. Bhaktivedanta Swami Srila Prabhupada",
+            "author_citation": "https://madhavstore.com/collections/books",
             "type": "product_showcase",
-            "active": true,
-            "priority": 7,
-            "content": {
-                "text": "👗 For Jagannath Baldeva Subhadra – Dress Set",
-                "imageUrl": "https://madhavstore.com/cdn/shop/files/for-jagannath-baldeva-subhadra.jpg",
-                "productName": "Jagannath Baldeva Subhadra Dress Set",
-                "price": "₹1,299",
-                "originalPrice": null,
-                "discount": null,
-                "author": {
-                    "name": "Madhav Store",
-                    "username": "madhavstore",
-                    "avatar": "/logo/favicon.png",
-                    "verified": true
-                }
-            },
-            "cta": {
-                "label": "View Dress Set",
-                "url": "https://madhavstore.com/collections/deity-dresses-jellwery/products/for-jagannath-baldeva-subhadra"
-            },
-            "targeting": {
-                "all": true
-            },
-            "schedule": {
-                "start": null,
-                "end": null
-            }
+            "type_citation": "https://madhavstore.com/collections/books",
+            "product_name": "A Place of Sandalwood and Roses",
+            "product_name_citation": "https://madhavstore.com/products/a-place-of-sandalwood-and-roses",
+            "image_url": "https://madhavstore.com/cdn/shop/files/Untitled_design_20230809_131418_0000.png",
+            "image_url_citation": "https://madhavstore.com/products/a-place-of-sandalwood-and-roses",
+            "price": "Rs. 350.00",
+            "price_citation": "https://madhavstore.com/products/a-place-of-sandalwood-and-roses",
+            "direct_store_link": "https://madhavstore.com/products/a-place-of-sandalwood-and-roses",
+            "direct_store_link_citation": "https://madhavstore.com/products/a-place-of-sandalwood-and-roses"
         },
         {
-            "id": "promo_deity_108",
+            "author": "His Divine Grace A.C. Bhaktivedanta Swami Srila Prabhupada",
+            "author_citation": "https://madhavstore.com/collections/books",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/books",
+            "product_name": "Raja-Vidya : The King of Knowledge Original Unedited Edition by Srila Prabhupada | Harbound",
+            "product_name_citation": "https://madhavstore.com/products/raja-vidya-the-king-of-knowledge-original-unedited-edition-by-srila-prabhupada",
+            "image_url": "https://madhavstore.com/cdn/shop/files/Untitled_design_20230809_000620_0000.png",
+            "image_url_citation": "https://madhavstore.com/products/raja-vidya-the-king-of-knowledge-original-unedited-edition-by-srila-prabhupada",
+            "price": "Rs. 199.00",
+            "price_citation": "https://madhavstore.com/products/raja-vidya-the-king-of-knowledge-original-unedited-edition-by-srila-prabhupada",
+            "direct_store_link": "https://madhavstore.com/products/raja-vidya-the-king-of-knowledge-original-unedited-edition-by-srila-prabhupada",
+            "direct_store_link_citation": "https://madhavstore.com/products/raja-vidya-the-king-of-knowledge-original-unedited-edition-by-srila-prabhupada"
+        },
+        {
+            "author": "His Divine Grace A.C. Bhaktivedanta Swami Srila Prabhupada",
+            "author_citation": "https://madhavstore.com/collections/books",
             "type": "product_showcase",
-            "active": true,
-            "priority": 8,
-            "content": {
-                "text": "👗 For Sri Sri Gaura Nitai – Dress Attire",
-                "imageUrl": "https://madhavstore.com/cdn/shop/files/for-sri-sri-gaura-nitai.jpg",
-                "productName": "Sri Sri Gaura Nitai Dress",
-                "price": "₹1,199",
-                "originalPrice": null,
-                "discount": null,
-                "author": {
-                    "name": "Madhav Store",
-                    "username": "madhavstore",
-                    "avatar": "/logo/favicon.png",
-                    "verified": true
-                }
-            },
-            "cta": {
-                "label": "View Attire",
-                "url": "https://madhavstore.com/collections/deity-dresses-jellwery/products/for-sri-sri-gaura-nitai"
-            },
-            "targeting": {
-                "all": true
-            },
-            "schedule": {
-                "start": null,
-                "end": null
-            }
+            "type_citation": "https://madhavstore.com/collections/books",
+            "product_name": "The Science of Self Realization Original Edition",
+            "product_name_citation": "https://madhavstore.com/products/science-of-self-realization-hardcover-original",
+            "image_url": "https://madhavstore.com/cdn/shop/files/Untitled_design_20230809_125209_0000.png",
+            "image_url_citation": "https://madhavstore.com/products/science-of-self-realization-hardcover-original",
+            "price": "Rs. 199.00",
+            "price_citation": "https://madhavstore.com/products/science-of-self-realization-hardcover-original",
+            "direct_store_link": "https://madhavstore.com/products/science-of-self-realization-hardcover-original",
+            "direct_store_link_citation": "https://madhavstore.com/products/science-of-self-realization-hardcover-original"
+        },
+        {
+            "author": "Madhav Store Artisan",
+            "author_citation": "https://madhavstore.com/collections/hand-made-collection",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/hand-made-collection",
+            "product_name": "Vanmali Ritu Poshak | silk hand embroidery heavy dress for Radha Krishna with heavy Pagdi",
+            "product_name_citation": "https://madhavstore.com/products/vanmali-ritu-poshak-silk-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "image_url": "https://madhavstore.com/cdn/shop/files/rn-image_picker_lib_temp_4607bf50-d26f-4775-ab30-a5ebae70d773.jpg",
+            "image_url_citation": "https://madhavstore.com/products/vanmali-ritu-poshak-silk-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "price": "Rs. 1,299.00",
+            "price_citation": "https://madhavstore.com/products/vanmali-ritu-poshak-silk-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "direct_store_link": "https://madhavstore.com/products/vanmali-ritu-poshak-silk-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "direct_store_link_citation": "https://madhavstore.com/products/vanmali-ritu-poshak-silk-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi"
+        },
+        {
+            "author": "Madhav Store Artisan",
+            "author_citation": "https://madhavstore.com/collections/hand-made-collection",
+            "type": "product_showcase",
+            "type_citation": "https://madhavstore.com/collections/hand-made-collection",
+            "product_name": "Anuraga Vastra | hand embroidery heavy dress for Radha Krishna with heavy Pagdi",
+            "product_name_citation": "https://madhavstore.com/products/red-blossoms-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "image_url": "https://madhavstore.com/cdn/shop/files/rn-image_picker_lib_temp_5c9ce35a-d055-4d23-b497-3c02554a0552.jpg",
+            "image_url_citation": "https://madhavstore.com/products/red-blossoms-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "price": "Rs. 1,299.00",
+            "price_citation": "https://madhavstore.com/products/red-blossoms-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "direct_store_link": "https://madhavstore.com/products/red-blossoms-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "direct_store_link_citation": "https://madhavstore.com/products/red-blossoms-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi"
+        },
+        {
+            "author": "Madhav Store Artisan",
+            "author_citation": "https://madhavstore.com/collections/hand-made-collection",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/hand-made-collection",
+            "product_name": "Gulabi Rasa | hand embroidery heavy dress for Radha Krishna with heavy Pagdi",
+            "product_name_citation": "https://madhavstore.com/products/red-rose-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "image_url": "https://madhavstore.com/cdn/shop/files/rn-image_picker_lib_temp_bcac9736-a972-4e9b-a4fe-acda8eacb104.jpg",
+            "image_url_citation": "https://madhavstore.com/products/red-rose-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "price": "Rs. 1,299.00",
+            "price_citation": "https://madhavstore.com/products/red-rose-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "direct_store_link": "https://madhavstore.com/products/red-rose-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "direct_store_link_citation": "https://madhavstore.com/products/red-rose-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi"
+        },
+        {
+            "author": "Madhav Store Artisan",
+            "author_citation": "https://madhavstore.com/collections/hand-made-collection",
+            "type": "product_showcase",
+            "type_citation": "https://madhavstore.com/collections/hand-made-collection",
+            "product_name": "Vrindavan Utsav | banarasi silk heavy dress for Radha Krishna with heavy Pagdi",
+            "product_name_citation": "https://madhavstore.com/products/vrindavan-utsav-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "image_url": "https://madhavstore.com/cdn/shop/files/rn-image_picker_lib_temp_4cb893a0-eb3a-4933-9112-c79407fb3dad.jpg",
+            "image_url_citation": "https://madhavstore.com/products/vrindavan-utsav-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "price": "Rs. 999.00",
+            "price_citation": "https://madhavstore.com/products/vrindavan-utsav-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "direct_store_link": "https://madhavstore.com/products/vrindavan-utsav-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "direct_store_link_citation": "https://madhavstore.com/products/vrindavan-utsav-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi"
+        },
+        {
+            "author": "Madhav Store Artisan",
+            "author_citation": "https://madhavstore.com/collections/hand-made-collection",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/hand-made-collection",
+            "product_name": "Shyam Vana Vaibhav | Banarasi Silk hand embroidery heavy dress for Radha Krishna with heavy Pagdi",
+            "product_name_citation": "https://madhavstore.com/products/emerald-gold-banarasi-silk-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "image_url": "https://madhavstore.com/cdn/shop/files/rn-image_picker_lib_temp_4872061e-38a8-4187-8c62-77cd51778eaa.jpg",
+            "image_url_citation": "https://madhavstore.com/products/emerald-gold-banarasi-silk-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "price": "Rs. 1,299.00",
+            "price_citation": "https://madhavstore.com/products/emerald-gold-banarasi-silk-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "direct_store_link": "https://madhavstore.com/products/emerald-gold-banarasi-silk-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "direct_store_link_citation": "https://madhavstore.com/products/emerald-gold-banarasi-silk-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi"
+        },
+        {
+            "author": "Madhav Store Artisan",
+            "author_citation": "https://madhavstore.com/collections/hand-made-collection",
+            "type": "product_showcase",
+            "type_citation": "https://madhavstore.com/collections/hand-made-collection",
+            "product_name": "Vasant Madhuri | Banarasi silk hand embroidery heavy dress for Radha Krishna with heavy Pagdi",
+            "product_name_citation": "https://madhavstore.com/products/golden-sky-banarasi-silk-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "image_url": "https://madhavstore.com/cdn/shop/files/rn-image_picker_lib_temp_0c4f4cab-c5df-41d0-ad20-2dcbab41d941.jpg",
+            "image_url_citation": "https://madhavstore.com/products/golden-sky-banarasi-silk-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "price": "Rs. 1,299.00",
+            "price_citation": "https://madhavstore.com/products/golden-sky-banarasi-silk-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "direct_store_link": "https://madhavstore.com/products/golden-sky-banarasi-silk-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "direct_store_link_citation": "https://madhavstore.com/products/golden-sky-banarasi-silk-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi"
+        },
+        {
+            "author": "Madhav Store Artisan",
+            "author_citation": "https://madhavstore.com/collections/hand-made-collection",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/hand-made-collection",
+            "product_name": "Rajeshwari Shringaar | silk velvet hand embroidery heavy dress for Radha Krishna with heavy Pagdi",
+            "product_name_citation": "https://madhavstore.com/products/rajeshwari-shringaar-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "image_url": "https://madhavstore.com/cdn/shop/files/rn-image_picker_lib_temp_33c7b989-45fd-41a6-ba66-2a5bc1403179.jpg",
+            "image_url_citation": "https://madhavstore.com/products/rajeshwari-shringaar-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "price": "Rs. 1,299.00",
+            "price_citation": "https://madhavstore.com/products/rajeshwari-shringaar-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "direct_store_link": "https://madhavstore.com/products/rajeshwari-shringaar-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "direct_store_link_citation": "https://madhavstore.com/products/rajeshwari-shringaar-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi"
+        },
+        {
+            "author": "Madhav Store Artisan",
+            "author_citation": "https://madhavstore.com/collections/hand-made-collection",
+            "type": "product_showcase",
+            "type_citation": "https://madhavstore.com/collections/hand-made-collection",
+            "product_name": "Shyamsundar Swarnim Poshak | silk hand embroidery heavy dress for Radha Krishna with heavy Pagdi",
+            "product_name_citation": "https://madhavstore.com/products/shyamsundar-swarnim-poshak-silk-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "image_url": "https://madhavstore.com/cdn/shop/files/rn-image_picker_lib_temp_e266a2de-dd79-47dd-9167-c44971b0c19e.jpg",
+            "image_url_citation": "https://madhavstore.com/products/shyamsundar-swarnim-poshak-silk-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "price": "Rs. 1,299.00",
+            "price_citation": "https://madhavstore.com/products/shyamsundar-swarnim-poshak-silk-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "direct_store_link": "https://madhavstore.com/products/shyamsundar-swarnim-poshak-silk-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "direct_store_link_citation": "https://madhavstore.com/products/shyamsundar-swarnim-poshak-silk-hand-embroidery-heavy-dress-for-radha-krishna-with-heavy-pagdi"
+        },
+        {
+            "author": "Madhav Store Artisan",
+            "author_citation": "https://madhavstore.com/collections/hand-made-collection",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/hand-made-collection",
+            "product_name": "Gulabi Neer Poshak | Silk brocade heavy dress for Radha Krishna with heavy Pagdi",
+            "product_name_citation": "https://madhavstore.com/products/gulabi-neer-poshak-silk-brocade-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "image_url": "https://madhavstore.com/cdn/shop/files/rn-image_picker_lib_temp_c5b48b52-f915-49cb-ba1c-e900d3cc93f7.jpg",
+            "image_url_citation": "https://madhavstore.com/products/gulabi-neer-poshak-silk-brocade-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "price": "Rs. 1,299.00",
+            "price_citation": "https://madhavstore.com/products/gulabi-neer-poshak-silk-brocade-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "direct_store_link": "https://madhavstore.com/products/gulabi-neer-poshak-silk-brocade-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "direct_store_link_citation": "https://madhavstore.com/products/gulabi-neer-poshak-silk-brocade-heavy-dress-for-radha-krishna-with-heavy-pagdi"
+        },
+        {
+            "author": "Madhav Store Artisan",
+            "author_citation": "https://madhavstore.com/collections/hand-made-collection",
+            "type": "product_showcase",
+            "type_citation": "https://madhavstore.com/collections/hand-made-collection",
+            "product_name": "Mayur Mukut Shringaar | silk heavy dress for Radha Krishna with heavy Pagdi",
+            "product_name_citation": "https://madhavstore.com/products/neelam-vasant-poshak-silk-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "image_url": "https://madhavstore.com/cdn/shop/files/rn-image_picker_lib_temp_9a43c453-f3b1-4918-a835-771917774b27.jpg",
+            "image_url_citation": "https://madhavstore.com/products/neelam-vasant-poshak-silk-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "price": "Rs. 1,199.00",
+            "price_citation": "https://madhavstore.com/products/neelam-vasant-poshak-silk-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "direct_store_link": "https://madhavstore.com/products/neelam-vasant-poshak-silk-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "direct_store_link_citation": "https://madhavstore.com/products/neelam-vasant-poshak-silk-heavy-dress-for-radha-krishna-with-heavy-pagdi"
+        },
+        {
+            "author": "Madhav Store Artisan",
+            "author_citation": "https://madhavstore.com/collections/hand-made-collection",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/hand-made-collection",
+            "product_name": "Jamuni Rasa Attire | Silk with net heavy dress for Radha Krishna with heavy Pagdi",
+            "product_name_citation": "https://madhavstore.com/products/jamuni-rasa-attire-silk-with-net-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "image_url": "https://madhavstore.com/cdn/shop/files/rn-image_picker_lib_temp_91883d0d-e18f-4e86-b449-a27de9dbf096.jpg",
+            "image_url_citation": "https://madhavstore.com/products/jamuni-rasa-attire-silk-with-net-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "price": "Rs. 1,050.00",
+            "price_citation": "https://madhavstore.com/products/jamuni-rasa-attire-silk-with-net-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "direct_store_link": "https://madhavstore.com/products/jamuni-rasa-attire-silk-with-net-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "direct_store_link_citation": "https://madhavstore.com/products/jamuni-rasa-attire-silk-with-net-heavy-dress-for-radha-krishna-with-heavy-pagdi"
+        },
+        {
+            "author": "Madhav Store Artisan",
+            "author_citation": "https://madhavstore.com/collections/hand-made-collection",
+            "type": "product_showcase",
+            "type_citation": "https://madhavstore.com/collections/hand-made-collection",
+            "product_name": "Aishwarya of Braj set | silk with golden brocade heavy dress for Radha Krishna with heavy Pagdi",
+            "product_name_citation": "https://madhavstore.com/products/aishwarya-of-braj-set-silk-with-golden-brocade-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "image_url": "https://madhavstore.com/cdn/shop/files/rn-image_picker_lib_temp_690828aa-dfa0-4e11-a425-17c020c6bd42.jpg",
+            "image_url_citation": "https://madhavstore.com/products/aishwarya-of-braj-set-silk-with-golden-brocade-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "price": "Rs. 1,199.00",
+            "price_citation": "https://madhavstore.com/products/aishwarya-of-braj-set-silk-with-golden-brocade-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "direct_store_link": "https://madhavstore.com/products/aishwarya-of-braj-set-silk-with-golden-brocade-heavy-dress-for-radha-krishna-with-heavy-pagdi",
+            "direct_store_link_citation": "https://madhavstore.com/products/aishwarya-of-braj-set-silk-with-golden-brocade-heavy-dress-for-radha-krishna-with-heavy-pagdi"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/radha-krishna-common",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/radha-krishna-common",
+            "product_name": "Blue & Yellow Banarasi Silk Dress for Radha Krishna",
+            "product_name_citation": "https://madhavstore.com/products/banarasi-silk-dress-for-radha-krishna-2",
+            "image_url": "https://madhavstore.com/cdn/shop/files/IMG-9524.png",
+            "image_url_citation": "https://madhavstore.com/products/banarasi-silk-dress-for-radha-krishna-2",
+            "price": "Rs. 950.00",
+            "price_citation": "https://madhavstore.com/products/banarasi-silk-dress-for-radha-krishna-2",
+            "direct_store_link": "https://madhavstore.com/products/banarasi-silk-dress-for-radha-krishna-2",
+            "direct_store_link_citation": "https://madhavstore.com/products/banarasi-silk-dress-for-radha-krishna-2"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/radha-krishna-common",
+            "type": "product_showcase",
+            "type_citation": "https://madhavstore.com/collections/radha-krishna-common",
+            "product_name": "Green & Pink Banarasi Silk Dress for Radha Krishna",
+            "product_name_citation": "https://madhavstore.com/products/green-banarasi-silk-dress-for-radha-krishna",
+            "image_url": "https://madhavstore.com/cdn/shop/files/IMG-9655.png",
+            "image_url_citation": "https://madhavstore.com/products/green-banarasi-silk-dress-for-radha-krishna",
+            "price": "Rs. 950.00",
+            "price_citation": "https://madhavstore.com/products/green-banarasi-silk-dress-for-radha-krishna",
+            "direct_store_link": "https://madhavstore.com/products/green-banarasi-silk-dress-for-radha-krishna",
+            "direct_store_link_citation": "https://madhavstore.com/products/green-banarasi-silk-dress-for-radha-krishna"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/radha-krishna-common",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/radha-krishna-common",
+            "product_name": "White crystal Sharad Purnima special Dress for Radha Krishna with Pagdi",
+            "product_name_citation": "https://madhavstore.com/products/special-dress-for-radha-krishna-with-pagdi",
+            "image_url": "https://madhavstore.com/cdn/shop/files/IMG-9554.png",
+            "image_url_citation": "https://madhavstore.com/products/special-dress-for-radha-krishna-with-pagdi",
+            "price": "Rs. 1,099.00",
+            "price_citation": "https://madhavstore.com/products/special-dress-for-radha-krishna-with-pagdi",
+            "direct_store_link": "https://madhavstore.com/products/special-dress-for-radha-krishna-with-pagdi",
+            "direct_store_link_citation": "https://madhavstore.com/products/special-dress-for-radha-krishna-with-pagdi"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/radha-krishna-common",
+            "type": "product_showcase",
+            "type_citation": "https://madhavstore.com/collections/radha-krishna-common",
+            "product_name": "Rose Peach Malabari Silk Janmashtami special Dress for Radha Krishna with Pagdi",
+            "product_name_citation": "https://madhavstore.com/products/peach-royal-malabari-silk-janmashtami-special-dress-for-radha-krishna-with-pagdi",
+            "image_url": "https://madhavstore.com/cdn/shop/files/IMG-9570.png",
+            "image_url_citation": "https://madhavstore.com/products/peach-royal-malabari-silk-janmashtami-special-dress-for-radha-krishna-with-pagdi",
+            "price": "Rs. 1,499.00",
+            "price_citation": "https://madhavstore.com/products/peach-royal-malabari-silk-janmashtami-special-dress-for-radha-krishna-with-pagdi",
+            "direct_store_link": "https://madhavstore.com/products/peach-royal-malabari-silk-janmashtami-special-dress-for-radha-krishna-with-pagdi",
+            "direct_store_link_citation": "https://madhavstore.com/products/peach-royal-malabari-silk-janmashtami-special-dress-for-radha-krishna-with-pagdi"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/radha-krishna-common",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/radha-krishna-common",
+            "product_name": "Sky Blue Kota Doria Silk Dress for Radha Krishna",
+            "product_name_citation": "https://madhavstore.com/products/sky-blue-dress-for-radha-krishna",
+            "image_url": "https://madhavstore.com/cdn/shop/files/IMG-9656.png",
+            "image_url_citation": "https://madhavstore.com/products/sky-blue-dress-for-radha-krishna",
+            "price": "Rs. 999.00",
+            "price_citation": "https://madhavstore.com/products/sky-blue-dress-for-radha-krishna",
+            "direct_store_link": "https://madhavstore.com/products/sky-blue-dress-for-radha-krishna",
+            "direct_store_link_citation": "https://madhavstore.com/products/sky-blue-dress-for-radha-krishna"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/radha-krishna-common",
+            "type": "product_showcase",
+            "type_citation": "https://madhavstore.com/collections/radha-krishna-common",
+            "product_name": "Yellow Cashmilon woolen winter special Dress for Radha Krishna with Pagdi",
+            "product_name_citation": "https://madhavstore.com/products/yellow-cashmilon-woolen-winter-special-dress-for-radha-krishna-with-pagdi",
+            "image_url": "https://madhavstore.com/cdn/shop/files/2-20231126_173839_0001.png",
+            "image_url_citation": "https://madhavstore.com/products/yellow-cashmilon-woolen-winter-special-dress-for-radha-krishna-with-pagdi",
+            "price": "Rs. 999.00",
+            "price_citation": "https://madhavstore.com/products/yellow-cashmilon-woolen-winter-special-dress-for-radha-krishna-with-pagdi",
+            "direct_store_link": "https://madhavstore.com/products/yellow-cashmilon-woolen-winter-special-dress-for-radha-krishna-with-pagdi",
+            "direct_store_link_citation": "https://madhavstore.com/products/yellow-cashmilon-woolen-winter-special-dress-for-radha-krishna-with-pagdi"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/radha-krishna-common",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/radha-krishna-common",
+            "product_name": "Baby Pink Kota Doria Silk Dress for Radha Krishna",
+            "product_name_citation": "https://madhavstore.com/products/dress-for-radha-krishna",
+            "image_url": "https://madhavstore.com/cdn/shop/files/IMG-9500.png",
+            "image_url_citation": "https://madhavstore.com/products/dress-for-radha-krishna",
+            "price": "Rs. 999.00",
+            "price_citation": "https://madhavstore.com/products/dress-for-radha-krishna",
+            "direct_store_link": "https://madhavstore.com/products/dress-for-radha-krishna",
+            "direct_store_link_citation": "https://madhavstore.com/products/dress-for-radha-krishna"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/radha-krishna-common",
+            "type": "product_showcase",
+            "type_citation": "https://madhavstore.com/collections/radha-krishna-common",
+            "product_name": "Blue & Baby Pink Silk with net Dress for Radha Krishna with Pagdi",
+            "product_name_citation": "https://madhavstore.com/products/blue-baby-pink-silk-with-net-dress-for-radha-krishna-with-pagdi",
+            "image_url": "https://madhavstore.com/cdn/shop/files/IMG-9522.png",
+            "image_url_citation": "https://madhavstore.com/products/blue-baby-pink-silk-with-net-dress-for-radha-krishna-with-pagdi",
+            "price": "Rs. 999.00",
+            "price_citation": "https://madhavstore.com/products/blue-baby-pink-silk-with-net-dress-for-radha-krishna-with-pagdi",
+            "direct_store_link": "https://madhavstore.com/products/blue-baby-pink-silk-with-net-dress-for-radha-krishna-with-pagdi",
+            "direct_store_link_citation": "https://madhavstore.com/products/blue-baby-pink-silk-with-net-dress-for-radha-krishna-with-pagdi"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/radha-krishna-common",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/radha-krishna-common",
+            "product_name": "Vrindavan Gwala style colourful Holi Dress for Radha Krishna with Pagdi",
+            "product_name_citation": "https://madhavstore.com/products/vrindavan-style-holi-dress-for-radha-krishna",
+            "image_url": "https://madhavstore.com/cdn/shop/files/IMG-9661.png",
+            "image_url_citation": "https://madhavstore.com/products/vrindavan-style-holi-dress-for-radha-krishna",
+            "price": "Rs. 1,049.00",
+            "price_citation": "https://madhavstore.com/products/vrindavan-style-holi-dress-for-radha-krishna",
+            "direct_store_link": "https://madhavstore.com/products/vrindavan-style-holi-dress-for-radha-krishna",
+            "direct_store_link_citation": "https://madhavstore.com/products/vrindavan-style-holi-dress-for-radha-krishna"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/radha-krishna-common",
+            "type": "product_showcase",
+            "type_citation": "https://madhavstore.com/collections/radha-krishna-common",
+            "product_name": "Green & Yellow Silk with net Dress for Radha Krishna with Pagdi",
+            "product_name_citation": "https://madhavstore.com/products/green-yellow-silk-with-net-dress-for-radha-krishna-with-pagdi",
+            "image_url": "https://madhavstore.com/cdn/shop/files/IMG-9574.png",
+            "image_url_citation": "https://madhavstore.com/products/green-yellow-silk-with-net-dress-for-radha-krishna-with-pagdi",
+            "price": "Rs. 1,099.00",
+            "price_citation": "https://madhavstore.com/products/green-yellow-silk-with-net-dress-for-radha-krishna-with-pagdi",
+            "direct_store_link": "https://madhavstore.com/products/green-yellow-silk-with-net-dress-for-radha-krishna-with-pagdi",
+            "direct_store_link_citation": "https://madhavstore.com/products/green-yellow-silk-with-net-dress-for-radha-krishna-with-pagdi"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/radha-krishna-common",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/radha-krishna-common",
+            "product_name": "Maroon & Golden Silk Janmashtami special Dress for Radha Krishna with Pagdi",
+            "product_name_citation": "https://madhavstore.com/products/maroon-golden-silk-janmasthami-special-dress-for-radha-krishna-with-pagdi",
+            "image_url": "https://madhavstore.com/cdn/shop/files/IMG-9573.png",
+            "image_url_citation": "https://madhavstore.com/products/maroon-golden-silk-janmasthami-special-dress-for-radha-krishna-with-pagdi",
+            "price": "Rs. 1,350.00",
+            "price_citation": "https://madhavstore.com/products/maroon-golden-silk-janmasthami-special-dress-for-radha-krishna-with-pagdi",
+            "direct_store_link": "https://madhavstore.com/products/maroon-golden-silk-janmasthami-special-dress-for-radha-krishna-with-pagdi",
+            "direct_store_link_citation": "https://madhavstore.com/products/maroon-golden-silk-janmasthami-special-dress-for-radha-krishna-with-pagdi"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/radha-krishna-common",
+            "type": "product_showcase",
+            "type_citation": "https://madhavstore.com/collections/radha-krishna-common",
+            "product_name": "Red Velvet Winter Special Attire for Radha Krishna",
+            "product_name_citation": "https://madhavstore.com/products/winter-special-attire-for-radha-krishna",
+            "image_url": "https://madhavstore.com/cdn/shop/files/IMG-9679.png",
+            "image_url_citation": "https://madhavstore.com/products/winter-special-attire-for-radha-krishna",
+            "price": "Rs. 999.00",
+            "price_citation": "https://madhavstore.com/products/winter-special-attire-for-radha-krishna",
+            "direct_store_link": "https://madhavstore.com/products/winter-special-attire-for-radha-krishna",
+            "direct_store_link_citation": "https://madhavstore.com/products/winter-special-attire-for-radha-krishna"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/laddu-gopal-common",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/laddu-gopal-common",
+            "product_name": "Sharad Purnima special Dress with heavy Pagdi & Haar for Laddu Gopal",
+            "product_name_citation": "https://madhavstore.com/products/sharad-purnima-special-dress-with-heavy-pagdi-for-laddu-gopal",
+            "image_url": "https://madhavstore.com/cdn/shop/files/20231030-131418.png",
+            "image_url_citation": "https://madhavstore.com/products/sharad-purnima-special-dress-with-heavy-pagdi-for-laddu-gopal",
+            "price": "Rs. 899.00",
+            "price_citation": "https://madhavstore.com/products/sharad-purnima-special-dress-with-heavy-pagdi-for-laddu-gopal",
+            "direct_store_link": "https://madhavstore.com/products/sharad-purnima-special-dress-with-heavy-pagdi-for-laddu-gopal",
+            "direct_store_link_citation": "https://madhavstore.com/products/sharad-purnima-special-dress-with-heavy-pagdi-for-laddu-gopal"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/laddu-gopal-common",
+            "type": "product_showcase",
+            "type_citation": "https://madhavstore.com/collections/laddu-gopal-common",
+            "product_name": "Yellow & Sky Blue Malabari Silk Dress with heavy Pagdi for Laddu Gopal",
+            "product_name_citation": "https://madhavstore.com/products/yellow-sky-blue-malabari-silk-velvet-dress-with-heavy-pagdi-for-laddu-gopal",
+            "image_url": "https://madhavstore.com/cdn/shop/files/IMG-20240204_144333_341.png",
+            "image_url_citation": "https://madhavstore.com/products/yellow-sky-blue-malabari-silk-velvet-dress-with-heavy-pagdi-for-laddu-gopal",
+            "price": "Rs. 899.00",
+            "price_citation": "https://madhavstore.com/products/yellow-sky-blue-malabari-silk-velvet-dress-with-heavy-pagdi-for-laddu-gopal",
+            "direct_store_link": "https://madhavstore.com/products/yellow-sky-blue-malabari-silk-velvet-dress-with-heavy-pagdi-for-laddu-gopal",
+            "direct_store_link_citation": "https://madhavstore.com/products/yellow-sky-blue-malabari-silk-velvet-dress-with-heavy-pagdi-for-laddu-gopal"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/laddu-gopal-common",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/laddu-gopal-common",
+            "product_name": "Sky Blue Kota Doria Silk Dress with pagdi for Laddu Gopal",
+            "product_name_citation": "https://madhavstore.com/products/dress-with-pagdi-for-laddu-gopal-1",
+            "image_url": "https://madhavstore.com/cdn/shop/files/Picsart-23-10-30_12-48-43-000.png",
+            "image_url_citation": "https://madhavstore.com/products/dress-with-pagdi-for-laddu-gopal-1",
+            "price": "Rs. 590.00",
+            "price_citation": "https://madhavstore.com/products/dress-with-pagdi-for-laddu-gopal-1",
+            "direct_store_link": "https://madhavstore.com/products/dress-with-pagdi-for-laddu-gopal-1",
+            "direct_store_link_citation": "https://madhavstore.com/products/dress-with-pagdi-for-laddu-gopal-1"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/laddu-gopal-common",
+            "type": "product_showcase",
+            "type_citation": "https://madhavstore.com/collections/laddu-gopal-common",
+            "product_name": "Pista & Rani Banarasi Silk Dress with pagdi for Laddu Gopal",
+            "product_name_citation": "https://madhavstore.com/products/pista-rani-dress-with-pagdi-for-laddu-gopal",
+            "image_url": "https://madhavstore.com/cdn/shop/files/Picsart_23-10-27_17-20-54-451.png",
+            "image_url_citation": "https://madhavstore.com/products/pista-rani-dress-with-pagdi-for-laddu-gopal",
+            "price": "Rs. 650.00",
+            "price_citation": "https://madhavstore.com/products/pista-rani-dress-with-pagdi-for-laddu-gopal",
+            "direct_store_link": "https://madhavstore.com/products/pista-rani-dress-with-pagdi-for-laddu-gopal",
+            "direct_store_link_citation": "https://madhavstore.com/products/pista-rani-dress-with-pagdi-for-laddu-gopal"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/laddu-gopal-common",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/laddu-gopal-common",
+            "product_name": "Pink Velvet Winter Special Combo Laddu gopal",
+            "product_name_citation": "https://madhavstore.com/products/pink-velvet-winter-special-combo-laddu-gopal",
+            "image_url": "https://madhavstore.com/cdn/shop/files/Picsart_23-10-27_17-21-26-427.jpg",
+            "image_url_citation": "https://madhavstore.com/products/pink-velvet-winter-special-combo-laddu-gopal",
+            "price": "Rs. 550.00",
+            "price_citation": "https://madhavstore.com/products/pink-velvet-winter-special-combo-laddu-gopal",
+            "direct_store_link": "https://madhavstore.com/products/pink-velvet-winter-special-combo-laddu-gopal",
+            "direct_store_link_citation": "https://madhavstore.com/products/pink-velvet-winter-special-combo-laddu-gopal"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/laddu-gopal-common",
+            "type": "product_showcase",
+            "type_citation": "https://madhavstore.com/collections/laddu-gopal-common",
+            "product_name": "Baby Pink Kota Doria Silk Dress with pagdi for Laddu Gopal",
+            "product_name_citation": "https://madhavstore.com/products/baby-pink-kota-doria-silk-dress-with-pagdi-for-laddu-gopal",
+            "image_url": "https://madhavstore.com/cdn/shop/files/Picsart-23-10-30_12-55-53-903.png",
+            "image_url_citation": "https://madhavstore.com/products/baby-pink-kota-doria-silk-dress-with-pagdi-for-laddu-gopal",
+            "price": "Rs. 590.00",
+            "price_citation": "https://madhavstore.com/products/baby-pink-kota-doria-silk-dress-with-pagdi-for-laddu-gopal",
+            "direct_store_link": "https://madhavstore.com/products/baby-pink-kota-doria-silk-dress-with-pagdi-for-laddu-gopal",
+            "direct_store_link_citation": "https://madhavstore.com/products/baby-pink-kota-doria-silk-dress-with-pagdi-for-laddu-gopal"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/laddu-gopal-common",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/laddu-gopal-common",
+            "product_name": "Red Velvet Winter Special Combo Laddu gopal",
+            "product_name_citation": "https://madhavstore.com/products/red-velvet-winter-special-combo-laddu-gopal",
+            "image_url": "https://madhavstore.com/cdn/shop/files/Picsart_23-10-27_17-21-59-847.jpg",
+            "image_url_citation": "https://madhavstore.com/products/red-velvet-winter-special-combo-laddu-gopal",
+            "price": "Rs. 550.00",
+            "price_citation": "https://madhavstore.com/products/red-velvet-winter-special-combo-laddu-gopal",
+            "direct_store_link": "https://madhavstore.com/products/red-velvet-winter-special-combo-laddu-gopal",
+            "direct_store_link_citation": "https://madhavstore.com/products/red-velvet-winter-special-combo-laddu-gopal"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/laddu-gopal-common",
+            "type": "product_showcase",
+            "type_citation": "https://madhavstore.com/collections/laddu-gopal-common",
+            "product_name": "Green & Yellow Silk Dress with heavy Pagdi for Laddu Gopal",
+            "product_name_citation": "https://madhavstore.com/products/green-yellow-silk-dress-with-heavy-pagdi-for-laddu-gopal",
+            "image_url": "https://madhavstore.com/cdn/shop/files/20231030-131451.png",
+            "image_url_citation": "https://madhavstore.com/products/green-yellow-silk-dress-with-heavy-pagdi-for-laddu-gopal",
+            "price": "Rs. 799.00",
+            "price_citation": "https://madhavstore.com/products/green-yellow-silk-dress-with-heavy-pagdi-for-laddu-gopal",
+            "direct_store_link": "https://madhavstore.com/products/green-yellow-silk-dress-with-heavy-pagdi-for-laddu-gopal",
+            "direct_store_link_citation": "https://madhavstore.com/products/green-yellow-silk-dress-with-heavy-pagdi-for-laddu-gopal"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/laddu-gopal-common",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/laddu-gopal-common",
+            "product_name": "Magenta & Grey Silk Dress with heavy Pagdi for Laddu Gopal",
+            "product_name_citation": "https://madhavstore.com/products/magenta-grey-silk-dress-with-heavy-pagdi-for-laddu-gopal",
+            "image_url": "https://madhavstore.com/cdn/shop/files/20231030-131504.png",
+            "image_url_citation": "https://madhavstore.com/products/magenta-grey-silk-dress-with-heavy-pagdi-for-laddu-gopal",
+            "price": "Rs. 720.00",
+            "price_citation": "https://madhavstore.com/products/magenta-grey-silk-dress-with-heavy-pagdi-for-laddu-gopal",
+            "direct_store_link": "https://madhavstore.com/products/magenta-grey-silk-dress-with-heavy-pagdi-for-laddu-gopal",
+            "direct_store_link_citation": "https://madhavstore.com/products/magenta-grey-silk-dress-with-heavy-pagdi-for-laddu-gopal"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/laddu-gopal-common",
+            "type": "product_showcase",
+            "type_citation": "https://madhavstore.com/collections/laddu-gopal-common",
+            "product_name": "Maroon & Golden Silk Janmashtami Dress with heavy Pagdi for Laddu Gopal",
+            "product_name_citation": "https://madhavstore.com/products/maroon-golden-silk-dress-with-heavy-pagdi-for-laddu-gopal",
+            "image_url": "https://madhavstore.com/cdn/shop/files/20231030-131448.png",
+            "image_url_citation": "https://madhavstore.com/products/maroon-golden-silk-dress-with-heavy-pagdi-for-laddu-gopal",
+            "price": "Rs. 850.00",
+            "price_citation": "https://madhavstore.com/products/maroon-golden-silk-dress-with-heavy-pagdi-for-laddu-gopal",
+            "direct_store_link": "https://madhavstore.com/products/maroon-golden-silk-dress-with-heavy-pagdi-for-laddu-gopal",
+            "direct_store_link_citation": "https://madhavstore.com/products/maroon-golden-silk-dress-with-heavy-pagdi-for-laddu-gopal"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/laddu-gopal-common",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/laddu-gopal-common",
+            "product_name": "Murgenta & Grey Banarasi Silk Dress with pagdi for Laddu Gopal",
+            "product_name_citation": "https://madhavstore.com/products/dress-with-pagdi-for-laddu-gopal",
+            "image_url": "https://madhavstore.com/cdn/shop/files/Picsart_23-10-27_17-23-07-647.png",
+            "image_url_citation": "https://madhavstore.com/products/dress-with-pagdi-for-laddu-gopal",
+            "price": "Rs. 650.00",
+            "price_citation": "https://madhavstore.com/products/dress-with-pagdi-for-laddu-gopal",
+            "direct_store_link": "https://madhavstore.com/products/dress-with-pagdi-for-laddu-gopal",
+            "direct_store_link_citation": "https://madhavstore.com/products/dress-with-pagdi-for-laddu-gopal"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/laddu-gopal-common",
+            "type": "product_showcase",
+            "type_citation": "https://madhavstore.com/collections/laddu-gopal-common",
+            "product_name": "Colourful Holi Silk Dress with heavy Pagdi for Laddu Gopal",
+            "product_name_citation": "https://madhavstore.com/products/colourful-holi-silk-dress-with-heavy-pagdi-for-laddu-gopal",
+            "image_url": "https://madhavstore.com/cdn/shop/files/Picsart-24-02-17_23-41-31-667.jpg",
+            "image_url_citation": "https://madhavstore.com/products/colourful-holi-silk-dress-with-heavy-pagdi-for-laddu-gopal",
+            "price": "Rs. 799.00",
+            "price_citation": "https://madhavstore.com/products/colourful-holi-silk-dress-with-heavy-pagdi-for-laddu-gopal",
+            "direct_store_link": "https://madhavstore.com/products/colourful-holi-silk-dress-with-heavy-pagdi-for-laddu-gopal",
+            "direct_store_link_citation": "https://madhavstore.com/products/colourful-holi-silk-dress-with-heavy-pagdi-for-laddu-gopal"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/gaura-nitai-dresses",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/gaura-nitai-dresses",
+            "product_name": "Blue & White Hand Stiched woolen Winter Special Dress for Gaura Nitai",
+            "product_name_citation": "https://madhavstore.com/products/blue-white-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "image_url": "https://madhavstore.com/cdn/shop/files/5-20240213_224545_0004.png",
+            "image_url_citation": "https://madhavstore.com/products/blue-white-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "price": "Rs. 1,699.00",
+            "price_citation": "https://madhavstore.com/products/blue-white-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "direct_store_link": "https://madhavstore.com/products/blue-white-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "direct_store_link_citation": "https://madhavstore.com/products/blue-white-hand-stiched-woolen-winter-special-dress-for-gaura-nitai"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/gaura-nitai-dresses",
+            "type": "product_showcase",
+            "type_citation": "https://madhavstore.com/collections/gaura-nitai-dresses",
+            "product_name": "Green & White Hand Stiched woolen Winter Special Dress for Gaura Nitai",
+            "product_name_citation": "https://madhavstore.com/products/green-white-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "image_url": "https://madhavstore.com/cdn/shop/files/7-20240213_224545_0006.png",
+            "image_url_citation": "https://madhavstore.com/products/green-white-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "price": "Rs. 1,699.00",
+            "price_citation": "https://madhavstore.com/products/green-white-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "direct_store_link": "https://madhavstore.com/products/green-white-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "direct_store_link_citation": "https://madhavstore.com/products/green-white-hand-stiched-woolen-winter-special-dress-for-gaura-nitai"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/gaura-nitai-dresses",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/gaura-nitai-dresses",
+            "product_name": "Bluish Green & White Hand Stiched woolen Winter Special Dress for Gaura Nitai",
+            "product_name_citation": "https://madhavstore.com/products/bluish-green-white-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "image_url": "https://madhavstore.com/cdn/shop/files/9-20240213_224545_0008.png",
+            "image_url_citation": "https://madhavstore.com/products/bluish-green-white-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "price": "Rs. 1,699.00",
+            "price_citation": "https://madhavstore.com/products/bluish-green-white-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "direct_store_link": "https://madhavstore.com/products/bluish-green-white-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "direct_store_link_citation": "https://madhavstore.com/products/bluish-green-white-hand-stiched-woolen-winter-special-dress-for-gaura-nitai"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/gaura-nitai-dresses",
+            "type": "product_showcase",
+            "type_citation": "https://madhavstore.com/collections/gaura-nitai-dresses",
+            "product_name": "Greenish Blue & White Hand Stiched woolen Winter Special Dress for Gaura Nitai",
+            "product_name_citation": "https://madhavstore.com/products/greenish-blue-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "image_url": "https://madhavstore.com/cdn/shop/files/6-20240213_224545_0005.png",
+            "image_url_citation": "https://madhavstore.com/products/greenish-blue-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "price": "Rs. 1,699.00",
+            "price_citation": "https://madhavstore.com/products/greenish-blue-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "direct_store_link": "https://madhavstore.com/products/greenish-blue-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "direct_store_link_citation": "https://madhavstore.com/products/greenish-blue-hand-stiched-woolen-winter-special-dress-for-gaura-nitai"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/gaura-nitai-dresses",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/gaura-nitai-dresses",
+            "product_name": "Yellow Hand Stiched woolen Winter Special Dress for Gaura Nitai",
+            "product_name_citation": "https://madhavstore.com/products/yellow-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "image_url": "https://madhavstore.com/cdn/shop/files/8-20240213_224545_0007.png",
+            "image_url_citation": "https://madhavstore.com/products/yellow-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "price": "Rs. 1,699.00",
+            "price_citation": "https://madhavstore.com/products/yellow-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "direct_store_link": "https://madhavstore.com/products/yellow-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "direct_store_link_citation": "https://madhavstore.com/products/yellow-hand-stiched-woolen-winter-special-dress-for-gaura-nitai"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/gaura-nitai-dresses",
+            "type": "product_showcase",
+            "type_citation": "https://madhavstore.com/collections/gaura-nitai-dresses",
+            "product_name": "Yellow & Pink Hand Stiched woolen Winter Special Dress for Gaura Nitai",
+            "product_name_citation": "https://madhavstore.com/products/yellow-pink-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "image_url": "https://madhavstore.com/cdn/shop/files/11-20240213_224545_0010.png",
+            "image_url_citation": "https://madhavstore.com/products/yellow-pink-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "price": "Rs. 1,699.00",
+            "price_citation": "https://madhavstore.com/products/yellow-pink-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "direct_store_link": "https://madhavstore.com/products/yellow-pink-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "direct_store_link_citation": "https://madhavstore.com/products/yellow-pink-hand-stiched-woolen-winter-special-dress-for-gaura-nitai"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/gaura-nitai-dresses",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/gaura-nitai-dresses",
+            "product_name": "Green Hand Stiched woolen Winter Special Dress for Gaura Nitai",
+            "product_name_citation": "https://madhavstore.com/products/green-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "image_url": "https://madhavstore.com/cdn/shop/files/10-20240213_224545_0009.png",
+            "image_url_citation": "https://madhavstore.com/products/green-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "price": "Rs. 1,699.00",
+            "price_citation": "https://madhavstore.com/products/green-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "direct_store_link": "https://madhavstore.com/products/green-hand-stiched-woolen-winter-special-dress-for-gaura-nitai",
+            "direct_store_link_citation": "https://madhavstore.com/products/green-hand-stiched-woolen-winter-special-dress-for-gaura-nitai"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/dresses-for-jagannath-baldeva-subhadra",
+            "type": "product_showcase",
+            "type_citation": "https://madhavstore.com/collections/dresses-for-jagannath-baldeva-subhadra",
+            "product_name": "Blue & Golden Velvet Heavy Dress for Jagannath Baldeva Subhadra with heavy Pagdi & Chandrika",
+            "product_name_citation": "https://madhavstore.com/products/blue-golden-velvet-heavy-dress-for-jagannath-baldeva-subhadra-with-heavy-pagdi-chandrika",
+            "image_url": "https://madhavstore.com/cdn/shop/files/IMG-20240204_144333_309.png",
+            "image_url_citation": "https://madhavstore.com/products/blue-golden-velvet-heavy-dress-for-jagannath-baldeva-subhadra-with-heavy-pagdi-chandrika",
+            "price": "Rs. 1,599.00",
+            "price_citation": "https://madhavstore.com/products/blue-golden-velvet-heavy-dress-for-jagannath-baldeva-subhadra-with-heavy-pagdi-chandrika",
+            "direct_store_link": "https://madhavstore.com/products/blue-golden-velvet-heavy-dress-for-jagannath-baldeva-subhadra-with-heavy-pagdi-chandrika",
+            "direct_store_link_citation": "https://madhavstore.com/products/blue-golden-velvet-heavy-dress-for-jagannath-baldeva-subhadra-with-heavy-pagdi-chandrika"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/dresses-for-jagannath-baldeva-subhadra",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/dresses-for-jagannath-baldeva-subhadra",
+            "product_name": "Mustard Yellow Silk Dress for Jagannath Baldeva Subhadra with Pagdi & Chandrika",
+            "product_name_citation": "https://madhavstore.com/products/mustard-yellow-silk-dress-for-jagannath-baldeva-subhadra-with-pagdi-chandrika",
+            "image_url": "https://madhavstore.com/cdn/shop/files/20240206-192213_0009.png",
+            "image_url_citation": "https://madhavstore.com/products/mustard-yellow-silk-dress-for-jagannath-baldeva-subhadra-with-pagdi-chandrika",
+            "price": "Rs. 1,199.00",
+            "price_citation": "https://madhavstore.com/products/mustard-yellow-silk-dress-for-jagannath-baldeva-subhadra-with-pagdi-chandrika",
+            "direct_store_link": "https://madhavstore.com/products/mustard-yellow-silk-dress-for-jagannath-baldeva-subhadra-with-pagdi-chandrika",
+            "direct_store_link_citation": "https://madhavstore.com/products/mustard-yellow-silk-dress-for-jagannath-baldeva-subhadra-with-pagdi-chandrika"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/dresses-for-jagannath-baldeva-subhadra",
+            "type": "product_showcase",
+            "type_citation": "https://madhavstore.com/collections/dresses-for-jagannath-baldeva-subhadra",
+            "product_name": "Olive Green Silk Dress for Jagannath Baldeva Subhadra with Pagdi & Chandrika",
+            "product_name_citation": "https://madhavstore.com/products/olive-green-silk-dress-for-jagannath-baldeva-subhadra-with-pagdi-chandrika",
+            "image_url": "https://madhavstore.com/cdn/shop/files/20240206-192213_0015.png",
+            "image_url_citation": "https://madhavstore.com/products/olive-green-silk-dress-for-jagannath-baldeva-subhadra-with-pagdi-chandrika",
+            "price": "Rs. 1,199.00",
+            "price_citation": "https://madhavstore.com/products/olive-green-silk-dress-for-jagannath-baldeva-subhadra-with-pagdi-chandrika",
+            "direct_store_link": "https://madhavstore.com/products/olive-green-silk-dress-for-jagannath-baldeva-subhadra-with-pagdi-chandrika",
+            "direct_store_link_citation": "https://madhavstore.com/products/olive-green-silk-dress-for-jagannath-baldeva-subhadra-with-pagdi-chandrika"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/dresses-for-jagannath-baldeva-subhadra",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/dresses-for-jagannath-baldeva-subhadra",
+            "product_name": "Navy Blue Silk Dress for Jagannath Baldeva Subhadra with Pagdi & Chandrika",
+            "product_name_citation": "https://madhavstore.com/products/navy-blue-silk-dress-for-jagannath-baldeva-subhadra-with-pagdi-chandrika",
+            "image_url": "https://madhavstore.com/cdn/shop/files/20240206-192212_0007.png",
+            "image_url_citation": "https://madhavstore.com/products/navy-blue-silk-dress-for-jagannath-baldeva-subhadra-with-pagdi-chandrika",
+            "price": "Rs. 1,199.00",
+            "price_citation": "https://madhavstore.com/products/navy-blue-silk-dress-for-jagannath-baldeva-subhadra-with-pagdi-chandrika",
+            "direct_store_link": "https://madhavstore.com/products/navy-blue-silk-dress-for-jagannath-baldeva-subhadra-with-pagdi-chandrika",
+            "direct_store_link_citation": "https://madhavstore.com/products/navy-blue-silk-dress-for-jagannath-baldeva-subhadra-with-pagdi-chandrika"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/dresses-for-jagannath-baldeva-subhadra",
+            "type": "product_showcase",
+            "type_citation": "https://madhavstore.com/collections/dresses-for-jagannath-baldeva-subhadra",
+            "product_name": "Bright Green Silk Dress for Jagannath Baldeva Subhadra with Pagdi & Chandrika",
+            "product_name_citation": "https://madhavstore.com/products/green-silk-dress-for-jagannath-baldeva-subhadra-with-heavy-pagdi-chandrika",
+            "image_url": "https://madhavstore.com/cdn/shop/files/20240206-192213_0008.png",
+            "image_url_citation": "https://madhavstore.com/products/green-silk-dress-for-jagannath-baldeva-subhadra-with-heavy-pagdi-chandrika",
+            "price": "Rs. 1,199.00",
+            "price_citation": "https://madhavstore.com/products/green-silk-dress-for-jagannath-baldeva-subhadra-with-heavy-pagdi-chandrika",
+            "direct_store_link": "https://madhavstore.com/products/green-silk-dress-for-jagannath-baldeva-subhadra-with-heavy-pagdi-chandrika",
+            "direct_store_link_citation": "https://madhavstore.com/products/green-silk-dress-for-jagannath-baldeva-subhadra-with-heavy-pagdi-chandrika"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/dresses-for-jagannath-baldeva-subhadra",
+            "type": "carousel",
+            "type_citation": "https://madhavstore.com/collections/dresses-for-jagannath-baldeva-subhadra",
+            "product_name": "Purple Silk Dress for Jagannath Baldeva Subhadra with Pagdi & Chandrika",
+            "product_name_citation": "https://madhavstore.com/products/purple-silk-dress-for-jagannath-baldeva-subhadra-with-pagdi-chandrika",
+            "image_url": "https://madhavstore.com/cdn/shop/files/20240206-192213_0010.png",
+            "image_url_citation": "https://madhavstore.com/products/purple-silk-dress-for-jagannath-baldeva-subhadra-with-pagdi-chandrika",
+            "price": "Rs. 1,199.00",
+            "price_citation": "https://madhavstore.com/products/purple-silk-dress-for-jagannath-baldeva-subhadra-with-pagdi-chandrika",
+            "direct_store_link": "https://madhavstore.com/products/purple-silk-dress-for-jagannath-baldeva-subhadra-with-pagdi-chandrika",
+            "direct_store_link_citation": "https://madhavstore.com/products/purple-silk-dress-for-jagannath-baldeva-subhadra-with-pagdi-chandrika"
+        },
+        {
+            "author": "Madhav Store",
+            "author_citation": "https://madhavstore.com/collections/dresses-for-jagannath-baldeva-subhadra",
+            "type": "product_showcase",
+            "type_citation": "https://madhavstore.com/collections/dresses-for-jagannath-baldeva-subhadra",
+            "product_name": "Red Silk Dress for Jagannath Baldeva Subhadra with Pagdi & Chandrika",
+            "product_name_citation": "https://madhavstore.com/products/red-silk-dress-for-jagannath-baldeva-subhadra-with-pagdi-chandrika",
+            "image_url": "https://madhavstore.com/cdn/shop/files/20240206-192212_0006.png",
+            "image_url_citation": "https://madhavstore.com/products/red-silk-dress-for-jagannath-baldeva-subhadra-with-pagdi-chandrika",
+            "price": "Rs. 1,199.00",
+            "price_citation": "https://madhavstore.com/products/red-silk-dress-for-jagannath-baldeva-subhadra-with-pagdi-chandrika",
+            "direct_store_link": "https://madhavstore.com/products/red-silk-dress-for-jagannath-baldeva-subhadra-with-pagdi-chandrika",
+            "direct_store_link_citation": "https://madhavstore.com/products/red-silk-dress-for-jagannath-baldeva-subhadra-with-pagdi-chandrika"
         }
     ]
 }

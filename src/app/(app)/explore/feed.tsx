@@ -31,7 +31,7 @@ import {
 } from '../feed-algorithm';
 import { createClient } from '@/lib/supabase/client';
 import { GlobalSearchBar } from "@/components/global-search-bar"
-import { FeedList } from './components/feed-list';
+import { FeedList } from '@/components/features/posts/feed-list';
 import { TrendingTopicsList } from './components/trending-topics-list';
 import { UserCard } from './components/user-card';
 import { transformPost } from './utils';

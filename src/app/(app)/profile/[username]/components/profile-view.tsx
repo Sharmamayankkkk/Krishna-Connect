@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { PostCard } from "@/components/features/posts/post-card";
+import { FeedList } from "@/components/features/posts/feed-list";
 import { format } from "date-fns";
 import Image from "next/image";
 import Link from "next/link";
@@ -508,79 +509,75 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
           </TabsList>
 
           <TabsContent value="posts" className="mt-0">
-            {userPosts.length === 0 ? (
-              <div className="py-12 text-center">
-                <p className="text-xl font-bold mb-1">No posts yet</p>
-                <p className="text-muted-foreground">When {isOwnProfile ? 'you post' : `@${profile.username} posts`}, it will show up here.</p>
-              </div>
-            ) : (
-              <div className="divide-y">
-                {userPosts.map((post) => (
-                  <PostCard
-                    key={post.id}
-                    post={{
-                      ...post,
-                      createdAt: (post as any).createdAt || (post as any).created_at,
-                      likedBy: (post as any).likedBy || [],
-                      repostedBy: (post as any).repostedBy || [],
-                      author: post.author ? { ...post.author, avatar: (post.author as any).avatar || (post.author as any).avatar_url } : profileUser,
-                      media: post.media_urls || []
-                    } as any}
-                    onDelete={handleDeletePost}
-                    onLikeToggle={() => handlePostLikeToggle(post as any)}
-                    onComment={(postId, text, parentId) => handleCommentSubmit(post as any, text, parentId)}
-                    onEdit={() => { }}
-                    onSaveToggle={() => handlePostSaveToggle(post as any)}
-                    onCommentLikeToggle={(pid, cid, reply) => handleCommentLikeToggle(post as any, cid, reply)}
-                    onCommentPinToggle={(pid, cid) => handleCommentPinToggle(post as any, cid)}
-                    onCommentHideToggle={(pid, cid, reply) => handleCommentHideToggle(post as any, cid, reply)}
-                    onCommentDelete={(pid, cid, reply, parent) => handleCommentDelete(post as any, cid, reply, parent)}
-                    onQuotePost={() => { }}
-                    onRepost={() => handleRepost(post as any)}
-                    onPollVote={(optionId) => handlePollVote(post as any, optionId)}
-                    onPromote={() => { }}
-                  />
-                ))}
-              </div>
-            )}
+            <FeedList
+              posts={userPosts.map(p => ({
+                ...p,
+                createdAt: (p as any).created_at || (p as any).createdAt || new Date().toISOString(),
+                media: p.media_urls || [],
+                stats: {
+                  comments: ((p as any).comments || []).length,
+                  likes: (p.likes || []).length,
+                  reposts: (p.reposts || []).length,
+                  reshares: 0,
+                  views: 0,
+                  bookmarks: 0
+                },
+                comments: ((p as any).comments || []).map((c: any) => ({
+                  ...c,
+                  user: c.author ? c.author : { id: 'unknown', name: 'Unknown', username: 'unknown', avatar: '' }
+                })),
+                originalPost: null,
+                repostedBy: (p as any).repostedBy || [],
+                likedBy: (p as any).likedBy || [],
+                savedBy: [],
+                author: p.author ? {
+                  ...p.author,
+                  avatar: (p.author as any).avatar_url || (p.author as any).avatar || ''
+                } : { id: 'unknown', name: 'Unknown', username: 'unknown', avatar: '' }
+              })) as PostType[]}
+              isLoading={false}
+              onPostUpdated={updatePost}
+              onPostDeleted={handleDeletePost}
+              onQuotePost={() => { }}
+              onPromote={() => { }}
+              emptyMessage={`When ${isOwnProfile ? 'you post' : `@${profile.username} posts`}, it will show up here.`}
+            />
           </TabsContent>
 
           <TabsContent value="replies" className="mt-0">
-            {userReplies.length === 0 ? (
-              <div className="py-12 text-center">
-                <p className="text-xl font-bold mb-1">No replies yet</p>
-                <p className="text-muted-foreground">When {isOwnProfile ? 'you reply' : `@${profile.username} replies`} to a post, it will show up here.</p>
-              </div>
-            ) : (
-              <div className="divide-y">
-                {userReplies.map((post) => (
-                  <PostCard
-                    key={post.id}
-                    post={{
-                      ...post,
-                      createdAt: (post as any).createdAt || (post as any).created_at,
-                      likedBy: (post as any).likedBy || [],
-                      repostedBy: (post as any).repostedBy || [],
-                      author: post.author ? { ...post.author, avatar: (post.author as any).avatar || (post.author as any).avatar_url } : profileUser,
-                      media: post.media_urls || []
-                    } as any}
-                    onDelete={handleDeletePost}
-                    onLikeToggle={() => handlePostLikeToggle(post as any)}
-                    onComment={(postId, text, parentId) => handleCommentSubmit(post as any, text, parentId)} // Navigate to detail?
-                    onEdit={() => { }}
-                    onSaveToggle={() => handlePostSaveToggle(post as any)}
-                    onCommentLikeToggle={(pid, cid, reply) => handleCommentLikeToggle(post as any, cid, reply)}
-                    onCommentPinToggle={(pid, cid) => handleCommentPinToggle(post as any, cid)}
-                    onCommentHideToggle={(pid, cid, reply) => handleCommentHideToggle(post as any, cid, reply)}
-                    onCommentDelete={(pid, cid, reply, parent) => handleCommentDelete(post as any, cid, reply, parent)}
-                    onQuotePost={() => { }}
-                    onRepost={() => handleRepost(post as any)}
-                    onPollVote={(optionId) => handlePollVote(post as any, optionId)}
-                    onPromote={() => { }}
-                  />
-                ))}
-              </div>
-            )}
+            <FeedList
+              posts={userReplies.map(p => ({
+                ...p,
+                createdAt: (p as any).created_at || (p as any).createdAt || new Date().toISOString(),
+                media: p.media_urls || [],
+                stats: {
+                  comments: ((p as any).comments || []).length,
+                  likes: (p.likes || []).length,
+                  reposts: (p.reposts || []).length,
+                  reshares: 0,
+                  views: 0,
+                  bookmarks: 0
+                },
+                comments: ((p as any).comments || []).map((c: any) => ({
+                  ...c,
+                  user: c.author ? c.author : { id: 'unknown', name: 'Unknown', username: 'unknown', avatar: '' }
+                })),
+                originalPost: null,
+                repostedBy: (p as any).repostedBy || [],
+                likedBy: (p as any).likedBy || [],
+                savedBy: [],
+                author: p.author ? {
+                  ...p.author,
+                  avatar: (p.author as any).avatar_url || (p.author as any).avatar || ''
+                } : { id: 'unknown', name: 'Unknown', username: 'unknown', avatar: '' }
+              })) as PostType[]}
+              isLoading={false}
+              onPostUpdated={updatePost}
+              onPostDeleted={handleDeletePost}
+              onQuotePost={() => { }}
+              onPromote={() => { }}
+              emptyMessage={`When ${isOwnProfile ? 'you reply' : `@${profile.username} replies`} to a post, it will show up here.`}
+            />
           </TabsContent>
 
           <TabsContent value="media" className="mt-0">

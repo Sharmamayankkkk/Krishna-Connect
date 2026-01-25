@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { PostType } from '@/lib/types';
 import { PostCard, PostSkeleton } from '@/components/features/posts/post-card';
-import { PromotedPostCard, getActivePromotions, PromotedContent } from '../components/promoted-post-card';
+import { PromotedPostCard, getActivePromotions, PromotedContent } from '@/app/(app)/explore/components/promoted-post-card';
 import promotedContentData from '@/../public/data/promoted_content.json';
 import { GoogleInFeedAd } from '@/components/ads/google-in-feed-ad';
 import { Button } from "@/components/ui/button";
@@ -14,32 +14,56 @@ import { usePostInteractions } from '@/hooks/use-post-interactions';
 interface FeedListProps {
     posts: PostType[];
     isLoading: boolean;
-    isLoadingMore: boolean;
-    hasMore: boolean;
+    isLoadingMore?: boolean;
+    hasMore?: boolean;
     onLoadMore?: () => void;
     onPostUpdated: (post: PostType) => void;
     onPostDeleted: (postId: string) => void;
     onQuotePost: (originalPostId: string, quoteText: string) => void;
     onPromote: (post: PostType) => void;
+    emptyMessage?: string;
 }
 
 export function FeedList({
     posts,
     isLoading,
-    isLoadingMore,
-    hasMore,
+    isLoadingMore = false,
+    hasMore = false,
     onLoadMore,
     onPostUpdated,
     onPostDeleted,
     onQuotePost,
-    onPromote
+    onPromote,
+    emptyMessage = "Be the first to share something with the community!"
 }: FeedListProps) {
     const { loggedInUser } = useAppContext();
     const [promotions, setPromotions] = React.useState<PromotedContent[]>([]);
 
     // Load promotions
+    // Load promotions
     React.useEffect(() => {
-        const active = getActivePromotions(promotedContentData.promotions as PromotedContent[]);
+        const rawPromotions = promotedContentData.promotions;
+        const mappedPromotions: PromotedContent[] = rawPromotions.map((p: any, index: number) => ({
+            id: `promo_${index}`,
+            type: (p.type === 'product_showcase' || p.type === 'image_banner') ? p.type : 'product_showcase',
+            active: true,
+            priority: 1,
+            content: {
+                text: p.product_name,
+                imageUrl: p.image_url,
+                author: {
+                    name: p.author,
+                    username: 'madhavstore',
+                    avatar: '/icons/icon-192x192.png',
+                    verified: true
+                }
+            },
+            cta: {
+                label: 'View Product',
+                url: p.direct_store_link
+            }
+        }));
+        const active = getActivePromotions(mappedPromotions);
         setPromotions(active);
     }, []);
 
@@ -83,7 +107,7 @@ export function FeedList({
                 </div>
                 <h3 className="text-xl font-semibold">No posts yet</h3>
                 <p className="text-muted-foreground max-w-sm mt-2">
-                    Be the first to share something with the community!
+                    {emptyMessage}
                 </p>
             </div>
         );
