@@ -10,9 +10,8 @@ interface RichTextRendererProps {
     onHareKrishnaClick?: () => void;
 }
 
-export function RichTextRenderer({ content, className, onHareKrishnaClick }: RichTextRendererProps) {
-
-    // Combined regex for bold, italic, hashtags, mentions, URLs, and Hare Krishna
+// Process inline formatting (bold, italic, hashtags, mentions, URLs, Hare Krishna)
+function processInlineFormatting(text: string, onHareKrishnaClick?: () => void, keyPrefix: string = ''): React.ReactNode[] {
     const regex = /(\*\*([^*]+)\*\*)|(\*([^*]+)\*)|(#\w+)|(@\w+)|(https?:\/\/[^\s]+)|((?:Hare|HARE|hare)\s+(?:Krishna|KRISHNA|krishna|Kṛṣṇa))/gi;
 
     const elements: React.ReactNode[] = [];
@@ -20,12 +19,12 @@ export function RichTextRenderer({ content, className, onHareKrishnaClick }: Ric
     let match;
     let matchIndex = 0;
 
-    while ((match = regex.exec(content)) !== null) {
+    while ((match = regex.exec(text)) !== null) {
         if (match.index > lastIndex) {
-            elements.push(content.substring(lastIndex, match.index));
+            elements.push(text.substring(lastIndex, match.index));
         }
 
-        const key = `rt-${matchIndex++}`;
+        const key = `${keyPrefix}inline-${matchIndex++}`;
 
         if (match[1]) {
             // Bold (**text**)
@@ -76,9 +75,99 @@ export function RichTextRenderer({ content, className, onHareKrishnaClick }: Ric
         lastIndex = regex.lastIndex;
     }
 
-    if (lastIndex < content.length) {
-        elements.push(content.substring(lastIndex));
+    if (lastIndex < text.length) {
+        elements.push(text.substring(lastIndex));
+    }
+
+    return elements;
+}
+
+export function RichTextRenderer({ content, className, onHareKrishnaClick }: RichTextRendererProps) {
+    if (!content) return null;
+
+    const lines = content.split('\n');
+    const elements: React.ReactNode[] = [];
+    let lineIndex = 0;
+
+    while (lineIndex < lines.length) {
+        const line = lines[lineIndex];
+        const key = `line-${lineIndex}`;
+
+        // Horizontal rule (---)
+        if (/^-{3,}$/.test(line.trim())) {
+            elements.push(<hr key={key} className="my-3 border-border" />);
+            lineIndex++;
+            continue;
+        }
+
+        // Heading (## text)
+        const headingMatch = line.match(/^##\s+(.+)$/);
+        if (headingMatch) {
+            elements.push(
+                <h2 key={key} className="text-lg font-bold mt-2 mb-1">
+                    {processInlineFormatting(headingMatch[1], onHareKrishnaClick, key)}
+                </h2>
+            );
+            lineIndex++;
+            continue;
+        }
+
+        // Bullet list (- item)
+        if (/^-\s+/.test(line)) {
+            const listItems: React.ReactNode[] = [];
+            while (lineIndex < lines.length && /^-\s+/.test(lines[lineIndex])) {
+                const itemText = lines[lineIndex].replace(/^-\s+/, '');
+                listItems.push(
+                    <li key={`${key}-item-${listItems.length}`} className="ml-1">
+                        {processInlineFormatting(itemText, onHareKrishnaClick, `${key}-${listItems.length}`)}
+                    </li>
+                );
+                lineIndex++;
+            }
+            elements.push(
+                <ul key={key} className="list-disc list-inside my-1 space-y-0.5">
+                    {listItems}
+                </ul>
+            );
+            continue;
+        }
+
+        // Numbered list (1. item, 2. item, etc.)
+        if (/^\d+\.\s+/.test(line)) {
+            const listItems: React.ReactNode[] = [];
+            while (lineIndex < lines.length && /^\d+\.\s+/.test(lines[lineIndex])) {
+                const itemText = lines[lineIndex].replace(/^\d+\.\s+/, '');
+                listItems.push(
+                    <li key={`${key}-item-${listItems.length}`} className="ml-1">
+                        {processInlineFormatting(itemText, onHareKrishnaClick, `${key}-${listItems.length}`)}
+                    </li>
+                );
+                lineIndex++;
+            }
+            elements.push(
+                <ol key={key} className="list-decimal list-inside my-1 space-y-0.5">
+                    {listItems}
+                </ol>
+            );
+            continue;
+        }
+
+        // Regular paragraph line
+        if (line.trim()) {
+            elements.push(
+                <React.Fragment key={key}>
+                    {processInlineFormatting(line, onHareKrishnaClick, key)}
+                    {lineIndex < lines.length - 1 && '\n'}
+                </React.Fragment>
+            );
+        } else if (lineIndex > 0 && lineIndex < lines.length - 1) {
+            // Handle empty lines as line breaks
+            elements.push(<React.Fragment key={key}>{'\n'}</React.Fragment>);
+        }
+
+        lineIndex++;
     }
 
     return <div className={cn("whitespace-pre-wrap break-words", className)}>{elements}</div>;
 }
+

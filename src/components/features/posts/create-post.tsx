@@ -778,7 +778,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                         onChange={(e) => setContent(e.target.value)}
                         onKeyDown={handleKeyDown}
                         disabled={isPosting}
-                        maxLength={MAX_CHARACTERS + 10} // small buffer
+                        maxLength={isVerified ? undefined : MAX_CHARACTERS + 10}
                     />
 
                     {/* block to display collaborators */}

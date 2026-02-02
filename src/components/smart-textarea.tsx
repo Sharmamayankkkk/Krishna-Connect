@@ -30,6 +30,9 @@ export const SmartTextarea = React.forwardRef<HTMLTextAreaElement, SmartTextarea
         const [triggerType, setTriggerType] = React.useState<'mention' | 'hashtag' | null>(null);
         const [cursorPosition, setCursorPosition] = React.useState(0);
         const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
+        // Forward the ref to parent so formatting toolbar can access the textarea
+        React.useImperativeHandle(ref, () => textareaRef.current!, []);
         const popupRef = React.useRef<HTMLDivElement>(null);
 
         // Calculate cursor coordinates for popup positioning
