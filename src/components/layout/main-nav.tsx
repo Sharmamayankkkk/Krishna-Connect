@@ -61,6 +61,12 @@ export function MainNav() {
       isActive: pathname.startsWith('/explore') || pathname === '/',
     },
     {
+      href: '/feed',
+      label: 'Feed',
+      icon: Sparkles,
+      isActive: pathname.startsWith('/feed'),
+    },
+    {
       href: '/chat',
       label: 'Chats',
       icon: MessageSquare,

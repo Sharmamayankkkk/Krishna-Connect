@@ -35,11 +35,12 @@ import { FeedList } from '@/components/features/posts/feed-list';
 import { TrendingTopicsList } from './components/trending-topics-list';
 import { UserCard } from './components/user-card';
 import { transformPost } from './utils';
+import { StoriesBar } from '@/components/features/stories/stories-bar';
 
 const POSTS_PER_PAGE = 10;
 const SCROLL_THRESHOLD = 500;
 
-type FeedFilter = 'foryou' | 'following' | 'latest';
+type FeedFilter = 'following' | 'latest';
 type ExploreMode = 'feed' | 'search' | 'discover';
 
 // Main Explore Page (Feed)
@@ -60,7 +61,7 @@ export default function Feed() {
     const [isLoadingMore, setIsLoadingMore] = React.useState(false);
     const [hasMore, setHasMore] = React.useState(true);
     const [isInitialLoading, setIsInitialLoading] = React.useState(true);
-    const [feedFilter, setFeedFilter] = React.useState<FeedFilter>('foryou');
+    const [feedFilter, setFeedFilter] = React.useState<FeedFilter>('latest');
     const [showNewPostsBanner, setShowNewPostsBanner] = React.useState(false);
     const [newPostsCount, setNewPostsCount] = React.useState(0);
     const [showScrollTop, setShowScrollTop] = React.useState(false);
@@ -209,12 +210,6 @@ export default function Feed() {
         let filteredPosts = [...posts];
 
         switch (filter) {
-            case 'foryou':
-                const smartFeed = generateSmartFeed(posts, userInteractions);
-                filteredPosts = smartFeed.feed;
-                setNewPostsCount(smartFeed.newPostsCount);
-                break;
-
             case 'following':
                 filteredPosts = posts.filter(p =>
                     userInteractions.followedUsers.includes(p.author.id)
@@ -224,6 +219,7 @@ export default function Feed() {
                 break;
 
             case 'latest':
+            default:
                 filteredPosts = posts.sort((a, b) =>
                     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
                 );
@@ -499,7 +495,7 @@ export default function Feed() {
                                     )}
                                     <div className="flex-1 w-full">
                                         <GlobalSearchBar
-                                            placeholder="Search KCS..."
+                                            placeholder="Search posts, users, hashtags..."
                                             autoFocus={isMobileSearchOpen}
                                         />
                                     </div>
@@ -518,26 +514,45 @@ export default function Feed() {
                         )}
                     </div>
 
-                    {/* Feed Filters */}
+                    {/* Feed Filters - Latest and Following tabs */}
                     {exploreMode === 'feed' && (
-                        <div className="px-4 pb-2 flex gap-2 overflow-x-auto bg-background/95 backdrop-blur no-scrollbar">
-                            {(['foryou', 'following', 'latest'] as const).map(filter => (
-                                <Button
-                                    key={filter}
-                                    variant={feedFilter === filter ? 'secondary' : 'ghost'}
-                                    size="sm"
-                                    onClick={() => setFeedFilter(filter)}
-                                    className="rounded-full whitespace-nowrap"
-                                >
-                                    {filter === 'foryou' && <Sparkles className="h-3 w-3 mr-2" />}
-                                    {filter === 'following' && <Users className="h-3 w-3 mr-2" />}
-                                    {filter === 'latest' && <Clock className="h-3 w-3 mr-2" />}
-                                    {filter === 'foryou' ? 'For You' : filter.charAt(0).toUpperCase() + filter.slice(1)}
-                                </Button>
-                            ))}
+                        <div className="flex items-center justify-center border-t">
+                            <button
+                                onClick={() => setFeedFilter('latest')}
+                                className={cn(
+                                    "px-6 py-3 text-sm font-medium transition-colors relative",
+                                    feedFilter === 'latest'
+                                        ? "text-foreground"
+                                        : "text-muted-foreground hover:text-foreground"
+                                )}
+                            >
+                                <Clock className="h-4 w-4 inline mr-2" />
+                                Latest
+                                {feedFilter === 'latest' && (
+                                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+                                )}
+                            </button>
+                            <button
+                                onClick={() => setFeedFilter('following')}
+                                className={cn(
+                                    "px-6 py-3 text-sm font-medium transition-colors relative",
+                                    feedFilter === 'following'
+                                        ? "text-foreground"
+                                        : "text-muted-foreground hover:text-foreground"
+                                )}
+                            >
+                                <Users className="h-4 w-4 inline mr-2" />
+                                Following
+                                {feedFilter === 'following' && (
+                                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+                                )}
+                            </button>
                         </div>
                     )}
                 </header>
+
+                {/* Stories Bar */}
+                {exploreMode === 'feed' && <StoriesBar />}
 
                 {/* Main Content Area */}
                 <div className="flex-1 container max-w-2xl mx-auto p-0 md:p-4">
