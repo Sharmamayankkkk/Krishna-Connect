@@ -195,25 +195,32 @@ export default function PostView() {
 
                             <div>
                                 {post.comments && post.comments.length > 0 ? (
-                                    post.comments.map((comment) => (
-                                        <PostCard
-                                            key={comment.id}
-                                            post={comment as any}
-                                            onLikeToggle={() => handleCommentLikeToggle(post, comment.id)}
-                                            onComment={() => { }} // Reply to comment?
-                                            onDelete={() => handleCommentDelete(post, comment.id)}
-                                            onEdit={() => { }}
-                                            onSaveToggle={() => { }}
-                                            onCommentLikeToggle={() => { }} // Recursive?
-                                            onCommentPinToggle={() => { }}
-                                            onCommentHideToggle={() => { }}
-                                            onCommentDelete={() => { }}
-                                            onQuotePost={() => { }}
-                                            onRepost={() => { }}
-                                            onPollVote={() => { }}
-                                            onPromote={() => { }}
-                                        />
-                                    ))
+                                    post.comments.map((comment) => {
+                                        // Ensure comment has author property for PostCard
+                                        const commentWithAuthor = {
+                                            ...comment,
+                                            author: (comment as any).user || (comment as any).author // fallback
+                                        };
+                                        return (
+                                            <PostCard
+                                                key={comment.id}
+                                                post={commentWithAuthor as any}
+                                                onLikeToggle={() => handleCommentLikeToggle(post, comment.id)}
+                                                onComment={() => { }} // Reply to comment?
+                                                onDelete={() => handleCommentDelete(post, comment.id)}
+                                                onEdit={() => { }}
+                                                onSaveToggle={() => { }}
+                                                onCommentLikeToggle={() => { }} // Recursive?
+                                                onCommentPinToggle={() => { }}
+                                                onCommentHideToggle={() => { }}
+                                                onCommentDelete={() => { }}
+                                                onQuotePost={() => { }}
+                                                onRepost={() => { }}
+                                                onPollVote={() => { }}
+                                                onPromote={() => { }}
+                                            />
+                                        );
+                                    })
                                 ) : (
                                     <div className="p-10 text-center">
                                         <p className="text-muted-foreground">
