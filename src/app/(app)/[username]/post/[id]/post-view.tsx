@@ -23,6 +23,8 @@ import Image from 'next/image';
 import { AuthGate } from '@/components/auth-gate';
 import { PrivateContentPlaceholder } from '@/components/private-placeholders';
 import { usePostInteractions } from '@/hooks/use-post-interactions';
+import { transformPost } from '@/lib/post-utils';
+import type { PostType } from '@/lib/types';
 
 interface PostDetailCardProps {
     post: Post;
@@ -390,83 +392,7 @@ export default function PostView() {
         onDeletePost: () => router.back()
     });
 
-    const formatPost = (postData: any): Post => {
-        const comments = (postData.comments || []).map((comment: any) => {
-            // Format comment author
-            const commentAuthor = comment.author ? {
-                ...comment.author,
-                avatar: comment.author.avatar_url || comment.author.avatar || '',
-            } : { id: 'unknown', name: 'Unknown', username: 'unknown', avatar: '' };
-
-            return {
-                ...comment,
-                author: commentAuthor,
-                likes: (comment.likes || []).length,
-                likedBy: (comment.likes || []).map((l: any) => l.user_id),
-                replies: (comment.replies || []).map((reply: any) => {
-                    // Format reply author
-                    const replyAuthor = reply.author ? {
-                        ...reply.author,
-                        avatar: reply.author.avatar_url || reply.author.avatar || '',
-                    } : { id: 'unknown', name: 'Unknown', username: 'unknown', avatar: '' };
-
-                    return {
-                        ...reply,
-                        author: replyAuthor,
-                        likes: (reply.likes || []).length,
-                        likedBy: (reply.likes || []).map((l: any) => l.user_id),
-                    };
-                }),
-                stats: {
-                    comments: (comment.replies || []).length,
-                    likes: (comment.likes || []).length,
-                    reposts: 0,
-                    reshares: 0,
-                    views: 0,
-                    quotes: 0,
-                    bookmarks: 0
-                }
-            };
-        }).sort((a: any, b: any) => new Date(b.createdAt || b.created_at).getTime() - new Date(a.createdAt || a.created_at).getTime());
-
-        const likes = (postData.likes || []).map((l: any) => l.user_id);
-        const reposts = (postData.reposts || []).map((r: any) => r.user_id);
-
-        // Map author avatar_url to avatar for compatibility
-        const author = postData.author ? {
-            ...postData.author,
-            avatar: postData.author.avatar_url || postData.author.avatar || '',
-        } : { id: '', name: 'Unknown', username: 'unknown', avatar: '' };
-
-        return {
-            ...postData,
-            id: String(postData.id),
-            createdAt: postData.created_at || postData.createdAt,
-            media: postData.media_urls || [],
-            media_urls: postData.media_urls || [],
-            likedBy: likes,
-            repostedBy: reposts,
-            savedBy: [],
-            stats: {
-                comments: comments.reduce((acc: number, c: any) => acc + 1 + (c.replies?.length || 0), 0),
-                likes: likes.length,
-                reposts: reposts.length,
-                quotes: 0,
-                views: 0,
-                bookmarks: 0,
-                reshares: 0
-            },
-            comments: comments,
-            author: author,
-            originalPost: postData.quote_of_id && postData.quote_of ? {
-                ...postData.quote_of,
-                author: postData.quote_of.author ? {
-                    ...postData.quote_of.author,
-                    avatar: postData.quote_of.author.avatar_url || postData.quote_of.author.avatar || '',
-                } : { id: '', name: 'Unknown', username: 'unknown', avatar: '' }
-            } : null
-        }
-    }
+    // Using shared transformPost utility instead of local formatPost
 
     useEffect(() => {
         if (!isReady) return;
@@ -487,7 +413,7 @@ export default function PostView() {
                 toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch post.' });
                 notFound();
             } else {
-                const formattedPost = formatPost(data);
+                const formattedPost = transformPost(data);
                 setPost(formattedPost as any);
             }
             setIsLoading(false);
@@ -525,14 +451,24 @@ export default function PostView() {
                         <PostSkeleton />
                     ) : (
                         <>
-                            <PostDetailCard
+                            <PostCard
                                 post={post}
-                                onCommentClick={handleCommentClick}
+                                isDetailView={true}
                                 onLikeToggle={() => handlePostLikeToggle(post)}
                                 onRepost={() => handleRepost(post)}
                                 onSaveToggle={() => handlePostSaveToggle(post)}
-                                onQuote={() => { }} // TODO: Implement quote for detail view if needed or handle logic
-                                onDelete={() => handlePostDeleted(post.id)}
+                                onDelete={handlePostDeleted}
+                                onEdit={(updatedPost) => setPost(updatedPost as any)}
+                                onComment={(_, text, parentId) => {
+                                    // Let the internal CommentsSheet handle this
+                                }}
+                                onCommentLikeToggle={(_, commentId, isReply) => handleCommentLikeToggle(post, commentId, isReply)}
+                                onCommentPinToggle={() => { }}
+                                onCommentHideToggle={() => { }}
+                                onCommentDelete={(_, commentId, isReply, parentId) => handleCommentDelete(post, commentId, isReply, parentId)}
+                                onQuotePost={() => { }}
+                                onPollVote={(_, optionId) => handlePollVote(post, optionId)}
+                                onPromote={() => { }}
                             />
 
                             <Separator />

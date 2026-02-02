@@ -40,6 +40,7 @@ import { PrivateContentPlaceholder } from "@/components/private-placeholders";
 import { AuthGate } from "@/components/auth-gate";
 import { usePostInteractions } from "@/hooks/use-post-interactions";
 import type { PostType } from "@/lib/types";
+import { transformPost } from "@/lib/post-utils";
 import {
   Tooltip,
   TooltipContent,
@@ -510,31 +511,7 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
 
           <TabsContent value="posts" className="mt-0">
             <FeedList
-              posts={userPosts.map(p => ({
-                ...p,
-                createdAt: (p as any).created_at || (p as any).createdAt || new Date().toISOString(),
-                media: p.media_urls || [],
-                stats: {
-                  comments: ((p as any).comments || []).length,
-                  likes: (p.likes || []).length,
-                  reposts: (p.reposts || []).length,
-                  reshares: 0,
-                  views: 0,
-                  bookmarks: 0
-                },
-                comments: ((p as any).comments || []).map((c: any) => ({
-                  ...c,
-                  user: c.author ? c.author : { id: 'unknown', name: 'Unknown', username: 'unknown', avatar: '' }
-                })),
-                originalPost: null,
-                repostedBy: (p as any).repostedBy || [],
-                likedBy: (p as any).likedBy || [],
-                savedBy: [],
-                author: p.author ? {
-                  ...p.author,
-                  avatar: (p.author as any).avatar_url || (p.author as any).avatar || ''
-                } : { id: 'unknown', name: 'Unknown', username: 'unknown', avatar: '' }
-              })) as PostType[]}
+              posts={userPosts.map(transformPost)}
               isLoading={false}
               onPostUpdated={updatePost}
               onPostDeleted={handleDeletePost}
@@ -546,31 +523,7 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
 
           <TabsContent value="replies" className="mt-0">
             <FeedList
-              posts={userReplies.map(p => ({
-                ...p,
-                createdAt: (p as any).created_at || (p as any).createdAt || new Date().toISOString(),
-                media: p.media_urls || [],
-                stats: {
-                  comments: ((p as any).comments || []).length,
-                  likes: (p.likes || []).length,
-                  reposts: (p.reposts || []).length,
-                  reshares: 0,
-                  views: 0,
-                  bookmarks: 0
-                },
-                comments: ((p as any).comments || []).map((c: any) => ({
-                  ...c,
-                  user: c.author ? c.author : { id: 'unknown', name: 'Unknown', username: 'unknown', avatar: '' }
-                })),
-                originalPost: null,
-                repostedBy: (p as any).repostedBy || [],
-                likedBy: (p as any).likedBy || [],
-                savedBy: [],
-                author: p.author ? {
-                  ...p.author,
-                  avatar: (p.author as any).avatar_url || (p.author as any).avatar || ''
-                } : { id: 'unknown', name: 'Unknown', username: 'unknown', avatar: '' }
-              })) as PostType[]}
+              posts={userReplies.map(transformPost)}
               isLoading={false}
               onPostUpdated={updatePost}
               onPostDeleted={handleDeletePost}

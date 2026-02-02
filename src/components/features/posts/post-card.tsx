@@ -50,6 +50,7 @@ import { CommentSheet as CommentsSheet } from '@/app/(app)/explore/components/co
 
 interface PostCardProps {
     post: PostType;
+    isDetailView?: boolean;
     onComment: (postId: string, commentText: string, parentCommentId?: string) => void;
     onDelete: (postId: string) => void;
     onEdit: (updatedPost: PostType) => void;
