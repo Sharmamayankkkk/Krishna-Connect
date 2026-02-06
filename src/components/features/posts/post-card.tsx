@@ -20,6 +20,7 @@ import {
     Share,
     MoreHorizontal,
     Pin,
+    PinOff,
     Bookmark,
     BookmarkCheck,
     X,
@@ -64,6 +65,7 @@ interface PostCardProps {
     onRepost: (postId: string) => void;
     onPollVote: (postId: string, optionId: string) => void;
     onPromote: (post: PostType) => void;
+    onPin?: (postId: string) => void;
 }
 
 // --- CHILD COMPONENTS & DIALOGS ---
@@ -304,7 +306,8 @@ export function PostCard({
     onQuotePost,
     onRepost,
     onPollVote,
-    onPromote
+    onPromote,
+    onPin
 }: PostCardProps) {
     const { author, createdAt, content, media, stats = { likes: 0, comments: 0, reposts: 0, reshares: 0, views: 0, bookmarks: 0 }, originalPost, editedAt, poll, isRepost, isPromoted } = post;
     const { loggedInUser } = useAppContext();
@@ -416,6 +419,13 @@ export function PostCard({
 
             {/* Post Card */}
             <article className="p-3 sm:p-4 border-b transition-colors hover:bg-muted/50">
+                {/* Pinned Post Header */}
+                {post.isPinned && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2 ml-12">
+                        <Pin className="h-4 w-4 text-primary" />
+                        <span className="font-semibold text-primary">Pinned</span>
+                    </div>
+                )}
                 {/* Promoted Post Header */}
                 {isPromoted && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2 ml-12">
@@ -516,6 +526,21 @@ export function PostCard({
                                                 <Edit className="mr-2 h-4 w-4" />
                                                 <span>Edit Post</span>
                                             </DropdownMenuItem>
+                                            {onPin && (
+                                                <DropdownMenuItem onClick={() => onPin(post.id)}>
+                                                    {post.isPinned ? (
+                                                        <>
+                                                            <PinOff className="mr-2 h-4 w-4" />
+                                                            <span>Unpin from Profile</span>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Pin className="mr-2 h-4 w-4" />
+                                                            <span>Pin to Profile</span>
+                                                        </>
+                                                    )}
+                                                </DropdownMenuItem>
+                                            )}
                                             {/* Add the new Promote button logic here */}
                                             {!post.isPromoted && (
                                                 <DropdownMenuItem onClick={() => onPromote(post)}>

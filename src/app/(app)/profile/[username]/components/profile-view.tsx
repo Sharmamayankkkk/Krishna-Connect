@@ -20,7 +20,8 @@ import {
   Flag,
   Ban,
   Loader2,
-  Share2
+  Share2,
+  Pin
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { PostCard } from "@/components/features/posts/post-card";
@@ -199,7 +200,8 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
     handleCommentLikeToggle,
     handleCommentDelete,
     handleCommentPinToggle,
-    handleCommentHideToggle
+    handleCommentHideToggle,
+    handlePostPinToggle
   } = usePostInteractions({
     loggedInUser,
     updatePost,
@@ -216,6 +218,13 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
   const userPosts = localPosts.filter(p => !(p as any).is_reply && !(p as any).parent_id);
   const userReplies = localPosts.filter(p => (p as any).is_reply || (p as any).parent_id);
   const mediaPosts = localPosts.filter(p => p.media_urls && p.media_urls.length > 0);
+  const pinnedPosts = userPosts.filter(p => (p as any).isPinned || (p as any).pinned_at);
+  const unpinnedPosts = userPosts.filter(p => !(p as any).isPinned && !(p as any).pinned_at);
+
+  // Handler wrapper for pin toggle
+  const handlePinPost = (post: PostType) => {
+    handlePostPinToggle(post);
+  };
 
   return (
     <div className="min-h-screen">
@@ -493,82 +502,104 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
           username={profile.username}
         />
       ) : (
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="w-full h-auto p-0 bg-transparent border-b rounded-none justify-start">
-            <TabsTrigger value="posts" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
-              Posts
-            </TabsTrigger>
-            <TabsTrigger value="replies" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
-              Replies
-            </TabsTrigger>
-            <TabsTrigger value="media" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
-              Media
-            </TabsTrigger>
-            <TabsTrigger value="likes" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
-              Likes
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="posts" className="mt-0">
-            <FeedList
-              posts={userPosts.map(transformPost)}
-              isLoading={false}
-              onPostUpdated={updatePost}
-              onPostDeleted={handleDeletePost}
-              onQuotePost={() => { }}
-              onPromote={() => { }}
-              emptyMessage={`When ${isOwnProfile ? 'you post' : `@${profile.username} posts`}, it will show up here.`}
-            />
-          </TabsContent>
-
-          <TabsContent value="replies" className="mt-0">
-            <FeedList
-              posts={userReplies.map(transformPost)}
-              isLoading={false}
-              onPostUpdated={updatePost}
-              onPostDeleted={handleDeletePost}
-              onQuotePost={() => { }}
-              onPromote={() => { }}
-              emptyMessage={`When ${isOwnProfile ? 'you reply' : `@${profile.username} replies`} to a post, it will show up here.`}
-            />
-          </TabsContent>
-
-          <TabsContent value="media" className="mt-0">
-            {mediaPosts.length === 0 ? (
-              <div className="py-12 text-center">
-                <p className="text-xl font-bold mb-1">No media yet</p>
-                <p className="text-muted-foreground">Photos and videos will appear here.</p>
+        <>
+          {/* Pinned Posts Section */}
+          {pinnedPosts.length > 0 && (
+            <div className="border-b">
+              <div className="flex items-center gap-2 px-4 py-3 text-sm text-muted-foreground">
+                <Pin className="h-4 w-4" />
+                <span className="font-semibold">Pinned</span>
               </div>
-            ) : (
-              <div className="grid grid-cols-3 gap-0.5">
-                {mediaPosts.map((post) => {
-                  const mediaUrl = post.media_urls?.[0]?.url || post.image_url;
-                  return mediaUrl ? (
-                    <button
-                      key={post.id}
-                      onClick={() => handlePostClick(post)}
-                      className="aspect-square relative overflow-hidden bg-muted hover:opacity-90 transition-opacity"
-                    >
-                      <Image
-                        src={mediaUrl}
-                        alt="Media"
-                        fill
-                        className="object-cover"
-                      />
-                    </button>
-                  ) : null;
-                })}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="likes" className="mt-0">
-            <div className="py-12 text-center">
-              <p className="text-xl font-bold mb-1">Coming Soon</p>
-              <p className="text-muted-foreground">Liked posts will appear here.</p>
+              <FeedList
+                posts={pinnedPosts.map(transformPost)}
+                isLoading={false}
+                onPostUpdated={updatePost}
+                onPostDeleted={handleDeletePost}
+                onQuotePost={() => { }}
+                onPromote={() => { }}
+                onPin={isOwnProfile ? handlePinPost : undefined}
+              />
             </div>
-          </TabsContent>
-        </Tabs>
+          )}
+
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="w-full h-auto p-0 bg-transparent border-b rounded-none justify-start">
+              <TabsTrigger value="posts" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
+                Posts
+              </TabsTrigger>
+              <TabsTrigger value="replies" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
+                Replies
+              </TabsTrigger>
+              <TabsTrigger value="media" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
+                Media
+              </TabsTrigger>
+              <TabsTrigger value="likes" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
+                Likes
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="posts" className="mt-0">
+              <FeedList
+                posts={unpinnedPosts.map(transformPost)}
+                isLoading={false}
+                onPostUpdated={updatePost}
+                onPostDeleted={handleDeletePost}
+                onQuotePost={() => { }}
+                onPromote={() => { }}
+                onPin={isOwnProfile ? handlePinPost : undefined}
+                emptyMessage={`When ${isOwnProfile ? 'you post' : `@${profile.username} posts`}, it will show up here.`}
+              />
+            </TabsContent>
+
+            <TabsContent value="replies" className="mt-0">
+              <FeedList
+                posts={userReplies.map(transformPost)}
+                isLoading={false}
+                onPostUpdated={updatePost}
+                onPostDeleted={handleDeletePost}
+                onQuotePost={() => { }}
+                onPromote={() => { }}
+                emptyMessage={`When ${isOwnProfile ? 'you reply' : `@${profile.username} replies`} to a post, it will show up here.`}
+              />
+            </TabsContent>
+
+            <TabsContent value="media" className="mt-0">
+              {mediaPosts.length === 0 ? (
+                <div className="py-12 text-center">
+                  <p className="text-xl font-bold mb-1">No media yet</p>
+                  <p className="text-muted-foreground">Photos and videos will appear here.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-0.5">
+                  {mediaPosts.map((post) => {
+                    const mediaUrl = post.media_urls?.[0]?.url || post.image_url;
+                    return mediaUrl ? (
+                      <button
+                        key={post.id}
+                        onClick={() => handlePostClick(post)}
+                        className="aspect-square relative overflow-hidden bg-muted hover:opacity-90 transition-opacity"
+                      >
+                        <Image
+                          src={mediaUrl}
+                          alt="Media"
+                          fill
+                          className="object-cover"
+                        />
+                      </button>
+                    ) : null;
+                  })}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="likes" className="mt-0">
+              <div className="py-12 text-center">
+                <p className="text-xl font-bold mb-1">Coming Soon</p>
+                <p className="text-muted-foreground">Liked posts will appear here.</p>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </>
       )}
     </div>
   );

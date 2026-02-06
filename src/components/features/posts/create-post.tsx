@@ -708,6 +708,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                             className="h-8 w-8 p-0"
                             onClick={formatBold}
                             title="Bold (Ctrl+B)"
+                            aria-label="Bold"
                         >
                             <Bold className="h-4 w-4" />
                         </Button>
@@ -718,6 +719,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                             className="h-8 w-8 p-0"
                             onClick={formatItalic}
                             title="Italic (Ctrl+I)"
+                            aria-label="Italic"
                         >
                             <Italic className="h-4 w-4" />
                         </Button>
@@ -729,6 +731,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                             className="h-8 w-8 p-0"
                             onClick={formatHeading}
                             title="Heading"
+                            aria-label="Heading"
                         >
                             <Heading2 className="h-4 w-4" />
                         </Button>
@@ -739,6 +742,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                             className="h-8 w-8 p-0"
                             onClick={formatBulletList}
                             title="Bullet List"
+                            aria-label="Bullet list"
                         >
                             <List className="h-4 w-4" />
                         </Button>
@@ -749,6 +753,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                             className="h-8 w-8 p-0"
                             onClick={formatNumberedList}
                             title="Numbered List"
+                            aria-label="Numbered list"
                         >
                             <ListOrdered className="h-4 w-4" />
                         </Button>
@@ -759,6 +764,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                             className="h-8 w-8 p-0"
                             onClick={formatHorizontalLine}
                             title="Horizontal Line"
+                            aria-label="Horizontal line"
                         >
                             <Minus className="h-4 w-4" />
                         </Button>
@@ -805,6 +811,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                     variant="ghost"
                                     size="sm"
                                     onClick={togglePollMode}
+                                    aria-label="Close poll"
                                 >
                                     <X className="h-4 w-4" />
                                 </Button>
@@ -831,6 +838,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                                 variant="ghost"
                                                 size="icon"
                                                 onClick={() => removePollOption(index)}
+                                                aria-label="Remove option"
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
@@ -910,6 +918,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                             }}
                                             type="button"
                                             title="Edit image"
+                                            aria-label="Edit image"
                                         >
                                             <Pencil className="h-4 w-4" />
                                         </Button>
@@ -940,6 +949,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                         className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity z-10"
                                         onClick={() => removeMedia(index)}
                                         type="button"
+                                        aria-label="Remove media"
                                     >
                                         <X className="h-4 w-4" />
                                     </Button>
@@ -990,6 +1000,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                 onClick={() => fileInputRef.current?.click()}
                                 disabled={mediaPreviews.length >= MAX_MEDIA || isPosting || isPollMode}
                                 title="Add image"
+                                aria-label="Add image"
                             >
                                 <ImageIcon className="h-5 w-5" />
                             </Button>
@@ -1001,6 +1012,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                 onClick={() => videoInputRef.current?.click()}
                                 disabled={mediaPreviews.length >= MAX_MEDIA || isPosting || isPollMode}
                                 title="Add video"
+                                aria-label="Add video"
                             >
                                 <Video className="h-5 w-5" />
                             </Button>
@@ -1013,6 +1025,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                         type="button"
                                         disabled={mediaPreviews.length >= MAX_MEDIA || isPosting || isPollMode}
                                         title="Add GIF"
+                                        aria-label="Add GIF"
                                     >
                                         <Sparkles className="h-5 w-5" />
                                     </Button>

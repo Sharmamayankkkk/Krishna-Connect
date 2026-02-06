@@ -370,6 +370,47 @@ export function usePostInteractions({ loggedInUser, updatePost, onDeletePost }: 
         }
     }
 
+    const handlePostPinToggle = async (post: PostType) => {
+        if (!loggedInUser) {
+            toast({ title: "Please log in to pin posts", variant: "destructive" });
+            return;
+        }
+
+        if (post.author.id !== loggedInUser.id) {
+            toast({ title: "You can only pin your own posts", variant: "destructive" });
+            return;
+        }
+
+        // Optimistic update
+        const updatedPost = {
+            ...post,
+            isPinned: !post.isPinned
+        };
+        updatePost(updatedPost);
+
+        const supabase = createClient();
+        try {
+            const { data, error } = await supabase.rpc('toggle_pin_post', {
+                p_post_id: parseInt(post.id)
+            });
+
+            if (error) throw error;
+
+            if (!data.success) {
+                // Revert on failure
+                updatePost(post);
+                toast({ title: data.message, variant: "destructive" });
+                return;
+            }
+
+            toast({ title: data.is_pinned ? "📌 Post pinned to profile" : "Post unpinned" });
+        } catch (error) {
+            console.error('Error toggling pin:', error);
+            updatePost(post);
+            toast({ title: "Error pinning post", variant: "destructive" });
+        }
+    };
+
     return {
         handlePostLikeToggle,
         handleRepost,
@@ -380,6 +421,8 @@ export function usePostInteractions({ loggedInUser, updatePost, onDeletePost }: 
         handleCommentDelete,
         handleCommentSubmit,
         handleCommentPinToggle,
-        handleCommentHideToggle
+        handleCommentHideToggle,
+        handlePostPinToggle
     };
 }
+

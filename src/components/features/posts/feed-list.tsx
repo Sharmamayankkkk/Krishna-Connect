@@ -21,6 +21,7 @@ interface FeedListProps {
     onPostDeleted: (postId: string) => void;
     onQuotePost: (originalPostId: string, quoteText: string) => void;
     onPromote: (post: PostType) => void;
+    onPin?: (post: PostType) => void;
     emptyMessage?: string;
 }
 
@@ -34,6 +35,7 @@ export function FeedList({
     onPostDeleted,
     onQuotePost,
     onPromote,
+    onPin,
     emptyMessage = "Be the first to share something with the community!"
 }: FeedListProps) {
     const { loggedInUser } = useAppContext();
@@ -84,7 +86,8 @@ export function FeedList({
         handleCommentDelete,
         handleCommentSubmit,
         handleCommentPinToggle,
-        handleCommentHideToggle
+        handleCommentHideToggle,
+        handlePostPinToggle
     } = usePostInteractions({
         loggedInUser: usePostInteractionsUser,
         updatePost: onPostUpdated,
@@ -166,6 +169,7 @@ export function FeedList({
                             onPollVote={(_postId, optionId) => handlePollVote(post, optionId)}
                             onQuotePost={onQuotePost}
                             onPromote={onPromote}
+                            onPin={onPin ? () => (onPin ? onPin(post) : handlePostPinToggle(post)) : () => handlePostPinToggle(post)}
                         />
                     </React.Fragment>
                 );
