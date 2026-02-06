@@ -34,7 +34,8 @@ import {
     Repeat2,
     Clock,
     CheckCircle2,
-    TrendingUp
+    TrendingUp,
+    Users
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn, getAvatarUrl } from '@/lib/utils';
@@ -42,6 +43,7 @@ import { PollType, PostType, CommentType, ReplyType, MediaType } from '@/lib/typ
 import { VideoPlayer } from '../media/video-player';
 import { ImageViewerDialog } from '../media/image-viewer';
 import { EditPostDialog } from './dialogs/edit-post-dialog';
+import { RepostedByDialog } from './dialogs/reposted-by-dialog';
 import { useAppContext } from '@/providers/app-provider';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthGuard } from '@/hooks/use-auth-guard';
@@ -325,6 +327,7 @@ export function PostCard({
     const [isEditOpen, setIsEditOpen] = React.useState(false);
     const [showRepostMenu, setShowRepostMenu] = React.useState(false);
     const [isExpanded, setIsExpanded] = React.useState(false);
+    const [isRepostedByOpen, setIsRepostedByOpen] = React.useState(false);
 
     // Truncation settings for Read More feature
     const MAX_CONTENT_LENGTH = 280;
@@ -632,6 +635,12 @@ export function PostCard({
                                         <Quote className="mr-2 h-4 w-4" />
                                         Quote Post
                                     </DropdownMenuItem>
+                                    {(stats.reposts || 0) > 0 && (
+                                        <DropdownMenuItem onClick={() => { setShowRepostMenu(false); setIsRepostedByOpen(true); }}>
+                                            <Users className="mr-2 h-4 w-4" />
+                                            See who reposted
+                                        </DropdownMenuItem>
+                                    )}
                                 </DropdownMenuContent>
                             </DropdownMenu>
 
@@ -721,6 +730,13 @@ export function PostCard({
                 onOpenChange={setIsImageViewerOpen}
                 media={media || []}
                 startIndex={imageViewerStartIndex}
+            />
+
+            <RepostedByDialog
+                open={isRepostedByOpen}
+                onOpenChange={setIsRepostedByOpen}
+                postId={post.id}
+                initialCount={(stats.reposts || 0)}
             />
 
             <QuoteDialog

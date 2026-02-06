@@ -82,7 +82,7 @@ export const transformPost = (dbPost: any): PostType => {
         likedBy: likedByUsers,
         savedBy: (dbPost.saved_posts || []).map((s: any) => s.user_id || s),
         repostedBy: repostedByUsers,
-        isPinned: dbPost.is_pinned || false,
+        isPinned: dbPost.is_pinned || !!dbPost.pinned_at || false,
         isPromoted: dbPost.is_promoted || false,
         collaborators: (dbPost.post_collaborators || [])
             .filter((c: any) => c.status === 'accepted')
