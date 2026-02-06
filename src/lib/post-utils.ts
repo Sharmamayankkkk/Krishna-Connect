@@ -33,7 +33,10 @@ export const transformPost = (dbPost: any): PostType => {
         isHidden: comment.is_hidden || false
     });
 
-    const transformedComments: CommentType[] = (dbPost.post_comments || dbPost.comments || []).map(transformComment);
+    // Filter to only get top-level comments (not replies), then transform
+    const topLevelComments = (dbPost.post_comments || dbPost.comments || [])
+        .filter((c: any) => !c.parent_comment_id);
+    const transformedComments: CommentType[] = topLevelComments.map(transformComment);
 
     // Handle likes - can be array of objects with user_id or count object
     const likesCount = Array.isArray(dbPost.likes)

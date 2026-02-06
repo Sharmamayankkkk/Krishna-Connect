@@ -27,7 +27,7 @@ const POST_QUERY = `
   created_at,
   author:user_id (id, username, name, avatar_url, verified, is_private),
   quote_of:quote_of_id (*, author:user_id (*), media_urls),
-  comments (
+  comments!comments_post_id_fkey (
     *,
     author:profiles!user_id (*),
     likes:comment_likes (user_id),

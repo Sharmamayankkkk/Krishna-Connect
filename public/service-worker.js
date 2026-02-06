@@ -1,5 +1,5 @@
-const CACHE_NAME = 'kcs-app-v5-dynamic';
-const STATIC_CACHE = 'kcs-static-v5';
+const CACHE_NAME = 'kcs-app-v6-dynamic';
+const STATIC_CACHE = 'kcs-static-v6';
 
 const APP_SHELL = [
     '/',
@@ -67,19 +67,34 @@ async function networkFirst(request) {
 // Helper: Stale While Revalidate for Static Assets
 async function staleWhileRevalidate(request) {
     const cachedResponse = await caches.match(request);
-    const fetchPromise = fetch(request).then(async (networkResponse) => {
-        if (networkResponse.ok) {
-            // Clone BEFORE using the response to avoid "Response body is already used" error
-            const responseToCache = networkResponse.clone();
-            const cache = await caches.open(STATIC_CACHE);
-            cache.put(request, responseToCache);
-        }
-        return networkResponse;
-    }).catch(() => {
-        // Network failed, return cached or a fallback
-        return cachedResponse || Response.error();
-    });
-    return cachedResponse || fetchPromise;
+
+    // Start network fetch in background
+    const fetchPromise = fetch(request)
+        .then((networkResponse) => {
+            // Only cache valid responses
+            if (networkResponse && networkResponse.ok) {
+                // Clone immediately before any other operations
+                const responseToCache = networkResponse.clone();
+                // Cache in background (fire and forget)
+                caches.open(STATIC_CACHE).then((cache) => {
+                    cache.put(request, responseToCache);
+                });
+            }
+            return networkResponse;
+        })
+        .catch((error) => {
+            console.warn('[SW] Network fetch failed:', error);
+            return null; // Return null on network failure
+        });
+
+    // Return cached response immediately if available, otherwise wait for network
+    if (cachedResponse) {
+        return cachedResponse;
+    }
+
+    // No cache, wait for network
+    const networkResponse = await fetchPromise;
+    return networkResponse || Response.error();
 }
 
 // Fetch Event

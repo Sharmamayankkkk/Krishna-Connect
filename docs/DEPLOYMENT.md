@@ -6,7 +6,9 @@ This project is optimized for deployment on **Vercel**, which provides built-in 
 
 1.  **Vercel Account**: A Pro or Enterprise team account is recommended for production workloads.
 2.  **Supabase Project**: A dedicated production project (separate from dev).
-3.  **Domain Name**: `chat.krishnaconsciousnesssociety.com` (configured in Vercel).
+3.  **Domain Names**: 
+    - Primary: `krishnaconnect.in`
+    - Secondary: `chat.krishnaconsciousnesssociety.com`
 
 ## Environment Variables
 

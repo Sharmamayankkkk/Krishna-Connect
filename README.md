@@ -9,7 +9,9 @@
     A modern, real-time chat application for the conscious community.
     <br />
     <br />
-    <a href="https://chat.krishnaconsciousnesssociety.com/"><strong>Visit Website »</strong></a>
+    <a href="https://krishnaconnect.in/"><strong>Visit Website »</strong></a>
+    ·
+    <a href="https://chat.krishnaconsciousnesssociety.com/">Alternate URL</a>
   </p>
 </div>
 
