@@ -576,6 +576,7 @@ export function PostCard({
                                 size="sm"
                                 className="hover:text-blue-500 rounded-full group"
                                 onClick={() => setIsCommentsOpen(true)}
+                                aria-label={`${stats.comments || 0} comments. Click to view comments`}
                             >
                                 <MessageCircle className="h-4 w-4 mr-1.5 group-hover:scale-110 transition-transform" />
                                 <span className="text-xs">{stats.comments || 0}</span>
@@ -591,6 +592,7 @@ export function PostCard({
                                             "rounded-full group",
                                             isReposted ? "text-green-500" : "hover:text-green-500"
                                         )}
+                                        aria-label={isReposted ? "Undo repost" : "Repost options"}
                                     >
                                         <Repeat2 className="h-4 w-4 mr-1.5 group-hover:rotate-180 transition-transform" />
                                         <span className="text-xs">{(stats.reshares || 0) + (stats.reposts || 0)}</span>
@@ -617,6 +619,7 @@ export function PostCard({
                                     isLiked ? "text-red-500" : "hover:text-red-500"
                                 )}
                                 onClick={handleLike}
+                                aria-label={isLiked ? `Unlike. ${stats.likes || 0} likes` : `Like. ${stats.likes || 0} likes`}
                             >
                                 <Heart className={cn(
                                     "h-4 w-4 mr-1.5 group-hover:scale-110 transition-transform",
@@ -630,6 +633,7 @@ export function PostCard({
                                 variant="ghost"
                                 size="sm"
                                 className="hover:text-primary rounded-full group hidden sm:flex"
+                                aria-label={`${stats.views?.toLocaleString() || 0} views`}
                             >
                                 <BarChart2 className="h-4 w-4 mr-1.5 group-hover:scale-110 transition-transform" />
                                 <span className="text-xs">{stats.views?.toLocaleString() || 0}</span>
@@ -642,6 +646,7 @@ export function PostCard({
                                         variant="ghost"
                                         size="icon"
                                         className="text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full h-8 w-8 group/action"
+                                        aria-label="Share post"
                                     >
                                         <Share className="h-4 w-4" />
                                     </Button>

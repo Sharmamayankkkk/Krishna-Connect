@@ -209,8 +209,8 @@ const NotificationItem = React.memo(({
                     </Link>
                 )}
 
-                {/* Standard action buttons (always visible on mobile, hover on desktop) */}
-                <div className="flex flex-wrap items-center gap-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity pt-1">
+                {/* Standard action buttons (always visible for better discoverability) */}
+                <div className="flex flex-wrap items-center gap-2 pt-1">
                     {!notification.read && (
                         <Button
                             variant="ghost"

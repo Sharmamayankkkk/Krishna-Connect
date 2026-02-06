@@ -604,12 +604,12 @@ export default function Feed() {
                                 />
                             </section>
 
-                            {suggestedUsers.length > 0 && (
-                                <section>
-                                    <div className="flex items-center gap-2 mb-4">
-                                        <Users className="h-5 w-5 text-blue-500" />
-                                        <h2 className="text-xl font-bold">Suggested for you</h2>
-                                    </div>
+                            <section>
+                                <div className="flex items-center gap-2 mb-4">
+                                    <Users className="h-5 w-5 text-blue-500" />
+                                    <h2 className="text-xl font-bold">Suggested for you</h2>
+                                </div>
+                                {suggestedUsers.length > 0 ? (
                                     <div className="grid gap-4 md:grid-cols-2">
                                         {suggestedUsers.map((user: any) => (
                                             <UserCard
@@ -620,8 +620,23 @@ export default function Feed() {
                                             />
                                         ))}
                                     </div>
-                                </section>
-                            )}
+                                ) : (
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                        {[1, 2, 3, 4].map((i) => (
+                                            <div key={i} className="border rounded-lg p-4 space-y-3">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-12 w-12 rounded-full bg-muted animate-pulse" />
+                                                    <div className="flex-1 space-y-2">
+                                                        <div className="h-4 w-24 bg-muted rounded animate-pulse" />
+                                                        <div className="h-3 w-16 bg-muted rounded animate-pulse" />
+                                                    </div>
+                                                </div>
+                                                <div className="h-9 w-full bg-muted rounded animate-pulse" />
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </section>
                         </div>
                     )}
                 </div>
@@ -633,6 +648,7 @@ export default function Feed() {
                         size="icon"
                         className="fixed bottom-20 right-4 rounded-full shadow-lg z-50 md:bottom-8"
                         onClick={scrollToTop}
+                        aria-label="Scroll to top"
                     >
                         <ArrowUp className="h-5 w-5" />
                     </Button>
