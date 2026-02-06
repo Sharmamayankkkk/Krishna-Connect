@@ -67,13 +67,17 @@ async function networkFirst(request) {
 // Helper: Stale While Revalidate for Static Assets
 async function staleWhileRevalidate(request) {
     const cachedResponse = await caches.match(request);
-    const fetchPromise = fetch(request).then((networkResponse) => {
+    const fetchPromise = fetch(request).then(async (networkResponse) => {
         if (networkResponse.ok) {
-            caches.open(STATIC_CACHE).then((cache) => {
-                cache.put(request, networkResponse.clone());
-            });
+            // Clone BEFORE using the response to avoid "Response body is already used" error
+            const responseToCache = networkResponse.clone();
+            const cache = await caches.open(STATIC_CACHE);
+            cache.put(request, responseToCache);
         }
         return networkResponse;
+    }).catch(() => {
+        // Network failed, return cached or a fallback
+        return cachedResponse || Response.error();
     });
     return cachedResponse || fetchPromise;
 }

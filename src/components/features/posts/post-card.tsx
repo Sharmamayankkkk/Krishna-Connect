@@ -306,7 +306,7 @@ export function PostCard({
     onPollVote,
     onPromote
 }: PostCardProps) {
-    const { author, createdAt, content, media, stats, originalPost, editedAt, poll, isRepost, isPromoted } = post;
+    const { author, createdAt, content, media, stats = { likes: 0, comments: 0, reposts: 0, reshares: 0, views: 0, bookmarks: 0 }, originalPost, editedAt, poll, isRepost, isPromoted } = post;
     const { loggedInUser } = useAppContext();
     const { requireAuth } = useAuthGuard();
     const { toast } = useToast();
