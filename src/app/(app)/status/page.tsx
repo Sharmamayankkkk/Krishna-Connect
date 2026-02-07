@@ -136,7 +136,9 @@ export default function StatusPage() {
             </Avatar>
             <div>
                 <p className="font-semibold">{update.name}</p>
-                <p className="text-sm text-muted-foreground">{formatDistanceToNow(new Date(update.statuses[0].created_at), { addSuffix: true })}</p>
+                <p className="text-sm text-muted-foreground">
+                    {update.statuses[0] ? formatDistanceToNow(new Date(update.statuses[0].created_at), { addSuffix: true }) : 'No status'}
+                </p>
             </div>
         </div>
     );

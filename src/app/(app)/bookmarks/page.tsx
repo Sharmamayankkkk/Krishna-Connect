@@ -155,8 +155,8 @@ export default function BookmarksPage() {
                                             />
                                         ) : (
                                             <Card key={post.id} className="overflow-hidden">
-                                                {post.media && post.media.length > 0 &&
-                                                    <img src={post.media[0].url} alt={post.media[0].alt || ''} className="w-full h-40 object-cover" />
+                                                {post.media && post.media.length > 0 && post.media[0] &&
+                                                    <img src={post.media[0]?.url || ''} alt={post.media[0]?.alt || ''} className="w-full h-40 object-cover" />
                                                 }
                                                 <CardContent className="p-3">
                                                     <p className="text-sm line-clamp-2">{post.content}</p>
