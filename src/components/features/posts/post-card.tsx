@@ -574,10 +574,35 @@ export function PostCard({
 
                         {/* Post Content */}
                         <div className="mt-2 text-sm text-foreground/90 whitespace-pre-wrap break-words">
-                            <RichTextRenderer
-                                content={post.content}
-                                onHareKrishnaClick={() => setIsHareKrishnaVideoOpen(true)}
-                            />
+                            {content.length > MAX_CONTENT_LENGTH && !isExpanded ? (
+                                <>
+                                    <RichTextRenderer
+                                        content={content.substring(0, MAX_CONTENT_LENGTH) + '...'}
+                                        onHareKrishnaClick={() => setIsHareKrishnaVideoOpen(true)}
+                                    />
+                                    <button
+                                        onClick={() => setIsExpanded(true)}
+                                        className="text-primary hover:underline font-medium ml-1"
+                                    >
+                                        Read more
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <RichTextRenderer
+                                        content={content}
+                                        onHareKrishnaClick={() => setIsHareKrishnaVideoOpen(true)}
+                                    />
+                                    {content.length > MAX_CONTENT_LENGTH && (
+                                        <button
+                                            onClick={() => setIsExpanded(false)}
+                                            className="text-primary hover:underline font-medium ml-1"
+                                        >
+                                            Show less
+                                        </button>
+                                    )}
+                                </>
+                            )}
                         </div>
 
                         {/* Polls */}

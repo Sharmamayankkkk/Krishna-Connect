@@ -227,7 +227,12 @@ export default async function ProfilePage(props: ProfilePageProps) {
           author:user_id(id, name, username, avatar_url, verified), 
           liked_by_users:post_likes(user_id),
           comments:comments!post_id(count),
-          reposts:post_reposts(count)
+          reposts:post_reposts(count),
+          quote_of:quote_of_id (
+            *,
+            author:user_id (id, name, username, avatar_url, verified),
+            media_urls
+          )
        `)
       .eq('user_id', profile.id)
       .order('created_at', { ascending: false });
@@ -240,6 +245,13 @@ export default async function ProfilePage(props: ProfilePageProps) {
         savedBy: [],
         repostedBy: [],
         media: p.media_urls || [],
+        originalPost: p.quote_of ? {
+          id: p.quote_of.id,
+          content: p.quote_of.content,
+          createdAt: p.quote_of.created_at,
+          author: p.quote_of.author || { id: '', name: 'Unknown', username: 'unknown', avatar: '/placeholder-user.jpg', verified: false },
+          media: p.quote_of.media_urls || []
+        } : null,
         stats: {
           likes: (p.liked_by_users as any[] || []).length,
           comments: (p.comments as any)?.[0]?.count || 0,

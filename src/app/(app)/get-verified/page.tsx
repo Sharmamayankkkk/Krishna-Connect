@@ -26,7 +26,13 @@ import {
     PartyPopper,
     ExternalLink,
     Edit3,
-    Send
+    Send,
+    TrendingUp,
+    Gift,
+    Pin,
+    Crown,
+    X as XIcon,
+    Check
 } from 'lucide-react';
 import {
     Dialog,
@@ -293,27 +299,101 @@ export default function GetVerifiedPage() {
                     </p>
 
                     {/* Benefits Section */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto mt-8">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 max-w-4xl mx-auto mt-8">
                         <div className="flex flex-col items-center p-4 rounded-lg bg-muted/50">
                             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
                                 <CheckCircle2 className="h-5 w-5 text-primary" />
                             </div>
                             <h3 className="font-semibold text-sm">Verified Badge</h3>
-                            <p className="text-xs text-muted-foreground text-center">Authentic identity on all your posts</p>
+                            <p className="text-xs text-muted-foreground text-center">Authentic identity on all posts</p>
                         </div>
                         <div className="flex flex-col items-center p-4 rounded-lg bg-muted/50">
                             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
                                 <Sparkles className="h-5 w-5 text-primary" />
                             </div>
                             <h3 className="font-semibold text-sm">Long-Form Posts</h3>
-                            <p className="text-xs text-muted-foreground text-center">Write detailed posts with no character limit</p>
+                            <p className="text-xs text-muted-foreground text-center">No character limit</p>
+                        </div>
+                        <div className="flex flex-col items-center p-4 rounded-lg bg-muted/50">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                                <Pin className="h-5 w-5 text-primary" />
+                            </div>
+                            <h3 className="font-semibold text-sm">Unlimited Pins</h3>
+                            <p className="text-xs text-muted-foreground text-center">Pin unlimited posts to profile</p>
+                        </div>
+                        <div className="flex flex-col items-center p-4 rounded-lg bg-muted/50">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                                <TrendingUp className="h-5 w-5 text-primary" />
+                            </div>
+                            <h3 className="font-semibold text-sm">Promote Posts</h3>
+                            <p className="text-xs text-muted-foreground text-center">Boost visibility of posts</p>
                         </div>
                         <div className="flex flex-col items-center p-4 rounded-lg bg-muted/50">
                             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
                                 <Send className="h-5 w-5 text-primary" />
                             </div>
                             <h3 className="font-semibold text-sm">Priority Support</h3>
-                            <p className="text-xs text-muted-foreground text-center">Direct access to our support team</p>
+                            <p className="text-xs text-muted-foreground text-center">Direct access to team</p>
+                        </div>
+                        <div className="flex flex-col items-center p-4 rounded-lg bg-muted/50">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                                <Crown className="h-5 w-5 text-primary" />
+                            </div>
+                            <h3 className="font-semibold text-sm">Exclusive Events</h3>
+                            <p className="text-xs text-muted-foreground text-center">Access to verified-only events</p>
+                        </div>
+                    </div>
+
+                    {/* Comparison Table */}
+                    <div className="mt-12 max-w-3xl mx-auto">
+                        <h3 className="text-xl font-bold text-center mb-6">Normal vs Verified Comparison</h3>
+                        <div className="rounded-xl border overflow-hidden">
+                            <table className="w-full">
+                                <thead>
+                                    <tr className="bg-muted/50">
+                                        <th className="text-left p-4 font-semibold">Feature</th>
+                                        <th className="text-center p-4 font-semibold">Normal</th>
+                                        <th className="text-center p-4 font-semibold bg-primary/10">
+                                            <span className="flex items-center justify-center gap-1">
+                                                Verified
+                                                <Image src="/user_Avatar/verified.png" alt="Verified" width={16} height={16} />
+                                            </span>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y">
+                                    <tr>
+                                        <td className="p-4">Verified Badge</td>
+                                        <td className="text-center p-4"><XIcon className="h-5 w-5 text-red-500 mx-auto" /></td>
+                                        <td className="text-center p-4 bg-primary/5"><Check className="h-5 w-5 text-green-500 mx-auto" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td className="p-4">Post Character Limit</td>
+                                        <td className="text-center p-4">280 chars</td>
+                                        <td className="text-center p-4 bg-primary/5 font-semibold text-green-600">Unlimited</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="p-4">Pin Posts to Profile</td>
+                                        <td className="text-center p-4">Max 3 posts</td>
+                                        <td className="text-center p-4 bg-primary/5 font-semibold text-green-600">Unlimited</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="p-4">Promote Posts</td>
+                                        <td className="text-center p-4"><XIcon className="h-5 w-5 text-red-500 mx-auto" /></td>
+                                        <td className="text-center p-4 bg-primary/5"><Check className="h-5 w-5 text-green-500 mx-auto" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td className="p-4">Priority Support</td>
+                                        <td className="text-center p-4"><XIcon className="h-5 w-5 text-red-500 mx-auto" /></td>
+                                        <td className="text-center p-4 bg-primary/5"><Check className="h-5 w-5 text-green-500 mx-auto" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td className="p-4">Verified-Only Events</td>
+                                        <td className="text-center p-4"><XIcon className="h-5 w-5 text-red-500 mx-auto" /></td>
+                                        <td className="text-center p-4 bg-primary/5"><Check className="h-5 w-5 text-green-500 mx-auto" /></td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -369,7 +449,7 @@ export default function GetVerifiedPage() {
                             </CardTitle>
                             <CardDescription>Billed annually (Save 2 months!)</CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="space-y-4">
                             <div className="flex items-baseline gap-2">
                                 {allLinksProvided && (
                                     <span className="text-2xl text-muted-foreground line-through">₹{PRICES.yearly.regular}</span>
@@ -378,10 +458,29 @@ export default function GetVerifiedPage() {
                                 <span className="text-muted-foreground">/year</span>
                             </div>
                             {allLinksProvided && (
-                                <Badge variant="secondary" className="mt-2 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
                                     ₹100 Discount Applied!
                                 </Badge>
                             )}
+
+                            {/* Yearly Exclusive Perks */}
+                            <Separator />
+                            <div className="space-y-3">
+                                <p className="text-sm font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-2">
+                                    <Gift className="h-4 w-4" />
+                                    Yearly Exclusive Perks
+                                </p>
+                                <div className="space-y-2 text-sm">
+                                    <div className="flex items-start gap-2">
+                                        <TrendingUp className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                                        <span><strong>3 Promoted Posts/Month</strong> — Boost your posts for free every month</span>
+                                    </div>
+                                    <div className="flex items-start gap-2">
+                                        <Gift className="h-4 w-4 text-purple-500 mt-0.5 flex-shrink-0" />
+                                        <span><strong>Madhav Stores Coupon</strong> — ₹100 off on orders above ₹1000</span>
+                                    </div>
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
