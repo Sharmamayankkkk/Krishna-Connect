@@ -84,7 +84,7 @@ function CommentCard({ comment, post, onLikeToggle }: { comment: Comment, post: 
           </Button>
           <Button variant="ghost" size="icon" className="flex items-center gap-1 text-xs -ml-2">
             <MessageSquareReply className="h-4 w-4" />
-            <span className="text-xs">{comment.replies.length}</span>
+            <span className="text-xs">{(comment.replies || []).length}</span>
           </Button>
         </div>
         {/* We can map comment.replies here later */}
