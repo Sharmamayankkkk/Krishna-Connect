@@ -233,10 +233,10 @@ const EmbeddedPost = ({ post }: { post: Pick<PostType, 'author' | 'createdAt' | 
                 <div className="text-sm line-clamp-3">
                     <RichTextRenderer content={post.content} />
                 </div>
-                {post.media && post.media.length > 0 && (
+                {post.media && post.media.length > 0 && post.media[0] && (
                     <div className="mt-2 h-32 relative rounded-md overflow-hidden bg-muted">
-                        {post.media[0].type === 'image' ? (
-                            <Image src={post.media[0].url} alt="" fill className="object-cover" />
+                        {post.media[0]?.type === 'image' ? (
+                            <Image src={post.media[0]?.url || ''} alt="" fill className="object-cover" />
                         ) : (
                             <div className="flex items-center justify-center h-full w-full text-muted-foreground">
                                 <div className="bg-black/50 p-2 rounded-full"><div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-white border-b-[6px] border-b-transparent ml-1" /></div>
