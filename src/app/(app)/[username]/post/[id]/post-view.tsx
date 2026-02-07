@@ -196,15 +196,29 @@ export default function PostView() {
                             <div>
                                 {post.comments && post.comments.length > 0 ? (
                                     post.comments.map((comment) => {
-                                        // Ensure comment has author property for PostCard
-                                        const commentWithAuthor = {
+                                        // Ensure comment has all required PostCard properties
+                                        const commentAsPost = {
                                             ...comment,
-                                            author: (comment as any).user || (comment as any).author // fallback
+                                            author: (comment as any).user || (comment as any).author, // fallback
+                                            media: [], // Comments don't have media
+                                            stats: {
+                                                likes: comment.likes || 0,
+                                                comments: (comment.replies || []).length,
+                                                reposts: 0,
+                                                reshares: 0,
+                                                views: 0,
+                                                bookmarks: 0
+                                            },
+                                            comments: comment.replies || [],
+                                            originalPost: null,
+                                            savedBy: [],
+                                            repostedBy: [],
+                                            collaborators: []
                                         };
                                         return (
                                             <PostCard
                                                 key={comment.id}
-                                                post={commentWithAuthor as any}
+                                                post={commentAsPost as any}
                                                 onLikeToggle={() => handleCommentLikeToggle(post, comment.id)}
                                                 onComment={() => { }} // Reply to comment?
                                                 onDelete={() => handleCommentDelete(post, comment.id)}
