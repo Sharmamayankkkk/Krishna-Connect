@@ -30,20 +30,38 @@ The primary objectives of Krishna Connect are:
 The scope of the project defines its boundaries, outlining what is included and what is intentionally excluded.
 
 #### **In-Scope:**
-- **User Authentication:** Secure sign-up, login (email/password & OAuth), and profile management.
+- **User Authentication:** Secure sign-up, login (email/password & OAuth), password recovery, and profile management.
 - **Real-Time Messaging:** One-on-one and group chats with typing indicators, read receipts, and online status.
-- **Rich Media:** Sharing of images, documents, and voice notes.
+- **Rich Media:** Sharing of images, documents, voice notes, GIFs (via Giphy), and emojis.
 - **Message Interactions:** Reactions, replies, editing, deleting, forwarding, and starring messages.
-- **Advanced Features:** Text formatting, link previews, and `@mentions`.
+- **Advanced Features:** Text formatting, link previews, `@mentions`, and hashtags.
 - **Customization:** Light/dark modes and customizable chat appearance (bubble colors, wallpapers).
-- **Community Management:** Democratized group creation and user-powered reporting.
+- **Community Management:** Democratized group creation, user-powered reporting, and content moderation.
 - **Event System:** Creation of events by "Verified Users," with open RSVP for all community members.
+- **Feed System:** Public posts with likes, reposts, comments, and infinite scroll.
+- **Stories/Status:** Ephemeral 24-hour content sharing.
+- **Bookmarks:** Save and organize favorite posts.
+- **Notifications:** Real-time notifications for interactions, mentions, and events.
+- **Search & Explore:** Discover users, posts, hashtags, and trending content.
+- **Analytics Dashboard:** Insights and metrics for content creators.
+- **Progressive Web App (PWA):** Installable web app with service worker and offline support.
+- **Push Notifications:** Web push notifications for real-time alerts.
+- **AI-Powered Features:** Content analysis and smart features using Google Gemini.
+- **Image Editing:** Built-in cropping, rotation, and filters.
+- **Content Scheduling:** Schedule posts for future publication.
+- **Collaborative Posts:** Multi-author content creation.
+- **Thread Support:** Connected series of posts.
+- **Monetization:** Optional ads integration (Google AdSense).
+- **Privacy & Security:** Advanced privacy controls, user blocking, and account security settings.
 
 #### **Out-of-Scope (for the current version):**
 - **Live Video/Audio Calls:** While planned for the future, real-time video/audio calling is not part of the initial scope.
 - **E-commerce or Donations:** The platform will not handle financial transactions.
-- **Advanced Social Media Feeds:** The focus is on direct and group communication, not on public, algorithm-driven feeds.
-- **Native Mobile Applications:** The initial product is a responsive Progressive Web App (PWA). Native iOS/Android apps are a future consideration.
+- **Native Mobile Applications:** The product is a responsive Progressive Web App (PWA). Native iOS/Android apps are a future consideration.
+- **Live Audio Spaces:** Voice-only rooms (in development).
+- **NFT Integration:** Digital collectibles and verified profile pictures (planned).
+- **AR Filters:** Augmented reality camera effects (planned).
+- **Advanced Lists:** Custom user feed curation (planned).
 
 ---
 
@@ -60,12 +78,20 @@ The project follows an **Agile development methodology**, characterized by itera
 ---
 
 ### **6. Tools & Technologies Used**
-- **Framework:** **Next.js 14** (App Router)
+- **Framework:** **Next.js 16** (App Router)
 - **UI Library:** **React 18**
 - **UI Components:** **ShadCN UI**
 - **Styling:** **Tailwind CSS**
-- **Backend & Database:** **Supabase** (PostgreSQL, Auth, Storage, Realtime)
+- **Backend & Database:** **Supabase** (PostgreSQL 15+, GoTrue Auth, Storage, Realtime)
 - **Language:** **TypeScript**
+- **State Management:** **React Query (TanStack Query)** + **React Context**
+- **Forms:** **React Hook Form** + **Zod**
+- **AI Integration:** **Google Gemini (Genkit)**
+- **GIF Integration:** **Giphy API**
+- **Image Processing:** **react-easy-crop**, **react-image-crop**
+- **Push Notifications:** **Web Push API** + **web-push**
+- **Analytics:** **Vercel Analytics** + **Vercel Speed Insights**
+- **Icons:** **Lucide React**
 - **Deployment:** **Vercel**
 - **Package Management:** **npm**
 - **Version Control:** **Git & GitHub**
