@@ -447,11 +447,14 @@ export function PostCard({
                 <div className="flex gap-3">
                     {/* START: Add this block for avatar stack */}
                     <div className="flex flex-shrink-0 -space-x-3">
-                        {[post.author, ...(Array.isArray(post.collaborators) ? post.collaborators : [])].slice(0, 3).map((user, index) => (
-                            <Link href={`/profile/${encodeURIComponent(user?.username || 'unknown')}`} key={user?.id || index} prefetch={false}>
+                        {[post.author, ...(Array.isArray(post.collaborators) ? post.collaborators : [])]
+                            .filter(user => user && user.username) // Only show users with valid data
+                            .slice(0, 3)
+                            .map((user, index) => (
+                            <Link href={`/profile/${encodeURIComponent(user.username)}`} key={user.id || index} prefetch={false}>
                                 <Avatar className="h-10 w-10 border-2 border-background" style={{ zIndex: 3 - index }}>
-                                    <AvatarImage src={getAvatarUrl((user as any)?.avatar || (user as any)?.avatar_url)} alt={user?.name || 'User'} />
-                                    <AvatarFallback>{user?.name?.charAt(0) || '?'}</AvatarFallback>
+                                    <AvatarImage src={getAvatarUrl((user as any)?.avatar || (user as any)?.avatar_url)} alt={user.name || 'User'} />
+                                    <AvatarFallback>{(user.name?.charAt(0) || '?').toUpperCase()}</AvatarFallback>
                                 </Avatar>
                             </Link>
                         ))}
@@ -462,10 +465,12 @@ export function PostCard({
                             <div className="flex items-baseline gap-x-2 text-sm flex-wrap min-w-0">
 
                                 <div className="flex flex-wrap items-center gap-x-1.5 font-bold">
-                                    {[post.author, ...(Array.isArray(post.collaborators) ? post.collaborators : [])].map((user, index, arr) => (
-                                        <React.Fragment key={user?.id || index}>
-                                            <Link href={`/profile/${encodeURIComponent(user?.username || 'unknown')}`} className="hover:underline" prefetch={false}>
-                                                {user?.name || 'Unknown'}
+                                    {[post.author, ...(Array.isArray(post.collaborators) ? post.collaborators : [])]
+                                        .filter(user => user && user.username) // Only show users with valid data
+                                        .map((user, index, arr) => (
+                                        <React.Fragment key={user.id || index}>
+                                            <Link href={`/profile/${encodeURIComponent(user.username)}`} className="hover:underline" prefetch={false}>
+                                                {user.name || 'Unknown'}
                                             </Link>
                                             {index === 0 && arr.length > 1 && <span className="font-medium text-muted-foreground">with</span>}
                                             {index > 0 && index < arr.length - 1 && <span className="font-medium text-muted-foreground">,</span>}

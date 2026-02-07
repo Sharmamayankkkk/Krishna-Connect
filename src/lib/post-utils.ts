@@ -40,9 +40,7 @@ export const transformPost = (dbPost: any): PostType => {
 
     // Handle likes - can be array of objects with user_id or count object
     const likesArray = Array.isArray(dbPost.likes) ? dbPost.likes : [];
-    const likesCount = likesArray.length > 0
-        ? likesArray.length
-        : (dbPost.likes?.[0]?.count || 0);
+    const likesCount = likesArray.length || (dbPost.likes?.[0]?.count || 0);
 
     const likedByUsers = likesArray.length > 0
         ? likesArray.map((like: any) => like.user_id || like)
@@ -50,9 +48,7 @@ export const transformPost = (dbPost: any): PostType => {
 
     // Handle reposts
     const repostsArray = Array.isArray(dbPost.reposts) ? dbPost.reposts : [];
-    const repostsCount = repostsArray.length > 0
-        ? repostsArray.length
-        : (dbPost.reposts?.[0]?.count || 0);
+    const repostsCount = repostsArray.length || (dbPost.reposts?.[0]?.count || 0);
 
     const repostedByUsers = repostsArray.map((rp: any) => rp.user_id || rp);
 

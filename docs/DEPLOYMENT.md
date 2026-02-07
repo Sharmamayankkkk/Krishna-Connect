@@ -66,11 +66,16 @@ Ensure the following variables are set in the Vercel Project Settings:
 ## Database Migrations
 
 When deploying code that requires schema changes:
-1.  Run the necessary SQL scripts in the **production** Supabase SQL Editor in this order:
-    - `supabase/migrations/01_Schema.sql` (base schema)
-    - `supabase/migrations/02_RLS.sql` (security policies)
-    - `supabase/migrations/03_Functions_Triggers.sql` (stored procedures and triggers)
-    - Any additional migration files in chronological order
+1.  Run the necessary SQL migration scripts in the **production** Supabase SQL Editor in chronological order:
+    - `supabase/migrations/01_Schema.sql` - Base database schema
+    - `supabase/migrations/02_RLS.sql` - Row Level Security policies
+    - `supabase/migrations/03_Functions_Triggers.sql` - Stored procedures and triggers
+    - `supabase/migrations/20260124_add_settings_to_profiles.sql` - Profile settings
+    - `supabase/migrations/20260124_privacy_protocols.sql` - Privacy features
+    - `supabase/migrations/20260202_create_missing_tables.sql` - Additional tables
+    - `supabase/migrations/20260206_fix_posts_updated_at.sql` - Post timestamp fix
+    - `supabase/migrations/20260206_pinned_posts.sql` - Pinned posts feature
+    - Any additional migration files as they are added
 2.  Verify no breaking changes (e.g., column renames) affect the currently live app before the new code is deployed.
 3.  Test RLS policies in a staging environment first.
 4.  Back up the production database before running migrations.
