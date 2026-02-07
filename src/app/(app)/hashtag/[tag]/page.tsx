@@ -85,7 +85,7 @@ export default function HashtagPage() {
                         likedBy: (p.likes || []).map((l: any) => l.user_id),
                         savedBy: (p.saved || []).map((s: any) => s.user_id),
                         repostedBy: (p.reposted || []).map((r: any) => r.user_id),
-                        collaborators: p.collaborators?.map((c: any) => c.user) || [],
+                        collaborators: (p.collaborators || []).map((c: any) => c.user),
                         originalPost: null, // Simplified for now
                         isRepost: false,
                         comments: [], // Not loading comments here
