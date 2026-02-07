@@ -64,7 +64,7 @@ export async function generateMetadata(
   if (post.media_urls && Array.isArray(post.media_urls) && post.media_urls.length > 0) {
     // If it's an image attachment
     const firstMedia = post.media_urls[0];
-    if (firstMedia.url) {
+    if (firstMedia && firstMedia.url) {
       imageUrl = firstMedia.url.startsWith('http')
         ? firstMedia.url
         : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/attachments/${firstMedia.url}`;
