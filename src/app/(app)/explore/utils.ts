@@ -59,13 +59,13 @@ export const transformPost = (dbPost: any): PostType => {
         isPinned: dbPost.is_pinned || !!dbPost.pinned_at || false,
         isPromoted: dbPost.is_promoted,
         collaborators: (dbPost.post_collaborators || [])
-            .filter((c: any) => c.status === 'accepted')
+            .filter((c: any) => c?.status === 'accepted' && c?.user)
             .map((c: any) => ({
-                id: c.user.id,
-                name: c.user.name,
-                username: c.user.username,
-                avatar: c.user.avatar_url || '/placeholder-user.jpg',
-                verified: c.user.verified
+                id: c.user?.id || 'unknown',
+                name: c.user?.name || 'Unknown',
+                username: c.user?.username || 'unknown',
+                avatar: c.user?.avatar_url || '/placeholder-user.jpg',
+                verified: c.user?.verified || false
             }))
     };
 };

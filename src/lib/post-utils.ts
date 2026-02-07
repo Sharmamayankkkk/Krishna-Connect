@@ -81,7 +81,7 @@ export const transformPost = (dbPost: any): PostType => {
         isPinned: dbPost.is_pinned || !!dbPost.pinned_at || false,
         isPromoted: dbPost.is_promoted || false,
         collaborators: (Array.isArray(dbPost.post_collaborators) ? dbPost.post_collaborators : [])
-            .filter((c: any) => c?.status === 'accepted')
+            .filter((c: any) => c?.status === 'accepted' && (c?.user || c?.id))
             .map((c: any) => ({
                 id: c.user?.id || c.id || 'unknown',
                 name: c.user?.name || c.name || 'Unknown',
