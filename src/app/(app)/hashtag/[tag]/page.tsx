@@ -68,7 +68,7 @@ export default function HashtagPage() {
                             avatar: p.author.avatar_url,
                             verified: p.author.verified
                         },
-                        media: p.media.map((m: any) => ({
+                        media: (p.media || []).map((m: any) => ({
                             type: m.type,
                             url: m.url,
                             width: m.width,
@@ -82,9 +82,9 @@ export default function HashtagPage() {
                             reshares: 0,
                             bookmarks: p.saved?.length || 0
                         },
-                        likedBy: p.likes.map((l: any) => l.user_id),
-                        savedBy: p.saved.map((s: any) => s.user_id),
-                        repostedBy: p.reposted.map((r: any) => r.user_id),
+                        likedBy: (p.likes || []).map((l: any) => l.user_id),
+                        savedBy: (p.saved || []).map((s: any) => s.user_id),
+                        repostedBy: (p.reposted || []).map((r: any) => r.user_id),
                         collaborators: p.collaborators?.map((c: any) => c.user) || [],
                         originalPost: null, // Simplified for now
                         isRepost: false,
