@@ -172,9 +172,9 @@ export function usePostInteractions({ loggedInUser, updatePost, onDeletePost }: 
     const handleCommentLikeToggle = async (post: PostType, commentId: string, isReply: boolean = false) => {
         if (!loggedInUser) return;
 
-        const updatedComments = post.comments.map(comment => {
+        const updatedComments = (post.comments || []).map(comment => {
             if (isReply) {
-                const updatedReplies = comment.replies.map(reply => {
+                const updatedReplies = (comment.replies || []).map(reply => {
                     if (reply.id === commentId) {
                         const isLiked = reply.likedBy.includes(loggedInUser.id);
                         const newLikedBy = isLiked
@@ -233,7 +233,7 @@ export function usePostInteractions({ loggedInUser, updatePost, onDeletePost }: 
                 likedBy: []
             };
 
-            const updatedComments = post.comments.map(c =>
+            const updatedComments = (post.comments || []).map(c =>
                 c.id === parentCommentId
                     ? { ...c, replies: [...(c.replies || []), newReply] }
                     : c
@@ -283,7 +283,7 @@ export function usePostInteractions({ loggedInUser, updatePost, onDeletePost }: 
     const handleCommentPinToggle = async (post: PostType, commentId: string) => {
         if (!loggedInUser || post.author.id !== loggedInUser.id) return;
 
-        const updatedComments = post.comments.map(comment => {
+        const updatedComments = (post.comments || []).map(comment => {
             if (comment.id === commentId) {
                 return { ...comment, isPinned: !comment.isPinned };
             }
@@ -291,7 +291,7 @@ export function usePostInteractions({ loggedInUser, updatePost, onDeletePost }: 
             if (!comment.isPinned) return comment;
             // If we are pinning a new one, unpin the old one? logic depends on requirement. 
             // Feed.tsx implementation unpins others.
-            const targetComment = post.comments.find(c => c.id === commentId);
+            const targetComment = (post.comments || []).find(c => c.id === commentId);
             if (targetComment && !targetComment.isPinned) {
                 // We are turning toggle ON for target, so turn OFF for this one
                 return { ...comment, isPinned: false };
@@ -309,9 +309,9 @@ export function usePostInteractions({ loggedInUser, updatePost, onDeletePost }: 
     const handleCommentHideToggle = async (post: PostType, commentId: string, isReply: boolean = false) => {
         if (!loggedInUser || post.author.id !== loggedInUser.id) return;
 
-        const updatedComments = post.comments.map(comment => {
+        const updatedComments = (post.comments || []).map(comment => {
             if (isReply) {
-                const updatedReplies = comment.replies?.map(reply => {
+                const updatedReplies = (comment.replies || []).map(reply => {
                     if (reply.id === commentId) {
                         return { ...reply, isHidden: !reply.isHidden };
                     }
@@ -340,11 +340,11 @@ export function usePostInteractions({ loggedInUser, updatePost, onDeletePost }: 
         // Optimistic
         let updatedPost = { ...post };
         if (isReply && parentCommentId) {
-            const updatedComments = post.comments.map(comment => {
+            const updatedComments = (post.comments || []).map(comment => {
                 if (comment.id === parentCommentId) {
                     return {
                         ...comment,
-                        replies: comment.replies.filter(r => r.id !== commentId)
+                        replies: (comment.replies || []).filter(r => r.id !== commentId)
                     };
                 }
                 return comment;
