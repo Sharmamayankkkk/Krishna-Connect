@@ -253,7 +253,7 @@ const EmbeddedPost = ({ post }: { post: Pick<PostType, 'author' | 'createdAt' | 
 // --- POLL COMPONENT ---
 const PollDisplay = ({ poll, postId, onVote, hasVoted }: { poll: PollType, postId: string, onVote: (optId: string) => void, hasVoted: boolean }) => {
     if (!poll || !poll.options) return null;
-    const totalVotes = (poll.options || []).reduce((acc, curr) => acc + curr.votes, 0);
+    const totalVotes = poll.options.reduce((acc, curr) => acc + curr.votes, 0);
 
     return (
         <div className="mt-3 space-y-2">
