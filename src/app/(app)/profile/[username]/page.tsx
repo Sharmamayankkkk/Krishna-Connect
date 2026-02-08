@@ -247,29 +247,20 @@ export default async function ProfilePage(props: ProfilePageProps) {
 
     if (data) {
       // Transform the data to match the component's expected format (Post type)
-      // We reuse the same transformation logic if possible, or map it manually here
-      // matching what feed.tsx does via transformPost
-      posts = data.map((post: any) => ({
-        id: post.id,
-        content: post.content,
-        image_url: post.media_urls?.[0]?.url || null,
-        media_urls: post.media_urls || [],
-        user_id: post.user_id,
-        created_at: post.created_at,
-        author: post.author,
-        likes: post.likes?.[0]?.count || 0,
-        comments: post.comments?.[0]?.count || 0,
-        reposts: post.reposts?.[0]?.count || 0,
-        isLiked: post.user_likes?.some((l: any) => l.user_id === user?.id) || false,
-        isBookmarked: false, // TODO: Add bookmark check if needed
-        isReposted: false, // TODO: Add repost check if needed
-        isPinned: post.is_pinned || false,
-        pinned_at: post.pinned_at,
-        quote_of: post.quote_of ? {
-          ...post.quote_of,
-          author: post.quote_of.author
-        } : null,
-        poll: post.poll
+      // Use the standardized transformPost utility
+      const { transformPost } = await import("@/lib/post-utils");
+
+      posts = data.map((post: any) => transformPost({
+        ...post,
+        // Ensure likes/reposts counts are handled if they come as arrays/objects from RPC
+        // The transformPost handles dbPost.likes as array, but our RPC might return differently?
+        // Our RPC returns standard joined tables, so transformPost should handle it.
+        // We just need to make sure `user_likes` is present for `isLiked` check internally in transformPost?
+        // transformPost checks `dbPost.user_likes` (array of objects with user_id) or `dbPost.likes` (array of objects).
+
+        // In our query: `user_likes:post_likes!post_id(user_id)` -> array of objects {user_id}.
+        // This matches what transformPost implementation expects:
+        // const likedByUsers ... (Array.isArray(dbPost.user_likes) ? dbPost.user_likes : []).map((like: any) => like.user_id);
       }));
     }
   } catch (e) {

@@ -570,29 +570,9 @@ export function PostCard({
 
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    {/* Likes */}
-                                    <div className="flex items-center">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className={cn("gap-2 rounded-full hover:text-pink-500 hover:bg-pink-500/10", isLiked && "text-pink-500")}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleLike();
-                                            }}
-                                        >
-                                            <Heart className={cn("h-5 w-5", isLiked && "fill-current")} />
-                                        </Button>
-                                        <button
-                                            className="text-sm hover:underline hover:text-pink-600 px-1"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                if (stats.likes > 0) setIsLikedByDialogOpen(true);
-                                            }}
-                                        >
-                                            {formatNumber(stats.likes)}
-                                        </button>
-                                    </div>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 flex-shrink-0">
+                                        <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
+                                    </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem onClick={handleSave}>
@@ -757,22 +737,32 @@ export function PostCard({
                             </DropdownMenu>
 
                             {/* Like */}
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className={cn(
-                                    "rounded-full group",
-                                    isLiked ? "text-red-500" : "hover:text-red-500"
-                                )}
-                                onClick={handleLike}
-                                aria-label={isLiked ? `Unlike. ${stats.likes || 0} likes` : `Like. ${stats.likes || 0} likes`}
-                            >
-                                <Heart className={cn(
-                                    "h-4 w-4 mr-1.5 group-hover:scale-110 transition-transform",
-                                    isLiked && "fill-current"
-                                )} />
-                                <span className="text-xs">{formatNumber(stats.likes || 0)}</span>
-                            </Button>
+                            <div className="flex items-center">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className={cn(
+                                        "rounded-full group",
+                                        isLiked ? "text-red-500" : "hover:text-red-500"
+                                    )}
+                                    onClick={handleLike}
+                                    aria-label={isLiked ? `Unlike. ${stats.likes || 0} likes` : `Like. ${stats.likes || 0} likes`}
+                                >
+                                    <Heart className={cn(
+                                        "h-4 w-4 mr-1.5 group-hover:scale-110 transition-transform",
+                                        isLiked && "fill-current"
+                                    )} />
+                                </Button>
+                                <button
+                                    className={cn("text-xs hover:underline hover:text-red-600 px-1 tabular-nums", isLiked && "text-red-500")}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if ((stats.likes || 0) > 0) setIsLikedByDialogOpen(true);
+                                    }}
+                                >
+                                    {formatNumber(stats.likes || 0)}
+                                </button>
+                            </div>
 
                             {/* Views */}
                             <Button

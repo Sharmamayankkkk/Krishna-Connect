@@ -9,7 +9,7 @@ import { EditProfileDialog } from "./edit-profile-dialog";
 import { ReportDialog } from "./report-dialog";
 import { PostDetailDialog } from "@/components/features/posts/dialogs/post-detail-dialog";
 import type { Profile } from "@/types";
-import type { Post, User } from "@/lib/types";
+import type { Post, User, PostType } from "@/lib/types";
 import {
   ArrowLeft,
   CalendarDays,
@@ -40,7 +40,6 @@ import { useToast } from "@/hooks/use-toast";
 import { PrivateContentPlaceholder } from "@/components/private-placeholders";
 import { AuthGate } from "@/components/auth-gate";
 import { usePostInteractions } from "@/hooks/use-post-interactions";
-import type { PostType } from "@/lib/types";
 import { transformPost } from "@/lib/post-utils";
 import {
   Tooltip,
@@ -51,7 +50,7 @@ import {
 
 interface ProfileViewProps {
   profile: Profile;
-  posts: Post[];
+  posts: PostType[];
   followers: any[];
   following: any[];
   currentUser: any;
@@ -61,7 +60,7 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
   const router = useRouter();
   const supabase = createClient();
   const { toast } = useToast();
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [selectedPost, setSelectedPost] = useState<PostType | null>(null);
   const [isPostDialogOpen, setIsPostDialogOpen] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
@@ -155,7 +154,7 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
     return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/attachments/${url}`;
   };
 
-  const handlePostClick = (post: Post) => {
+  const handlePostClick = (post: PostType) => {
     setSelectedPost(post);
     setIsPostDialogOpen(true);
   };
@@ -169,15 +168,16 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
     avatar: getImageUrl(profile.avatar_url) || '',
     is_admin: false,
     is_verified: profile.verified || false,
-    verified: profile.verified || false
-  };
+    verified: profile.verified || false,
+    user_metadata: {}
+  } as User;
 
   const isOwnProfile = currentUser?.id === profile.id;
   const displayName = profile.name || profile.full_name || profile.username;
   const joinDate = profile.created_at ? format(new Date(profile.created_at), 'MMMM yyyy') : null;
 
   // State for posts to allow local mutations (likes, deletes)
-  const [localPosts, setLocalPosts] = useState<Post[]>(posts);
+  const [localPosts, setLocalPosts] = useState<PostType[]>(posts);
 
   const loggedInUser = currentUser ? {
     id: currentUser.id,
@@ -217,7 +217,7 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
   // Filter posts based on local state
   const userPosts = localPosts.filter(p => !(p as any).is_reply && !(p as any).parent_id);
   const userReplies = localPosts.filter(p => (p as any).is_reply || (p as any).parent_id);
-  const mediaPosts = localPosts.filter(p => p.media_urls && p.media_urls.length > 0);
+  const mediaPosts = localPosts.filter(p => p.media && p.media.length > 0);
   const pinnedPosts = userPosts.filter(p => (p as any).isPinned || (p as any).pinned_at);
   const unpinnedPosts = userPosts.filter(p => !(p as any).isPinned && !(p as any).pinned_at);
 
@@ -231,8 +231,13 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
       <PostDetailDialog
         open={isPostDialogOpen}
         onOpenChange={setIsPostDialogOpen}
-        post={selectedPost}
-        author={selectedPost?.author ? { ...selectedPost.author, is_admin: false, user_metadata: {} } as User : profileUser}
+        post={selectedPost as any}
+        author={selectedPost?.author ? {
+          ...selectedPost.author,
+          avatar_url: selectedPost.author.avatar,
+          is_admin: false,
+          user_metadata: {}
+        } as unknown as User : profileUser}
         initialComments={[]}
       />
 
@@ -511,7 +516,7 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
                 <span className="font-semibold">Pinned</span>
               </div>
               <FeedList
-                posts={pinnedPosts.map(transformPost)}
+                posts={pinnedPosts}
                 isLoading={false}
                 onPostUpdated={updatePost}
                 onPostDeleted={handleDeletePost}
@@ -540,7 +545,7 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
 
             <TabsContent value="posts" className="mt-0">
               <FeedList
-                posts={unpinnedPosts.map(transformPost)}
+                posts={unpinnedPosts}
                 isLoading={false}
                 onPostUpdated={updatePost}
                 onPostDeleted={handleDeletePost}
@@ -553,7 +558,7 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
 
             <TabsContent value="replies" className="mt-0">
               <FeedList
-                posts={userReplies.map(transformPost)}
+                posts={userReplies}
                 isLoading={false}
                 onPostUpdated={updatePost}
                 onPostDeleted={handleDeletePost}
@@ -572,7 +577,10 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
               ) : (
                 <div className="grid grid-cols-3 gap-0.5">
                   {mediaPosts.map((post) => {
-                    const mediaUrl = post.media_urls?.[0]?.url || post.image_url;
+                    // Support both new structure (media array) and old structure (media_urls) just in case
+                    const mediaItem = post.media?.[0];
+                    const mediaUrl = mediaItem?.url || (post as any).image_url;
+
                     return mediaUrl ? (
                       <button
                         key={post.id}
