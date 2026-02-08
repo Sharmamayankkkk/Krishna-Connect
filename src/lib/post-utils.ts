@@ -39,22 +39,18 @@ export const transformPost = (dbPost: any): PostType => {
     const transformedComments: CommentType[] = topLevelComments.map(transformComment);
 
     // Handle likes - can be array of objects with user_id or count object
-    const likesCount = Array.isArray(dbPost.likes)
-        ? dbPost.likes.length
-        : (dbPost.likes?.[0]?.count || 0);
+    const likesArray = Array.isArray(dbPost.likes) ? dbPost.likes : [];
+    const likesCount = likesArray.length || (dbPost.likes?.[0]?.count || 0);
 
-    const likedByUsers = Array.isArray(dbPost.likes)
-        ? dbPost.likes.map((like: any) => like.user_id || like)
-        : (dbPost.user_likes || []).map((like: any) => like.user_id);
+    const likedByUsers = likesArray.length > 0
+        ? likesArray.map((like: any) => like.user_id || like)
+        : (Array.isArray(dbPost.user_likes) ? dbPost.user_likes : []).map((like: any) => like.user_id);
 
     // Handle reposts
-    const repostsCount = Array.isArray(dbPost.reposts)
-        ? dbPost.reposts.length
-        : (dbPost.reposts?.[0]?.count || 0);
+    const repostsArray = Array.isArray(dbPost.reposts) ? dbPost.reposts : [];
+    const repostsCount = repostsArray.length || (dbPost.reposts?.[0]?.count || 0);
 
-    const repostedByUsers = Array.isArray(dbPost.reposts)
-        ? dbPost.reposts.map((rp: any) => rp.user_id || rp)
-        : [];
+    const repostedByUsers = repostsArray.map((rp: any) => rp.user_id || rp);
 
     return {
         id: dbPost.id?.toString() || '',
@@ -67,8 +63,8 @@ export const transformPost = (dbPost: any): PostType => {
         },
         createdAt: dbPost.created_at || dbPost.createdAt || new Date().toISOString(),
         content: dbPost.content || '',
-        media: dbPost.media_urls || dbPost.media || [],
-        poll: dbPost.poll,
+        media: Array.isArray(dbPost.media_urls) ? dbPost.media_urls : (Array.isArray(dbPost.media) ? dbPost.media : []),
+        poll: dbPost.poll || null,
         stats: {
             likes: likesCount,
             comments: transformedComments.length || dbPost.comments_count || 0,
@@ -80,16 +76,16 @@ export const transformPost = (dbPost: any): PostType => {
         comments: transformedComments,
         originalPost: dbPost.quote_of ? transformPost(dbPost.quote_of) : null,
         likedBy: likedByUsers,
-        savedBy: (dbPost.saved_posts || []).map((s: any) => s.user_id || s),
+        savedBy: (Array.isArray(dbPost.saved_posts) ? dbPost.saved_posts : []).map((s: any) => s.user_id || s),
         repostedBy: repostedByUsers,
         isPinned: dbPost.is_pinned || !!dbPost.pinned_at || false,
         isPromoted: dbPost.is_promoted || false,
-        collaborators: (dbPost.post_collaborators || [])
-            .filter((c: any) => c.status === 'accepted')
+        collaborators: (Array.isArray(dbPost.post_collaborators) ? dbPost.post_collaborators : [])
+            .filter((c: any) => c?.status === 'accepted')
             .map((c: any) => ({
-                id: c.user?.id || c.id,
-                name: c.user?.name || c.name,
-                username: c.user?.username || c.username,
+                id: c.user?.id || c.id || 'unknown',
+                name: c.user?.name || c.name || 'Unknown',
+                username: c.user?.username || c.username || 'unknown',
                 avatar: c.user?.avatar_url || c.avatar || '/placeholder-user.jpg',
                 verified: c.user?.verified || c.verified || false
             }))
