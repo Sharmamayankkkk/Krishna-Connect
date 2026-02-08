@@ -48,17 +48,19 @@ const transformPostData = (post: PostData): PostType => {
     likedBy: post.is_liked ? [post.user_id] : [],
     savedBy: [],
     repostedBy: post.is_reposted ? [post.user_id] : [],
+    isPromoted: (post as any).is_promoted || false,
     originalPost: null
   };
 };
 
-const fetchPosts = async ({ pageParam = null }: { pageParam?: number | null }) => {
+const fetchPosts = async ({ pageParam = null, filter = 'for_you' }: { pageParam?: number | null, filter?: string }) => {
   const supabase = createClient();
 
+  // Fetch regular posts
   const { data, error } = await supabase.rpc('get_posts_paginated', {
     p_limit: 20,
     p_cursor: pageParam,
-    p_filter: 'for_you'
+    p_filter: filter
   });
 
   if (error) {
@@ -66,11 +68,36 @@ const fetchPosts = async ({ pageParam = null }: { pageParam?: number | null }) =
     throw error;
   }
 
-  if (!data || data.length === 0) {
+  let postsData = data || [];
+
+  // If first page, fetch promoted posts and inject
+  if (!pageParam && filter === 'for_you') {
+    const { data: promotedData, error: promotedError } = await supabase.rpc('get_active_promoted_posts', {
+      p_limit: 3
+    });
+
+    if (!promotedError && promotedData && promotedData.length > 0) {
+      // Mark promoted posts
+      const promotedPosts = promotedData.map((p: any) => ({ ...p, is_promoted: true }));
+
+      // Add promoted posts to the beginning
+      postsData = [...promotedPosts, ...postsData];
+
+      // Deduplicate by ID
+      const seenIds = new Set();
+      postsData = postsData.filter((p: any) => {
+        if (seenIds.has(p.id)) return false;
+        seenIds.add(p.id);
+        return true;
+      });
+    }
+  }
+
+  if (!postsData || postsData.length === 0) {
     return { posts: [], nextCursor: null };
   }
 
-  const posts = data.map(transformPostData);
+  const posts = postsData.map(transformPostData);
   const nextCursor = data.length === 20 ? data[data.length - 1].next_cursor : null;
 
   return { posts, nextCursor };
@@ -79,7 +106,7 @@ const fetchPosts = async ({ pageParam = null }: { pageParam?: number | null }) =
 export function usePosts(filter: string = 'for_you') {
   return useInfiniteQuery({
     queryKey: ['posts', filter],
-    queryFn: fetchPosts,
+    queryFn: ({ pageParam }) => fetchPosts({ pageParam, filter }),
     getNextPageParam: (lastPage) => lastPage.nextCursor,
     staleTime: 2 * 60 * 1000, // 2 minutes
     gcTime: 5 * 60 * 1000, // 5 minutes

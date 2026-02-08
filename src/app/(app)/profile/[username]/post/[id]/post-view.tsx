@@ -114,6 +114,9 @@ export default function PostView() {
             } else {
                 const formattedPost = transformPost(data);
                 setPost(formattedPost as any);
+
+                // Log view (fire and forget)
+                supabase.rpc('log_post_view', { p_post_id: postId }).then(() => { });
             }
             setIsLoading(false);
         };

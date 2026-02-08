@@ -358,6 +358,7 @@ export type NotificationType = {
   status?: 'pending' | 'accepted' | 'declined';
   postContent?: string;
   postMediaType?: 'image' | 'video' | 'gif';
+  postAuthorUsername?: string;
 };
 
 export type UserRelationship = {

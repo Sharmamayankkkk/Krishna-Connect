@@ -222,7 +222,11 @@ export function CommentSheet({ post, open, onOpenChange, onComment }: CommentShe
               <span className="font-semibold">{post.author.name}</span>
               <span className="text-sm text-muted-foreground">@{post.author.username}</span>
             </div>
-            {post.content && <p className="mt-1">{post.content}</p>}
+            {post.content && (
+              <p className="mt-1 line-clamp-3 text-sm text-foreground/80">
+                {post.content}
+              </p>
+            )}
           </div>
         </div>
 

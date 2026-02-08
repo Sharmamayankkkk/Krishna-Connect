@@ -50,6 +50,7 @@ import { useAuthGuard } from '@/hooks/use-auth-guard';
 import { Skeleton } from "@/components/ui/skeleton";
 import { RichTextRenderer } from '@/components/rich-text-renderer';
 import { CommentSheet as CommentsSheet } from '@/app/(app)/explore/components/comment-sheet';
+import { PromotePostDialog } from './dialogs/promote-post-dialog';
 
 interface PostCardProps {
     post: PostType;
@@ -328,6 +329,7 @@ export function PostCard({
     const [showRepostMenu, setShowRepostMenu] = React.useState(false);
     const [isExpanded, setIsExpanded] = React.useState(false);
     const [isRepostedByOpen, setIsRepostedByOpen] = React.useState(false);
+    const [isPromoteOpen, setIsPromoteOpen] = React.useState(false);
 
     // Truncation settings for Read More feature
     const MAX_CONTENT_LENGTH = 280;
@@ -339,6 +341,10 @@ export function PostCard({
     const isReposted = loggedInUser && post.repostedBy ? post.repostedBy.includes(loggedInUser.id) : false;
 
     // Handlers
+    const handlePromote = () => {
+        setIsPromoteOpen(true);
+    };
+
     const handleMediaClick = (index: number) => {
         setImageViewerStartIndex(index);
         setIsImageViewerOpen(true);
@@ -413,6 +419,11 @@ export function PostCard({
                 itemType="post"
             />
 
+            <PromotePostDialog
+                post={post}
+                open={isPromoteOpen}
+                onOpenChange={setIsPromoteOpen}
+            />
             <CommentsSheet
                 post={post}
                 open={isCommentsOpen}
@@ -451,13 +462,13 @@ export function PostCard({
                             .filter(user => user && user.username) // Only show users with valid data
                             .slice(0, 3)
                             .map((user, index) => (
-                            <Link href={`/profile/${encodeURIComponent(user.username)}`} key={user.id || index} prefetch={false}>
-                                <Avatar className="h-10 w-10 border-2 border-background" style={{ zIndex: 3 - index }}>
-                                    <AvatarImage src={getAvatarUrl((user as any)?.avatar || (user as any)?.avatar_url)} alt={user.name || 'User'} />
-                                    <AvatarFallback>{(user.name?.charAt(0) || '?').toUpperCase()}</AvatarFallback>
-                                </Avatar>
-                            </Link>
-                        ))}
+                                <Link href={`/profile/${encodeURIComponent(user.username)}`} key={user.id || index} prefetch={false}>
+                                    <Avatar className="h-10 w-10 border-2 border-background" style={{ zIndex: 3 - index }}>
+                                        <AvatarImage src={getAvatarUrl((user as any)?.avatar || (user as any)?.avatar_url)} alt={user.name || 'User'} />
+                                        <AvatarFallback>{(user.name?.charAt(0) || '?').toUpperCase()}</AvatarFallback>
+                                    </Avatar>
+                                </Link>
+                            ))}
                     </div>
 
                     <div className="flex-1 min-w-0">
@@ -468,14 +479,14 @@ export function PostCard({
                                     {[post.author, ...(Array.isArray(post.collaborators) ? post.collaborators : [])]
                                         .filter(user => user && user.username) // Only show users with valid data
                                         .map((user, index, arr) => (
-                                        <React.Fragment key={user.id || index}>
-                                            <Link href={`/profile/${encodeURIComponent(user.username)}`} className="hover:underline" prefetch={false}>
-                                                {user.name || 'Unknown'}
-                                            </Link>
-                                            {index === 0 && arr.length > 1 && <span className="font-medium text-muted-foreground">with</span>}
-                                            {index > 0 && index < arr.length - 1 && <span className="font-medium text-muted-foreground">,</span>}
-                                        </React.Fragment>
-                                    ))}
+                                            <React.Fragment key={user.id || index}>
+                                                <Link href={`/profile/${encodeURIComponent(user.username)}`} className="hover:underline" prefetch={false}>
+                                                    {user.name || 'Unknown'}
+                                                </Link>
+                                                {index === 0 && arr.length > 1 && <span className="font-medium text-muted-foreground">with</span>}
+                                                {index > 0 && index < arr.length - 1 && <span className="font-medium text-muted-foreground">,</span>}
+                                            </React.Fragment>
+                                        ))}
                                     {post.author.verified && (
                                         <Image
                                             src="/user_Avatar/verified.png"
@@ -484,9 +495,12 @@ export function PostCard({
                                             height={16}
                                             className="inline-block"
                                             title="Verified"
-                                            onContextMenu={(e) => e.preventDefault()}
-                                            unoptimized
                                         />
+                                    )}
+                                    {post.isPromoted && (
+                                        <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary ring-1 ring-inset ring-primary/20">
+                                            Promoted
+                                        </span>
                                     )}
                                 </div>
 
@@ -495,9 +509,11 @@ export function PostCard({
                                     @{author.username}
                                 </Link>
                                 <span className="text-muted-foreground flex-shrink-0">·</span>
-                                <time dateTime={createdAt} className="text-muted-foreground hover:underline flex-shrink-0 whitespace-nowrap">
-                                    {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}
-                                </time>
+                                <Link href={`/profile/${author.username}/post/${post.id}`} className="text-muted-foreground hover:underline flex-shrink-0 whitespace-nowrap">
+                                    <time dateTime={createdAt}>
+                                        {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}
+                                    </time>
+                                </Link>
                                 {editedAt && (
                                     <>
                                         <span className="text-muted-foreground flex-shrink-0">·</span>
@@ -551,7 +567,7 @@ export function PostCard({
                                             )}
                                             {/* Add the new Promote button logic here */}
                                             {!post.isPromoted && (
-                                                <DropdownMenuItem onClick={() => onPromote(post)}>
+                                                <DropdownMenuItem onClick={handlePromote}>
                                                     <TrendingUp className="mr-2 h-4 w-4" />
                                                     <span>Promote Post</span>
                                                 </DropdownMenuItem>
@@ -717,7 +733,7 @@ export function PostCard({
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem onClick={() => {
-                                        const postUrl = `${window.location.origin}/${author.username}/post/${post.id}`;
+                                        const postUrl = `${window.location.origin}/profile/${author.username}/post/${post.id}`;
                                         navigator.clipboard.writeText(postUrl);
                                         toast({ title: "Link copied to clipboard!" });
                                     }}>

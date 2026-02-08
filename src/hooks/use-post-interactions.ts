@@ -260,14 +260,16 @@ export function usePostInteractions({ loggedInUser, updatePost, onDeletePost }: 
         const supabase = createClient();
         try {
             const commentPayload: any = {
-                post_id: post.id,
+                post_id: parseInt(post.id),
                 user_id: userId,
                 content: commentText
             };
 
-            // Note: Schema for parent_id varies. Assuming flat comments for now based on Feed.tsx
-            // If the backend supports nesting, we would add:
-            // if (parentCommentId) commentPayload.parent_id = parentCommentId;
+            if (parentCommentId) {
+                if (!isNaN(Number(parentCommentId))) {
+                    commentPayload.parent_comment_id = parseInt(parentCommentId);
+                }
+            }
 
             const { error } = await supabase.from('comments').insert(commentPayload);
             if (error) throw error;

@@ -187,7 +187,7 @@ const NotificationItem = React.memo(({
 
                 {/* Post Preview logic */}
                 {notification.postId && (notification.postContent || notification.postMediaType) && (
-                    <Link href={`/post/${notification.postId}`} className="block mt-2">
+                    <Link href={`/profile/${notification.postAuthorUsername || notification.fromUser.username}/post/${notification.postId}`} className="block mt-2">
                         <div className="border rounded-md p-3 bg-muted/30 text-xs sm:text-sm hover:bg-muted/60 transition-colors">
                             {/* Small indicator of what this is */}
                             <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
@@ -366,7 +366,8 @@ export default function NotificationsPage() {
                     createdAt: n.created_at,
                     read: n.is_read,
                     postContent: n.post_content,
-                    postMediaType: n.post_media_type as any
+                    postMediaType: n.post_media_type as any,
+                    postAuthorUsername: n.post_author_username // Add this mapped field
                 }));
 
                 // Fetch collaboration statuses
