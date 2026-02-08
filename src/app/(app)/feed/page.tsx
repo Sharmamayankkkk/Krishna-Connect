@@ -62,7 +62,7 @@ export default function FeedPage() {
                     content,
                     created_at,
                     user_id,
-                    profiles:profiles(
+                    profiles:profiles!comments_user_id_fkey(
                         id,
                         name,
                         username,
