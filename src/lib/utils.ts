@@ -67,3 +67,14 @@ export function getContrastingTextColor(color: string): string {
   // hsp > 127.5 is a good threshold for light/dark
   return hsp > 127.5 ? '#000000' : '#FFFFFF';
 }
+
+export function formatNumber(num: number): string {
+  if (num === undefined || num === null) return '0';
+  if (num >= 1000000) {
+    return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  }
+  if (num >= 1000) {
+    return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+  }
+  return num.toString();
+}

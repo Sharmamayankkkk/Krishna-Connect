@@ -205,64 +205,75 @@ export default async function ProfilePage(props: ProfilePageProps) {
   }
 
   // Fetch the data for the tabs
-  // We try RPC first, but fallback to direct queries if needed (since RPC seems unreliable for this setup)
   let posts: any[] = [];
   let followers: any[] = [];
   let following: any[] = [];
 
+  // Consistent Select Query (Same as feed.tsx and post-view.tsx)
+  const POST_SELECT_QUERY = `
+    *,
+    author:user_id (id, name, username, avatar_url, verified),
+    likes:post_likes(count),
+    comments:comments(count),
+    reposts:post_reposts(count),
+    post_comments:comments (
+        id,
+        user_id,
+        content,
+        created_at,
+        profiles:user_id (id, name, username, avatar_url, verified)
+    ),
+    quote_of:quote_of_id (
+        *,
+        author:user_id (id, name, username, avatar_url, verified),
+        media_urls
+    ),
+    user_likes:post_likes!post_id(user_id),
+    post_collaborators:post_collaborators!post_id (
+        user_id,
+        status,
+        user:user_id (id, name, username, avatar_url, verified)
+    )
+  `;
+
   try {
-    const { data } = await supabase.rpc('get_posts_by_user_id', { p_user_id: profile.id });
-    if (data) posts = data;
-  } catch (e) {
-    // Ignored, will drop to fallback logic below if empty
-  }
+    const { data } = await supabase
+      .rpc('get_posts_by_user_id', {
+        p_user_id: profile.id,
+        p_limit: 50,
+        p_offset: 0
+      })
+      .select(POST_SELECT_QUERY);
 
-  // Fallback direct query for posts if RPC failed or returned nothing (and we expect something?)
-  // Or simply always if empty.
-  if (!posts || posts.length === 0) {
-    const { data: rawPosts } = await supabase
-      .from('posts')
-      .select(`
-          *, 
-          author:user_id(id, name, username, avatar_url, verified), 
-          liked_by_users:post_likes(user_id),
-          comments:comments!post_id(count),
-          reposts:post_reposts(count),
-          quote_of:quote_of_id (
-            *,
-            author:user_id (id, name, username, avatar_url, verified),
-            media_urls
-          )
-       `)
-      .eq('user_id', profile.id)
-      .order('created_at', { ascending: false });
-
-    if (rawPosts) {
-      posts = rawPosts.map(p => ({
-        ...p,
-        author: p.author || profile,
-        likedBy: (p.liked_by_users as any[] || []).map((l: any) => l.user_id),
-        savedBy: [],
-        repostedBy: [],
-        media: p.media_urls || [],
-        originalPost: p.quote_of ? {
-          id: p.quote_of.id,
-          content: p.quote_of.content,
-          createdAt: p.quote_of.created_at,
-          author: p.quote_of.author || { id: '', name: 'Unknown', username: 'unknown', avatar: '/placeholder-user.jpg', verified: false },
-          media: p.quote_of.media_urls || []
+    if (data) {
+      // Transform the data to match the component's expected format (Post type)
+      // We reuse the same transformation logic if possible, or map it manually here
+      // matching what feed.tsx does via transformPost
+      posts = data.map((post: any) => ({
+        id: post.id,
+        content: post.content,
+        image_url: post.media_urls?.[0]?.url || null,
+        media_urls: post.media_urls || [],
+        user_id: post.user_id,
+        created_at: post.created_at,
+        author: post.author,
+        likes: post.likes?.[0]?.count || 0,
+        comments: post.comments?.[0]?.count || 0,
+        reposts: post.reposts?.[0]?.count || 0,
+        isLiked: post.user_likes?.some((l: any) => l.user_id === user?.id) || false,
+        isBookmarked: false, // TODO: Add bookmark check if needed
+        isReposted: false, // TODO: Add repost check if needed
+        isPinned: post.is_pinned || false,
+        pinned_at: post.pinned_at,
+        quote_of: post.quote_of ? {
+          ...post.quote_of,
+          author: post.quote_of.author
         } : null,
-        stats: {
-          likes: (p.liked_by_users as any[] || []).length,
-          comments: (p.comments as any)?.[0]?.count || 0,
-          reposts: (p.reposts as any)?.[0]?.count || 0,
-          reshares: 0,
-          views: 0,
-          bookmarks: 0
-        },
-        comments: [] // PostCard renders stats, comments list loaded in sheet
+        poll: post.poll
       }));
     }
+  } catch (e) {
+    console.error("Error fetching profile posts:", e);
   }
 
   // We skip followers/following for now as tabs are "Coming Soon"

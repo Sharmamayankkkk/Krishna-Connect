@@ -18,36 +18,38 @@ import { usePostInteractions } from '@/hooks/use-post-interactions';
 import { transformPost } from '@/lib/post-utils';
 
 const POST_QUERY = `
-  id,
-  user_id,
-  content,
-  media_urls,
-  poll,
-  quote_of_id,
-  created_at,
-  pinned_at,
-  is_pinned,
-  author:user_id (id, username, name, avatar_url, verified, is_private),
-  quote_of:quote_of_id (
-    *,
-    author:user_id (id, username, name, avatar_url, verified, is_private),
+id,
+    user_id,
+    content,
     media_urls,
-    likes:post_likes(count),
-    comments:comments!comments_post_id_fkey(count),
-    reposts:post_reposts(count)
-  ),
-  comments!comments_post_id_fkey (
+    poll,
+    quote_of_id,
+    created_at,
+    pinned_at,
+    is_pinned,
+    author: user_id(id, username, name, avatar_url, verified, is_private),
+        quote_of: quote_of_id(
     *,
-    author:profiles!user_id (*),
-    likes:comment_likes (user_id),
-    replies:comments!parent_comment_id (
+            author: user_id(id, username, name, avatar_url, verified, is_private),
+            media_urls,
+            likes: post_likes(count),
+            comments: comments(count),
+            reposts: post_reposts(count)
+        ),
+            comments(
+    *,
+                user: user_id(*),
+                author: user_id(*),
+                likes: comment_likes(user_id),
+                replies: comments!parent_comment_id(
       *,
-      author:profiles!user_id (*),
-      likes:comment_likes (user_id)
-    )
-  ),
-  likes:post_likes (user_id),
-  reposts:post_reposts (user_id)
+                    user: user_id(*),
+                    author: user_id(*),
+                    likes: comment_likes(user_id)
+                )
+            ),
+            likes: post_likes(user_id),
+                reposts: post_reposts(user_id)
 `;
 
 export default function PostView() {
@@ -184,7 +186,7 @@ export default function PostView() {
                                     <AuthGate className="w-full">
                                         <textarea
                                             ref={commentInputRef}
-                                            placeholder={`Replying to @${post.author.username}`}
+                                            placeholder={`Replying to @${post.author.username} `}
                                             className="w-full bg-transparent border-none focus:ring-0 resize-none text-base min-h-[3rem] outline-none"
                                             value={commentContent}
                                             onChange={(e) => setCommentContent(e.target.value)}

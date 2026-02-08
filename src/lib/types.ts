@@ -86,6 +86,10 @@ export type AttachmentMetadata = {
   image?: string;
   icon?: string;
   url?: string;
+  // Shared Posts
+  postAuthor?: string;
+  postAuthorAvatar?: string;
+  postContent?: string;
   // Voice Notes
   duration?: number;
   waveform?: number[];

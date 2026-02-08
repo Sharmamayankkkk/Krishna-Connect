@@ -232,8 +232,9 @@ export default function GetVerifiedPage() {
     }
 
     // Already verified
+    // We wait for existingRequest to be loaded if possible, but fallback if not found after loading
     if ((loggedInUser as any).verified || (loggedInUser as any).is_verified) {
-        return <AlreadyVerifiedState />;
+        return <AlreadyVerifiedState request={existingRequest} />;
     }
 
     // Existing request - show status dashboard
@@ -757,30 +758,101 @@ function StatusDashboard({
                 )}
 
                 {/* Verified (shouldn't normally reach here as we check earlier) */}
-                {request.status === 'verified' && <AlreadyVerifiedState />}
+                {request.status === 'verified' && <AlreadyVerifiedState request={request} />}
             </main>
         </div>
     );
 }
 
 // Already Verified State
-function AlreadyVerifiedState() {
+function AlreadyVerifiedState({ request }: { request: VerificationRequest | null }) {
     const router = useRouter();
+    const supabase = createClient();
+    const { loggedInUser } = useAppContext();
+    const [creditsUsed, setCreditsUsed] = useState<number | null>(null);
+
+    useEffect(() => {
+        const fetchCredits = async () => {
+            if (!loggedInUser) return;
+            const { data } = await supabase.rpc('get_monthly_promotion_count', { p_user_id: loggedInUser.id });
+            setCreditsUsed(data || 0);
+        };
+        fetchCredits();
+    }, [loggedInUser, supabase]);
+
+    // Calculate subscription details
+    const planType = request?.plan_type || 'monthly';
+    const startDate = request?.updated_at ? new Date(request.updated_at) : new Date();
+    const endDate = new Date(startDate);
+    if (planType === 'yearly') {
+        endDate.setFullYear(endDate.getFullYear() + 1);
+    } else {
+        endDate.setMonth(endDate.getMonth() + 1);
+    }
+
+    // Format dates
+    const formatDate = (d: Date) => d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    const daysLeft = Math.ceil((endDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 flex items-center justify-center">
-            <Card className="max-w-md text-center">
-                <CardContent className="pt-8 pb-8">
-                    <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600">
-                        <Image src="/user_Avatar/verified.png" alt="Verified" width={56} height={56} />
+        <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 flex items-center justify-center p-4">
+            <Card className="max-w-md w-full text-center relative overflow-hidden">
+                <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-600" />
+                <CardContent className="pt-10 pb-8">
+                    <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-blue-500/10 to-purple-600/10 ring-4 ring-background shadow-xl">
+                        <Image src="/user_Avatar/verified.png" alt="Verified" width={64} height={64} className="drop-shadow-sm" />
                     </div>
-                    <h2 className="text-2xl font-bold mb-2">You're Already Verified!</h2>
-                    <p className="text-muted-foreground mb-6">
-                        Congratulations! Your account has the verified badge.
+
+                    <h2 className="text-2xl font-bold mb-1">You're Verified!</h2>
+                    <p className="text-muted-foreground mb-8 text-sm">
+                        Enjoy your exclusive benefits and badge.
                     </p>
-                    <Button onClick={() => router.push('/explore')}>
-                        Back to Explore
-                    </Button>
+
+                    <div className="grid grid-cols-2 gap-4 mb-4 text-left">
+                        <div className="bg-muted/40 p-3 rounded-lg border">
+                            <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-1">Plan</p>
+                            <p className="font-semibold capitalize flex items-center gap-2">
+                                {planType}
+                                <Badge variant="secondary" className="text-[10px] h-5 px-1.5 bg-green-100 text-green-700 dark:bg-green-900/30">Active</Badge>
+                            </p>
+                        </div>
+                        <div className="bg-muted/40 p-3 rounded-lg border">
+                            <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-1">Expires</p>
+                            <p className="font-semibold">{formatDate(endDate)}</p>
+                            <p className="text-[10px] text-muted-foreground">{daysLeft > 0 ? `${daysLeft} days left` : 'Expired'}</p>
+                        </div>
+                    </div>
+
+                    <div className="bg-muted/40 p-3 rounded-lg border mb-8 text-left">
+                        <div className="flex justify-between items-center mb-2">
+                            <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Promotion Credits</p>
+                            <span className="text-xs font-medium">{creditsUsed ?? 0} / 3 Used</span>
+                        </div>
+                        <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-500"
+                                style={{ width: `${Math.min(((creditsUsed || 0) / 3) * 100, 100)}%` }}
+                            />
+                        </div>
+                        <p className="text-[10px] text-muted-foreground mt-2">
+                            Verified users get 3 free boosted posts every month.
+                        </p>
+                    </div>
+
+                    <div className="flex gap-3">
+                        <Button variant="outline" className="flex-1" onClick={() => router.push('/explore')}>
+                            Back to Feed
+                        </Button>
+                        <Button className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                            Renew Plan
+                        </Button>
+                    </div>
+
+                    <div className="mt-6 pt-6 border-t">
+                        <p className="text-xs text-muted-foreground">
+                            Need help? <a href="#" className="underline hover:text-primary">Contact Support</a>
+                        </p>
+                    </div>
                 </CardContent>
             </Card>
         </div>

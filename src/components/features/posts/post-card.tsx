@@ -38,19 +38,22 @@ import {
     Users
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { cn, getAvatarUrl } from '@/lib/utils';
+import { cn, getAvatarUrl, formatNumber } from '@/lib/utils';
 import { PollType, PostType, CommentType, ReplyType, MediaType } from '@/lib/types';
 import { VideoPlayer } from '../media/video-player';
 import { ImageViewerDialog } from '../media/image-viewer';
 import { EditPostDialog } from './dialogs/edit-post-dialog';
 import { RepostedByDialog } from './dialogs/reposted-by-dialog';
 import { useAppContext } from '@/providers/app-provider';
+import { createClient } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthGuard } from '@/hooks/use-auth-guard';
 import { Skeleton } from "@/components/ui/skeleton";
 import { RichTextRenderer } from '@/components/rich-text-renderer';
 import { CommentSheet as CommentsSheet } from '@/app/(app)/explore/components/comment-sheet';
 import { PromotePostDialog } from './dialogs/promote-post-dialog';
+import { SharePostDialog } from './dialogs/share-post-dialog';
+import { LikedByDialog } from './dialogs/liked-by-dialog';
 
 interface PostCardProps {
     post: PostType;
@@ -330,15 +333,53 @@ export function PostCard({
     const [isExpanded, setIsExpanded] = React.useState(false);
     const [isRepostedByOpen, setIsRepostedByOpen] = React.useState(false);
     const [isPromoteOpen, setIsPromoteOpen] = React.useState(false);
+    const [isShareDialogOpen, setIsShareDialogOpen] = React.useState(false);
+
+    const [isLikedByDialogOpen, setIsLikedByDialogOpen] = React.useState(false);
 
     // Truncation settings for Read More feature
     const MAX_CONTENT_LENGTH = 280;
+
+    // ... (rest of the state and hooks)
+
+    // Handlers
+    // ...
 
     // Computed states
     const isPostAuthor = loggedInUser?.id === author.id;
     const isLiked = loggedInUser && post.likedBy ? post.likedBy.includes(loggedInUser.id) : false;
     const isSaved = loggedInUser && post.savedBy ? post.savedBy.includes(loggedInUser.id) : false;
     const isReposted = loggedInUser && post.repostedBy ? post.repostedBy.includes(loggedInUser.id) : false;
+
+    // View Counting Logic
+    const hasLoggedView = React.useRef(false);
+    const cardRef = React.useRef<HTMLElement>(null);
+
+    React.useEffect(() => {
+        if (hasLoggedView.current || !post.id) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    hasLoggedView.current = true;
+                    // Log view
+                    const supabase = createClient();
+                    supabase.rpc('log_post_view', { p_post_id: post.id })
+                        .then(({ error }) => {
+                            if (error) console.error('Error logging view:', error);
+                        });
+                    observer.disconnect();
+                }
+            },
+            { threshold: 0.5 } // 50% of the card must be visible
+        );
+
+        if (cardRef.current) {
+            observer.observe(cardRef.current);
+        }
+
+        return () => observer.disconnect();
+    }, [post.id]);
 
     // Handlers
     const handlePromote = () => {
@@ -391,6 +432,11 @@ export function PostCard({
     return (
         <>
             {/* All Dialogs and Modals */}
+            <LikedByDialog
+                open={isLikedByDialogOpen}
+                onOpenChange={setIsLikedByDialogOpen}
+                postId={post.id}
+            />
             <ImageViewerDialog
                 open={isImageViewerOpen}
                 onOpenChange={setIsImageViewerOpen}
@@ -432,7 +478,7 @@ export function PostCard({
             />
 
             {/* Post Card */}
-            <article className="p-3 sm:p-4 border-b transition-colors hover:bg-muted/50">
+            <article ref={cardRef} className="p-3 sm:p-4 border-b transition-colors hover:bg-muted/50">
                 {/* Pinned Post Header */}
                 {post.isPinned && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2 ml-12">
@@ -524,9 +570,29 @@ export function PostCard({
 
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 flex-shrink-0">
-                                        <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
-                                    </Button>
+                                    {/* Likes */}
+                                    <div className="flex items-center">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className={cn("gap-2 rounded-full hover:text-pink-500 hover:bg-pink-500/10", isLiked && "text-pink-500")}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleLike();
+                                            }}
+                                        >
+                                            <Heart className={cn("h-5 w-5", isLiked && "fill-current")} />
+                                        </Button>
+                                        <button
+                                            className="text-sm hover:underline hover:text-pink-600 px-1"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (stats.likes > 0) setIsLikedByDialogOpen(true);
+                                            }}
+                                        >
+                                            {formatNumber(stats.likes)}
+                                        </button>
+                                    </div>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem onClick={handleSave}>
@@ -653,7 +719,7 @@ export function PostCard({
                                 aria-label={`${stats.comments || 0} comments. Click to view comments`}
                             >
                                 <MessageCircle className="h-4 w-4 mr-1.5 group-hover:scale-110 transition-transform" />
-                                <span className="text-xs">{stats.comments || 0}</span>
+                                <span className="text-xs">{formatNumber(stats.comments || 0)}</span>
                             </Button>
 
                             {/* Repost */}
@@ -669,7 +735,7 @@ export function PostCard({
                                         aria-label={isReposted ? "Undo repost" : "Repost options"}
                                     >
                                         <Repeat2 className="h-4 w-4 mr-1.5 group-hover:rotate-180 transition-transform" />
-                                        <span className="text-xs">{(stats.reshares || 0) + (stats.reposts || 0)}</span>
+                                        <span className="text-xs">{formatNumber((stats.reshares || 0) + (stats.reposts || 0))}</span>
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
@@ -705,7 +771,7 @@ export function PostCard({
                                     "h-4 w-4 mr-1.5 group-hover:scale-110 transition-transform",
                                     isLiked && "fill-current"
                                 )} />
-                                <span className="text-xs">{stats.likes || 0}</span>
+                                <span className="text-xs">{formatNumber(stats.likes || 0)}</span>
                             </Button>
 
                             {/* Views */}
@@ -716,31 +782,23 @@ export function PostCard({
                                 aria-label={`${stats.views?.toLocaleString() || 0} views`}
                             >
                                 <BarChart2 className="h-4 w-4 mr-1.5 group-hover:scale-110 transition-transform" />
-                                <span className="text-xs">{stats.views?.toLocaleString() || 0}</span>
+                                <span className="text-xs">{formatNumber(stats.views || 0)}</span>
                             </Button>
 
                             {/* Share */}
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full h-8 w-8 group/action"
-                                        aria-label="Share post"
-                                    >
-                                        <Share className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => {
-                                        const postUrl = `${window.location.origin}/profile/${author.username}/post/${post.id}`;
-                                        navigator.clipboard.writeText(postUrl);
-                                        toast({ title: "Link copied to clipboard!" });
-                                    }}>
-                                        Copy Link
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                            {/* Share */}
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full h-8 w-8 group/action"
+                                aria-label="Share post"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsShareDialogOpen(true);
+                                }}
+                            >
+                                <Share className="h-4 w-4" />
+                            </Button>
                         </div>
                     </div>
                 </div>
@@ -790,6 +848,18 @@ export function PostCard({
                 open={isQuoteOpen}
                 onOpenChange={setIsQuoteOpen}
                 onQuote={handleQuote}
+            />
+
+            <PromotePostDialog
+                post={post}
+                open={isPromoteOpen}
+                onOpenChange={setIsPromoteOpen}
+            />
+
+            <SharePostDialog
+                post={post}
+                open={isShareDialogOpen}
+                onOpenChange={setIsShareDialogOpen}
             />
         </>
     );

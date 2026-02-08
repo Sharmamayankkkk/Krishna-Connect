@@ -5,6 +5,9 @@
 
 -- Get User Notifications (With Post Preview and Author Username)
 -- Overrides the version in 03_Functions_Triggers.sql
+DROP FUNCTION IF EXISTS public.get_user_notifications(INT, INT);
+DROP FUNCTION IF EXISTS public.get_user_notifications(INTEGER, INTEGER);
+
 CREATE OR REPLACE FUNCTION public.get_user_notifications(p_limit INT DEFAULT 50, p_offset INT DEFAULT 0)
 RETURNS TABLE (
     id BIGINT, user_id UUID, actor_id UUID, type TEXT, entity_id BIGINT, is_read BOOLEAN, created_at TIMESTAMPTZ,
@@ -28,3 +31,4 @@ BEGIN
     LIMIT p_limit OFFSET p_offset;
 END;
 $$ LANGUAGE plpgsql SECURITY INVOKER;
+

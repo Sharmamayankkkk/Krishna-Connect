@@ -22,7 +22,7 @@ import { CreatePost } from '@/components/features/posts/create-post';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { PromotePostDialog } from '@/components/promote-post-dialog';
 import {
     generateSmartFeed,
@@ -54,6 +54,10 @@ export default function Feed() {
     // Mode management
     const [exploreMode, setExploreMode] = React.useState<ExploreMode>('feed');
 
+    const searchParams = useSearchParams();
+    const pathname = usePathname();
+    const currentTab = searchParams.get('tab') as FeedFilter || 'latest';
+
     // Feed state
     const [allPosts, setAllPosts] = React.useState<PostType[]>([]);
     const [visiblePosts, setVisiblePosts] = React.useState<PostType[]>([]);
@@ -61,8 +65,27 @@ export default function Feed() {
     const [isLoadingMore, setIsLoadingMore] = React.useState(false);
     const [hasMore, setHasMore] = React.useState(true);
     const [isInitialLoading, setIsInitialLoading] = React.useState(true);
-    const [feedFilter, setFeedFilter] = React.useState<FeedFilter>('latest');
+    const [feedFilter, setFeedFilter] = React.useState<FeedFilter>(currentTab);
     const [showNewPostsBanner, setShowNewPostsBanner] = React.useState(false);
+
+    // Update URL when filter changes
+    const handleTabChange = (tab: FeedFilter) => {
+        setFeedFilter(tab);
+        const params = new URLSearchParams(searchParams);
+        params.set('tab', tab);
+        router.push(`${pathname}?${params.toString()}`);
+        setAllPosts([]); // Clear posts to trigger re-fetch
+        setIsInitialLoading(true);
+    };
+
+    // Sync state if URL changes externally (e.g. back button)
+    React.useEffect(() => {
+        if (currentTab !== feedFilter) {
+            setFeedFilter(currentTab);
+            setAllPosts([]);
+            setIsInitialLoading(true);
+        }
+    }, [currentTab]);
     const [newPostsCount, setNewPostsCount] = React.useState(0);
     const [showScrollTop, setShowScrollTop] = React.useState(false);
 
@@ -115,8 +138,11 @@ export default function Feed() {
         const supabase = createClient();
 
         // Use RPC for secure feed fetching
+        // Use RPC based on filter
+        const rpcName = feedFilter === 'following' ? 'get_following_feed' : 'get_home_feed';
+
         const { data, error } = await supabase
-            .rpc('get_home_feed', {
+            .rpc(rpcName, {
                 p_limit: 30,
                 p_offset: 0
             });
@@ -134,32 +160,34 @@ export default function Feed() {
 
         if (data) {
             // Need to fetch associated data (author, likes, etc) since RPC returns raw post rows
-            const { data: enrichedData, error: enrichedError } = await supabase
-                .rpc('get_home_feed', { p_limit: 30, p_offset: 0 })
-                .select(`
+            const selectQuery = `
+                *,
+                author:user_id (id, name, username, avatar_url, verified),
+                likes:post_likes(count),
+                comments:comments(count),
+                reposts:post_reposts(count),
+                post_comments:comments (
+                    id,
+                    user_id,
+                    content,
+                    created_at,
+                    profiles:user_id (id, name, username, avatar_url, verified)
+                ),
+                quote_of:quote_of_id (
                     *,
-                    author:user_id (id, name, username, avatar_url, verified),
-                    likes:post_likes(count),
-                    comments:comments(count),
-                    reposts:post_reposts(count),
-                    post_comments:comments (
-                        id,
-                        user_id,
-                        content,
-                        created_at,
-                        profiles:user_id (id, name, username, avatar_url, verified)
-                    ),
-                    quote_of:quote_of_id (
-                        *,
-                        author:user_id (id, name, username, avatar_url, verified)
-                    ),
-                    user_likes:post_likes!post_id(user_id),
-                    post_collaborators:post_collaborators!post_id (
-                        user_id,
-                        status,
-                        user:user_id (id, name, username, avatar_url, verified)
-                    )
-                `);
+                    author:user_id (id, name, username, avatar_url, verified)
+                ),
+                user_likes:post_likes!post_id(user_id),
+                post_collaborators:post_collaborators!post_id (
+                    user_id,
+                    status,
+                    user:user_id (id, name, username, avatar_url, verified)
+                )
+            `;
+
+            const { data: enrichedData, error: enrichedError } = await supabase
+                .rpc(rpcName, { p_limit: 30, p_offset: 0 })
+                .select(selectQuery);
 
             if (enrichedError) {
                 console.error('Error fetching enriched posts:', enrichedError);
@@ -167,19 +195,47 @@ export default function Feed() {
                 return;
             }
 
-            if (enrichedData) {
-                const transformedPosts = enrichedData.map(transformPost);
-                setAllPosts(transformedPosts);
-                setSortedFeed(transformedPosts); // Initial sort is just what we got
-                setVisiblePosts(transformedPosts); // Show all 30
+            let finalPosts = enrichedData ? enrichedData.map(transformPost) : [];
+
+            // INJECT PROMOTED POSTS
+            // Only inject on the first page/load and if we have posts
+            if (enrichedData && enrichedData.length > 0) {
+                const { data: promoData, error: promoError } = await supabase
+                    .rpc('get_active_promoted_posts', { p_limit: 2 })
+                    .select(selectQuery);
+
+                if (!promoError && promoData && promoData.length > 0) {
+                    const promotedPosts = promoData.map(transformPost);
+
+                    // Filter out promoted posts that might already be in the feed
+                    const existingIds = new Set(finalPosts.map((p: PostType) => p.id));
+                    const uniquePromos = promotedPosts.filter((p: PostType) => !existingIds.has(p.id));
+
+                    // Inject 1 promo every 5 posts
+                    if (uniquePromos.length > 0) {
+                        if (finalPosts.length >= 5) {
+                            finalPosts.splice(5, 0, uniquePromos[0]);
+                            if (uniquePromos.length > 1 && finalPosts.length >= 15) {
+                                finalPosts.splice(15, 0, uniquePromos[1]);
+                            }
+                        } else {
+                            // If clean feed is small, just append
+                            finalPosts.push(...uniquePromos);
+                        }
+                    }
+                }
             }
+
+            setAllPosts(finalPosts);
+            setSortedFeed(finalPosts);
+            setVisiblePosts(finalPosts);
         }
         setIsInitialLoading(false);
-    }, [toast]);
+    }, [toast, feedFilter]);
 
     React.useEffect(() => {
         fetchPosts();
-    }, [fetchPosts]);
+    }, [fetchPosts, feedFilter]);
 
     // Initialize Notifications (Empty for now until real notifications implemented)
 
@@ -207,24 +263,11 @@ export default function Feed() {
 
     // Apply feed filter
     const applyFeedFilter = (posts: PostType[], filter: FeedFilter) => {
-        let filteredPosts = [...posts];
-
-        switch (filter) {
-            case 'following':
-                filteredPosts = posts.filter(p =>
-                    userInteractions.followedUsers.includes(p.author.id)
-                ).sort((a, b) =>
-                    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-                );
-                break;
-
-            case 'latest':
-            default:
-                filteredPosts = posts.sort((a, b) =>
-                    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-                );
-                break;
-        }
+        // Posts are already filtered by the backend RPC based on the current tab
+        // We just need to sort them by date and deduplicate
+        let filteredPosts = [...posts].sort((a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
 
         // Deduplicate posts by ID to prevent key collisions
         filteredPosts = filteredPosts.filter((post, index, self) =>
@@ -245,10 +288,20 @@ export default function Feed() {
             return postTime > latest ? postTime : latest;
         }, 0);
         if (latestPostTime === 0) return;
-        const { count, error } = await supabase
+
+        let query = supabase
             .from('posts')
             .select('*', { count: 'exact', head: true })
             .gt('created_at', new Date(latestPostTime).toISOString());
+
+        // Apply following filter if needed
+        if (feedFilter === 'following') {
+            if (userInteractions.followedUsers.length === 0) return; // No followers, no new posts
+            query = query.in('user_id', userInteractions.followedUsers);
+        }
+
+        const { count, error } = await query;
+
         if (error) {
             console.error('Error checking for new posts:', error);
             return;
@@ -257,7 +310,7 @@ export default function Feed() {
             setNewPostsCount(count);
             setShowNewPostsBanner(true);
         }
-    }, [allPosts]);
+    }, [allPosts, feedFilter, userInteractions.followedUsers]);
 
     // Check for new posts periodically
     React.useEffect(() => {
@@ -281,7 +334,8 @@ export default function Feed() {
             const postTime = new Date(post.createdAt).getTime();
             return postTime > latest ? postTime : latest;
         }, 0);
-        const { data, error } = await supabase
+
+        let query = supabase
             .from('posts')
             .select(`
                 *,
@@ -289,6 +343,14 @@ export default function Feed() {
             `)
             .gt('created_at', new Date(latestPostTime).toISOString())
             .order('created_at', { ascending: false });
+
+        if (feedFilter === 'following') {
+            if (userInteractions.followedUsers.length === 0) return;
+            query = query.in('user_id', userInteractions.followedUsers);
+        }
+
+        const { data, error } = await query;
+
         if (error) {
             console.error('Error loading new posts:', error);
             toast({
@@ -518,7 +580,7 @@ export default function Feed() {
                     {exploreMode === 'feed' && (
                         <div className="flex items-center justify-center border-t">
                             <button
-                                onClick={() => setFeedFilter('latest')}
+                                onClick={() => handleTabChange('latest')}
                                 className={cn(
                                     "px-6 py-3 text-sm font-medium transition-colors relative",
                                     feedFilter === 'latest'
@@ -533,7 +595,7 @@ export default function Feed() {
                                 )}
                             </button>
                             <button
-                                onClick={() => setFeedFilter('following')}
+                                onClick={() => handleTabChange('following')}
                                 className={cn(
                                     "px-6 py-3 text-sm font-medium transition-colors relative",
                                     feedFilter === 'following'

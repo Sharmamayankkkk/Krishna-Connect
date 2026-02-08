@@ -17,7 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { Chat, User, Message, AttachmentMetadata } from '@/lib/types';
-import { cn, getContrastingTextColor, createClient } from '@/lib/utils';
+import { cn, getContrastingTextColor, createClient, getAvatarUrl } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
@@ -633,6 +633,52 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                                     <CardDescription className="text-xs" style={{ color: 'inherit', opacity: 0.8 }}>{format(new Date(metadata.eventDate), 'eeee, MMM d, yyyy @ p')}</CardDescription>
                                 )}
                             </CardHeader>
+                        </Card>
+                    </Link>
+                );
+            }
+
+            if (type === 'post_share') {
+                const metadata = message.attachment_metadata;
+                const authorName = metadata?.postAuthor || metadata?.description?.replace('@', '') || 'Unknown';
+                const authorAvatar = metadata?.postAuthorAvatar || metadata?.image;
+                const postContent = metadata?.postContent || metadata?.title;
+                const hasMedia = metadata?.image && metadata.image !== metadata.postAuthorAvatar;
+
+                return (
+                    <Link href={metadata?.url || '#'} className="block max-w-sm w-full group/card">
+                        <Card className="bg-muted/40 hover:bg-muted/60 transition-all duration-200 overflow-hidden border-primary/10 shadow-sm group-hover/card:shadow-md">
+                            {/* Header */}
+                            <div className="flex items-center justify-between p-3 border-b border-border/50 bg-background/50 backdrop-blur-sm">
+                                <div className="flex items-center gap-2.5 overflow-hidden">
+                                    <Avatar className="h-6 w-6 border border-border/50 shrink-0">
+                                        <AvatarImage src={getAvatarUrl(authorAvatar)} className="object-cover" />
+                                        <AvatarFallback className="text-[10px]">{authorName[0]?.toUpperCase()}</AvatarFallback>
+                                    </Avatar>
+                                    <span className="text-sm font-semibold truncate opacity-90">{authorName}</span>
+                                </div>
+                                <ArrowDown className="w-3 h-3 -rotate-90 text-muted-foreground/50 opacity-0 group-hover/card:opacity-100 transition-opacity" />
+                            </div>
+
+                            {/* Media (If it's an image post) */}
+                            {hasMedia && (
+                                <div className="relative aspect-square w-full bg-black/5">
+                                    <Image
+                                        src={metadata.image!}
+                                        alt="Post content"
+                                        fill
+                                        className="object-cover"
+                                        sizes="(max-width: 768px) 100vw, 300px"
+                                    />
+                                </div>
+                            )}
+
+                            {/* Caption/Content */}
+                            <div className="p-3 bg-background/30">
+                                <p className="text-sm line-clamp-3 text-foreground/90 leading-relaxed font-normal">
+                                    {postContent}
+                                </p>
+                            </div>
                         </Card>
                     </Link>
                 );
