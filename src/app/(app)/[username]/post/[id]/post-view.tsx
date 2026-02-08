@@ -33,7 +33,7 @@ const POST_QUERY = `
     author:user_id (id, username, name, avatar_url, verified, is_private),
     media_urls,
     likes:post_likes(count),
-    comments:comments(count),
+    comments:comments!comments_post_id_fkey(count),
     reposts:post_reposts(count)
   ),
   comments!comments_post_id_fkey (
