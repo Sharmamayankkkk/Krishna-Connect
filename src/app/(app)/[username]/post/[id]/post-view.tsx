@@ -25,8 +25,17 @@ const POST_QUERY = `
   poll,
   quote_of_id,
   created_at,
+  pinned_at,
+  is_pinned,
   author:user_id (id, username, name, avatar_url, verified, is_private),
-  quote_of:quote_of_id (*, author:user_id (*), media_urls),
+  quote_of:quote_of_id (
+    *,
+    author:user_id (id, username, name, avatar_url, verified, is_private),
+    media_urls,
+    likes:post_likes(count),
+    comments:comments(count),
+    reposts:post_reposts(count)
+  ),
   comments!comments_post_id_fkey (
     *,
     author:profiles!user_id (*),
