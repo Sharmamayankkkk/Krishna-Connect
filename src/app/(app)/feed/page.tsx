@@ -53,7 +53,28 @@ export default function FeedPage() {
         const supabase = createClient();
 
         const { data, error } = await supabase
-            .rpc('get_home_feed', { p_limit: 50, p_offset: 0 });
+            .rpc('get_home_feed', { p_limit: 50, p_offset: 0 })
+            .select(`
+                *,
+                author:profiles!user_id(*),
+                post_comments:comments(
+                    id,
+                    content,
+                    created_at,
+                    user_id,
+                    profiles:profiles(
+                        id,
+                        name,
+                        username,
+                        avatar_url,
+                        verified
+                    )
+                ),
+                likes:post_likes(count),
+                reposts:post_reposts(count),
+                user_likes:post_likes!post_id(user_id),
+                media_urls:post_media(url, type)
+            `);
 
         if (error) {
             console.error('Error fetching posts:', error);
