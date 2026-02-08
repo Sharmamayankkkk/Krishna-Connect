@@ -72,8 +72,7 @@ export default function FeedPage() {
                 ),
                 likes:post_likes(count),
                 reposts:post_reposts(count),
-                user_likes:post_likes!post_id(user_id),
-                media_urls:post_media(url, type)
+                user_likes:post_likes!post_id(user_id)
             `);
 
         if (error) {

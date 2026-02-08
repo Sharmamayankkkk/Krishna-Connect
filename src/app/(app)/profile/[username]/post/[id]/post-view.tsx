@@ -18,7 +18,7 @@ import { usePostInteractions } from '@/hooks/use-post-interactions';
 import { transformPost } from '@/lib/post-utils';
 
 const POST_QUERY = `
-id,
+    id,
     user_id,
     content,
     media_urls,
@@ -27,29 +27,27 @@ id,
     created_at,
     pinned_at,
     is_pinned,
-    author: user_id(id, username, name, avatar_url, verified, is_private),
-        quote_of: quote_of_id(
-    *,
-            author: user_id(id, username, name, avatar_url, verified, is_private),
-            media_urls,
-            likes: post_likes(count),
-            comments: comments(count),
-            reposts: post_reposts(count)
-        ),
-            comments(
-    *,
-                user: user_id(*),
-                author: user_id(*),
-                likes: comment_likes(user_id),
-                replies: comments!parent_comment_id(
-      *,
-                    user: user_id(*),
-                    author: user_id(*),
-                    likes: comment_likes(user_id)
-                )
-            ),
-            likes: post_likes(user_id),
-                reposts: post_reposts(user_id)
+    author: profiles!posts_user_id_fkey(id, username, name, avatar_url, verified, is_private),
+    quote_of: posts!posts_quote_of_id_fkey(
+        *,
+        author: profiles!posts_user_id_fkey(id, username, name, avatar_url, verified, is_private),
+        media_urls,
+        likes: post_likes(count),
+        comments: comments(count),
+        reposts: post_reposts(count)
+    ),
+    comments(
+        *,
+        user: profiles!comments_user_id_fkey(*),
+        likes: comment_likes(user_id),
+        replies: comments!comments_parent_comment_id_fkey(
+            *,
+            user: profiles!comments_user_id_fkey(*),
+            likes: comment_likes(user_id)
+        )
+    ),
+    likes: post_likes(user_id),
+    reposts: post_reposts(user_id)
 `;
 
 export default function PostView() {
