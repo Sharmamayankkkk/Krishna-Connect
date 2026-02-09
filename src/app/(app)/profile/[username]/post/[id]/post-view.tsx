@@ -21,30 +21,21 @@ const POST_QUERY = `
     id,
     user_id,
     content,
+    views_count,
     media_urls,
     poll,
     quote_of_id,
     created_at,
     pinned_at,
-    is_pinned,
     author: profiles!posts_user_id_fkey(id, username, name, avatar_url, verified, is_private),
-    quote_of: posts!posts_quote_of_id_fkey(
-        *,
-        author: profiles!posts_user_id_fkey(id, username, name, avatar_url, verified, is_private),
-        media_urls,
-        likes: post_likes(count),
-        comments: comments(count),
-        reposts: post_reposts(count)
-    ),
     comments(
-        *,
-        user: profiles!comments_user_id_fkey(*),
-        likes: comment_likes(user_id),
-        replies: comments!comments_parent_comment_id_fkey(
-            *,
-            user: profiles!comments_user_id_fkey(*),
-            likes: comment_likes(user_id)
-        )
+        id,
+        content,
+        created_at,
+        user_id,
+        parent_comment_id,
+        user: profiles!comments_user_id_fkey(id, username, name, avatar_url, verified),
+        likes: comment_likes(user_id)
     ),
     likes: post_likes(user_id),
     reposts: post_reposts(user_id)

@@ -14,7 +14,7 @@ import { generateFeed, UserInteractions, updateLastSeenTime } from '../feed-algo
 import { createClient } from '@/lib/supabase/client';
 import { FeedList } from '@/components/features/posts/feed-list';
 import { StoriesBar } from '@/components/features/stories/stories-bar';
-import { transformPost } from '../explore/utils';
+import { transformPost } from '@/lib/post-utils';
 
 const SCROLL_THRESHOLD = 500;
 
@@ -72,6 +72,7 @@ export default function FeedPage() {
                 ),
                 likes:post_likes(count),
                 reposts:post_reposts(count),
+                views:post_views(count),
                 user_likes:post_likes!post_id(user_id)
             `);
 

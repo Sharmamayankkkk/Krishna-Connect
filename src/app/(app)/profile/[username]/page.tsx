@@ -233,7 +233,8 @@ export default async function ProfilePage(props: ProfilePageProps) {
         user_id,
         status,
         user:user_id (id, name, username, avatar_url, verified)
-    )
+    ),
+    views:post_views(count)
   `;
 
   try {

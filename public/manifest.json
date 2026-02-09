@@ -41,7 +41,7 @@
       "name": "Profile",
       "short_name": "Profile",
       "description": "View your profile",
-      "url": "/profile/me",
+      "url": "/profile",
       "icons": [
         {
           "src": "/logo/light_KCS.png",

@@ -641,7 +641,7 @@ export function PostCard({
 
                         {/* Post Content */}
                         <div className="mt-2 text-sm text-foreground/90 whitespace-pre-wrap break-words">
-                            {content.length > MAX_CONTENT_LENGTH && !isExpanded ? (
+                            {content && content.length > MAX_CONTENT_LENGTH && !isExpanded ? (
                                 <>
                                     <RichTextRenderer
                                         content={content.substring(0, MAX_CONTENT_LENGTH) + '...'}
@@ -657,10 +657,10 @@ export function PostCard({
                             ) : (
                                 <>
                                     <RichTextRenderer
-                                        content={content}
+                                        content={content || ''}
                                         onHareKrishnaClick={() => setIsHareKrishnaVideoOpen(true)}
                                     />
-                                    {content.length > MAX_CONTENT_LENGTH && (
+                                    {content && content.length > MAX_CONTENT_LENGTH && (
                                         <button
                                             onClick={() => setIsExpanded(false)}
                                             className="text-primary hover:underline font-medium ml-1"
@@ -768,7 +768,7 @@ export function PostCard({
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                className="hover:text-primary rounded-full group hidden sm:flex"
+                                className="hover:text-primary rounded-full group flex"
                                 aria-label={`${stats.views?.toLocaleString() || 0} views`}
                             >
                                 <BarChart2 className="h-4 w-4 mr-1.5 group-hover:scale-110 transition-transform" />
