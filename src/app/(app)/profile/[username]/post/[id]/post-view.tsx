@@ -28,6 +28,14 @@ const POST_QUERY = `
     created_at,
     pinned_at,
     author: profiles!posts_user_id_fkey(id, username, name, avatar_url, verified, is_private),
+    quote_of:quote_of_id(
+        id,
+        user_id,
+        content,
+        media_urls,
+        created_at,
+        author: profiles!posts_user_id_fkey(id, username, name, avatar_url, verified, is_private)
+    ),
     comments(
         id,
         content,

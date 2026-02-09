@@ -18,11 +18,11 @@ export const transformPost = (dbPost: any): PostType => {
     const transformComment = (comment: any): CommentType => ({
         id: comment.id?.toString() || '',
         user: {
-            id: comment.profiles?.id || comment.author?.id || comment.user_id || 'unknown',
-            name: comment.profiles?.name || comment.author?.name || 'Unknown User',
-            username: comment.profiles?.username || comment.author?.username || 'unknown',
-            avatar: comment.profiles?.avatar_url || comment.author?.avatar_url || comment.author?.avatar || '/placeholder-user.jpg',
-            verified: comment.profiles?.verified || comment.author?.verified || false
+            id: comment.user?.id || comment.profiles?.id || comment.author?.id || comment.user_id || 'unknown',
+            name: comment.user?.name || comment.profiles?.name || comment.author?.name || 'Unknown User',
+            username: comment.user?.username || comment.profiles?.username || comment.author?.username || 'unknown',
+            avatar: comment.user?.avatar_url || comment.profiles?.avatar_url || comment.author?.avatar_url || comment.author?.avatar || '/placeholder-user.jpg',
+            verified: comment.user?.verified || comment.profiles?.verified || comment.author?.verified || false
         },
         text: comment.content || comment.text || '',
         createdAt: comment.created_at || comment.createdAt || new Date().toISOString(),
