@@ -46,33 +46,33 @@ export const metadata: Metadata = {
     apple: '/apple-touch-icon.png',
   },
   openGraph: {
+    // Required OG properties
     type: "website",
     url: APP_URL,
-    siteName: APP_NAME,
-    title: {
-      default: APP_DEFAULT_TITLE,
-      template: APP_TITLE_TEMPLATE,
-    },
-    description: APP_DESCRIPTION,
+    title: APP_DEFAULT_TITLE,
     images: [
       {
         url: `${APP_URL}/logo/krishna_connect.png`,
+        secureUrl: `${APP_URL}/logo/krishna_connect.png`,
         width: 512,
         height: 512,
-        alt: 'Krishna Connect Logo'
+        alt: 'Krishna Connect Logo - A modern chat application for the conscious community',
+        type: 'image/png',
       }
-    ]
+    ],
+
+    // Optional OG properties
+    description: APP_DESCRIPTION,
+    siteName: APP_NAME,
+    locale: 'en_US',
   },
   twitter: {
-    card: "summary",
-    title: {
-      default: APP_DEFAULT_TITLE,
-      template: APP_TITLE_TEMPLATE,
-    },
+    card: "summary_large_image",
+    title: APP_DEFAULT_TITLE,
     description: APP_DESCRIPTION,
-    images: [
-      `${APP_URL}/logo/krishna_connect.png`,
-    ]
+    images: [`${APP_URL}/logo/krishna_connect.png`],
+    creator: '@KrishnaConnect',
+    site: '@KrishnaConnect',
   },
   other: {
     "google-adsense-account": process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID!,
