@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     description: APP_DESCRIPTION,
     images: [
       {
-        url: `${APP_URL}/logo/light_KCS.svg`,
+        url: `${APP_URL}/logo/krishna_connect.png`,
         width: 512,
         height: 512,
         alt: 'Krishna Connect Logo'
@@ -71,7 +71,7 @@ export const metadata: Metadata = {
     },
     description: APP_DESCRIPTION,
     images: [
-      `${APP_URL}/logo/light_KCS.svg`,
+      `${APP_URL}/logo/krishna_connect.png`,
     ]
   },
   other: {

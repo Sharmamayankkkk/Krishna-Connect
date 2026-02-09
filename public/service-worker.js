@@ -4,7 +4,7 @@ const STATIC_CACHE = 'kcs-static-v6';
 const APP_SHELL = [
     '/',
     '/manifest.json',
-    '/logo/light_KCS.svg',
+    '/logo/krishna_connect.png',
     '/logo/light_KCS.png',
     '/logo/dark_KCS.png',
     '/logo/krishna_connect.png',
