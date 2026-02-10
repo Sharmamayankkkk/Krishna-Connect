@@ -15,6 +15,8 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuthGuard } from '@/hooks/use-auth-guard'
 import { useAppContext } from '@/providers/app-provider'
+import { useToast } from '@/hooks/use-toast'
+import Image from 'next/image'
 
 export function MainNav() {
   const pathname = usePathname()
@@ -65,6 +67,14 @@ export function MainNav() {
       label: 'Feed',
       icon: Sparkles,
       isActive: pathname.startsWith('/feed'),
+    },
+    {
+      href: '/leela',
+      label: 'Leela',
+      icon: null, // Custom image icon
+      customIcon: '/icons/leela.png',
+      isActive: pathname.startsWith('/leela'),
+      isComingSoon: true,
     },
     {
       href: '/chat',
@@ -118,8 +128,18 @@ export function MainNav() {
 
   const { loggedInUser } = useAppContext()
   const { requireAuth } = useAuthGuard()
+  const { toast } = useToast()
 
-  const handleLinkClick = (e: React.MouseEvent, href: string) => {
+  const handleLinkClick = (e: React.MouseEvent, href: string, isComingSoon?: boolean) => {
+    // Show info toast for coming soon features (but still allow navigation)
+    if (isComingSoon) {
+      toast({
+        title: "🎁 Win a Verified Badge!",
+        description: "Guess what Leela is and tag @krishnaConnect to win!",
+        duration: 4000,
+      });
+    }
+
     // Public routes that guests can access
     const publicRoutes = ['/', '/explore', '/get-verified'];
     if (publicRoutes.some(route => href === route || href.startsWith(route + '/'))) return;
@@ -144,10 +164,23 @@ export function MainNav() {
               <Link
                 href={item.href}
                 className="flex items-center"
-                onClick={(e) => handleLinkClick(e, item.href)}
+                onClick={(e) => handleLinkClick(e, item.href, item.isComingSoon)}
               >
-                <item.icon className="h-5 w-5 mr-3" />
+                {item.customIcon ? (
+                  <Image
+                    src={item.customIcon}
+                    alt={item.label}
+                    width={20}
+                    height={20}
+                    className={cn("mr-3", item.isComingSoon && "opacity-50")}
+                  />
+                ) : item.icon ? (
+                  <item.icon className="h-5 w-5 mr-3" />
+                ) : null}
                 <span>{item.label}</span>
+                {item.isComingSoon && (
+                  <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0">SOON</Badge>
+                )}
                 {item.href === '/notifications' && unreadCount > 0 && (
                   <Badge className="ml-auto">{unreadCount}</Badge>
                 )}

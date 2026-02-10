@@ -694,11 +694,11 @@ export function PostCard({
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                className="hover:text-blue-500 rounded-full group"
+                                className="hover:text-blue-500 rounded-full group gap-1"
                                 onClick={() => setIsCommentsOpen(true)}
                                 aria-label={`${stats.comments || 0} comments. Click to view comments`}
                             >
-                                <MessageCircle className="h-4 w-4 mr-1.5 group-hover:scale-110 transition-transform" />
+                                <MessageCircle className="h-4 w-4 group-hover:scale-110 transition-transform" />
                                 <span className="text-xs">{formatNumber(stats.comments || 0)}</span>
                             </Button>
 
@@ -737,24 +737,24 @@ export function PostCard({
                             </DropdownMenu>
 
                             {/* Like */}
-                            <div className="flex items-center">
+                            <div className="flex items-center gap-1">
                                 <Button
                                     variant="ghost"
-                                    size="sm"
+                                    size="icon"
                                     className={cn(
-                                        "rounded-full group",
+                                        "h-8 w-8 rounded-full group",
                                         isLiked ? "text-red-500" : "hover:text-red-500"
                                     )}
                                     onClick={handleLike}
                                     aria-label={isLiked ? `Unlike. ${stats.likes || 0} likes` : `Like. ${stats.likes || 0} likes`}
                                 >
                                     <Heart className={cn(
-                                        "h-4 w-4 mr-1.5 group-hover:scale-110 transition-transform",
+                                        "h-4 w-4 group-hover:scale-110 transition-transform",
                                         isLiked && "fill-current"
                                     )} />
                                 </Button>
                                 <button
-                                    className={cn("text-xs hover:underline hover:text-red-600 px-1 tabular-nums", isLiked && "text-red-500")}
+                                    className={cn("text-xs hover:underline hover:text-red-600 tabular-nums -ml-0.5", isLiked && "text-red-500")}
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         if ((stats.likes || 0) > 0) setIsLikedByDialogOpen(true);
@@ -768,10 +768,10 @@ export function PostCard({
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                className="hover:text-primary rounded-full group flex"
+                                className="hover:text-primary rounded-full group gap-1"
                                 aria-label={`${stats.views?.toLocaleString() || 0} views`}
                             >
-                                <BarChart2 className="h-4 w-4 mr-1.5 group-hover:scale-110 transition-transform" />
+                                <BarChart2 className="h-4 w-4 group-hover:scale-110 transition-transform" />
                                 <span className="text-xs">{formatNumber(stats.views || 0)}</span>
                             </Button>
 

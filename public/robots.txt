@@ -1,9 +1,58 @@
+# robots.txt for Krishna Connect
+# Updated: February 2026
+
+# Allow all bots by default
 User-agent: *
 Allow: /
-Disallow: /admin/
-Disallow: /chat/
-Disallow: /profile/
+
+# Public pages - explicitly allow for better crawling
+Allow: /explore
+Allow: /feed
+Allow: /get-verified
+Allow: /events
+Allow: /groups
+
+# Private/Protected Routes - Disallow
+Disallow: /chat
+Disallow: /profile/*/edit
 Disallow: /settings/
 Disallow: /starred/
+Disallow: /bookmarks/
+Disallow: /moodboard/
+Disallow: /challenges/
+Disallow: /notifications/
+
+# API routes
+Disallow: /api/
+
+# Authentication routes
+Disallow: /login
+Disallow: /signup
+Disallow: /auth/
+Disallow: /(auth)/
+
+# Admin routes (if any)
+Disallow: /admin/
+
+# Internal/System routes
+Disallow: /_next/
+Disallow: /static/
+
+# Temporary/Join links
 Disallow: /join/
-Disallow: /group/
+
+# Allow profile pages for indexing (public profiles)
+Allow: /profile/
+
+# Allow post pages for SEO
+Allow: /profile/*/post/
+
+# Sitemap location
+Sitemap: https://krishnaconnect.com/sitemap.xml
+
+# Crawl-delay for specific bots (optional - prevents aggressive crawling)
+# User-agent: Googlebot
+# Crawl-delay: 0
+
+# User-agent: Bingbot
+# Crawl-delay: 1
