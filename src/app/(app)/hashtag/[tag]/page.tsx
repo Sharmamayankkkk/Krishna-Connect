@@ -40,64 +40,90 @@ export default function HashtagPage() {
             const { data, error } = await supabase
                 .from('post_hashtags')
                 .select(`
-                    post:posts (
-                        *,
-                        author:profiles(*),
-                        media:post_media(*),
-                        likes:post_likes(user_id),
-                        saved:saved_posts(user_id),
-                        reposted:reposts(user_id),
-                        comments:comments(count),
-                        collaborators:post_collaborators(
-                             user:profiles(*)
-                        )
-                    )
+                    post_id
                 `)
-                .eq('hashtag_id', hashtagData.id)
-                .order('post(created_at)', { ascending: false });
+                .eq('hashtag_id', hashtagData.id);
 
-            if (!error && data) {
-                const formattedPosts: PostType[] = data.map((item: any) => {
-                    const p = item.post;
-                    // Map formatting similar to feed.tsx
-                    return {
-                        id: p.id,
-                        content: p.content,
-                        createdAt: p.created_at,
-                        author: {
-                            id: p.author.id,
-                            name: p.author.name,
-                            username: p.author.username,
-                            avatar: p.author.avatar_url,
-                            verified: p.author.verified
-                        },
-                        media: p.media.map((m: any) => ({
-                            type: m.type,
-                            url: m.url,
-                            width: m.width,
-                            height: m.height
-                        })),
-                        stats: {
-                            likes: p.likes?.length || 0,
-                            comments: p.comments?.[0]?.count || 0,
-                            reposts: p.reposted?.length || 0,
-                            views: Math.floor(Math.random() * 1000), // Mock
-                            reshares: 0,
-                            bookmarks: p.saved?.length || 0
-                        },
-                        likedBy: p.likes.map((l: any) => l.user_id),
-                        savedBy: p.saved.map((s: any) => s.user_id),
-                        repostedBy: p.reposted.map((r: any) => r.user_id),
-                        collaborators: p.collaborators?.map((c: any) => c.user) || [],
-                        originalPost: null, // Simplified for now
-                        isRepost: false,
-                        comments: [], // Not loading comments here
-                        poll: p.poll
-                    };
-                });
-                // Sort manual again just in case (client side sort)
-                formattedPosts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-                setPosts(formattedPosts as any);
+            if (error) {
+                console.error('Error fetching hashtag posts:', error);
+                setLoading(false);
+                return;
+            }
+
+            if (data && data.length > 0) {
+                // Now fetch full post details
+                const postIds = data.map(item => item.post_id);
+
+                const { data: postsData, error: postsError } = await supabase
+                    .from('posts')
+                    .select('*')
+                    .in('id', postIds);
+
+                if (postsError) {
+                    console.error('Error fetching posts:', postsError);
+                    setLoading(false);
+                    return;
+                }
+
+                if (postsData) {
+                    // Fetch additional data for each post
+                    const enrichedPosts = await Promise.all(postsData.map(async (p: any) => {
+                        // Fetch author
+                        const { data: authorData } = await supabase
+                            .from('profiles')
+                            .select('*')
+                            .eq('id', p.user_id)
+                            .single();
+
+                        // Fetch stats
+                        const { count: likesCount } = await supabase
+                            .from('post_likes')
+                            .select('*', { count: 'exact', head: true })
+                            .eq('post_id', p.id);
+
+                        const { count: commentsCount } = await supabase
+                            .from('comments')
+                            .select('*', { count: 'exact', head: true })
+                            .eq('post_id', p.id);
+
+                        return {
+                            id: p.id,
+                            content: p.content,
+                            createdAt: p.created_at,
+                            author: authorData ? {
+                                id: authorData.id,
+                                name: authorData.name,
+                                username: authorData.username,
+                                avatar: authorData.avatar_url,
+                                verified: authorData.verified
+                            } : null,
+                            media: p.media_urls?.filter((url: any) => url && typeof url === 'string' && url.trim()).map((url: string) => ({
+                                type: 'image',
+                                url: url
+                            })) || [],
+                            stats: {
+                                likes: likesCount || 0,
+                                comments: commentsCount || 0,
+                                reposts: 0,
+                                views: 0,
+                                reshares: 0,
+                                bookmarks: 0
+                            },
+                            likedBy: [],
+                            savedBy: [],
+                            repostedBy: [],
+                            collaborators: [],
+                            originalPost: null,
+                            isRepost: false,
+                            comments: [],
+                            poll: p.poll
+                        };
+                    }));
+
+                    // Sort by date (client side)
+                    enrichedPosts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+                    setPosts(enrichedPosts as any);
+                }
             }
             setLoading(false);
         };
