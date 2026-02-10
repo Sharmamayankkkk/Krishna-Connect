@@ -35,10 +35,10 @@ export async function middleware(request: NextRequest) {
 
   // Define public routes that don't require authentication
   const publicRoutes = [
-    '/login', 
-    '/signup', 
-    '/forgot-password', 
-    '/update-password', 
+    '/login',
+    '/signup',
+    '/forgot-password',
+    '/update-password',
     '/auth/callback',
     '/terms-and-conditions',
     '/privacy-policy',
@@ -46,27 +46,28 @@ export async function middleware(request: NextRequest) {
     '/contact-us',
     '/developers'
   ];
-  
+
   // Check if the current path is a public route or an API/join route
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
   if (isPublicRoute || pathname.startsWith('/api') || pathname.startsWith('/join/') || pathname.startsWith('/.well-known/')) {
     return response;
   }
-  
+
   // If there's no session, redirect unauthenticated users to the login page
   if (!session) {
     // Allow access to public profile and post pages
     // Regex matches:
     // 1. /post/[id] (Redirect page)
     // 2. /profile/[username] (Profile page)
-    // 3. /[username]/post/[id] (Post page)
+    // 3. /profile/[username]/post/[id] (Post page)
     const isProfilePage = /^\/profile\/[^\/]+$/.test(pathname);
-    const isPostPage = /^\/[^\/]+\/post\/[^\/]+$/.test(pathname);
+    const isPostPage = /^\/profile\/[^\/]+\/post\/[^\/]+$/.test(pathname);
     const isRedirectPage = /^\/post\/[^\/]+$/.test(pathname);
     const isExplorePage = pathname === '/explore';
+    const isHashtagPage = /^\/hashtag\/[^\/]+$/.test(pathname);
     const isHomePage = pathname === '/';
 
-    if (isProfilePage || isPostPage || isRedirectPage || isExplorePage || isHomePage) {
+    if (isProfilePage || isPostPage || isRedirectPage || isExplorePage || isHashtagPage || isHomePage) {
       return response;
     }
 
@@ -74,13 +75,13 @@ export async function middleware(request: NextRequest) {
     url.pathname = '/login'
     url.searchParams.set('next', pathname) // Save the intended destination
     const redirectResponse = NextResponse.redirect(url)
-    
+
     // Copy cookies from initial response to redirect response
     const allCookies = response.cookies.getAll()
     allCookies.forEach(cookie => {
       redirectResponse.cookies.set(cookie.name, cookie.value, cookie) // Use cookie options if needed, but value is key
     })
-    
+
     return redirectResponse
   }
 
@@ -92,24 +93,24 @@ export async function middleware(request: NextRequest) {
     .single();
 
   const isProfileComplete = profile && profile.username;
-  
+
   // If profile is not complete, force redirect to complete-profile page
   if (!isProfileComplete && pathname !== '/complete-profile') {
     const redirectResponse = NextResponse.redirect(new URL('/complete-profile', request.url));
-    
+
     // Copy cookies
     const allCookies = response.cookies.getAll()
     allCookies.forEach(cookie => {
       redirectResponse.cookies.set(cookie.name, cookie.value, cookie)
     })
-    
+
     return redirectResponse
   }
-  
+
   // If profile is complete, redirect away from auth pages to the main app
   if (isProfileComplete && (pathname === '/login' || pathname === '/signup' || pathname === '/complete-profile')) {
     const redirectResponse = NextResponse.redirect(new URL('/explore', request.url));
-    
+
     // Copy cookies
     const allCookies = response.cookies.getAll()
     allCookies.forEach(cookie => {

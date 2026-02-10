@@ -2,6 +2,6 @@
 
 import Feed from './explore/feed';
 
-export default function AppHome() {
+export default function FeedPage() {
   return <Feed />;
 }

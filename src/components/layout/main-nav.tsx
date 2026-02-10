@@ -57,16 +57,16 @@ export function MainNav() {
 
   const menuItems = [
     {
-      href: '/explore',
-      label: 'Explore',
-      icon: Users,
-      isActive: pathname.startsWith('/explore') || pathname === '/',
-    },
-    {
-      href: '/feed',
+      href: '/',
       label: 'Feed',
       icon: Sparkles,
-      isActive: pathname.startsWith('/feed'),
+      isActive: pathname === '/' || pathname.startsWith('/feed'),
+    },
+    {
+      href: '/explore',
+      label: 'Explore',
+      icon: Compass,
+      isActive: pathname.startsWith('/explore'),
     },
     {
       href: '/leela',
@@ -78,9 +78,16 @@ export function MainNav() {
     },
     {
       href: '/chat',
-      label: 'Chats',
+      label: 'Chat',
       icon: MessageSquare,
       isActive: pathname.startsWith('/chat'),
+    },
+    {
+      href: '/notifications',
+      label: 'Notifications',
+      icon: Bell,
+      isActive: pathname.startsWith('/notifications'),
+      badge: unreadCount > 0 ? unreadCount : undefined,
     },
     {
       href: '/moodboard',
@@ -99,12 +106,6 @@ export function MainNav() {
       label: 'Status',
       icon: Compass,
       isActive: pathname.startsWith('/status'),
-    },
-    {
-      href: '/notifications',
-      label: 'Notifications',
-      icon: Bell,
-      isActive: pathname.startsWith('/notifications'),
     },
     {
       href: '/events',

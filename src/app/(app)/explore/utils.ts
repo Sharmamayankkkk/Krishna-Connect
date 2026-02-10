@@ -44,12 +44,12 @@ export const transformPost = (dbPost: any): PostType => {
         media: dbPost.media_urls || [],
         poll: dbPost.poll,
         stats: {
-            likes: dbPost.likes?.[0]?.count || 0,
-            comments: transformedComments.length || dbPost.comments?.[0]?.count || 0,
-            reposts: dbPost.reposts?.[0]?.count || 0,
-            reshares: 0, // Not tracked yet
-            views: 0, // Not tracked yet
-            bookmarks: 0 // Not tracked yet
+            likes: dbPost.likes?.[0]?.count || dbPost.like_count || 0,
+            comments: transformedComments.length || dbPost.comments?.[0]?.count || dbPost.comment_count || 0,
+            reposts: dbPost.reposts?.[0]?.count || dbPost.repost_count || 0,
+            reshares: dbPost.share_count || 0,
+            views: dbPost.views?.[0]?.count || dbPost.view_count || 0,
+            bookmarks: dbPost.bookmark_count || 0
         },
         comments: transformedComments,
         originalPost: dbPost.quote_of ? transformPost(dbPost.quote_of) : null,

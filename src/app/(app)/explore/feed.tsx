@@ -3,12 +3,10 @@ import * as React from 'react';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-// Imports update at the top
 import {
     Search,
     TrendingUp,
     Users,
-    Sparkles,
     Flame,
     Home,
     Sidebar,
@@ -22,7 +20,6 @@ import { CreatePost } from '@/components/features/posts/create-post';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { PromotePostDialog } from '@/components/promote-post-dialog';
 import {
     generateSmartFeed,
@@ -32,15 +29,18 @@ import {
 import { createClient } from '@/lib/supabase/client';
 import { GlobalSearchBar } from "@/components/global-search-bar"
 import { FeedList } from '@/components/features/posts/feed-list';
-import { TrendingTopicsList } from './components/trending-topics-list';
-import { UserCard } from './components/user-card';
-import { transformPost } from './utils';
 import { StoriesBar } from '@/components/features/stories/stories-bar';
+
+// Custom Hooks
+import { useInfiniteScroll, useFeedFiltering, type FeedFilter } from './hooks';
+
+// Components
+import { FeedSkeleton, EmptyFeedState, TrendingTopicsList, UserCard } from './components';
+import { transformPost } from './utils';
 
 const POSTS_PER_PAGE = 10;
 const SCROLL_THRESHOLD = 500;
 
-type FeedFilter = 'following' | 'latest';
 type ExploreMode = 'feed' | 'search' | 'discover';
 
 // Main Explore Page (Feed)
@@ -49,14 +49,17 @@ export default function Feed() {
         loggedInUser,
     } = useAppContext();
     const { toast } = useToast();
-    const router = useRouter();
 
     // Mode management
     const [exploreMode, setExploreMode] = React.useState<ExploreMode>('feed');
 
-    const searchParams = useSearchParams();
-    const pathname = usePathname();
-    const currentTab = searchParams.get('tab') as FeedFilter || 'latest';
+    // Feed filtering with custom hook
+    const { feedFilter, handleTabChange, applyFilter } = useFeedFiltering({
+        onFilterChange: () => {
+            setAllPosts([]); // Clear posts to trigger re-fetch
+            setIsInitialLoading(true);
+        }
+    });
 
     // Feed state
     const [allPosts, setAllPosts] = React.useState<PostType[]>([]);
@@ -65,29 +68,8 @@ export default function Feed() {
     const [isLoadingMore, setIsLoadingMore] = React.useState(false);
     const [hasMore, setHasMore] = React.useState(true);
     const [isInitialLoading, setIsInitialLoading] = React.useState(true);
-    const [feedFilter, setFeedFilter] = React.useState<FeedFilter>(currentTab);
     const [showNewPostsBanner, setShowNewPostsBanner] = React.useState(false);
-
-    // Update URL when filter changes
-    const handleTabChange = (tab: FeedFilter) => {
-        setFeedFilter(tab);
-        const params = new URLSearchParams(searchParams);
-        params.set('tab', tab);
-        router.push(`${pathname}?${params.toString()}`);
-        setAllPosts([]); // Clear posts to trigger re-fetch
-        setIsInitialLoading(true);
-    };
-
-    // Sync state if URL changes externally (e.g. back button)
-    React.useEffect(() => {
-        if (currentTab !== feedFilter) {
-            setFeedFilter(currentTab);
-            setAllPosts([]);
-            setIsInitialLoading(true);
-        }
-    }, [currentTab]);
     const [newPostsCount, setNewPostsCount] = React.useState(0);
-    const [showScrollTop, setShowScrollTop] = React.useState(false);
 
     // Promotion Dialog
     const [isPromotionDialogOpen, setIsPromotionDialogOpen] = React.useState(false);
@@ -108,6 +90,7 @@ export default function Feed() {
     });
 
     const [suggestedUsers, setSuggestedUsers] = React.useState<any[]>([]);
+
 
     React.useEffect(() => {
         const fetchSuggested = async () => {
@@ -166,6 +149,7 @@ export default function Feed() {
                 likes:post_likes(count),
                 comments:comments(count),
                 reposts:post_reposts(count),
+                views:post_views(count),
                 post_comments:comments (
                     id,
                     user_id,
@@ -249,17 +233,6 @@ export default function Feed() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [allPosts, feedFilter]); // Only re-run when posts are fetched or filter tab changes
 
-
-    // Scroll detection
-    React.useEffect(() => {
-        const handleScroll = () => {
-            const scrollTop = window.scrollY || document.documentElement.scrollTop;
-            setShowScrollTop(scrollTop > SCROLL_THRESHOLD);
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
 
     // Apply feed filter
     const applyFeedFilter = (posts: PostType[], filter: FeedFilter) => {
@@ -389,10 +362,14 @@ export default function Feed() {
         }, 500);
     };
 
-    // Scroll to top
-    const scrollToTop = () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
+    // Infinite scroll with custom hook (after handleLoadMore is defined)
+    const { showScrollTop, scrollToTop } = useInfiniteScroll({
+        threshold: SCROLL_THRESHOLD,
+        isLoading: isLoadingMore,
+        hasMore,
+        onLoadMore: handleLoadMore,
+    });
+
 
     const handleFollowUser = (userId: string) => {
         toast({
@@ -638,18 +615,28 @@ export default function Feed() {
                                 <CreatePost onPostCreated={handlePostCreated} />
                             </div>
 
-                            {/* Feed List */}
-                            <FeedList
-                                posts={visiblePosts}
-                                isLoading={isInitialLoading}
-                                isLoadingMore={isLoadingMore}
-                                hasMore={hasMore}
-                                onLoadMore={handleLoadMore}
-                                onPostUpdated={handlePostUpdated}
-                                onPostDeleted={handlePostDeleted}
-                                onQuotePost={handleQuotePost}
-                                onPromote={handlePromoteClick}
-                            />
+                            {/* Loading State */}
+                            {isInitialLoading ? (
+                                <FeedSkeleton count={3} />
+                            ) : visiblePosts.length === 0 ? (
+                                <EmptyFeedState
+                                    filter={feedFilter}
+                                    onSwitchTab={() => handleTabChange('latest')}
+                                />
+                            ) : (
+                                /* Feed List */
+                                <FeedList
+                                    posts={visiblePosts}
+                                    isLoading={isInitialLoading}
+                                    isLoadingMore={isLoadingMore}
+                                    hasMore={hasMore}
+                                    onLoadMore={handleLoadMore}
+                                    onPostUpdated={handlePostUpdated}
+                                    onPostDeleted={handlePostDeleted}
+                                    onQuotePost={handleQuotePost}
+                                    onPromote={handlePromoteClick}
+                                />
+                            )}
                         </>
                     ) : (
                         <div className="space-y-8 px-4 py-6 md:px-0">

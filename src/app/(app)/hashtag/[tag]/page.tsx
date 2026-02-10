@@ -21,11 +21,14 @@ export default function HashtagPage() {
         const fetchPosts = async () => {
             const supabase = createClient();
 
+            // Remove # if present and search for hashtag
+            const cleanTag = tag.startsWith('#') ? tag.substring(1) : tag;
+
             // First get the hashtag ID
             const { data: hashtagData } = await supabase
                 .from('hashtags')
                 .select('id')
-                .ilike('tag', tag)
+                .ilike('tag', cleanTag)
                 .single();
 
             if (!hashtagData) {

@@ -33,7 +33,7 @@ export default async function PostRedirectPage(props: { params: Promise<{ id: st
 
   if (data && data.author) {
     const username = (data.author as any).username;
-    redirect(`/${username}/post/${postId}`);
+    redirect(`/profile/${username}/post/${postId}`);
   }
 
   // If not found, redirect to feed

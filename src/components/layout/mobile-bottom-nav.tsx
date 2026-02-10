@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Sparkles, MessageSquare, User } from 'lucide-react'
+import { Home, Compass, MessageSquare, User, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/hooks/use-toast'
 import { useAppContext } from '@/providers/app-provider'
@@ -23,16 +23,16 @@ export function MobileBottomNav() {
 
     const navItems = [
         {
-            href: '/explore',
-            label: 'Explore',
+            href: '/',
+            label: 'Feed',
             icon: Home,
-            isActive: pathname === '/' || pathname.startsWith('/explore'),
+            isActive: pathname === '/' || pathname.startsWith('/feed'),
         },
         {
-            href: '/feed',
-            label: 'Feed',
-            icon: Sparkles,
-            isActive: pathname.startsWith('/feed'),
+            href: '/explore',
+            label: 'Explore',
+            icon: Compass,
+            isActive: pathname.startsWith('/explore'),
         },
         {
             href: '/leela',
@@ -49,7 +49,7 @@ export function MobileBottomNav() {
             isActive: pathname.startsWith('/chat'),
         },
         {
-            href: loggedInUser ? `/profile/${loggedInUser.username}` : '/explore',
+            href: loggedInUser ? `/profile/${loggedInUser.username}` : '/',
             label: 'Profile',
             icon: User,
             isActive: pathname.startsWith('/profile') && loggedInUser,
