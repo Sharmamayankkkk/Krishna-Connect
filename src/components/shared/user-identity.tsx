@@ -4,13 +4,14 @@ import Image from 'next/image';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { Lock } from 'lucide-react';
+import { VerificationBadge } from './verification-badge';
 
 interface UserIdentityProps {
     user: {
         name?: string;
         username?: string;
         avatar_url?: string;
-        verified?: boolean;
+        verified?: boolean | 'none' | 'verified' | 'kcs';
         is_private?: boolean; // Added for lock icon support if needed in future, currently strictly following prompt props
     };
     size?: 'sm' | 'md' | 'lg' | 'xl';
@@ -107,15 +108,7 @@ export default function UserIdentity({
                 <span className={cn("font-bold truncate text-foreground", config.name)}>
                     {displayName}
                 </span>
-                {user.verified && (
-                    <Image
-                        src="/user_Avatar/verified.png"
-                        alt="Verified"
-                        width={config.verifSize}
-                        height={config.verifSize}
-                        className="flex-shrink-0"
-                    />
-                )}
+                <VerificationBadge verified={user.verified} size={config.verifSize} className="flex-shrink-0" />
             </div>
             {displayUsername && (
                 <span className={cn("text-muted-foreground truncate", config.username)}>

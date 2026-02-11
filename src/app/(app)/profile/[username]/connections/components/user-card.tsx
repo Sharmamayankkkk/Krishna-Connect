@@ -21,7 +21,7 @@ interface UserCardProps {
         name?: string;
         avatar_url?: string;
         bio?: string;
-        verified?: boolean;
+        verified?: 'none' | 'verified' | 'kcs';
         is_following?: boolean;
         follow_status?: 'none' | 'pending' | 'approved';
     };

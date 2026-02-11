@@ -15,6 +15,7 @@ import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { FollowButton } from "@/app/(app)/profile/[username]/components/follow-button";
 import { useAppContext } from "@/providers/app-provider";
+import { VerificationBadge } from "@/components/shared/verification-badge";
 
 interface LikedByDialogProps {
     open: boolean;
@@ -27,7 +28,7 @@ interface LikedUser {
     username: string;
     name: string;
     avatar_url: string;
-    verified: boolean;
+    verified: 'none' | 'verified' | 'kcs';
     bio: string;
 }
 
@@ -85,9 +86,7 @@ export function LikedByDialog({ open, onOpenChange, postId }: LikedByDialogProps
                                         <div>
                                             <Link href={`/profile/${user.username}`} className="font-semibold hover:underline">
                                                 <span>{user.name || user.username}</span>
-                                                {user.verified && (
-                                                    <span className="ml-1 text-blue-500">✓</span>
-                                                )}
+                                                <VerificationBadge verified={user.verified} size={14} className="ml-1 inline-block" />
                                             </Link>
                                             <p className="text-sm text-muted-foreground">@{user.username}</p>
                                         </div>

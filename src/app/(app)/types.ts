@@ -8,7 +8,7 @@ export type UserType = {
     username: string;
     avatar: string;
     bio?: string;
-    verified?: boolean;
+    verified?: 'none' | 'verified' | 'kcs';
     followersCount?: number;
     followingCount?: number;
 };

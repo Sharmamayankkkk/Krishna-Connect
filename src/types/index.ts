@@ -17,7 +17,7 @@ export interface Profile {
   post_count?: number;
   is_following: boolean;
   follow_status?: 'none' | 'pending' | 'approved';
-  verified?: boolean;
+  verified?: 'none' | 'verified' | 'kcs';
   is_private?: boolean;
 }
 

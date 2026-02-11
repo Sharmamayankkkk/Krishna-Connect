@@ -47,6 +47,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { VerificationBadge } from "@/components/shared/verification-badge";
 
 interface ProfileViewProps {
   profile: Profile;
@@ -167,8 +168,8 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
     avatar_url: getImageUrl(profile.avatar_url) || '',
     avatar: getImageUrl(profile.avatar_url) || '',
     is_admin: false,
-    is_verified: profile.verified || false,
-    verified: profile.verified || false,
+    is_verified: profile.verified || 'none',
+    verified: profile.verified || 'none',
     user_metadata: {}
   } as User;
 
@@ -265,15 +266,7 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
           <div className="flex-1">
             <h1 className="font-bold text-lg leading-tight flex items-center gap-1">
               {displayName}
-              {profile.verified && (
-                <Image
-                  src="/user_Avatar/verified.png"
-                  alt="Verified"
-                  width={18}
-                  height={18}
-                  className="inline-block"
-                />
-              )}
+              <VerificationBadge verified={profile.verified} size={18} className="inline-block" />
             </h1>
             <p className="text-sm text-muted-foreground">
               {profile.post_count || posts.length} posts
@@ -429,15 +422,7 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
         <div className="mt-3">
           <h2 className="text-xl font-bold flex items-center gap-1">
             {displayName}
-            {profile.verified && (
-              <Image
-                src="/user_Avatar/verified.png"
-                alt="Verified"
-                width={20}
-                height={20}
-                className="inline-block"
-              />
-            )}
+            <VerificationBadge verified={profile.verified} size={20} className="inline-block" />
           </h2>
           <p className="text-muted-foreground">@{profile.username}</p>
         </div>

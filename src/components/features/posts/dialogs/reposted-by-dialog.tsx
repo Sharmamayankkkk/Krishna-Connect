@@ -9,13 +9,14 @@ import { Loader2, UserPlus, Check } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { getAvatarUrl } from '@/lib/utils';
 import Image from 'next/image';
+import { VerificationBadge } from "@/components/shared/verification-badge";
 
 interface RepostUser {
     id: string;
     name: string;
     username: string;
     avatar_url: string;
-    verified: boolean;
+    verified: boolean | 'none' | 'verified' | 'kcs';
 }
 
 interface RepostedByDialogProps {
@@ -67,7 +68,7 @@ export function RepostedByDialog({ open, onOpenChange, postId, initialCount = 0 
                     name: r.profiles.name || 'Unknown User',
                     username: r.profiles.username || 'unknown',
                     avatar_url: r.profiles.avatar_url || '',
-                    verified: r.profiles.verified || false
+                    verified: r.profiles.verified || 'none'
                 }));
 
             setUsers(reposters);
@@ -115,15 +116,7 @@ export function RepostedByDialog({ open, onOpenChange, postId, initialCount = 0 
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-1">
                                             <span className="font-semibold truncate">{user.name}</span>
-                                            {user.verified && (
-                                                <Image
-                                                    src="/user_Avatar/verified.png"
-                                                    alt="Verified"
-                                                    width={14}
-                                                    height={14}
-                                                    className="inline-block flex-shrink-0"
-                                                />
-                                            )}
+                                            <VerificationBadge verified={user.verified} size={14} className="inline-block flex-shrink-0" />
                                         </div>
                                         <span className="text-sm text-muted-foreground">@{user.username}</span>
                                     </div>

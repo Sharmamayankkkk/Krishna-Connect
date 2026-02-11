@@ -13,7 +13,7 @@ interface PostData {
   author_name: string;
   author_username: string;
   author_avatar: string;
-  author_verified: boolean;
+  author_verified: 'none' | 'verified' | 'kcs';
   likes_count: number;
   comments_count: number;
   reposts_count: number;

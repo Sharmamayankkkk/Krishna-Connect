@@ -147,8 +147,7 @@ export function calculateQualityScore(post: PostType): number {
         score += 0.4;
     }
 
-    // Boost for verified authors
-    if (post.author.verified) {
+    if (post.author.verified === 'verified' || post.author.verified === 'kcs') {
         score += 0.2;
     }
 

@@ -10,7 +10,7 @@ export type User = {
   role?: 'user' | 'admin' | 'gurudev';
   is_admin: boolean;
   is_private?: boolean;
-  is_verified?: boolean;
+  is_verified?: 'none' | 'verified' | 'kcs';
   has_set_privacy?: boolean;
   settings?: UserSettings; // JSONB column
 };
@@ -58,7 +58,7 @@ export type Post = {
     username: string;
     name: string;
     avatar_url: string;
-    verified?: boolean;
+    verified?: 'none' | 'verified' | 'kcs';
   };
   media_urls?: Media[];
   likes: string[]; // array of user IDs
@@ -237,7 +237,7 @@ export type UserType = {
   username: string;
   avatar: string;
   bio?: string;
-  verified?: boolean;
+  verified?: 'none' | 'verified' | 'kcs';
   followersCount?: number;
   followingCount?: number;
 };

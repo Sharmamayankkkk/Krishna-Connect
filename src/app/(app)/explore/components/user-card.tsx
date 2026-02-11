@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Sparkles } from 'lucide-react';
+import { VerificationBadge } from '@/components/shared/verification-badge';
 import { useAppContext } from '@/providers/app-provider';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -20,7 +20,7 @@ export function UserCard({
         name: string;
         username: string;
         avatar: string;
-        verified: boolean;
+        verified: 'none' | 'verified' | 'kcs';
         followers: number;
         bio?: string;
     };
@@ -109,9 +109,7 @@ export function UserCard({
                             >
                                 {user.name}
                             </Link>
-                            {user.verified && (
-                                <Sparkles className="h-4 w-4 text-primary flex-shrink-0" />
-                            )}
+                            <VerificationBadge verified={user.verified} size={16} className="flex-shrink-0" />
                         </div>
                         <p className="text-sm text-muted-foreground">@{user.username}</p>
                         <p className="text-sm mt-1 line-clamp-2">{user.bio}</p>

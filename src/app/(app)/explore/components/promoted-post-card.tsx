@@ -9,13 +9,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Megaphone, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { VerificationBadge } from "@/components/shared/verification-badge";
 
 // Types matching promoted_content.json structure
 export interface PromotedAuthor {
     name: string;
     username: string;
     avatar: string;
-    verified?: boolean;
+    verified?: boolean | 'none' | 'verified' | 'kcs';
 }
 
 export interface PromotedCTA {
@@ -94,15 +95,7 @@ export function PromotedPostCard({ promotion, className }: PromotedPostCardProps
                                 <span className="font-semibold hover:underline truncate text-sm">
                                     {author.name}
                                 </span>
-                                {author.verified && (
-                                    <Image
-                                        src="/user_Avatar/verified.png"
-                                        alt="Verified"
-                                        width={16}
-                                        height={16}
-                                        className="flex-shrink-0"
-                                    />
-                                )}
+                                <VerificationBadge verified={author.verified} size={16} className="flex-shrink-0" />
                                 <span className="text-sm text-muted-foreground truncate ml-1">
                                     @{author.username}
                                 </span>

@@ -92,7 +92,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ...profile,
         email: user.email,
         // Map DB column 'verified' to TypeScript 'is_verified'
-        is_verified: profile.verified ?? false
+        is_verified: profile.verified ?? 'none'
       } as User;
       const savedTheme = localStorage.getItem('themeSettings');
       if (savedTheme) {

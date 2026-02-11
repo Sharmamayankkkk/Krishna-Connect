@@ -18,6 +18,7 @@ import { Search, X, CheckCircle2, Circle, Loader2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { UserType } from '@/lib/types';
 import { useAppContext } from '@/providers/app-provider';
+import { VerificationBadge } from "@/components/shared/verification-badge";
 
 // Reusing UserType but ensuring Collaborator matches what we need
 export type Collaborator = UserType;
@@ -169,9 +170,7 @@ export function CollaborativePostDialog({
                     <div className="flex-1">
                       <p className="font-semibold text-sm flex items-center gap-1">
                         {user.name}
-                        {user.verified && (
-                          <img src="/user_Avatar/verified.png" alt="Verified" className="w-3 h-3" />
-                        )}
+                        <VerificationBadge verified={user.verified} size={12} className="w-3 h-3" />
                       </p>
                       <p className="text-muted-foreground text-xs">@{user.username}</p>
                     </div>

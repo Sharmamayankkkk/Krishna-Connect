@@ -43,7 +43,7 @@ const createEventSchema = z.object({
 export function CreateEventDialog({ open, onOpenChange, eventToEdit, onEventCreated, onEventUpdated }: CreateEventDialogProps) {
   const { toast } = useToast();
   const { loggedInUser } = useAppContext();
-  
+
   const [thumbnailFile, setThumbnailFile] = React.useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = React.useState<string | null>(eventToEdit?.thumbnail || null);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -110,7 +110,7 @@ export function CreateEventDialog({ open, onOpenChange, eventToEdit, onEventCrea
         const { data: urlData } = supabase.storage.from('attachments').getPublicUrl(filePath);
         thumbnailUrl = urlData.publicUrl;
       }
-      
+
       const [hours, minutes] = values.time.split(':').map(Number);
       const combinedDateTime = new Date(values.date);
       combinedDateTime.setHours(hours, minutes);
@@ -140,7 +140,7 @@ export function CreateEventDialog({ open, onOpenChange, eventToEdit, onEventCrea
         toast({ title: "Event Created!", description: `The event "${values.title}" has been scheduled.` });
         onEventCreated();
       }
-      
+
       onOpenChange(false);
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Error saving event', description: error.message });
@@ -148,8 +148,10 @@ export function CreateEventDialog({ open, onOpenChange, eventToEdit, onEventCrea
       setIsLoading(false);
     }
   };
-  
-  if (!loggedInUser?.is_verified) {
+
+  const isVerified = loggedInUser?.is_verified === 'verified' || loggedInUser?.is_verified === 'kcs';
+
+  if (!isVerified) {
     return null;
   }
 
@@ -189,16 +191,16 @@ export function CreateEventDialog({ open, onOpenChange, eventToEdit, onEventCrea
               />
               <FormItem>
                 <FormLabel>Thumbnail</FormLabel>
-                  <div className="flex items-center gap-4">
-                    <div className="relative w-48 h-27 aspect-video rounded-md overflow-hidden bg-muted">
-                        {thumbnailPreview ? <Image src={thumbnailPreview} alt="thumbnail preview" fill className="object-cover" /> : <div className="h-full w-full bg-muted"/>}
-                    </div>
-                    <Button type="button" variant="outline" onClick={() => thumbnailInputRef.current?.click()}>
-                        <Upload className="mr-2 h-4 w-4"/>
-                        Upload Image
-                    </Button>
-                    <input type="file" ref={thumbnailInputRef} onChange={handleThumbnailChange} className="hidden" accept="image/*" />
+                <div className="flex items-center gap-4">
+                  <div className="relative w-48 h-27 aspect-video rounded-md overflow-hidden bg-muted">
+                    {thumbnailPreview ? <Image src={thumbnailPreview} alt="thumbnail preview" fill className="object-cover" /> : <div className="h-full w-full bg-muted" />}
                   </div>
+                  <Button type="button" variant="outline" onClick={() => thumbnailInputRef.current?.click()}>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Upload Image
+                  </Button>
+                  <input type="file" ref={thumbnailInputRef} onChange={handleThumbnailChange} className="hidden" accept="image/*" />
+                </div>
                 <FormMessage />
               </FormItem>
               <div className="grid grid-cols-2 gap-4">
@@ -221,14 +223,14 @@ export function CreateEventDialog({ open, onOpenChange, eventToEdit, onEventCrea
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date < new Date(new Date().setHours(0,0,0,0)) } initialFocus />
+                          <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))} initialFocus />
                         </PopoverContent>
                       </Popover>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                 <FormField
+                <FormField
                   control={form.control}
                   name="time"
                   render={({ field }) => (
@@ -240,17 +242,17 @@ export function CreateEventDialog({ open, onOpenChange, eventToEdit, onEventCrea
                   )}
                 />
               </div>
-               <FormField
-                  control={form.control}
-                  name="meet_link"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Google Meet Link (Optional)</FormLabel>
-                      <FormControl><Input placeholder="https://meet.krishnaconsciousnesssociety.com/..." {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <FormField
+                control={form.control}
+                name="meet_link"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Google Meet Link (Optional)</FormLabel>
+                    <FormControl><Input placeholder="https://meet.krishnaconsciousnesssociety.com/..." {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
             <DialogFooter className="sticky bottom-0 bg-background py-4">
               <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>

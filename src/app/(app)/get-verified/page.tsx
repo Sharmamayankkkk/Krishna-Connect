@@ -233,7 +233,8 @@ export default function GetVerifiedPage() {
 
     // Already verified
     // We wait for existingRequest to be loaded if possible, but fallback if not found after loading
-    if ((loggedInUser as any).verified || (loggedInUser as any).is_verified) {
+    const isVerified = (loggedInUser as any).verified === 'verified' || (loggedInUser as any).verified === 'kcs' || (loggedInUser as any).verified === true;
+    if (isVerified) {
         return <AlreadyVerifiedState request={existingRequest} />;
     }
 
@@ -340,8 +341,8 @@ export default function GetVerifiedPage() {
                             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
                                 <Crown className="h-5 w-5 text-primary" />
                             </div>
-                            <h3 className="font-semibold text-sm">Exclusive Events</h3>
-                            <p className="text-xs text-muted-foreground text-center">Access to verified-only events</p>
+                            <h3 className="font-semibold text-sm">Create & Join Events</h3>
+                            <p className="text-xs text-muted-foreground text-center">Host and attend exclusive events</p>
                         </div>
                     </div>
 
@@ -390,6 +391,11 @@ export default function GetVerifiedPage() {
                                     </tr>
                                     <tr>
                                         <td className="p-4">Verified-Only Events</td>
+                                        <td className="text-center p-4"><XIcon className="h-5 w-5 text-red-500 mx-auto" /></td>
+                                        <td className="text-center p-4 bg-primary/5"><Check className="h-5 w-5 text-green-500 mx-auto" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td className="p-4">Create Events</td>
                                         <td className="text-center p-4"><XIcon className="h-5 w-5 text-red-500 mx-auto" /></td>
                                         <td className="text-center p-4 bg-primary/5"><Check className="h-5 w-5 text-green-500 mx-auto" /></td>
                                     </tr>

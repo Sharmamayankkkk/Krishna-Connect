@@ -54,6 +54,7 @@ import { CommentSheet as CommentsSheet } from '@/app/(app)/explore/components/co
 import { PromotePostDialog } from './dialogs/promote-post-dialog';
 import { SharePostDialog } from './dialogs/share-post-dialog';
 import { LikedByDialog } from './dialogs/liked-by-dialog';
+import { VerificationBadge } from "@/components/shared/verification-badge";
 
 interface PostCardProps {
     post: PostType;
@@ -533,16 +534,7 @@ export function PostCard({
                                                 {index > 0 && index < arr.length - 1 && <span className="font-medium text-muted-foreground">,</span>}
                                             </React.Fragment>
                                         ))}
-                                    {post.author.verified && (
-                                        <Image
-                                            src="/user_Avatar/verified.png"
-                                            alt="Verified User"
-                                            width={16}
-                                            height={16}
-                                            className="inline-block"
-                                            title="Verified"
-                                        />
-                                    )}
+                                    <VerificationBadge verified={post.author.verified} size={16} className="inline-block" />
                                     {post.isPromoted && (
                                         <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary ring-1 ring-inset ring-primary/20">
                                             Promoted
