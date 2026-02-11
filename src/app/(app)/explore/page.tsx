@@ -28,16 +28,13 @@ export default function ExplorePage() {
         const fetchData = async () => {
             const supabase = createClient();
 
-            // Fetch suggested users (direct query instead of RPC)
-            const { data: usersData } = await supabase
-                .from('profiles')
-                .select('id, username, name, avatar_url, bio')
-                .limit(8);
+            // Fetch suggested users using RPC to get real follower counts
+            const { data: usersData } = await supabase.rpc('get_who_to_follow', { limit_count: 6 });
 
             if (usersData) {
                 const enhanced = usersData.map((u: any) => ({
                     ...u,
-                    followers: Math.floor(Math.random() * 1000) + 100,
+                    followers: u.followers_count,
                     avatar: u.avatar_url || '/placeholder-user.jpg'
                 }));
                 setSuggestedUsers(enhanced);
