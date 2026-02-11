@@ -107,10 +107,16 @@ export default function AnalyticsPage() {
             if (demographicData) setDemographics(demographicData);
 
             // 4. Best Posting Times
-            const { data: timeData } = await supabase.rpc('get_best_posting_times', {
+            const { data: timeData } = await supabase.rpc('get_best_posting_times_v2', {
                 p_user_id: user.id
             });
-            if (timeData) setPostingTimes(timeData);
+            if (timeData) {
+                const formattedTimeData = timeData.map((t: any) => ({
+                    time_slot: t.time_slot,
+                    view_count: t.view_count
+                }));
+                setPostingTimes(formattedTimeData);
+            }
 
             // 5. Top Performing Posts
             const { data: postsData } = await supabase.rpc('get_top_performing_posts', {
