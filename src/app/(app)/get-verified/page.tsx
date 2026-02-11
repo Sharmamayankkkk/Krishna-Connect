@@ -73,6 +73,7 @@ interface VerificationRequest {
     admin_notes?: string;
     created_at: string;
     updated_at: string;
+    expires_at?: string;
 }
 
 // Pricing constants
@@ -788,17 +789,29 @@ function AlreadyVerifiedState({ request }: { request: VerificationRequest | null
 
     // Calculate subscription details
     const planType = request?.plan_type || 'monthly';
-    const startDate = request?.updated_at ? new Date(request.updated_at) : new Date();
-    const endDate = new Date(startDate);
-    if (planType === 'yearly') {
-        endDate.setFullYear(endDate.getFullYear() + 1);
+
+    // Use stored expiration date if available, otherwise calculate fallback
+    let endDate;
+    if (request?.expires_at) {
+        endDate = new Date(request.expires_at);
     } else {
-        endDate.setMonth(endDate.getMonth() + 1);
+        // Fallback calculation (legacy)
+        const startDate = request?.updated_at ? new Date(request.updated_at) : new Date();
+        endDate = new Date(startDate);
+        if (planType === 'yearly') {
+            endDate.setFullYear(endDate.getFullYear() + 1);
+        } else {
+            endDate.setMonth(endDate.getMonth() + 1);
+        }
     }
+
+    const now = new Date();
+    const daysLeft = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    const isExpired = daysLeft < 0;
 
     // Format dates
     const formatDate = (d: Date) => d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-    const daysLeft = Math.ceil((endDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 flex items-center justify-center p-4">
