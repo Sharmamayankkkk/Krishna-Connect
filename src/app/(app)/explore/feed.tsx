@@ -445,7 +445,7 @@ export default function Feed() {
 
                         {/* Desktop Title */}
                         <div className="hidden md:block flex-shrink-0">
-                            <h1 className="text-xl font-bold tracking-tight">Home</h1>
+                            <h1 className="text-xl font-bold tracking-tight">Feed</h1>
                         </div>
 
                         {/* Search Bar - Centered and Wide on Desktop */}
