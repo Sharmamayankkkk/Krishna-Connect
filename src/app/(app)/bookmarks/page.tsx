@@ -22,6 +22,8 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { PostCard } from '@/components/features/posts/post-card';
 import { PostType } from '@/lib/types';
 import { useRouter } from 'next/navigation';
+import { usePosts } from '@/app/(app)/explore/hooks/usePosts'; // Import hook
+
 
 // Type for bookmark collections
 type BookmarkCollection = {
@@ -78,8 +80,10 @@ function CollectionCard({ collection, postCount }: { collection: BookmarkCollect
 export default function BookmarksPage() {
     const router = useRouter();
 
-    // Empty bookmarked posts - will be fetched from DB
-    const bookmarkedPosts: PostType[] = [];
+    // Fetch bookmarks
+    const { data, isLoading } = usePosts('bookmarks');
+    const posts = data?.pages.flatMap(page => page.posts) || [];
+
 
     const [viewMode, setViewMode] = React.useState<'list' | 'grid'>('list');
 
@@ -132,9 +136,18 @@ export default function BookmarksPage() {
 
                         {/* All Bookmarked Posts */}
                         <TabsContent value="all" className="mt-4">
-                            {bookmarkedPosts.length > 0 ? (
+                            {isLoading ? (
+                                <div className="space-y-4">
+                                    {/* Simple skeleton */}
+                                    {[1, 2, 3].map(i => (
+                                        <div key={i} className="h-48 bg-muted rounded-xl animate-pulse" />
+                                    ))}
+                                </div>
+                            ) : posts && posts.length > 0 ? (
                                 <div className={viewMode === 'list' ? "space-y-0 border rounded-lg overflow-hidden" : "grid grid-cols-2 md:grid-cols-3 gap-4"}>
-                                    {bookmarkedPosts.map(post =>
+                                    {posts.map(post => // Flatten pages handled by usePosts usually returns pages, but here we assume flattened or need to flatten. 
+                                        // usePosts returns { data } which has pages. 
+                                        // Let's adjust to use flattened data.
                                         viewMode === 'list' ? (
                                             <PostCard
                                                 key={post.id}

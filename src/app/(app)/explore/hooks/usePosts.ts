@@ -20,6 +20,8 @@ interface PostData {
   is_liked: boolean;
   is_reposted: boolean;
   next_cursor: number;
+  is_bookmarked?: boolean; // NEW
+  bookmarks_count?: number; // NEW
 }
 
 const transformPostData = (post: PostData): PostType => {
@@ -42,11 +44,11 @@ const transformPostData = (post: PostData): PostType => {
       reposts: post.reposts_count,
       likes: post.likes_count,
       views: Math.floor(Math.random() * 1000) + 100,
-      bookmarks: 0
+      bookmarks: post.bookmarks_count || 0
     },
     comments: [],
     likedBy: post.is_liked ? [post.user_id] : [],
-    savedBy: [],
+    savedBy: post.is_bookmarked ? [post.user_id] : [], // Use is_bookmarked flag
     repostedBy: post.is_reposted ? [post.user_id] : [],
     isPromoted: (post as any).is_promoted || false,
     originalPost: null

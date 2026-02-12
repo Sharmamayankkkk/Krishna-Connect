@@ -104,12 +104,12 @@ export const transformPost = (dbPost: any): PostType => {
             reposts: repostsCount,
             reshares: 0,
             views: viewsCount,
-            bookmarks: dbPost.bookmarks_count || 0
+            bookmarks: typeof dbPost.bookmarks_count === 'number' ? dbPost.bookmarks_count : (dbPost.stats?.bookmarks || 0)
         },
         comments: transformedComments,
         originalPost: dbPost.quote_of ? transformPost(dbPost.quote_of) : null,
         likedBy: likedByUsers,
-        savedBy: (Array.isArray(dbPost.saved_posts) ? dbPost.saved_posts : []).map((s: any) => s.user_id || s),
+        savedBy: dbPost.is_bookmarked ? [dbPost.user_id] : (Array.isArray(dbPost.bookmarks) ? dbPost.bookmarks.map((b: any) => b.user_id || b.id || b) : []), // Fallback to array if populated
         repostedBy: repostedByUsers,
         isPinned: dbPost.is_pinned || !!dbPost.pinned_at || false,
         isPromoted: dbPost.is_promoted || false,

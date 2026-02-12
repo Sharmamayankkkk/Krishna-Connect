@@ -46,7 +46,8 @@ const POST_QUERY = `
         likes: comment_likes(user_id)
     ),
     likes: post_likes(user_id),
-    reposts: post_reposts(user_id)
+    reposts: post_reposts(user_id),
+    bookmarks: bookmarks(user_id)
 `;
 
 export default function PostView() {
