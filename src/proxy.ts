@@ -9,6 +9,42 @@ export async function proxy(request: NextRequest) {
     },
   })
 
+  // 1. Check Maintenance Mode
+  const isMaintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true';
+  const { pathname } = request.nextUrl
+
+  if (isMaintenanceMode && pathname !== '/maintenance') {
+    // Allow static assets/api if needed (already mostly covered by matcher, but safe to add)
+    if (
+      !pathname.startsWith('/_next') &&
+      !pathname.startsWith('/static') &&
+      !pathname.startsWith('/api')
+    ) {
+      // Check Bypass
+      const bypassKey = process.env.MAINTENANCE_BYPASS_SECRET;
+      const requestBypassKey = request.nextUrl.searchParams.get('bypass');
+      const bypassCookie = request.cookies.get('maintenance_bypass');
+
+      let allow = false;
+
+      if (bypassKey && requestBypassKey === bypassKey) {
+        allow = true;
+        // Set cookie on the *current* response object which we might return or use later
+        response.cookies.set('maintenance_bypass', 'true', {
+          httpOnly: true,
+          path: '/',
+          sameSite: 'strict'
+        });
+      } else if (bypassCookie?.value === 'true') {
+        allow = true;
+      }
+
+      if (!allow) {
+        return NextResponse.redirect(new URL('/maintenance', request.url));
+      }
+    }
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -31,7 +67,7 @@ export async function proxy(request: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession()
 
-  const { pathname } = request.nextUrl
+
 
   // Define public routes that don't require authentication
   const publicRoutes = [
@@ -44,7 +80,8 @@ export async function proxy(request: NextRequest) {
     '/privacy-policy',
     '/sitemap.xml',
     '/contact-us',
-    '/developers'
+    '/developers',
+    '/maintenance'
   ];
 
   // Check if the current path is a public route or an API/join route
