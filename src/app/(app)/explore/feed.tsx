@@ -5,26 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
     Search,
-    TrendingUp,
     Users,
-    Flame,
-    Home,
     Sidebar,
     Clock,
     ArrowUp
 } from 'lucide-react';
 
 import { useAppContext } from '@/providers/app-provider';
-import { PostType, NotificationType } from '@/lib/types';
+import { PostType } from '@/lib/types';
 import { CreatePost } from '@/components/features/posts/create-post';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { PromotePostDialog } from '@/components/promote-post-dialog';
 import {
-    generateSmartFeed,
     UserInteractions,
-    updateLastSeenTime
 } from '../feed-algorithm';
 import { createClient } from '@/lib/supabase/client';
 import { GlobalSearchBar } from "@/components/global-search-bar"
@@ -35,13 +30,11 @@ import { StoriesBar } from '@/components/features/stories/stories-bar';
 import { useInfiniteScroll, useFeedFiltering, type FeedFilter } from './hooks';
 
 // Components
-import { FeedSkeleton, EmptyFeedState, TrendingTopicsList, UserCard } from './components';
+import { FeedSkeleton, EmptyFeedState } from './components';
 import { transformPost } from './utils';
 
 const POSTS_PER_PAGE = 10;
 const SCROLL_THRESHOLD = 500;
-
-type ExploreMode = 'feed' | 'search' | 'discover';
 
 // Main Explore Page (Feed)
 export default function Feed() {
@@ -50,11 +43,8 @@ export default function Feed() {
     } = useAppContext();
     const { toast } = useToast();
 
-    // Mode management
-    const [exploreMode, setExploreMode] = React.useState<ExploreMode>('feed');
-
     // Feed filtering with custom hook
-    const { feedFilter, handleTabChange, applyFilter } = useFeedFiltering({
+    const { feedFilter, handleTabChange } = useFeedFiltering({
         onFilterChange: () => {
             setAllPosts([]); // Clear posts to trigger re-fetch
             setIsInitialLoading(true);
@@ -76,7 +66,7 @@ export default function Feed() {
     const [postToPromote, setPostToPromote] = React.useState<PostType | null>(null);
 
     // User interactions
-    const [userInteractions, setUserInteractions] = React.useState<UserInteractions>({
+    const [userInteractions] = React.useState<UserInteractions>({
         userId: loggedInUser?.id || '',
         likedPosts: [],
         savedPosts: [],
@@ -88,30 +78,6 @@ export default function Feed() {
         mutedWords: [],
         lastSeenPostTime: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString()
     });
-
-    const [suggestedUsers, setSuggestedUsers] = React.useState<any[]>([]);
-
-
-    React.useEffect(() => {
-        const fetchSuggested = async () => {
-            // ... implementation ...
-            if (exploreMode !== 'discover') return;
-            // ... existing code ...
-            if (exploreMode !== 'discover') return;
-            const supabase = createClient();
-            const { data, error } = await supabase.rpc('get_who_to_follow', { limit_count: 4 });
-            if (!error && data) {
-                // Enhance with dummy follower counts if missing from view
-                const enhanced = data.map((u: any) => ({
-                    ...u,
-                    followers: Math.floor(Math.random() * 1000) + 100, // Mock count for now
-                    avatar: u.avatar_url || '/placeholder-user.jpg'
-                }));
-                setSuggestedUsers(enhanced);
-            }
-        };
-        fetchSuggested();
-    }, [exploreMode]);
 
     const newPostsCheckInterval = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -221,9 +187,6 @@ export default function Feed() {
         fetchPosts();
     }, [fetchPosts, feedFilter]);
 
-    // Initialize Notifications (Empty for now until real notifications implemented)
-
-
     // Reactive Feed Filter: Apply filter when posts or filter settings change
     // NOTE: Intentionally NOT including userInteractions to prevent feed shuffle on like/save
     React.useEffect(() => {
@@ -287,7 +250,7 @@ export default function Feed() {
 
     // Check for new posts periodically
     React.useEffect(() => {
-        if (!isInitialLoading && exploreMode === 'feed') {
+        if (!isInitialLoading) {
             newPostsCheckInterval.current = setInterval(() => {
                 checkForNewPosts();
             }, 30000);
@@ -297,7 +260,7 @@ export default function Feed() {
                 }
             };
         }
-    }, [isInitialLoading, exploreMode, checkForNewPosts]);
+    }, [isInitialLoading, checkForNewPosts]);
 
     // Load new posts from Supabase
     const handleLoadNewPosts = async () => {
@@ -370,13 +333,6 @@ export default function Feed() {
         onLoadMore: handleLoadMore,
     });
 
-
-    const handleFollowUser = (userId: string) => {
-        toast({
-            title: "Following",
-            description: "You are now following this user"
-        });
-    };
 
     // Post handlers
     const handlePostCreated = async () => {
@@ -478,120 +434,98 @@ export default function Feed() {
 
             <div className="flex h-full flex-col">
                 {/* Header with Search */}
-                <header className="sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-                    <div className="flex items-center gap-4 p-4">
-                        <SidebarTrigger className={cn("md:hidden", isMobileSearchOpen && "hidden")} />
-
-                        {/* Mode Toggle */}
-                        <div className={cn("flex gap-2 mr-2", isMobileSearchOpen ? "hidden md:flex" : "flex")}>
-                            <Button
-                                variant={exploreMode === 'feed' ? 'default' : 'ghost'}
-                                size="sm"
-                                onClick={() => {
-                                    setExploreMode('feed');
-                                }}
-                            >
-                                <Home className="h-4 w-4 mr-2" />
-                                Feed
-                            </Button>
-                            <Button
-                                variant={exploreMode === 'discover' ? 'default' : 'ghost'}
-                                size="sm"
-                                onClick={() => setExploreMode('discover')}
-                            >
-                                <TrendingUp className="h-4 w-4 mr-2" />
-                                Discover
-                            </Button>
+                {/* Header with Search */}
+                {/* Header with Search */}
+                <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/40 supports-[backdrop-filter]:bg-background/60 transition-all duration-200">
+                    <div className="flex items-center justify-between px-4 py-3 gap-2 sm:gap-4 overflow-hidden">
+                        <div className="flex items-center gap-2 md:hidden min-w-0 flex-1">
+                            <SidebarTrigger className="flex-shrink-0" />
+                            <h1 className="text-xl font-bold bg-gradient-to-br from-foreground to-muted-foreground bg-clip-text text-transparent truncate pr-2">Feed</h1>
                         </div>
 
-                        {/* Search Bar */}
-                        <div className="relative flex-1 max-w-2xl flex items-center justify-end">
-                            {/* Mobile Search Icon Trigger */}
+                        {/* Desktop Title */}
+                        <div className="hidden md:block flex-shrink-0">
+                            <h1 className="text-xl font-bold tracking-tight">Home</h1>
+                        </div>
+
+                        {/* Search Bar - Centered and Wide on Desktop */}
+                        <div className="flex-1 max-w-xl mx-auto hidden md:block px-4">
+                            <GlobalSearchBar
+                                placeholder="Search..."
+                                className="w-full max-w-full"
+                            />
+                        </div>
+
+                        {/* Mobile Search & Profile Actions */}
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                            {/* Mobile Search Toggle */}
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className={cn("md:hidden", isMobileSearchOpen && "hidden")}
-                                onClick={() => setIsMobileSearchOpen(true)}
+                                className="md:hidden rounded-full hover:bg-muted"
+                                onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
                             >
                                 <Search className="h-5 w-5" />
                             </Button>
 
-                            {/* Full Search Bar (Visible on Desktop OR when Mobile Search is Open) */}
-                            <div className={cn(
-                                "w-full transition-all duration-200",
-                                isMobileSearchOpen ? "block absolute inset-0 bg-background z-30 flex items-center px-4" : "hidden md:block"
-                            )}>
-                                <div className="flex w-full items-center gap-2">
-                                    {isMobileSearchOpen && (
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() => setIsMobileSearchOpen(false)}
-                                            className="flex-shrink-0"
-                                        >
-                                            <Sidebar className="h-5 w-5 rotate-180" />
-                                        </Button>
-                                    )}
-                                    <div className="flex-1 w-full">
-                                        <GlobalSearchBar
-                                            placeholder="Search posts, users, hashtags..."
-                                            autoFocus={isMobileSearchOpen}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* User Profile / Notifications */}
-                        {!isMobileSearchOpen && (
                             <Link href={`/profile/${loggedInUser?.username || 'me'}`}>
-                                <Avatar className="h-8 w-8 transition-transform hover:scale-110">
+                                <Avatar className="h-9 w-9 ring-2 ring-background transition-transform hover:scale-105">
                                     <AvatarImage src={loggedInUser?.avatar_url || '/placeholder-user.jpg'} />
                                     <AvatarFallback>U</AvatarFallback>
                                 </Avatar>
                             </Link>
-                        )}
+                        </div>
                     </div>
 
-                    {/* Feed Filters - Latest and Following tabs */}
-                    {exploreMode === 'feed' && (
-                        <div className="flex items-center justify-center border-t">
-                            <button
-                                onClick={() => handleTabChange('latest')}
-                                className={cn(
-                                    "px-6 py-3 text-sm font-medium transition-colors relative",
-                                    feedFilter === 'latest'
-                                        ? "text-foreground"
-                                        : "text-muted-foreground hover:text-foreground"
-                                )}
-                            >
-                                <Clock className="h-4 w-4 inline mr-2" />
-                                Latest
-                                {feedFilter === 'latest' && (
-                                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-                                )}
-                            </button>
-                            <button
-                                onClick={() => handleTabChange('following')}
-                                className={cn(
-                                    "px-6 py-3 text-sm font-medium transition-colors relative",
-                                    feedFilter === 'following'
-                                        ? "text-foreground"
-                                        : "text-muted-foreground hover:text-foreground"
-                                )}
-                            >
-                                <Users className="h-4 w-4 inline mr-2" />
-                                Following
-                                {feedFilter === 'following' && (
-                                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-                                )}
-                            </button>
+                    {/* Mobile Search Expandable Area */}
+                    {isMobileSearchOpen && (
+                        <div className="px-4 pb-3 md:hidden animate-in slide-in-from-top-2">
+                            <GlobalSearchBar
+                                placeholder="Search posts, users..."
+                                autoFocus
+                                className="w-full"
+                            />
                         </div>
                     )}
+
+                    {/* Feed Filters / Tabs */}
+                    <div className="flex w-full border-t border-border/10">
+                        <button
+                            onClick={() => handleTabChange('latest')}
+                            className="flex-1 relative h-12 flex items-center justify-center hover:bg-muted/30 transition-colors group px-2"
+                        >
+                            <span className={cn(
+                                "text-sm font-medium transition-colors duration-200 whitespace-nowrap truncate",
+                                feedFilter === 'latest' ? "text-foreground font-bold" : "text-muted-foreground group-hover:text-foreground/80"
+                            )}>
+                                For You
+                            </span>
+                            {feedFilter === 'latest' && (
+                                <div className="absolute bottom-0 h-[3px] w-16 bg-primary rounded-t-full layout-id-indicator animate-in fade-in zoom-in-75 duration-300" />
+                            )}
+                        </button>
+
+                        <div className="w-px h-6 bg-border/20 self-center" />
+
+                        <button
+                            onClick={() => handleTabChange('following')}
+                            className="flex-1 relative h-12 flex items-center justify-center hover:bg-muted/30 transition-colors group px-2"
+                        >
+                            <span className={cn(
+                                "text-sm font-medium transition-colors duration-200 whitespace-nowrap truncate",
+                                feedFilter === 'following' ? "text-foreground font-bold" : "text-muted-foreground group-hover:text-foreground/80"
+                            )}>
+                                Following
+                            </span>
+                            {feedFilter === 'following' && (
+                                <div className="absolute bottom-0 h-[3px] w-16 bg-primary rounded-t-full layout-id-indicator animate-in fade-in zoom-in-75 duration-300" />
+                            )}
+                        </button>
+                    </div>
                 </header>
 
                 {/* Stories Bar */}
-                {exploreMode === 'feed' && <StoriesBar />}
+                <StoriesBar />
 
                 {/* Main Content Area */}
                 <div className="flex-1 container max-w-2xl mx-auto p-0 md:p-4">
@@ -608,86 +542,35 @@ export default function Feed() {
                         </div>
                     )}
 
-                    {exploreMode === 'feed' ? (
-                        <>
-                            {/* Create Post Input */}
-                            <div className="mb-6 px-4 pt-4 md:px-0 md:pt-0">
-                                <CreatePost onPostCreated={handlePostCreated} />
-                            </div>
-
-                            {/* Loading State */}
-                            {isInitialLoading ? (
-                                <FeedSkeleton count={3} />
-                            ) : visiblePosts.length === 0 ? (
-                                <EmptyFeedState
-                                    filter={feedFilter}
-                                    onSwitchTab={() => handleTabChange('latest')}
-                                />
-                            ) : (
-                                /* Feed List */
-                                <FeedList
-                                    posts={visiblePosts}
-                                    isLoading={isInitialLoading}
-                                    isLoadingMore={isLoadingMore}
-                                    hasMore={hasMore}
-                                    onLoadMore={handleLoadMore}
-                                    onPostUpdated={handlePostUpdated}
-                                    onPostDeleted={handlePostDeleted}
-                                    onQuotePost={handleQuotePost}
-                                    onPromote={handlePromoteClick}
-                                />
-                            )}
-                        </>
-                    ) : (
-                        <div className="space-y-8 px-4 py-6 md:px-0">
-                            {/* Discover / Trending Mockup */}
-                            <section>
-                                <div className="flex items-center gap-2 mb-4">
-                                    <Flame className="h-5 w-5 text-orange-500" />
-                                    <h2 className="text-xl font-bold">Trending Now</h2>
-                                </div>
-                                <TrendingTopicsList
-                                    onHashtagClick={(tag) => {
-                                        toast({ title: "Exploring tag", description: `#${tag}` });
-                                    }}
-                                />
-                            </section>
-
-                            <section>
-                                <div className="flex items-center gap-2 mb-4">
-                                    <Users className="h-5 w-5 text-blue-500" />
-                                    <h2 className="text-xl font-bold">Suggested for you</h2>
-                                </div>
-                                {suggestedUsers.length > 0 ? (
-                                    <div className="grid gap-4 md:grid-cols-2">
-                                        {suggestedUsers.map((user: any) => (
-                                            <UserCard
-                                                key={user.id}
-                                                user={user}
-                                                onFollow={handleFollowUser}
-                                                isFollowing={false}
-                                            />
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="grid gap-4 md:grid-cols-2">
-                                        {[1, 2, 3, 4].map((i) => (
-                                            <div key={i} className="border rounded-lg p-4 space-y-3">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="h-12 w-12 rounded-full bg-muted animate-pulse" />
-                                                    <div className="flex-1 space-y-2">
-                                                        <div className="h-4 w-24 bg-muted rounded animate-pulse" />
-                                                        <div className="h-3 w-16 bg-muted rounded animate-pulse" />
-                                                    </div>
-                                                </div>
-                                                <div className="h-9 w-full bg-muted rounded animate-pulse" />
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </section>
+                    <>
+                        {/* Create Post Input */}
+                        <div className="mb-6 px-4 pt-4 md:px-0 md:pt-0">
+                            <CreatePost onPostCreated={handlePostCreated} />
                         </div>
-                    )}
+
+                        {/* Loading State */}
+                        {isInitialLoading ? (
+                            <FeedSkeleton count={3} />
+                        ) : visiblePosts.length === 0 ? (
+                            <EmptyFeedState
+                                filter={feedFilter}
+                                onSwitchTab={() => handleTabChange('latest')}
+                            />
+                        ) : (
+                            /* Feed List */
+                            <FeedList
+                                posts={visiblePosts}
+                                isLoading={isInitialLoading}
+                                isLoadingMore={isLoadingMore}
+                                hasMore={hasMore}
+                                onLoadMore={handleLoadMore}
+                                onPostUpdated={handlePostUpdated}
+                                onPostDeleted={handlePostDeleted}
+                                onQuotePost={handleQuotePost}
+                                onPromote={handlePromoteClick}
+                            />
+                        )}
+                    </>
                 </div>
 
                 {/* Scroll to Top Button */}

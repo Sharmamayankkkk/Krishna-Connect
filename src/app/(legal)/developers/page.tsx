@@ -1,103 +1,117 @@
 import { Metadata } from "next";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Our Team | Krishna Consciousness Society",
-  description: "Meet the developers and the inspiration behind the project.",
+  title: "Our Team | Krishna Connect",
+  description: "Meet the developers and the inspiration behind Krishna Connect.",
 };
 
-// Helper component for team cards to keep code clean
-const TeamMemberCard = ({ name, role, imageSrc }: { name: string; role?: string; imageSrc?: string }) => (
-  <div className="bg-white p-6 rounded-lg shadow-md border border-gray-100 flex flex-col items-center text-center hover:shadow-lg transition-shadow duration-300">
-    <div className="w-24 h-24 relative mb-4 rounded-full overflow-hidden bg-gray-200">
+// Helper component for team cards
+const TeamMemberCard = ({ name, role, imageSrc, initial }: { name: string; role?: string; imageSrc?: string; initial?: string }) => (
+  <div className="bg-card p-6 rounded-xl border border-border/50 shadow-sm flex flex-col items-center text-center hover:shadow-md transition-all duration-300 hover:border-primary/20 group">
+    <div className="w-24 h-24 relative mb-4 rounded-full overflow-hidden bg-muted border-2 border-background ring-2 ring-muted group-hover:ring-primary/20 transition-all">
       {imageSrc ? (
-        <Image 
-          src={imageSrc} 
-          alt={name} 
-          fill 
+        <Image
+          src={imageSrc}
+          alt={name}
+          fill
           className="object-cover"
         />
       ) : (
-        <div className="w-full h-full flex items-center justify-center text-gray-400 text-2xl font-bold">
-          {name.charAt(0)}
+        <div className="w-full h-full flex items-center justify-center text-muted-foreground/30 text-2xl font-bold bg-muted">
+          {initial || name.charAt(0)}
         </div>
       )}
     </div>
-    <h3 className="text-lg font-semibold text-gray-800">{name}</h3>
-    {role && <p className="text-sm text-blue-600 font-medium">{role}</p>}
+    <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">{name}</h3>
+    {role && <p className="text-sm text-muted-foreground font-medium">{role}</p>}
   </div>
 );
 
 const DevelopersPage = () => {
   // Developer Data
   const developers = [
-    "Mayank Sharma",
-    "Bhavya Shingari",
-    "Himani Vaishnav",
-    "Omkar Joshi",
+    { name: "Mayank Sharma", role: "Frontend & Backend" },
+    { name: "Bhavya Shingari", role: "UI/UX Designer" },
+    { name: "Himani Vaishnav", role: "Contributor" },
+    { name: "Omkar Joshi", role: "Contributor" },
   ];
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-6xl">
       {/* Header */}
-      <div className="text-center mb-16">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">Krishna Consciousness Society</h1>
-        <p className="text-gray-500">Dedicated to spreading Vedic wisdom through technology.</p>
+      <div className="text-center mb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">
+          Krishna Consciousness Society
+        </h1>
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          Dedicated to spreading Vedic wisdom through technology.
+        </p>
       </div>
 
       {/* Spiritual Leadership Section */}
       <section className="mb-20">
-        <h2 className="text-2xl font-bold text-center mb-10 text-gray-800 border-b pb-4 mx-auto max-w-xs">
-          Our Inspiration & Leadership
-        </h2>
-        
+        <div className="flex items-center justify-center gap-4 mb-10">
+          <div className="h-px bg-border flex-1 max-w-[100px]" />
+          <h2 className="text-2xl font-bold text-center text-foreground">
+            Our Inspiration & Leadership
+          </h2>
+          <div className="h-px bg-border flex-1 max-w-[100px]" />
+        </div>
+
         <div className="flex flex-col md:flex-row justify-center items-center gap-12">
-          
+
           {/* Srila Prabhupada */}
-          <div className="flex flex-col items-center text-center max-w-sm">
-            <div className="w-48 h-48 relative mb-6 rounded-full overflow-hidden border-4 border-orange-100 shadow-xl">
-              {/* REPLACE '/images/prabhupada.jpg' with your actual image path */}
-              <Image 
+          <div className="flex flex-col items-center text-center max-w-sm group">
+            <div className="w-48 h-48 relative mb-6 rounded-full overflow-hidden border-4 border-primary/10 shadow-xl group-hover:scale-105 transition-transform duration-500">
+              <Image
                 src="/logo/Srila-Prabhupada.png"
-                alt="Srila Prabhupada" 
-                fill 
-                className="object-cover" 
+                alt="Srila Prabhupada"
+                fill
+                className="object-cover"
               />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900">His Divine Grace A.C. Bhaktivedanta Swami Prabhupada</h3>
-            <p className="text-orange-600 font-semibold mt-1">Founder-Acharya: International Society for Krishna Consciousness</p>
+            <h3 className="text-2xl font-bold text-foreground">His Divine Grace A.C. Bhaktivedanta Swami Prabhupada</h3>
+            <p className="text-primary font-medium mt-2">Founder-Acharya: International Society for Krishna Consciousness</p>
           </div>
 
           {/* HG Gauranga Sundar das */}
-          <div className="flex flex-col items-center text-center max-w-sm">
-            <div className="w-40 h-40 relative mb-6 rounded-full overflow-hidden border-4 border-blue-50 shadow-lg bg-gray-100">
-               {/* Placeholder for HG Gauranga Sundar das */}
-               <Image src="/logo/Gurudev.jpg" alt="HG Gauranga Sundar das" fill className="object-cover" />
+          <div className="flex flex-col items-center text-center max-w-sm group">
+            <div className="w-40 h-40 relative mb-6 rounded-full overflow-hidden border-4 border-blue-500/10 shadow-lg bg-muted group-hover:scale-105 transition-transform duration-500">
+              <Image src="/logo/Gurudev.jpg" alt="HG Gauranga Sundar das" fill className="object-cover" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900">HG Gauranga Sundar das</h3>
-            <p className="text-blue-600 font-semibold mt-1">Founder (KCS)</p>
+            <h3 className="text-xl font-bold text-foreground">HG Gauranga Sundar das</h3>
+            <p className="text-blue-500 font-medium mt-2">Founder (KCS)</p>
           </div>
-          
+
         </div>
       </section>
 
       {/* Developer Team Section */}
       <section>
-        <h2 className="text-2xl font-bold text-center mb-10 text-gray-800 border-b pb-4 mx-auto max-w-xs">
-          Development Team
-        </h2>
-        
+        <div className="flex items-center justify-center gap-4 mb-10">
+          <div className="h-px bg-border flex-1 max-w-[100px]" />
+          <h2 className="text-2xl font-bold text-center text-foreground">
+            Development Team
+          </h2>
+          <div className="h-px bg-border flex-1 max-w-[100px]" />
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {developers.map((dev, index) => (
-            <TeamMemberCard 
+            <TeamMemberCard
               key={index}
-              name={dev}
-              role="Developer"
-              // Add images to array above and pass here if available
+              name={dev.name}
+              role={dev.role}
             />
           ))}
         </div>
       </section>
+
+      <div className="mt-20 text-center text-sm text-muted-foreground border-t border-border pt-8">
+        <p>&copy; {new Date().getFullYear()} Krishna Connect. All rights reserved.</p>
+      </div>
     </div>
   );
 };

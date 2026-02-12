@@ -118,17 +118,17 @@ export function StoriesBar() {
                 onStatusViewed={fetchStatuses}
             />
 
-            <div className="w-full overflow-x-auto no-scrollbar py-3 px-4 border-b bg-background">
+            <div className="w-full overflow-x-auto no-scrollbar py-4 px-4 border-b border-border/40 bg-background/50 backdrop-blur-sm">
                 <div className="flex gap-4 items-start">
                     {/* My Status / Add Story */}
-                    <div className="flex flex-col items-center gap-1 flex-shrink-0">
+                    <div className="flex flex-col items-center gap-2 flex-shrink-0 group cursor-pointer">
                         <button
                             onClick={myStatus ? openMyStatusViewer : () => setIsCreateOpen(true)}
-                            className="relative group"
+                            className="relative transition-transform duration-200 group-hover:scale-105"
                         >
                             <div className={cn(
-                                "w-16 h-16 rounded-full p-0.5",
-                                myStatus ? "bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600" : "bg-muted"
+                                "w-16 h-16 rounded-full p-0.5 ring-2 ring-offset-2 ring-offset-background transition-all",
+                                myStatus ? "bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 ring-transparent" : "bg-muted ring-transparent group-hover:ring-primary/20"
                             )}>
                                 <Avatar className="w-full h-full border-2 border-background">
                                     <AvatarImage src={loggedInUser.avatar_url} alt="Your Story" className="object-cover" />
@@ -136,12 +136,12 @@ export function StoriesBar() {
                                 </Avatar>
                             </div>
                             {!myStatus && (
-                                <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-primary text-primary-foreground rounded-full flex items-center justify-center border-2 border-background">
+                                <div className="absolute bottom-0 right-0 w-5 h-5 bg-primary text-primary-foreground rounded-full flex items-center justify-center border-2 border-background shadow-sm transition-transform group-hover:scale-110">
                                     <Plus className="w-3 h-3" />
                                 </div>
                             )}
                         </button>
-                        <span className="text-xs text-muted-foreground truncate max-w-[64px]">
+                        <span className="text-xs font-medium text-muted-foreground truncate max-w-[70px] group-hover:text-foreground transition-colors">
                             Your story
                         </span>
                     </div>
@@ -150,9 +150,9 @@ export function StoriesBar() {
                     {isLoading ? (
                         // Loading skeletons
                         Array.from({ length: 5 }).map((_, i) => (
-                            <div key={i} className="flex flex-col items-center gap-1 flex-shrink-0">
+                            <div key={i} className="flex flex-col items-center gap-2 flex-shrink-0">
                                 <div className="w-16 h-16 rounded-full bg-muted animate-pulse" />
-                                <div className="w-10 h-3 bg-muted rounded animate-pulse" />
+                                <div className="w-12 h-3 bg-muted rounded animate-pulse" />
                             </div>
                         ))
                     ) : (
@@ -160,21 +160,24 @@ export function StoriesBar() {
                             <button
                                 key={update.user_id}
                                 onClick={() => openStatusViewer(index)}
-                                className="flex flex-col items-center gap-1 flex-shrink-0"
+                                className="flex flex-col items-center gap-2 flex-shrink-0 group"
                             >
                                 <div className={cn(
-                                    "w-16 h-16 rounded-full p-0.5 transition-transform hover:scale-105",
+                                    "w-16 h-16 rounded-full p-0.5 transition-all duration-200 group-hover:scale-105 ring-2 ring-offset-2 ring-offset-background",
                                     update.is_all_viewed
-                                        ? "bg-muted"
-                                        : "bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600"
+                                        ? "bg-muted ring-transparent group-hover:ring-muted-foreground/20"
+                                        : "bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 ring-transparent shadow-sm"
                                 )}>
                                     <Avatar className="w-full h-full border-2 border-background">
                                         <AvatarImage src={update.avatar_url} alt={update.name} className="object-cover" />
                                         <AvatarFallback>{update.name?.charAt(0) || '?'}</AvatarFallback>
                                     </Avatar>
                                 </div>
-                                <span className="text-xs text-muted-foreground truncate max-w-[64px]">
-                                    {update.username || update.name}
+                                <span className={cn(
+                                    "text-xs truncate max-w-[70px] transition-colors",
+                                    update.is_all_viewed ? "text-muted-foreground font-medium group-hover:text-foreground" : "text-foreground font-semibold"
+                                )}>
+                                    {update.username || update.name.split(' ')[0]}
                                 </span>
                             </button>
                         ))

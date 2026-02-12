@@ -479,99 +479,105 @@ export function PostCard({
             />
 
             {/* Post Card */}
-            <article ref={cardRef} className="p-3 sm:p-4 border-b transition-colors hover:bg-muted/50">
+            <article ref={cardRef} className="p-4 sm:p-5 transition-all duration-200 hover:bg-muted/30">
                 {/* Pinned Post Header */}
                 {post.isPinned && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2 ml-12">
-                        <Pin className="h-4 w-4 text-primary" />
-                        <span className="font-semibold text-primary">Pinned</span>
+                    <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground mb-1 ml-12">
+                        <Pin className="h-3 w-3 fill-primary text-primary" />
+                        <span className="text-primary">Pinned</span>
                     </div>
                 )}
                 {/* Promoted Post Header */}
                 {isPromoted && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2 ml-12">
-                        <TrendingUp className="h-4 w-4 text-green-500" />
-                        <span className="font-semibold text-green-500">Promoted</span>
+                    <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground mb-1 ml-12">
+                        <TrendingUp className="h-3 w-3 text-green-500" />
+                        <span className="text-green-500">Promoted</span>
                     </div>
                 )}
                 {/* Repost Header */}
                 {isRepost && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2 ml-12">
-                        <Repeat2 className="h-4 w-4" />
-                        <span className="font-semibold">{author.name} reposted</span>
+                    <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground mb-1 ml-12">
+                        <Repeat2 className="h-3 w-3" />
+                        <span>{author.name} reposted</span>
                     </div>
                 )}
 
-                <div className="flex gap-3">
-                    {/* START: Add this block for avatar stack */}
-                    <div className="flex flex-shrink-0 -space-x-3">
-                        {[post.author, ...(Array.isArray(post.collaborators) ? post.collaborators : [])]
-                            .filter(user => user && user.username) // Only show users with valid data
-                            .slice(0, 3)
-                            .map((user, index) => (
-                                <Link href={`/profile/${encodeURIComponent(user.username)}`} key={user.id || index} prefetch={false}>
-                                    <Avatar className="h-10 w-10 border-2 border-background" style={{ zIndex: 3 - index }}>
-                                        <AvatarImage src={getAvatarUrl((user as any)?.avatar || (user as any)?.avatar_url)} alt={user.name || 'User'} />
-                                        <AvatarFallback>{(user.name?.charAt(0) || '?').toUpperCase()}</AvatarFallback>
-                                    </Avatar>
-                                </Link>
-                            ))}
+                <div className="flex gap-4">
+                    {/* Avatar Column */}
+                    <div className="flex flex-col items-center">
+                        {/* Avatar Stack logic... */}
+                        <div className="flex flex-shrink-0 -space-x-3 isolate"> {/* added isolate for z-index stacking context */}
+                            {[post.author, ...(Array.isArray(post.collaborators) ? post.collaborators : [])]
+                                .filter(user => user && user.username)
+                                .slice(0, 3)
+                                .map((user, index) => (
+                                    <Link href={`/profile/${encodeURIComponent(user.username)}`} key={user.id || index} prefetch={false} className="relative transition-transform hover:scale-110 hover:z-10">
+                                        <Avatar className="h-10 w-10 border-2 border-background ring-1 ring-border/20" style={{ zIndex: 3 - index }}>
+                                            <AvatarImage src={getAvatarUrl((user as any)?.avatar || (user as any)?.avatar_url)} alt={user.name || 'User'} />
+                                            <AvatarFallback>{(user.name?.charAt(0) || '?').toUpperCase()}</AvatarFallback>
+                                        </Avatar>
+                                    </Link>
+                                ))}
+                        </div>
+                        {/* Thread line could go here if we want a threaded look */}
                     </div>
 
-                    <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between">
-                            <div className="flex items-baseline gap-x-2 text-sm flex-wrap min-w-0">
 
-                                <div className="flex flex-wrap items-center gap-x-1.5 font-bold">
+                    <div className="flex-1 min-w-0">
+                        {/* Header Row */}
+                        <div className="flex items-start justify-between">
+                            <div className="flex items-baseline gap-x-2 text-sm flex-wrap min-w-0 leading-tight">
+
+                                <div className="flex flex-wrap items-center gap-x-1 font-bold text-base text-foreground">
                                     {[post.author, ...(Array.isArray(post.collaborators) ? post.collaborators : [])]
-                                        .filter(user => user && user.username) // Only show users with valid data
+                                        .filter(user => user && user.username)
                                         .map((user, index, arr) => (
                                             <React.Fragment key={user.id || index}>
-                                                <Link href={`/profile/${encodeURIComponent(user.username)}`} className="hover:underline" prefetch={false}>
+                                                <Link href={`/profile/${encodeURIComponent(user.username)}`} className="hover:underline decoration-2 decoration-primary/50" prefetch={false}>
                                                     {user.name || 'Unknown'}
                                                 </Link>
-                                                {index === 0 && arr.length > 1 && <span className="font-medium text-muted-foreground">with</span>}
-                                                {index > 0 && index < arr.length - 1 && <span className="font-medium text-muted-foreground">,</span>}
+                                                {index === 0 && arr.length > 1 && <span className="font-normal text-muted-foreground text-sm mx-1">with</span>}
+                                                {index > 0 && index < arr.length - 1 && <span className="font-normal text-muted-foreground">,</span>}
                                             </React.Fragment>
                                         ))}
-                                    <VerificationBadge verified={post.author.verified} size={16} className="inline-block" />
+                                    <VerificationBadge verified={post.author.verified} size={16} className="ml-0.5 inline-block align-middle" />
                                     {post.isPromoted && (
-                                        <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary ring-1 ring-inset ring-primary/20">
-                                            Promoted
+                                        <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary ring-1 ring-inset ring-primary/20 uppercase tracking-wide">
+                                            Ad
                                         </span>
                                     )}
                                 </div>
 
 
-                                <Link href={`/profile/${author.username}`} className="text-muted-foreground truncate hidden sm:inline">
+                                <Link href={`/profile/${author.username}`} className="text-muted-foreground text-sm hover:text-foreground transition-colors truncate hidden sm:inline">
                                     @{author.username}
                                 </Link>
-                                <span className="text-muted-foreground flex-shrink-0">·</span>
-                                <Link href={`/profile/${author.username}/post/${post.id}`} className="text-muted-foreground hover:underline flex-shrink-0 whitespace-nowrap">
+                                <span className="text-muted-foreground/50 text-xs flex-shrink-0">•</span>
+                                <Link href={`/profile/${author.username}/post/${post.id}`} className="text-muted-foreground text-sm hover:underline flex-shrink-0 whitespace-nowrap hover:text-primary transition-colors">
                                     <time dateTime={createdAt}>
                                         {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}
                                     </time>
                                 </Link>
                                 {editedAt && (
                                     <>
-                                        <span className="text-muted-foreground flex-shrink-0">·</span>
-                                        <span className="text-muted-foreground text-xs flex-shrink-0">Edited</span>
+                                        <span className="text-muted-foreground/50 text-xs flex-shrink-0">•</span>
+                                        <span className="text-muted-foreground text-xs flex-shrink-0 italic">Edited</span>
                                     </>
                                 )}
                             </div>
 
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 flex-shrink-0">
-                                        <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 text-muted-foreground/50 hover:text-foreground transition-colors">
+                                        <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
+                                <DropdownMenuContent align="end" className="animate-in fade-in zoom-in-95 duration-200">
                                     <DropdownMenuItem onClick={handleSave}>
                                         {isSaved ? (
                                             <>
-                                                <BookmarkCheck className="mr-2 h-4 w-4" />
-                                                <span>Unsave Post</span>
+                                                <BookmarkCheck className="mr-2 h-4 w-4 text-primary" />
+                                                <span className="text-primary font-medium">Unsave Post</span>
                                             </>
                                         ) : (
                                             <>
@@ -606,8 +612,8 @@ export function PostCard({
                                             {/* Add the new Promote button logic here */}
                                             {!post.isPromoted && (
                                                 <DropdownMenuItem onClick={handlePromote}>
-                                                    <TrendingUp className="mr-2 h-4 w-4" />
-                                                    <span>Promote Post</span>
+                                                    <TrendingUp className="mr-2 h-4 w-4 text-green-500" />
+                                                    <span className="text-green-500 font-medium">Promote Post</span>
                                                 </DropdownMenuItem>
                                             )}
                                             <DropdownMenuItem
@@ -632,7 +638,7 @@ export function PostCard({
                         </div>
 
                         {/* Post Content */}
-                        <div className="mt-2 text-sm text-foreground/90 whitespace-pre-wrap break-words">
+                        <div className="mt-1 text-[15px] sm:text-base text-foreground/90 whitespace-pre-wrap break-words leading-relaxed">
                             {content && content.length > MAX_CONTENT_LENGTH && !isExpanded ? (
                                 <>
                                     <RichTextRenderer
@@ -641,7 +647,7 @@ export function PostCard({
                                     />
                                     <button
                                         onClick={() => setIsExpanded(true)}
-                                        className="text-primary hover:underline font-medium ml-1"
+                                        className="text-primary hover:underline font-medium ml-1 text-sm"
                                     >
                                         Read more
                                     </button>
@@ -655,7 +661,7 @@ export function PostCard({
                                     {content && content.length > MAX_CONTENT_LENGTH && (
                                         <button
                                             onClick={() => setIsExpanded(false)}
-                                            className="text-primary hover:underline font-medium ml-1"
+                                            className="text-primary hover:underline font-medium ml-1 text-sm"
                                         >
                                             Show less
                                         </button>
@@ -675,23 +681,27 @@ export function PostCard({
                         )}
 
                         {/* Media Grid */}
-                        <MediaGrid media={media || []} onMediaClick={handleMediaClick} />
+                        <div className="mt-3">
+                            <MediaGrid media={media || []} onMediaClick={handleMediaClick} />
+                        </div>
 
                         {/* Embedded Post */}
                         {originalPost && <EmbeddedPost post={originalPost} />}
 
                         {/* Action Bar */}
-                        <div className="flex items-center justify-between mt-4 -ml-2 text-muted-foreground">
+                        <div className="flex items-center justify-between mt-4">
                             {/* Comment */}
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                className="hover:text-blue-500 rounded-full group gap-1"
+                                className="group flex items-center gap-1 sm:gap-1.5 hover:bg-blue-500/10 hover:text-blue-500 transition-colors rounded-full px-2 sm:px-3"
                                 onClick={() => setIsCommentsOpen(true)}
                                 aria-label={`${stats.comments || 0} comments. Click to view comments`}
                             >
-                                <MessageCircle className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                                <span className="text-xs">{formatNumber(stats.comments || 0)}</span>
+                                <div className="p-1.5 rounded-full group-hover:bg-blue-500/20 transition-colors">
+                                    <MessageCircle className="h-4.5 w-4.5" />
+                                </div>
+                                <span className="text-xs font-medium tabular-nums">{formatNumber(stats.comments || 0)}</span>
                             </Button>
 
                             {/* Repost */}
@@ -701,13 +711,15 @@ export function PostCard({
                                         variant="ghost"
                                         size="sm"
                                         className={cn(
-                                            "rounded-full group",
-                                            isReposted ? "text-green-500" : "hover:text-green-500"
+                                            "group flex items-center gap-1 sm:gap-1.5 transition-colors rounded-full px-2 sm:px-3",
+                                            isReposted ? "text-green-500 bg-green-500/10" : "hover:bg-green-500/10 hover:text-green-500"
                                         )}
                                         aria-label={isReposted ? "Undo repost" : "Repost options"}
                                     >
-                                        <Repeat2 className="h-4 w-4 mr-1.5 group-hover:rotate-180 transition-transform" />
-                                        <span className="text-xs">{formatNumber((stats.reshares || 0) + (stats.reposts || 0))}</span>
+                                        <div className={cn("p-1.5 rounded-full transition-colors", isReposted ? "bg-green-500/20" : "group-hover:bg-green-500/20")}>
+                                            <Repeat2 className="h-4.5 w-4.5" />
+                                        </div>
+                                        <span className="text-xs font-medium tabular-nums">{formatNumber((stats.reshares || 0) + (stats.reposts || 0))}</span>
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
@@ -729,57 +741,57 @@ export function PostCard({
                             </DropdownMenu>
 
                             {/* Like */}
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center group">
                                 <Button
                                     variant="ghost"
-                                    size="icon"
+                                    size="sm"
                                     className={cn(
-                                        "h-8 w-8 rounded-full group",
-                                        isLiked ? "text-red-500" : "hover:text-red-500"
+                                        "flex items-center gap-1 sm:gap-1.5 rounded-full px-2 sm:px-3 transition-colors",
+                                        isLiked ? "text-pink-600 bg-pink-50" : "group-hover:bg-pink-500/10 group-hover:text-pink-500"
                                     )}
                                     onClick={handleLike}
                                     aria-label={isLiked ? `Unlike. ${stats.likes || 0} likes` : `Like. ${stats.likes || 0} likes`}
                                 >
-                                    <Heart className={cn(
-                                        "h-4 w-4 group-hover:scale-110 transition-transform",
-                                        isLiked && "fill-current"
-                                    )} />
+                                    <div className={cn("p-1.5 rounded-full transition-colors", isLiked ? "bg-pink-100" : "group-hover:bg-pink-500/20")}>
+                                        <Heart className={cn(
+                                            "h-4.5 w-4.5 transition-all duration-300",
+                                            isLiked ? "fill-current scale-110" : "group-hover:scale-110"
+                                        )} />
+                                    </div>
+                                    <span className={cn(
+                                        "text-xs font-medium tabular-nums",
+                                        isLiked && "font-bold"
+                                    )}>
+                                        {formatNumber(stats.likes || 0)}
+                                    </span>
                                 </Button>
-                                <button
-                                    className={cn("text-xs hover:underline hover:text-red-600 tabular-nums -ml-0.5", isLiked && "text-red-500")}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        if ((stats.likes || 0) > 0) setIsLikedByDialogOpen(true);
-                                    }}
-                                >
-                                    {formatNumber(stats.likes || 0)}
-                                </button>
                             </div>
 
                             {/* Views */}
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                className="hover:text-primary rounded-full group gap-1"
+                                className="group flex items-center gap-1 sm:gap-1.5 hover:bg-primary/10 hover:text-primary transition-colors rounded-full px-2 sm:px-3"
                                 aria-label={`${stats.views?.toLocaleString() || 0} views`}
                             >
-                                <BarChart2 className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                                <span className="text-xs">{formatNumber(stats.views || 0)}</span>
+                                <div className="p-1.5 rounded-full group-hover:bg-primary/20 transition-colors">
+                                    <BarChart2 className="h-4.5 w-4.5" />
+                                </div>
+                                <span className="text-xs font-medium tabular-nums">{formatNumber(stats.views || 0)}</span>
                             </Button>
 
-                            {/* Share */}
                             {/* Share */}
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full h-8 w-8 group/action"
+                                className="text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full h-9 w-9 group/action transition-colors -mr-2"
                                 aria-label="Share post"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setIsShareDialogOpen(true);
                                 }}
                             >
-                                <Share className="h-4 w-4" />
+                                <Share className="h-4.5 w-4.5" />
                             </Button>
                         </div>
                     </div>

@@ -12,6 +12,9 @@ interface SmartTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaEl
     onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
     onMentionSelect?: (username: string) => void;
     onHashtagSelect?: (tag: string) => void;
+    autosize?: boolean;
+    minRows?: number;
+    maxRows?: number;
 }
 
 type Suggestion = {
@@ -149,6 +152,9 @@ export const SmartTextarea = React.forwardRef<HTMLTextAreaElement, SmartTextarea
                     onChange={handleInput}
                     onKeyDown={handleKeyDown}
                     className={className}
+                    autosize={props.autosize}
+                    minRows={props.minRows}
+                    maxRows={props.maxRows}
                     {...props}
                 />
 

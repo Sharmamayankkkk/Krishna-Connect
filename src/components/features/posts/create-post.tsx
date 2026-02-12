@@ -8,7 +8,16 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Link from "next/link";
+import { ActionTooltip } from "@/components/action-tooltip";
+import { Theme } from "emoji-picker-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 // import TextareaAutosize from 'react-textarea-autosize';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import { Grid } from '@giphy/react-components';
@@ -108,6 +117,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
     const characterCount = content.length;
+    const remainingChars = MAX_CHARACTERS - characterCount;
     const characterPercentage = (characterCount / MAX_CHARACTERS) * 100;
     // Verified users have no character limit - they're premium!
     const isVerified = loggedInUser?.is_verified ?? false;
@@ -676,22 +686,24 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             </Dialog>
 
             {/* Main Create Post UI */}
-            <div className="flex w-full gap-3 sm:gap-4 p-3 sm:p-4 border-b bg-background">
-                <CollaborativePostDialog // <-- Add this block
+            <div className="flex w-full gap-3 sm:gap-4 p-4 sm:p-5 border-b border-border/40 bg-background/50 backdrop-blur-sm transition-colors focus-within:bg-background/80 group/create-post">
+                <CollaborativePostDialog
                     open={isCollaboratorDialogOpen}
                     onOpenChange={setIsCollaboratorDialogOpen}
                     initialCollaborators={collaborators}
                     onSelectCollaborators={setCollaborators}
                 />
-                <Avatar className="h-10 w-10 sm:h-11 sm:w-11 flex-shrink-0">
-                    <AvatarImage src={loggedInUser.avatar_url} alt={loggedInUser.name} />
-                    <AvatarFallback>{loggedInUser.name.charAt(0)}</AvatarFallback>
-                </Avatar>
+                <Link href={`/profile/${encodeURIComponent(loggedInUser?.username || '')}`} className="flex-shrink-0 pt-1">
+                    <Avatar className="h-10 w-10 ring-2 ring-background transition-transform duration-300 group-focus-within/create-post:scale-105">
+                        <AvatarImage src={loggedInUser.avatar_url} alt={loggedInUser.name} />
+                        <AvatarFallback>{loggedInUser.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                </Link>
 
-                <div className="flex-1 space-y-3">
+                <div className="flex-1 min-w-0 py-1">
                     {/* Validation Errors */}
                     {errors.length > 0 && (
-                        <Alert variant="destructive">
+                        <Alert variant="destructive" className="mb-4 animate-in slide-in-from-top-2">
                             <AlertCircle className="h-4 w-4" />
                             <AlertDescription>
                                 {errors[0]}
@@ -699,120 +711,128 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                         </Alert>
                     )}
 
-                    {/* Formatting Toolbar */}
-                    <div className="flex items-center gap-1 pb-2 border-b mb-2">
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                            onClick={formatBold}
-                            title="Bold (Ctrl+B)"
-                            aria-label="Bold"
-                        >
-                            <Bold className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                            onClick={formatItalic}
-                            title="Italic (Ctrl+I)"
-                            aria-label="Italic"
-                        >
-                            <Italic className="h-4 w-4" />
-                        </Button>
-                        <div className="w-px h-5 bg-border mx-1" />
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                            onClick={formatHeading}
-                            title="Heading"
-                            aria-label="Heading"
-                        >
-                            <Heading2 className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                            onClick={formatBulletList}
-                            title="Bullet List"
-                            aria-label="Bullet list"
-                        >
-                            <List className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                            onClick={formatNumberedList}
-                            title="Numbered List"
-                            aria-label="Numbered list"
-                        >
-                            <ListOrdered className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                            onClick={formatHorizontalLine}
-                            title="Horizontal Line"
-                            aria-label="Horizontal line"
-                        >
-                            <Minus className="h-4 w-4" />
-                        </Button>
-                    </div>
+                    {!isPollMode && (
+                        <div className="relative">
+                            <SmartTextarea
+                                ref={textareaRef}
+                                placeholder="What is happening?!"
+                                className={cn(
+                                    "w-full resize-none border-none bg-transparent text-lg placeholder:text-muted-foreground/50 focus:outline-none focus:ring-0 focus-visible:ring-0 min-h-[3rem] leading-relaxed tracking-wide",
+                                    isOverLimit && !isVerified && "text-destructive"
+                                )}
+                                minRows={1}
+                                maxRows={15}
+                                autosize
+                                value={content}
+                                onChange={(e) => setContent(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                                disabled={isPosting}
+                                maxLength={isVerified ? undefined : MAX_CHARACTERS + 10}
+                            />
 
-                    {/* Text Input */}
-                    {/* Text Input */}
-                    <SmartTextarea
-                        ref={textareaRef}
-                        placeholder="What is happening?!"
-                        className={cn(
-                            "w-full resize-none border-none bg-transparent text-base sm:text-lg placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus-visible:ring-0",
-                            isOverLimit && !isVerified && "text-red-500"
-                        )}
-                        rows={1}
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        disabled={isPosting}
-                        maxLength={isVerified ? undefined : MAX_CHARACTERS + 10}
-                    />
+                            {/* Formatting Toolbar - Show on focus or if content exists */}
+                            {(content.length > 0 || isPollMode) && (
+                                <div className="flex items-center gap-1 mt-1 opacity-0 group-focus-within/create-post:opacity-100 transition-opacity duration-300 pointer-events-none group-focus-within/create-post:pointer-events-auto">
+                                    <Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground" onClick={formatBold}><Bold className="h-3 w-3" /></Button>
+                                    <Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground" onClick={formatItalic}><Italic className="h-3 w-3" /></Button>
+                                    <div className="w-px h-3 bg-border mx-1" />
+                                    <Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground" onClick={formatHeading}><Heading2 className="h-3 w-3" /></Button>
+                                    <Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground" onClick={formatBulletList}><List className="h-3 w-3" /></Button>
+                                </div>
+                            )}
+                        </div>
+                    )}
 
-                    {/* block to display collaborators */}
+                    {/* Collaborators Display */}
                     {collaborators.length > 0 && (
-                        <div className="border rounded-xl p-3 mt-3 space-y-2">
-                            <h4 className="text-sm font-medium">Collaborators</h4>
-                            <div className="flex items-center gap-2">
-                                {[loggedInUser, ...collaborators].map(user => (
-                                    <Avatar key={user.id} className="h-8 w-8" title={user.name}>
-                                        <AvatarImage src={(user as any).avatar_url || (user as any).avatar} alt={user.name} />
-                                        <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
+                        <div className="border rounded-xl p-3 mt-3 space-y-2 bg-muted/20 animate-in fade-in">
+                            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                                <Users className="h-3 w-3" />
+                                Collaborators
+                            </h4>
+                            <div className="flex items-center gap-2 flex-wrap">
+                                {collaborators.map((collaborator) => (
+                                    <div key={collaborator.id} className="flex items-center gap-2 bg-background/80 px-2 py-1 rounded-full border shadow-sm">
+                                        <Avatar className="h-5 w-5">
+                                            <AvatarImage src={collaborator.avatar} />
+                                            <AvatarFallback>{collaborator.name[0]}</AvatarFallback>
+                                        </Avatar>
+                                        <span className="text-xs font-medium">{collaborator.name}</span>
+                                        <button
+                                            onClick={() => setCollaborators(prev => prev.filter(c => c.id !== collaborator.id))}
+                                            className="text-muted-foreground hover:text-destructive transition-colors ml-1"
+                                        >
+                                            <X className="h-3 w-3" />
+                                        </button>
+                                    </div>
                                 ))}
                             </div>
                         </div>
                     )}
 
+                    {/* Media Previews */}
+                    {mediaPreviews.length > 0 && (
+                        <div className={cn(
+                            "mt-4 gap-3 grid",
+                            mediaPreviews.length === 1 ? "grid-cols-1" : "grid-cols-2"
+                        )}>
+                            {mediaPreviews.map((media, index) => (
+                                <div key={index} className="relative group rounded-xl overflow-hidden border bg-black/5 shadow-sm ring-1 ring-border/10">
+                                    <button
+                                        onClick={() => removeMedia(index)}
+                                        className="absolute top-2 right-2 bg-black/60 text-white p-1.5 rounded-full z-10 hover:bg-black/80 transition-colors opacity-0 group-hover:opacity-100"
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </button>
+
+                                    {media.type === 'image' && (
+                                        <>
+                                            <div className="relative aspect-video">
+                                                <Image
+                                                    src={media.url}
+                                                    alt={media.alt || 'Upload preview'}
+                                                    fill
+                                                    className="object-cover"
+                                                />
+                                            </div>
+                                            {/* Edit button */}
+                                            <button
+                                                onClick={() => {
+                                                    setEditingImage({ index, url: media.url });
+                                                    setIsImageEditorOpen(true);
+                                                }}
+                                                className="absolute bottom-2 right-2 bg-black/60 text-white p-1.5 rounded-full z-10 hover:bg-black/80 transition-colors opacity-0 group-hover:opacity-100"
+                                            >
+                                                <Pencil className="h-4 w-4" />
+                                            </button>
+                                        </>
+                                    )}
+
+                                    {media.type === 'video' && (
+                                        <video src={media.url} controls className="w-full h-full object-cover max-h-[300px]" />
+                                    )}
+
+                                    {media.type === 'gif' && (
+                                        <div className="relative w-full h-full min-h-[200px]">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img src={media.url} alt={media.alt} className="w-full h-full object-cover" />
+                                            <div className="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1 rounded">GIF</div>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
                     {/* Poll Creator */}
                     {isPollMode && (
-                        <div className="border rounded-xl p-4 space-y-3">
-                            <div className="flex items-center justify-between">
-                                <Label className="text-sm font-semibold">Create a poll</Label>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={togglePollMode}
-                                    aria-label="Close poll"
-                                >
+                        <div className="mt-4 border rounded-xl p-4 space-y-4 bg-background/50 animate-in fade-in slide-in-from-top-2">
+                            <div className="flex justify-between items-center">
+                                <h3 className="font-medium flex items-center gap-2 text-primary">
+                                    <BarChart3 className="h-4 w-4" />
+                                    Create Poll
+                                </h3>
+                                <Button variant="ghost" size="icon" onClick={togglePollMode} className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive">
                                     <X className="h-4 w-4" />
                                 </Button>
                             </div>
@@ -821,441 +841,194 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                 placeholder="Ask a question..."
                                 value={pollQuestion}
                                 onChange={(e) => setPollQuestion(e.target.value)}
-                                maxLength={280}
+                                className="text-lg font-medium border-x-0 border-t-0 border-b-2 rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary bg-transparent"
                             />
 
-                            <div className="space-y-2">
+                            <div className="space-y-3">
                                 {pollOptions.map((option, index) => (
-                                    <div key={index} className="flex gap-2">
+                                    <div key={index} className="flex items-center gap-2">
                                         <Input
-                                            placeholder={`Choice ${index + 1} `}
+                                            placeholder={`Option ${index + 1}`}
                                             value={option}
                                             onChange={(e) => updatePollOption(index, e.target.value)}
-                                            maxLength={100}
+                                            className="flex-1"
                                         />
                                         {pollOptions.length > 2 && (
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => removePollOption(index)}
-                                                aria-label="Remove option"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
+                                            <Button variant="ghost" size="icon" onClick={() => removePollOption(index)} className="text-muted-foreground hover:text-destructive">
+                                                <X className="h-4 w-4" />
                                             </Button>
                                         )}
                                     </div>
                                 ))}
-                            </div>
-
-                            {pollOptions.length < MAX_POLL_OPTIONS && (
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={addPollOption}
-                                    className="w-full"
-                                >
-                                    <Plus className="h-4 w-4 mr-2" />
-                                    Add option
-                                </Button>
-                            )}
-
-                            <div className="flex items-center justify-between text-sm">
-                                <Label htmlFor="poll-duration">Poll duration</Label>
-                                <select
-                                    id="poll-duration"
-                                    value={pollDuration}
-                                    onChange={(e) => setPollDuration(Number(e.target.value))}
-                                    className="border rounded px-2 py-1"
-                                >
-                                    <option value={1}>1 hour</option>
-                                    <option value={6}>6 hours</option>
-                                    <option value={12}>12 hours</option>
-                                    <option value={24}>1 day</option>
-                                    <option value={72}>3 days</option>
-                                    <option value={168}>7 days</option>
-                                </select>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    id="multiple-choices"
-                                    checked={allowMultipleChoices}
-                                    onChange={(e) => setAllowMultipleChoices(e.target.checked)}
-                                    className="rounded"
-                                />
-                                <Label htmlFor="multiple-choices" className="text-sm">
-                                    Allow multiple choices
-                                </Label>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Media Previews */}
-                    {mediaPreviews.length > 0 && (
-                        <div className={cn(
-                            "grid gap-2 rounded-xl overflow-hidden border p-2",
-                            mediaPreviews.length === 1 && "grid-cols-1",
-                            mediaPreviews.length === 2 && "grid-cols-2",
-                            mediaPreviews.length >= 3 && "grid-cols-2"
-                        )}>
-                            {mediaPreviews.map((preview, index) => (
-                                <div
-                                    key={index}
-                                    className={cn(
-                                        "relative aspect-video bg-muted rounded-lg overflow-hidden group",
-                                        mediaPreviews.length === 3 && index === 0 && "col-span-2"
-                                    )}
-                                >
-                                    {preview.type === 'image' && (
-                                        <Button
-                                            variant="secondary"
-                                            size="icon"
-                                            className="absolute top-2 left-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                                            onClick={() => {
-                                                setEditingImage({ index, url: preview.url });
-                                                setIsImageEditorOpen(true);
-                                            }}
-                                            type="button"
-                                            title="Edit image"
-                                            aria-label="Edit image"
-                                        >
-                                            <Pencil className="h-4 w-4" />
-                                        </Button>
-                                    )}
-                                    {preview.type === 'gif' || preview.type === 'image' ? (
-                                        <Image
-                                            src={preview.url}
-                                            alt={preview.alt || `Preview ${index + 1} `}
-                                            fill
-                                            className="object-cover"
-                                            unoptimized={preview.type === 'gif'}
-                                        />
-                                    ) : (
-                                        <video
-                                            src={preview.url}
-                                            className="w-full h-full object-cover"
-                                            controls
-                                        />
-                                    )}
-                                    {preview.type === 'gif' && (
-                                        <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded font-semibold">
-                                            GIF
-                                        </div>
-                                    )}
+                                {pollOptions.length < MAX_POLL_OPTIONS && (
                                     <Button
-                                        variant="destructive"
-                                        size="icon"
-                                        className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                                        onClick={() => removeMedia(index)}
-                                        type="button"
-                                        aria-label="Remove media"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={addPollOption}
+                                        className="w-full border-dashed text-muted-foreground hover:text-primary hover:border-primary hover:bg-primary/5"
                                     >
-                                        <X className="h-4 w-4" />
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Add Option
                                     </Button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-
-                    {/* Character Limit Warning - hide for verified users */}
-                    {!isVerified && characterCount > MAX_CHARACTERS * 0.75 && (
-                        <div className="flex items-center gap-2 text-sm">
-                            {isOverLimit && <AlertCircle className="h-4 w-4 text-red-500" />}
-                            <span className={getCharacterColor()}>
-                                {isOverLimit
-                                    ? `${characterCount - MAX_CHARACTERS} characters over limit`
-                                    : `${MAX_CHARACTERS - characterCount} characters remaining`
-                                }
-                            </span>
-                        </div>
-                    )}
-
-                    {/* Actions Bar */}
-                    <div className="flex items-center justify-between pt-2 border-t">
-                        <div className="flex gap-0 sm:gap-1 text-primary flex-wrap">
-                            {/* Hidden file inputs */}
-                            <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept="image/*"
-                                multiple
-                                className="hidden"
-                                onChange={handleImageUpload}
-                                disabled={mediaPreviews.length >= MAX_MEDIA || isPosting || isPollMode}
-                            />
-                            <input
-                                ref={videoInputRef}
-                                type="file"
-                                accept="video/*"
-                                className="hidden"
-                                onChange={handleVideoUpload}
-                                disabled={mediaPreviews.length >= MAX_MEDIA || isPosting || isPollMode}
-                            />
-
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                type="button"
-                                onClick={() => fileInputRef.current?.click()}
-                                disabled={mediaPreviews.length >= MAX_MEDIA || isPosting || isPollMode}
-                                title="Add image"
-                                aria-label="Add image"
-                            >
-                                <ImageIcon className="h-5 w-5" />
-                            </Button>
-
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                type="button"
-                                onClick={() => videoInputRef.current?.click()}
-                                disabled={mediaPreviews.length >= MAX_MEDIA || isPosting || isPollMode}
-                                title="Add video"
-                                aria-label="Add video"
-                            >
-                                <Video className="h-5 w-5" />
-                            </Button>
-
-                            <Popover open={isGifPickerOpen} onOpenChange={setIsGifPickerOpen}>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        type="button"
-                                        disabled={mediaPreviews.length >= MAX_MEDIA || isPosting || isPollMode}
-                                        title="Add GIF"
-                                        aria-label="Add GIF"
-                                    >
-                                        <Sparkles className="h-5 w-5" />
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-96 p-0" align="start">
-                                    <div className="p-3 space-y-3">
-                                        <div className="flex items-center gap-2">
-                                            <div className="relative flex-1">
-                                                <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                                <Input
-                                                    placeholder="Search GIFs..."
-                                                    value={gifSearchQuery}
-                                                    onChange={(e) => setGifSearchQuery(e.target.value)}
-                                                    onKeyDown={(e) => e.key === 'Enter' && handleGifSearch()}
-                                                    className="pl-8"
-                                                />
-                                            </div>
-                                            <Button size="sm" onClick={handleGifSearch}>
-                                                <Sparkles className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-
-                                        <div className="max-h-[400px] overflow-y-auto">
-                                            <Grid
-                                                key={gifSearchKey}
-                                                width={360}
-                                                columns={2}
-                                                gutter={6}
-                                                fetchGifs={fetchGifs}
-                                                onGifClick={(gif, e) => {
-                                                    e.preventDefault();
-                                                    handleGifSelect(gif);
-                                                }}
-                                            />
-                                        </div>
-
-                                        <p className="text-xs text-muted-foreground text-center">
-                                            Powered by GIPHY
-                                        </p>
-                                    </div>
-                                </PopoverContent>
-                            </Popover>
-
-
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                type="button"
-                                onClick={togglePollMode}
-                                disabled={isPosting || mediaPreviews.length > 0}
-                                title="Create poll"
-                                className={cn(isPollMode && "bg-primary text-primary-foreground")}
-                            >
-                                <BarChart3 className="h-5 w-5" />
-                            </Button>
-
-                            {/* Emoji Picker */}
-                            <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        type="button"
-                                        disabled={isPosting}
-                                        title="Add emoji"
-                                    >
-                                        <Smile className="h-5 w-5" />
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-full p-0 border-0" align="start">
-                                    <EmojiPicker
-                                        onEmojiClick={handleEmojiClick}
-                                        width="100%"
-                                        height={400}
-                                    />
-                                </PopoverContent>
-                            </Popover>
-
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                type="button"
-                                disabled={isPosting}
-                                title="Schedule post"
-                                onClick={() => {
-                                    setIsScheduleMode(!isScheduleMode);
-                                    toast({
-                                        title: "Schedule mode",
-                                        description: isScheduleMode ? "Schedule mode disabled" : "Schedule mode enabled"
-                                    });
-                                }}
-                                className={cn(isScheduleMode && "bg-primary text-primary-foreground")}
-                            >
-                                <Calendar className="h-5 w-5" />
-                            </Button>
-
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                type="button"
-                                disabled={isPosting}
-                                title="Invite collaborators"
-                                onClick={() => setIsCollaboratorDialogOpen(true)}
-                                className={cn(collaborators.length > 0 && "bg-primary text-primary-foreground")}
-                            >
-                                <Users className="h-5 w-5" />
-                            </Button>
-
-
-
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                type="button"
-                                disabled={isPosting}
-                                title="View drafts"
-                                onClick={() => setShowDraftDialog(true)}
-                                className="relative"
-                            >
-                                <Save className="h-5 w-5" />
-                                {drafts.length > 0 && (
-                                    <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary text-primary-foreground text-[10px] flex items-center justify-center rounded-full">
-                                        {drafts.length}
-                                    </span>
                                 )}
-                            </Button>
-                        </div>
+                            </div>
 
-                        {/* Character Counter & Post Button - hide counter for verified users */}
-                        <div className="flex items-center gap-3">
-                            {!isVerified && characterCount > 0 && (
-                                <div className="flex items-center gap-2">
-                                    <div className="relative w-8 h-8">
-                                        <svg className="w-8 h-8 transform -rotate-90">
-                                            <circle
-                                                cx="16"
-                                                cy="16"
-                                                r="14"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                fill="none"
-                                                className="text-muted opacity-20"
-                                            />
-                                            <circle
-                                                cx="16"
-                                                cy="16"
-                                                r="14"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                fill="none"
-                                                strokeDasharray={`${2 * Math.PI * 14} `}
-                                                strokeDashoffset={`${2 * Math.PI * 14 * (1 - Math.min(characterPercentage, 100) / 100)} `}
-                                                className={cn(
-                                                    "transition-all",
-                                                    isOverLimit ? "text-red-500" :
-                                                        characterCount > MAX_CHARACTERS * 0.9 ? "text-orange-500" :
-                                                            characterCount > MAX_CHARACTERS * 0.75 ? "text-yellow-500" :
-                                                                "text-primary"
-                                                )}
-                                                strokeLinecap="round"
-                                            />
-                                        </svg>
-                                        {characterCount > MAX_CHARACTERS * 0.9 && (
-                                            <div className={cn(
-                                                "absolute inset-0 flex items-center justify-center text-[10px] font-bold",
-                                                isOverLimit ? "text-red-500" : "text-orange-500"
-                                            )}>
-                                                {isOverLimit ? MAX_CHARACTERS - characterCount : ''}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-
-                            {isScheduleMode && (
-                                <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-4 pt-2 border-t">
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                     <Clock className="h-4 w-4" />
-                                    <span>Schedule</span>
+                                    <select
+                                        value={pollDuration}
+                                        onChange={(e) => setPollDuration(Number(e.target.value))}
+                                        className="bg-transparent border-none focus:ring-0 cursor-pointer font-medium text-foreground"
+                                    >
+                                        <option value={1}>1 hour</option>
+                                        <option value={6}>6 hours</option>
+                                        <option value={12}>12 hours</option>
+                                        <option value={24}>1 day</option>
+                                        <option value={72}>3 days</option>
+                                        <option value={168}>7 days</option>
+                                    </select>
                                 </div>
-                            )}
-
-                            <Button
-                                onClick={handlePost}
-                                disabled={!canPost || isPosting}
-                                size="sm"
-                                className="min-w-[70px]"
-                            >
-                                {isPosting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                {isPosting ? 'Posting...' : isScheduleMode ? 'Schedule' : 'Post'}
-                            </Button>
-                        </div>
-                    </div>
-
-                    {/* Schedule Date Picker */}
-                    {isScheduleMode && (
-                        <div className="border rounded-lg p-3 space-y-2">
-                            <Label className="text-sm">Schedule post</Label>
-                            <Input
-                                type="datetime-local"
-                                value={scheduleDate}
-                                onChange={(e) => setScheduleDate(e.target.value)}
-                                min={new Date().toISOString().slice(0, 16)}
-                            />
-                            <p className="text-xs text-muted-foreground">
-                                Your post will be published at the scheduled time
-                            </p>
+                            </div>
                         </div>
                     )}
 
-                    {/* Keyboard Shortcut Hint */}
-                    {content.length > 0 && !isPosting && (
-                        <p className="text-xs text-muted-foreground text-right">
-                            Press <kbd className="px-1.5 py-0.5 text-xs font-semibold bg-muted rounded">Ctrl</kbd> + <kbd className="px-1.5 py-0.5 text-xs font-semibold bg-muted rounded">Enter</kbd> to {isScheduleMode ? 'schedule' : 'post'}
-                        </p>
-                    )}
+                    {/* Action Bar */}
+                    {(!isPollMode || mediaPreviews.length === 0) && (
+                        <div className="flex items-center justify-between pt-3 mt-2">
+                            <input type="file" ref={fileInputRef} className="hidden" multiple accept="image/*" onChange={handleImageUpload} disabled={isPosting || isPollMode} />
+                            <input type="file" ref={videoInputRef} className="hidden" multiple accept="video/*" onChange={handleVideoUpload} disabled={isPosting || isPollMode} />
 
-                    {/* Tips */}
-                    {content.length === 0 && mediaPreviews.length === 0 && !isPollMode && (
-                        <div className="text-xs text-muted-foreground space-y-1">
-                            <p className="font-semibold">💡 Tips:</p>
-                            <ul className="list-disc list-inside space-y-0.5 ml-2">
-                                <li>Add media, GIFs, or create a poll to engage your audience</li>
-                                <li>Use #hashtags to join conversations</li>
-                                <li>Mention users with @ to notify them</li>
-                                <li>Your drafts are saved automatically every 3 seconds</li>
-                            </ul>
+                            <div className="flex items-center gap-1 -ml-2">
+                                {/* Primary Actions */}
+                                <ActionTooltip label="Image">
+                                    <Button variant="ghost" size="icon" className="h-9 w-9 text-primary/80 hover:text-primary hover:bg-primary/10 rounded-full transition-colors" onClick={() => fileInputRef.current?.click()} disabled={isPosting || isPollMode || mediaPreviews.length >= MAX_MEDIA}>
+                                        <ImageIcon className="h-5 w-5" />
+                                    </Button>
+                                </ActionTooltip>
+
+                                <div className="relative">
+                                    <ActionTooltip label="Emoji">
+                                        <Button variant="ghost" size="icon" className="h-9 w-9 text-primary/80 hover:text-primary hover:bg-primary/10 rounded-full transition-colors" onClick={() => setShowEmojiPicker(!showEmojiPicker)} disabled={isPosting}>
+                                            <Smile className="h-5 w-5" />
+                                        </Button>
+                                    </ActionTooltip>
+                                    {showEmojiPicker && (
+                                        <div className="absolute top-10 left-0 z-50 animate-in fade-in zoom-in-95 duration-200">
+                                            <div className="fixed inset-0 z-40" onClick={() => setShowEmojiPicker(false)} />
+                                            <div className="relative z-50 shadow-2xl rounded-xl overflow-hidden border bg-background">
+                                                <EmojiPicker onEmojiClick={handleEmojiClick} width={320} height={400} theme={Theme.AUTO} />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <ActionTooltip label="GIF">
+                                    <Popover open={isGifPickerOpen} onOpenChange={setIsGifPickerOpen}>
+                                        <PopoverTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-9 w-9 text-primary/80 hover:text-primary hover:bg-primary/10 rounded-full transition-colors" disabled={isPosting || isPollMode || mediaPreviews.length >= MAX_MEDIA}>
+                                                <Sparkles className="h-5 w-5" />
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-[320px] p-0" align="start">
+                                            <div className="p-2">
+                                                <div className="relative mb-2">
+                                                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                                                    <Input placeholder="Search GIFs..." className="pl-8" value={gifSearchQuery} onChange={(e) => setGifSearchQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleGifSearch()} />
+                                                </div>
+                                                <div className="h-[300px] overflow-y-auto">
+                                                    <Grid key={gifSearchKey} width={300} columns={2} fetchGifs={fetchGifs} onGifClick={handleGifSelect} noLink />
+                                                </div>
+                                            </div>
+                                        </PopoverContent>
+                                    </Popover>
+                                </ActionTooltip>
+
+                                {/* More Actions Menu */}
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-9 w-9 text-primary/80 hover:text-primary hover:bg-primary/10 rounded-full transition-colors">
+                                            <Plus className="h-5 w-5" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="start" className="w-56">
+                                        <DropdownMenuItem onClick={() => videoInputRef.current?.click()} disabled={isPosting || isPollMode || mediaPreviews.length >= MAX_MEDIA}>
+                                            <Video className="mr-2 h-4 w-4" /> Video
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={togglePollMode} disabled={isPosting || mediaPreviews.length > 0}>
+                                            <BarChart3 className="mr-2 h-4 w-4" /> Poll
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => setIsCollaboratorDialogOpen(true)} disabled={isPosting}>
+                                            <Users className="mr-2 h-4 w-4" /> Collaborate
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => setIsScheduleMode(true)} disabled={isPosting}>
+                                            <Clock className="mr-2 h-4 w-4" /> Schedule
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+
+                                {/* Quick Drafts Access */}
+                                <ActionTooltip label="Drafts">
+                                    <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground rounded-full" onClick={() => setShowDraftDialog(true)}>
+                                        <List className="h-5 w-5" />
+                                    </Button>
+                                </ActionTooltip>
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                                {/* Character Count */}
+                                {content.length > 0 && (
+                                    <div className="flex items-center gap-2 animate-in fade-in">
+                                        <span className={cn("text-xs font-bold transition-colors", getCharacterColor())}>
+                                            {remainingChars}
+                                        </span>
+                                        <svg viewBox="0 0 24 24" className="h-5 w-5 -rotate-90">
+                                            <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted/25" />
+                                            <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray={62.83} strokeDashoffset={62.83 - (62.83 * Math.min(characterPercentage, 100)) / 100} className={cn("transition-all duration-300", getCharacterColor())} />
+                                        </svg>
+                                    </div>
+                                )}
+
+                                <Button
+                                    onClick={handlePost}
+                                    disabled={!canPost || isPosting}
+                                    className={cn(
+                                        "rounded-full px-6 py-0 font-bold transition-all duration-300 shadow-md hover:shadow-lg",
+                                        isPosting ? "opacity-80" : "hover:scale-105 active:scale-95",
+                                        "bg-gradient-to-r from-primary to-primary/90 text-primary-foreground"
+                                    )}
+                                    size="sm"
+                                >
+                                    {isPosting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (isScheduleMode && scheduleDate ? 'Schedule' : 'Post')}
+                                </Button>
+                            </div>
                         </div>
                     )}
                 </div>
             </div>
+
+            {/* Schedule Dialog (Separate to keep UI clean) */}
+            <Dialog open={isScheduleMode} onOpenChange={setIsScheduleMode}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Schedule Post</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <Label htmlFor="schedule-date" className="mb-2 block">Pick a date and time</Label>
+                        <Input
+                            id="schedule-date"
+                            type="datetime-local"
+                            value={scheduleDate}
+                            onChange={(e) => setScheduleDate(e.target.value)}
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsScheduleMode(false)}>Cancel</Button>
+                        <Button onClick={() => setIsScheduleMode(false)}>Confirm Schedule</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
+
     );
 }
