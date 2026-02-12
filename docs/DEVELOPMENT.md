@@ -77,7 +77,7 @@ We use **TypeScript** and **Tailwind CSS** with strict quality guidelines.
 │   ├── ai/               # AI features (Genkit)
 │   │   └── flows/        # AI workflows
 │   ├── providers/        # Context providers
-│   └── middleware.ts     # Next.js middleware
+│   └── proxy.ts     # Next.js proxy
 ├── public/               # Static assets
 │   ├── icons/            # PWA icons
 │   ├── manifest.json     # PWA manifest

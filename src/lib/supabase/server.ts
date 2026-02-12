@@ -19,7 +19,7 @@ export const createClient = () => {
           (await cookieStore).set({ name, value, ...options })
         } catch (error) {
           // The `set` method was called from a Server Component.
-          // This can be ignored if you have middleware refreshing
+          // This can be ignored if you have proxy refreshing
           // user sessions.
           console.error("Error setting cookie:", error)
         }
@@ -29,14 +29,14 @@ export const createClient = () => {
           (await cookieStore).set({ name, value: '', ...options })
         } catch (error) {
           // The `delete` method was called from a Server Component.
-          // This can be ignored if you have middleware refreshing
+          // This can be ignored if you have proxy refreshing
           // user sessions.
           console.error("Error removing cookie:", error)
         }
       },
     },
     auth: {
-        persistSession: false
+      persistSession: false
     }
   })
 }

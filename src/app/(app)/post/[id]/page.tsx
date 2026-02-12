@@ -1,15 +1,24 @@
-import { redirect } from 'next/navigation';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { Metadata, ResolvingMetadata } from "next";
+import PostView from "./post-view";
+import { notFound } from "next/navigation";
 
-// Server Component for SEO-friendly redirects
-export default async function PostRedirectPage(props: { params: Promise<{ id: string }> }) {
+// Force dynamic because we use params and auth
+export const dynamic = "force-dynamic";
+
+interface PostPageProps {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+export async function generateMetadata(
+  props: PostPageProps,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
   const params = await props.params;
-  const postId = Number(params.id);
-
-  if (isNaN(postId)) {
-    redirect('/'); // Fallback
-  }
+  const postId = params.id;
 
   const cookieStore = await cookies();
   const supabase = createServerClient(
@@ -24,18 +33,67 @@ export default async function PostRedirectPage(props: { params: Promise<{ id: st
     }
   );
 
-  // Fetch the post to get the author's username
-  const { data } = await supabase
+  // Fetch minimal post data for metadata
+  const { data: post } = await supabase
     .from('posts')
-    .select('author:user_id (username)')
+    .select('content, user_id, media_urls, author:user_id(username, name)')
     .eq('id', postId)
     .single();
 
-  if (data && data.author) {
-    const username = (data.author as any).username;
-    redirect(`/profile/${username}/post/${postId}`);
+  if (!post) {
+    return {
+      title: 'Post Not Found',
+    };
   }
 
-  // If not found, redirect to feed
-  redirect('/explore');
+  const authorName = (post.author as any)?.name || 'Unknown';
+  const authorUsername = (post.author as any)?.username || 'unknown';
+
+  // Truncate content for title/description
+  const contentSnippet = post.content
+    ? (post.content.length > 50 ? post.content.substring(0, 50) + '...' : post.content)
+    : 'Media Post';
+
+  const title = `"${contentSnippet}" by ${authorName} (@${authorUsername}) | Krishna Connect`;
+  const description = post.content || `Check out this post by @${authorUsername} on Krishna Connect.`;
+
+  // Determine OG Image
+  // Priority: Post Media -> Author Avatar -> Default Logo
+  let imageUrl = 'logo\Srila-Prabhupada.png';
+  if (post.media_urls && Array.isArray(post.media_urls) && post.media_urls.length > 0) {
+    // If it's an image attachment
+    const firstMedia = post.media_urls[0];
+    if (firstMedia.url) {
+      imageUrl = firstMedia.url.startsWith('http')
+        ? firstMedia.url
+        : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/attachments/${firstMedia.url}`;
+    }
+  }
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [imageUrl],
+      type: 'article',
+      siteName: 'Krishna Connect',
+      authors: [authorName],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [imageUrl],
+    }
+  };
+}
+
+export default async function PostPage(props: PostPageProps) {
+  // Just render the client component which handles full data fetching
+  // We await params here to be safe and compatible with Next.js 15
+  await props.params;
+
+  return <PostView />;
 }

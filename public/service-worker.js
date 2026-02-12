@@ -104,7 +104,7 @@ self.addEventListener('fetch', (event) => {
     // Ignore non-GET requests
     if (event.request.method !== 'GET') return;
 
-    // Ignore API calls, Chrome Extensions, and internal Next.js middleware calls
+    // Ignore API calls, Chrome Extensions, and internal Next.js proxy calls
     if (
         url.pathname.startsWith('/api') ||
         url.protocol === 'chrome-extension:' ||
