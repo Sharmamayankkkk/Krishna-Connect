@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/utils';
 
-const URL = 'https://krishnaconnect.com';
+const URL = 'https://krishnaconnect.in';
 
 // Function to generate a URL entry for the sitemap
 const generateUrlEntry = (
@@ -39,9 +39,11 @@ export async function GET() {
     { loc: `${URL}/events`, changefreq: 'daily', priority: '0.9' },
     { loc: `${URL}/terms-and-conditions`, changefreq: 'yearly', priority: '0.3' },
     { loc: `${URL}/privacy-policy`, changefreq: 'yearly', priority: '0.3' },
+    { loc: `${URL}/contact-us`, changefreq: 'yearly', priority: '0.5' },
+    { loc: `${URL}/developers`, changefreq: 'monthly', priority: '0.4' },
   ];
 
-  const staticEntries = staticPages.map(page => 
+  const staticEntries = staticPages.map(page =>
     generateUrlEntry(page.loc, new Date().toISOString(), page.changefreq as any, page.priority)
   ).join('');
 

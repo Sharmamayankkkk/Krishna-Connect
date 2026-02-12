@@ -61,57 +61,44 @@ export function PromotedPostCard({ promotion, className }: PromotedPostCardProps
     }
 
     return (
-        <Card
-            className={cn(
-                "rounded-none border-b border-t-0 border-x-0 shadow-none transition-colors",
-                "bg-gradient-to-r from-primary/5 to-transparent",
-                "border-l-4 border-l-primary/30",
-                className
-            )}
-        >
-            <CardContent className="p-4">
-                {/* Promoted Badge */}
-                <div className="flex items-center gap-2 mb-3">
-                    <Badge variant="secondary" className="text-xs font-medium bg-primary/10 text-primary border-0">
-                        <Megaphone className="h-3 w-3 mr-1" />
-                        Promoted
-                    </Badge>
-                </div>
+        <div className={cn("py-6 px-4 md:px-0 animate-in fade-in slide-in-from-bottom-4 duration-700", className)}>
+            <div className="group relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/5 via-background to-primary/5 shadow-lg hover:shadow-xl hover:border-primary/40 transition-all duration-500">
 
-                <div className="flex gap-3">
-                    {/* Avatar */}
-                    <Link href={`/profile/${author.username}`} className="shrink-0">
-                        <Avatar className="h-10 w-10">
-                            <AvatarImage src={author.avatar} alt={author.name} />
-                            <AvatarFallback>{author.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                    </Link>
+                {/* Spotlights / Glow effects */}
+                <div className="absolute -top-20 -right-20 h-40 w-40 bg-primary/20 blur-[100px] rounded-full pointer-events-none group-hover:bg-primary/30 transition-colors" />
+                <div className="absolute -bottom-20 -left-20 h-40 w-40 bg-blue-500/20 blur-[100px] rounded-full pointer-events-none" />
+
+                <div className="relative p-6 sm:p-8">
+                    {/* Header: Featured Badge & Author */}
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                            <Avatar className="h-12 w-12 ring-2 ring-background shadow-md">
+                                <AvatarImage src={author.avatar} alt={author.name} />
+                                <AvatarFallback>{author.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <div className="flex items-center gap-1">
+                                    <span className="font-bold text-lg leading-none">{author.name}</span>
+                                    <VerificationBadge verified={author.verified} size={18} />
+                                </div>
+                                <p className="text-sm text-muted-foreground">@{author.username}</p>
+                            </div>
+                        </div>
+                        <Badge variant="outline" className="bg-background/50 backdrop-blur-md border-primary/30 text-primary px-3 py-1 text-xs uppercase tracking-wider font-bold shadow-sm">
+                            <Megaphone className="h-3 w-3 mr-1.5 fill-current" />
+                            Featured
+                        </Badge>
+                    </div>
 
                     {/* Content */}
-                    <div className="flex-1 min-w-0">
-                        {/* Header */}
-                        <div className="flex items-center gap-1 mb-1">
-                            <Link href={`/profile/${author.username}`} className="group flex items-center gap-1 min-w-0">
-                                <span className="font-semibold hover:underline truncate text-sm">
-                                    {author.name}
-                                </span>
-                                <VerificationBadge verified={author.verified} size={16} className="flex-shrink-0" />
-                                <span className="text-sm text-muted-foreground truncate ml-1">
-                                    @{author.username}
-                                </span>
-                            </Link>
-                        </div>
+                    <div className="space-y-4">
+                        <p className="text-lg sm:text-xl font-medium leading-relaxed text-foreground/90">
+                            {content.text}
+                        </p>
 
-                        {/* Text Content */}
-                        {content.text && (
-                            <p className="whitespace-pre-wrap text-foreground/90 text-sm sm:text-base break-words mb-3">
-                                {content.text}
-                            </p>
-                        )}
-
-                        {/* Image (for image_banner type) */}
-                        {type === 'image_banner' && content.imageUrl && (
-                            <div className="relative aspect-video w-full rounded-xl overflow-hidden border mb-3">
+                        {/* Hero Image */}
+                        {(type === 'image_banner' || type === 'product_showcase') && content.imageUrl && (
+                            <div className="relative w-full aspect-[2/1] sm:aspect-[2.4/1] rounded-2xl overflow-hidden shadow-inner bg-muted/20 group-hover:scale-[1.01] transition-transform duration-500">
                                 <Image
                                     src={content.imageUrl}
                                     alt="Promoted content"
@@ -120,20 +107,25 @@ export function PromotedPostCard({ promotion, className }: PromotedPostCardProps
                                 />
                             </div>
                         )}
+                    </div>
 
-                        {/* CTA Button */}
-                        {cta && (
-                            <Button asChild variant="outline" size="sm" className="rounded-full">
-                                <Link href={cta.url}>
+                    {/* CTA Footer */}
+                    {cta && (
+                        <div className="mt-6 flex items-center justify-between gap-4 pt-4 border-t border-primary/10">
+                            <p className="text-sm text-muted-foreground font-medium hidden sm:block">
+                                Sponsored Content
+                            </p>
+                            <Button asChild size="lg" className="w-full sm:w-auto rounded-full font-bold shadow-lg shadow-primary/20 group-hover:shadow-primary/40 transition-all">
+                                <Link href={cta.url} target="_blank" rel="noopener noreferrer">
                                     {cta.label}
-                                    <ArrowRight className="ml-2 h-4 w-4" />
+                                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                                 </Link>
                             </Button>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }
 

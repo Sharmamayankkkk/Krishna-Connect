@@ -6,7 +6,7 @@ import webpush from 'web-push';
 // NOTE: You must have set these in .env.local!
 if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
     webpush.setVapidDetails(
-        'mailto:support@krishnaconnect.com', 
+        'mailto:support@krishnaconnect.in',
         process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
         process.env.VAPID_PRIVATE_KEY
     );
@@ -15,11 +15,11 @@ if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
 export async function POST(request: Request) {
     try {
         const { userId, title, body, url, icon } = await request.json();
-        
+
         if (!userId || !title || !body) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
-        
+
         const supabase = await createClient(); // Await the promise
 
         // Fetch user's subscriptions

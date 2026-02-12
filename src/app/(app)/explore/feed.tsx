@@ -15,6 +15,7 @@ import { useAppContext } from '@/providers/app-provider';
 import { PostType } from '@/lib/types';
 import { CreatePost } from '@/components/features/posts/create-post';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import { FeedList } from '@/components/features/posts/feed-list';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { PromotePostDialog } from '@/components/promote-post-dialog';
@@ -23,7 +24,6 @@ import {
 } from '../feed-algorithm';
 import { createClient } from '@/lib/supabase/client';
 import { GlobalSearchBar } from "@/components/global-search-bar"
-import { FeedList } from '@/components/features/posts/feed-list';
 import { StoriesBar } from '@/components/features/stories/stories-bar';
 
 // Custom Hooks

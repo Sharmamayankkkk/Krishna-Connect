@@ -48,7 +48,7 @@ Allow: /profile/
 Allow: /profile/*/post/
 
 # Sitemap location
-Sitemap: https://krishnaconnect.com/sitemap.xml
+Sitemap: https://krishnaconnect.in/sitemap.xml
 
 # Crawl-delay for specific bots (optional - prevents aggressive crawling)
 # User-agent: Googlebot

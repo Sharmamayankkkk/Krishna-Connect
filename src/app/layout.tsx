@@ -18,7 +18,7 @@ const APP_NAME = "Krishna Connect";
 const APP_DEFAULT_TITLE = "Krishna Connect";
 const APP_TITLE_TEMPLATE = "%s | Krishna Connect";
 const APP_DESCRIPTION = "A modern, real-time chat application for the conscious community, now powered by AI.";
-const APP_URL = "https://krishnaconnect.com";
+const APP_URL = "https://krishnaconnect.in";
 const APP_DEFAULT_URL = new URL(APP_URL);
 
 export const metadata: Metadata = {
@@ -105,10 +105,12 @@ export default function RootLayout({
             gtag('config', 'G-ZRN1L5GXJ4');
           `}
         </Script>
-        <script
+        <Script
+          id="adsense-init"
           async
           src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID}`}
           crossOrigin="anonymous"
+          strategy="afterInteractive"
         />
         <Providers>
           {children}
