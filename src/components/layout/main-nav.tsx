@@ -3,7 +3,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { MessageSquare, Calendar, Users, Compass, Bell, LayoutDashboard, Trophy, Sparkles } from 'lucide-react'
+import { MessageSquare, Calendar, Users, Compass, Bell, LayoutDashboard, Trophy, Sparkles, Phone } from 'lucide-react'
 import {
   SidebarMenu,
   SidebarMenuItem,
@@ -81,6 +81,12 @@ export function MainNav() {
       label: 'Chat',
       icon: MessageSquare,
       isActive: pathname.startsWith('/chat'),
+    },
+    {
+      href: '/calls',
+      label: 'Calls',
+      icon: Phone,
+      isActive: pathname.startsWith('/calls'),
     },
     {
       href: '/notifications',

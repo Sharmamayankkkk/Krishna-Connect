@@ -37,6 +37,7 @@ import { ImageViewerDialog } from '../media/image-viewer';
 import { MessageInfoDialog } from './dialogs/message-info-dialog';
 import { ChatInput } from './chat-input';
 import { TranslateDialog } from '../../dialogs/translate-dialog';
+import { useCallContext } from '@/providers/call-provider';
 
 interface ChatProps {
     chat: Chat;
@@ -131,6 +132,8 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
         blockedUsers,
         forwardMessage,
     } = useAppContext();
+
+    const { startCall } = useCallContext();
 
     // These are "state" variables. They hold data that can change and cause the component to re-render.
     // `useState` is a fundamental React hook for managing component state.
@@ -1189,8 +1192,8 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                             </Tooltip>
                         </TooltipProvider>
                     )}
-                    <Button variant="ghost" size="icon" onClick={() => toast({ title: "Coming Soon", description: "Voice calls will be available soon." })}><Phone className="h-5 w-5" /></Button>
-                    <Button variant="ghost" size="icon" onClick={() => toast({ title: "Coming Soon", description: "Video calls will be available soon." })}><Video className="h-5 w-5" /></Button>
+                    <Button variant="ghost" size="icon" onClick={() => { if (chatPartner) startCall(chatPartner.id, 'voice') }} disabled={!chatPartner}><Phone className="h-5 w-5" /></Button>
+                    <Button variant="ghost" size="icon" onClick={() => { if (chatPartner) startCall(chatPartner.id, 'video') }} disabled={!chatPartner}><Video className="h-5 w-5" /></Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon">
