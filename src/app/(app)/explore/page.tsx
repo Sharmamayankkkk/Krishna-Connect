@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, TrendingUp, Users, Flame } from 'lucide-react';
+import { Search, TrendingUp, Users, Flame, Heart, MessageCircle, Play, ImageIcon } from 'lucide-react';
 import { useAppContext } from '@/providers/app-provider';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useToast } from '@/hooks/use-toast';
@@ -15,6 +15,26 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { generateExploreContent, ExploreContentItem } from './explore-algorithm';
 import { PostType } from '@/lib/types';
+import { extractVideoThumbnail } from '@/lib/video-thumbnail';
+import { cn } from '@/lib/utils';
+
+// Instagram-style grid pattern: every 3rd row has a large tile
+// Pattern: [small, small, small], [small, small, small], [large (2x2), small, small], repeat
+function getGridSpan(index: number): { col: string; row: string } {
+    // Every 10th item starting from index 2 gets a large tile (2x2)
+    const patternIndex = index % 12;
+    if (patternIndex === 2 || patternIndex === 9) {
+        return { col: 'col-span-2', row: 'row-span-2' };
+    }
+    return { col: 'col-span-1', row: 'row-span-1' };
+}
+
+function isVideoUrl(url: string): boolean {
+    if (!url) return false;
+    const videoExts = ['.mp4', '.webm', '.ogg', '.mov', '.avi'];
+    const lower = url.toLowerCase();
+    return videoExts.some(ext => lower.includes(ext));
+}
 
 export default function ExplorePage() {
     const { loggedInUser } = useAppContext();
@@ -23,6 +43,7 @@ export default function ExplorePage() {
     const [suggestedUsers, setSuggestedUsers] = React.useState<any[]>([]);
     const [exploreContent, setExploreContent] = React.useState<ExploreContentItem[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
+    const [videoThumbnails, setVideoThumbnails] = React.useState<Record<string, string>>({});
 
     React.useEffect(() => {
         const fetchData = async () => {
@@ -77,7 +98,10 @@ export default function ExplorePage() {
                         avatar: p.author.avatar_url,
                         verified: p.author.verified || false
                     },
-                    media: p.media_urls?.map((url: string) => ({ url, type: 'image' })) || [],
+                    media: p.media_urls?.map((url: string) => ({
+                        url,
+                        type: isVideoUrl(url) ? 'video' : 'image'
+                    })) || [],
                     stats: {
                         likes: p.likes?.[0]?.count || 0,
                         comments: p.comments?.[0]?.count || 0,
@@ -97,8 +121,23 @@ export default function ExplorePage() {
                 }));
 
                 // Generate mixed content using algorithm
-                const mixedContent = generateExploreContent(transformedPosts, 20);
+                const mixedContent = generateExploreContent(transformedPosts, 24);
                 setExploreContent(mixedContent);
+
+                // Extract video thumbnails asynchronously
+                for (const item of mixedContent) {
+                    const post = item.data;
+                    const firstMedia = post.media?.[0];
+                    if (firstMedia?.type === 'video' && firstMedia.url) {
+                        extractVideoThumbnail(firstMedia.url)
+                            .then((thumb) => {
+                                setVideoThumbnails((prev) => ({ ...prev, [post.id]: thumb }));
+                            })
+                            .catch(() => {
+                                // Silently fail - we'll show a play icon placeholder instead
+                            });
+                    }
+                }
             }
 
             setIsLoading(false);
@@ -117,48 +156,94 @@ export default function ExplorePage() {
         router.push(`/profile/${post.author.username}/post/${post.id}`);
     };
 
-    const renderContentItem = (item: ExploreContentItem) => {
-        // Only post type now
+    const formatCount = (count: number) => {
+        if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
+        if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
+        return count.toString();
+    };
+
+    const renderGridItem = (item: ExploreContentItem, index: number) => {
         const post = item.data;
-        // Get first image, ensuring it's not an empty string
         const mediaUrl = post.media?.[0]?.url || (Array.isArray(post.media_urls) ? post.media_urls[0] : null);
-        const firstImage = mediaUrl && typeof mediaUrl === 'string' && mediaUrl.trim() !== '' ? mediaUrl : null;
-        const contentPreview = post.content?.replace(/[#@]/g, '').substring(0, 60);
+        const firstMedia = mediaUrl && typeof mediaUrl === 'string' && mediaUrl.trim() !== '' ? mediaUrl : null;
+        const isVideo = post.media?.[0]?.type === 'video' || (firstMedia && isVideoUrl(firstMedia));
+        const thumbnailUrl = videoThumbnails[post.id];
+        const contentPreview = post.content?.replace(/[#@]/g, '').substring(0, 80);
+        const { col, row } = getGridSpan(index);
+        const hasMultipleImages = (post.media?.length || 0) > 1;
 
         return (
             <div
                 key={item.id}
                 onClick={() => handlePostClick(post)}
-                className="group relative aspect-square overflow-hidden rounded-lg border bg-muted cursor-pointer transition-all hover:scale-105 hover:shadow-lg"
+                className={cn(
+                    "group relative overflow-hidden bg-muted cursor-pointer",
+                    col, row,
+                    "aspect-square"
+                )}
             >
-                {firstImage ? (
+                {/* Media or text content */}
+                {(firstMedia || thumbnailUrl) ? (
                     <>
                         <Image
-                            src={firstImage}
-                            alt="Post media"
+                            src={isVideo ? (thumbnailUrl || firstMedia!) : firstMedia!}
+                            alt="Post"
                             fill
                             unoptimized
-                            className="object-cover"
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <div className="absolute bottom-0 left-0 right-0 p-3 transform translate-y-full group-hover:translate-y-0 transition-transform">
-                            <p className="text-white text-xs font-medium line-clamp-2">
-                                {contentPreview}
-                            </p>
-                            <p className="text-white/80 text-xs mt-1">
-                                @{post.author?.username || 'user'}
-                            </p>
+
+                        {/* Video indicator */}
+                        {isVideo && (
+                            <div className="absolute top-2 right-2 z-10">
+                                <Play className="h-5 w-5 text-white drop-shadow-lg fill-white" />
+                            </div>
+                        )}
+
+                        {/* Multiple images indicator */}
+                        {hasMultipleImages && !isVideo && (
+                            <div className="absolute top-2 right-2 z-10">
+                                <ImageIcon className="h-5 w-5 text-white drop-shadow-lg" />
+                            </div>
+                        )}
+
+                        {/* Instagram-style hover overlay with stats */}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                            <div className="flex items-center gap-6 text-white">
+                                <div className="flex items-center gap-1.5">
+                                    <Heart className="h-5 w-5 fill-white" />
+                                    <span className="font-semibold text-sm">{formatCount(post.stats?.likes || 0)}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                    <MessageCircle className="h-5 w-5 fill-white" />
+                                    <span className="font-semibold text-sm">{formatCount(post.stats?.comments || 0)}</span>
+                                </div>
+                            </div>
                         </div>
                     </>
                 ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-purple-500/20 to-accent/30 flex items-center justify-center p-4">
-                        <div className="text-center">
-                            <p className="text-sm font-medium line-clamp-3">
+                    /* Text-only post with gradient background */
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/40 via-purple-500/30 to-pink-500/40 flex items-center justify-center p-4">
+                        <div className="text-center space-y-2">
+                            <p className="text-sm font-medium line-clamp-4 text-foreground">
                                 {contentPreview}
                             </p>
-                            <p className="text-xs text-muted-foreground mt-2">
+                            <p className="text-xs text-muted-foreground">
                                 @{post.author?.username || 'user'}
                             </p>
+                        </div>
+                        {/* Stats overlay on hover */}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                            <div className="flex items-center gap-6 text-white">
+                                <div className="flex items-center gap-1.5">
+                                    <Heart className="h-5 w-5 fill-white" />
+                                    <span className="font-semibold text-sm">{formatCount(post.stats?.likes || 0)}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                    <MessageCircle className="h-5 w-5 fill-white" />
+                                    <span className="font-semibold text-sm">{formatCount(post.stats?.comments || 0)}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -211,27 +296,28 @@ export default function ExplorePage() {
                         />
                     </section>
 
-                    {/* Suggested Users */}
+                    {/* Suggested Users - horizontal scroll on mobile */}
                     <section>
                         <div className="flex items-center gap-2 mb-4">
                             <Users className="h-5 w-5 text-blue-500" />
                             <h2 className="text-xl font-bold">Who to Follow</h2>
                         </div>
                         {suggestedUsers.length > 0 ? (
-                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            <div className="flex gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-3 md:overflow-visible scrollbar-hide">
                                 {suggestedUsers.map((user: any) => (
-                                    <UserCard
-                                        key={user.id}
-                                        user={user}
-                                        onFollow={handleFollowUser}
-                                        isFollowing={false}
-                                    />
+                                    <div key={user.id} className="min-w-[200px] md:min-w-0">
+                                        <UserCard
+                                            user={user}
+                                            onFollow={handleFollowUser}
+                                            isFollowing={false}
+                                        />
+                                    </div>
                                 ))}
                             </div>
                         ) : (
-                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            <div className="flex gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-3 md:overflow-visible">
                                 {[1, 2, 3, 4, 5, 6].map((i) => (
-                                    <div key={i} className="border rounded-lg p-4 space-y-3">
+                                    <div key={i} className="border rounded-lg p-4 space-y-3 min-w-[200px] md:min-w-0">
                                         <div className="flex items-center gap-3">
                                             <div className="h-12 w-12 rounded-full bg-muted animate-pulse" />
                                             <div className="flex-1 space-y-2">
@@ -246,28 +332,38 @@ export default function ExplorePage() {
                         )}
                     </section>
 
-                    {/* Dynamic Mixed Content */}
+                    {/* Instagram-Style Grid */}
                     <section>
                         <div className="flex items-center gap-2 mb-4">
                             <TrendingUp className="h-5 w-5 text-green-500" />
                             <h2 className="text-xl font-bold">Discover</h2>
                         </div>
 
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+                        <div className="grid grid-cols-3 gap-0.5 md:gap-1">
                             {isLoading ? (
-                                [1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                                    <div
-                                        key={i}
-                                        className="group relative aspect-square overflow-hidden rounded-lg border bg-muted"
-                                    >
-                                        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 animate-pulse" />
-                                    </div>
-                                ))
+                                Array.from({ length: 12 }).map((_, i) => {
+                                    const { col, row } = getGridSpan(i);
+                                    return (
+                                        <div
+                                            key={i}
+                                            className={cn(
+                                                "relative aspect-square overflow-hidden bg-muted",
+                                                col, row
+                                            )}
+                                        >
+                                            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/10 animate-pulse" />
+                                        </div>
+                                    );
+                                })
                             ) : exploreContent.length > 0 ? (
-                                exploreContent.map(renderContentItem)
+                                exploreContent.map((item, index) => renderGridItem(item, index))
                             ) : (
-                                <div className="col-span-full text-center py-12 text-muted-foreground">
-                                    No content available
+                                <div className="col-span-3 text-center py-16 text-muted-foreground">
+                                    <div className="flex flex-col items-center gap-3">
+                                        <Search className="h-12 w-12 text-muted-foreground/40" />
+                                        <p className="text-lg font-medium">No content to explore yet</p>
+                                        <p className="text-sm">Be the first to share something!</p>
+                                    </div>
                                 </div>
                             )}
                         </div>

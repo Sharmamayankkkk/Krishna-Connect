@@ -136,21 +136,33 @@ self.addEventListener('push', (event) => {
 
     try {
         const data = event.data.json();
+        const isCallNotification = data.type === 'incoming_call';
+
         const options = {
             body: data.body,
             icon: data.icon || '/logo/krishna_connect.png',
             image: data.image,
             badge: '/logo/krishna_connect.png',
-            vibrate: [100, 50, 100],
+            vibrate: isCallNotification ? [200, 100, 200, 100, 200, 100, 200] : [100, 50, 100],
             data: {
                 url: data.url || '/',
+                type: data.type || 'default',
+                callId: data.callId,
+                callerId: data.callerId,
                 timestamp: Date.now()
             },
-            actions: data.actions || [
-                { action: 'open', title: 'Open' }
-            ],
-            tag: data.tag || 'default-notification',
-            renotify: true
+            actions: isCallNotification
+                ? [
+                    { action: 'accept_call', title: '✅ Accept' },
+                    { action: 'decline_call', title: '❌ Decline' }
+                ]
+                : data.actions || [
+                    { action: 'open', title: 'Open' }
+                ],
+            tag: isCallNotification ? `call-${data.callId}` : (data.tag || 'default-notification'),
+            renotify: true,
+            requireInteraction: isCallNotification,
+            silent: false
         };
 
         event.waitUntil(
@@ -164,17 +176,58 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
     event.notification.close();
 
-    const targetUrl = event.notification.data?.url || '/';
+    const notifData = event.notification.data || {};
+    const action = event.action;
+    const isCall = notifData.type === 'incoming_call';
+
+    // Handle call notification actions
+    if (isCall && action === 'accept_call') {
+        event.waitUntil(
+            clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+                // Try to focus existing window and send message to accept call
+                for (const client of clientList) {
+                    client.postMessage({
+                        type: 'CALL_ACTION',
+                        action: 'accept',
+                        callId: notifData.callId
+                    });
+                    return client.focus();
+                }
+                // If no window open, open the app
+                if (clients.openWindow) {
+                    return clients.openWindow('/calls');
+                }
+            })
+        );
+        return;
+    }
+
+    if (isCall && action === 'decline_call') {
+        event.waitUntil(
+            clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+                for (const client of clientList) {
+                    client.postMessage({
+                        type: 'CALL_ACTION',
+                        action: 'decline',
+                        callId: notifData.callId
+                    });
+                    return;
+                }
+            })
+        );
+        return;
+    }
+
+    // Default: open URL
+    const targetUrl = notifData.url || '/';
 
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-            // Check if open
             for (const client of clientList) {
-                if (client.url === targetUrl && 'focus' in client) {
+                if (client.url.includes(targetUrl) && 'focus' in client) {
                     return client.focus();
                 }
             }
-            // If not, open new
             if (clients.openWindow) {
                 return clients.openWindow(targetUrl);
             }

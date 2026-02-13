@@ -307,9 +307,15 @@ export function CallProvider({ children }: { children: ReactNode }) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               userId,
-              title: `${callType === "video" ? "Video" : "Voice"} Call`,
+              title: `Incoming ${callType === "video" ? "Video" : "Voice"} Call`,
               body: `${loggedInUser.name} is calling you...`,
-              data: { type: "incoming_call", callId: callRecord.id },
+              icon: loggedInUser.avatar_url || "/logo/krishna_connect.png",
+              url: "/calls",
+              data: {
+                type: "incoming_call",
+                callId: callRecord.id,
+                callerId: loggedInUser.id,
+              },
             }),
           })
         } catch {
@@ -549,6 +555,27 @@ export function CallProvider({ children }: { children: ReactNode }) {
       supabaseRef.current.removeChannel(channel)
     }
   }, [activeCall, incomingCall, cleanupCall])
+
+  // Listen for service worker messages (call accept/decline from push notification actions)
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return
+
+    const handleMessage = (event: MessageEvent) => {
+      const { type, action, callId } = event.data || {}
+      if (type !== "CALL_ACTION") return
+
+      if (action === "accept" && incomingCall?.callRecord.id === callId) {
+        acceptCall()
+      } else if (action === "decline" && incomingCall?.callRecord.id === callId) {
+        declineCall()
+      }
+    }
+
+    navigator.serviceWorker.addEventListener("message", handleMessage)
+    return () => {
+      navigator.serviceWorker.removeEventListener("message", handleMessage)
+    }
+  }, [incomingCall, acceptCall, declineCall])
 
   const value: CallContextType = {
     activeCall,
