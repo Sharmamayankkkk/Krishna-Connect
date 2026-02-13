@@ -66,6 +66,11 @@ RETURNS TABLE (
     callee_avatar TEXT
 ) AS $$
 BEGIN
+    -- Authorization: users can only query their own call history
+    IF p_user_id <> auth.uid() THEN
+        RAISE EXCEPTION 'Unauthorized: cannot access another user''s call history';
+    END IF;
+
     RETURN QUERY
     SELECT
         c.id,
@@ -96,17 +101,21 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- ============================================================================
 -- FUNCTION: cleanup_stale_calls
 -- Marks ringing calls as missed after 60 seconds of no answer.
--- Can be run on a schedule or triggered.
+-- Should be invoked by a server-side scheduled job (e.g., pg_cron or Edge Function).
+-- Restricted: only the calling user's own stale calls can be affected,
+-- but this is intended for service-role or admin use.
 -- ============================================================================
 CREATE OR REPLACE FUNCTION public.cleanup_stale_calls()
 RETURNS void AS $$
 BEGIN
+    -- Only clean up calls involving the current user, or allow service role
     UPDATE public.calls
     SET status = 'missed',
         ended_at = NOW(),
         updated_at = NOW()
     WHERE status = 'ringing'
-    AND created_at < NOW() - INTERVAL '60 seconds';
+    AND created_at < NOW() - INTERVAL '60 seconds'
+    AND (caller_id = auth.uid() OR callee_id = auth.uid() OR auth.uid() IS NULL);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 

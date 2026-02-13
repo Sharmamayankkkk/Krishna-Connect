@@ -72,14 +72,14 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
   // Send a WebRTC signal via Supabase
   const sendSignal = useCallback(
-    async (callId: string, receiverId: string, signalType: CallSignal["signal_type"], payload: Record<string, unknown>) => {
+    async (callId: string, receiverId: string, signalType: CallSignal["signal_type"], payload: unknown) => {
       if (!loggedInUser) return
       const { error } = await supabaseRef.current.from("call_signals").insert({
         call_id: callId,
         sender_id: loggedInUser.id,
         receiver_id: receiverId,
         signal_type: signalType,
-        payload,
+        payload: payload as Record<string, unknown>,
       })
       if (error) console.error("Failed to send signal:", error)
     },
@@ -165,7 +165,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         case "renegotiate": {
           // Handle renegotiation (screen share changes)
           await webrtc.setRemoteDescription(payload as unknown as RTCSessionDescriptionInit)
-          if ((payload as RTCSessionDescriptionInit).type === "offer") {
+          if ((payload as unknown as RTCSessionDescriptionInit).type === "offer") {
             const answer = await webrtc.createAnswer()
             await sendSignal(signal.call_id, signal.sender_id, "renegotiate", answer as unknown as Record<string, unknown>)
           }
@@ -231,7 +231,12 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
       try {
         // Check if callee is busy
-        const { data: isBusy } = await supabaseRef.current.rpc("check_user_busy", { p_user_id: userId })
+        const { data: isBusy, error: busyError } = await supabaseRef.current.rpc("check_user_busy", { p_user_id: userId })
+        if (busyError) {
+          console.error("Failed to check busy status:", busyError)
+          toast({ variant: "destructive", title: "Call Failed", description: "Could not check if user is available." })
+          return
+        }
         if (isBusy) {
           toast({ title: "User Busy", description: `${remoteUser.name} is currently on another call.` })
           return
@@ -273,7 +278,8 @@ export function CallProvider({ children }: { children: ReactNode }) {
         subscribeToSignals(callRecord.id)
 
         // Create peer connection and SDP offer
-        const pc = webrtc.createPeerConnection(
+        // Note: createPeerConnection stores the connection internally in the hook
+        webrtc.createPeerConnection(
           (candidate) => sendSignal(callRecord.id, userId, "ice-candidate", candidate.toJSON()),
           async () => {
             // Handle renegotiation
@@ -353,7 +359,8 @@ export function CallProvider({ children }: { children: ReactNode }) {
       subscribeToSignals(callRecord.id)
 
       // Create peer connection
-      const pc = webrtc.createPeerConnection(
+      // Note: createPeerConnection stores the connection internally in the hook
+      webrtc.createPeerConnection(
         (candidate) => sendSignal(callRecord.id, remoteUser.id, "ice-candidate", candidate.toJSON()),
         async () => {
           const offer = await webrtc.createOffer()

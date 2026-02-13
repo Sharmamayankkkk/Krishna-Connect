@@ -214,7 +214,7 @@ export function ActiveCallScreen() {
                 : formatDuration(callDuration)}
             </p>
             {connectionState === "connecting" && (
-              <p className="text-yellow-400 text-sm">Establishing connection...</p>
+              <p className="text-yellow-200 text-sm">Establishing connection...</p>
             )}
           </div>
         </div>
