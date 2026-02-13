@@ -230,16 +230,18 @@ export function CallProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        // Check if callee is busy
-        const { data: isBusy, error: busyError } = await supabaseRef.current.rpc("check_user_busy", { p_user_id: userId })
-        if (busyError) {
-          console.error("Failed to check busy status:", busyError)
-          toast({ variant: "destructive", title: "Call Failed", description: "Could not check if user is available." })
-          return
-        }
-        if (isBusy) {
-          toast({ title: "User Busy", description: `${remoteUser.name} is currently on another call.` })
-          return
+        // Check if callee is busy (best-effort — proceed with call if RPC is unavailable)
+        try {
+          const { data: isBusy, error: busyError } = await supabaseRef.current.rpc("check_user_busy", { p_user_id: userId })
+          if (busyError) {
+            console.warn("Failed to check busy status (proceeding with call):", busyError.message)
+            // Don't block the call — the busy check is a convenience feature
+          } else if (isBusy) {
+            toast({ title: "User Busy", description: `${remoteUser.name} is currently on another call.` })
+            return
+          }
+        } catch (busyCheckErr) {
+          console.warn("Busy check unavailable (proceeding with call):", busyCheckErr)
         }
 
         // Initialize media

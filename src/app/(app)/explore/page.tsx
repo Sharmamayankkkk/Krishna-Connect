@@ -30,7 +30,7 @@ function getGridSpan(index: number): { col: string; row: string } {
 }
 
 function isVideoUrl(url: string): boolean {
-    if (!url) return false;
+    if (!url || typeof url !== 'string') return false;
     const videoExts = ['.mp4', '.webm', '.ogg', '.mov', '.avi'];
     const lower = url.toLowerCase();
     return videoExts.some(ext => lower.includes(ext));
@@ -44,6 +44,7 @@ export default function ExplorePage() {
     const [exploreContent, setExploreContent] = React.useState<ExploreContentItem[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const [videoThumbnails, setVideoThumbnails] = React.useState<Record<string, string>>({});
+    const [failedImages, setFailedImages] = React.useState<Set<string>>(new Set());
 
     React.useEffect(() => {
         const fetchData = async () => {
@@ -178,6 +179,37 @@ export default function ExplorePage() {
         const contentPreview = post.content?.replace(/[#@]/g, '').substring(0, 80);
         const { col, row } = getGridSpan(index);
         const hasMultipleImages = (post.media?.length || 0) > 1;
+        const imageHasFailed = failedImages.has(post.id);
+
+        // Determine the display image source
+        const displaySrc = isVideo ? (thumbnailUrl || firstMedia) : firstMedia;
+        const showImage = displaySrc && !imageHasFailed;
+
+        // Gradient backgrounds for text-only or failed image posts
+        const gradients = [
+            'from-primary/40 via-purple-500/30 to-pink-500/40',
+            'from-blue-500/40 via-cyan-500/30 to-teal-500/40',
+            'from-orange-500/40 via-red-500/30 to-pink-500/40',
+            'from-green-500/40 via-emerald-500/30 to-teal-500/40',
+            'from-violet-500/40 via-purple-500/30 to-fuchsia-500/40',
+            'from-amber-500/40 via-orange-500/30 to-red-500/40',
+        ];
+        const gradient = gradients[index % gradients.length];
+
+        const statsOverlay = (
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                <div className="flex items-center gap-6 text-white">
+                    <div className="flex items-center gap-1.5">
+                        <Heart className="h-5 w-5 fill-white" />
+                        <span className="font-semibold text-sm">{formatCount(post.stats?.likes || 0)}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <MessageCircle className="h-5 w-5 fill-white" />
+                        <span className="font-semibold text-sm">{formatCount(post.stats?.comments || 0)}</span>
+                    </div>
+                </div>
+            </div>
+        );
 
         return (
             <div
@@ -189,15 +221,17 @@ export default function ExplorePage() {
                     "aspect-square"
                 )}
             >
-                {/* Media or text content */}
-                {(firstMedia || thumbnailUrl) ? (
+                {showImage ? (
                     <>
                         <Image
-                            src={isVideo ? (thumbnailUrl || firstMedia!) : firstMedia!}
+                            src={displaySrc!}
                             alt="Post"
                             fill
                             unoptimized
                             className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            onError={() => {
+                                setFailedImages(prev => new Set(prev).add(post.id));
+                            }}
                         />
 
                         {/* Video indicator */}
@@ -214,44 +248,26 @@ export default function ExplorePage() {
                             </div>
                         )}
 
-                        {/* Instagram-style hover overlay with stats */}
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
-                            <div className="flex items-center gap-6 text-white">
-                                <div className="flex items-center gap-1.5">
-                                    <Heart className="h-5 w-5 fill-white" />
-                                    <span className="font-semibold text-sm">{formatCount(post.stats?.likes || 0)}</span>
-                                </div>
-                                <div className="flex items-center gap-1.5">
-                                    <MessageCircle className="h-5 w-5 fill-white" />
-                                    <span className="font-semibold text-sm">{formatCount(post.stats?.comments || 0)}</span>
-                                </div>
-                            </div>
-                        </div>
+                        {statsOverlay}
                     </>
                 ) : (
-                    /* Text-only post with gradient background */
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/40 via-purple-500/30 to-pink-500/40 flex items-center justify-center p-4">
+                    /* Text-only / failed-image post with gradient background */
+                    <div className={cn(
+                        "absolute inset-0 bg-gradient-to-br flex items-center justify-center p-4",
+                        gradient
+                    )}>
                         <div className="text-center space-y-2">
+                            {firstMedia && imageHasFailed && (
+                                <ImageIcon className="h-8 w-8 text-foreground/40 mx-auto" />
+                            )}
                             <p className="text-sm font-medium line-clamp-4 text-foreground">
-                                {contentPreview}
+                                {contentPreview || 'No preview available'}
                             </p>
                             <p className="text-xs text-muted-foreground">
                                 @{post.author?.username || 'user'}
                             </p>
                         </div>
-                        {/* Stats overlay on hover */}
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
-                            <div className="flex items-center gap-6 text-white">
-                                <div className="flex items-center gap-1.5">
-                                    <Heart className="h-5 w-5 fill-white" />
-                                    <span className="font-semibold text-sm">{formatCount(post.stats?.likes || 0)}</span>
-                                </div>
-                                <div className="flex items-center gap-1.5">
-                                    <MessageCircle className="h-5 w-5 fill-white" />
-                                    <span className="font-semibold text-sm">{formatCount(post.stats?.comments || 0)}</span>
-                                </div>
-                            </div>
-                        </div>
+                        {statsOverlay}
                     </div>
                 )}
             </div>
