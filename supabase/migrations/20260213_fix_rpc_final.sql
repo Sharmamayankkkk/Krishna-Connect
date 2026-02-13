@@ -1,7 +1,8 @@
 -- Fix for get_posts_paginated RPC - Final Fix for Types
 -- Issues identified:
 -- 1. posts.media_urls is JSONB, not text[] -> usage directly as JSONB.
--- 2. profiles.verified is TEXT, not BOOLEAN -> mismatched in COALESCE.
+-- 2. profiles.verified is TEXT ('none','verified','kcs'), not BOOLEAN.
+-- 3. post_likes / post_reposts have composite PK (user_id, post_id) — no "id" column.
 
 DROP FUNCTION IF EXISTS public.get_posts_paginated(INT, BIGINT, TEXT);
 
@@ -21,7 +22,7 @@ RETURNS TABLE (
     author_name TEXT,
     author_username TEXT,
     author_avatar TEXT,
-    author_verified BOOLEAN,
+    author_verified TEXT,
     likes_count BIGINT,
     comments_count BIGINT,
     reposts_count BIGINT,
@@ -47,12 +48,13 @@ BEGIN
         author.name, 
         author.username, 
         author.avatar_url, 
-        -- profiles.verified is TEXT. We compare to 'true' to get a boolean.
-        -- If it's null, we default to FALSE.
-        COALESCE(author.verified = 'true', FALSE) AS author_verified,
-        COALESCE(COUNT(DISTINCT pl.id), 0) AS likes_count,
+        -- profiles.verified is TEXT: 'none', 'verified', or 'kcs'
+        COALESCE(author.verified, 'none') AS author_verified,
+        -- post_likes has no "id" column (composite PK); count by user_id
+        COALESCE(COUNT(DISTINCT pl.user_id), 0) AS likes_count,
         COALESCE(COUNT(DISTINCT c.id), 0) AS comments_count,
-        COALESCE(COUNT(DISTINCT pr.id), 0) AS reposts_count,
+        -- post_reposts has no "id" column (composite PK); count by user_id
+        COALESCE(COUNT(DISTINCT pr.user_id), 0) AS reposts_count,
         EXISTS(SELECT 1 FROM public.post_likes WHERE post_id = p.id AND user_id = v_user_id) AS is_liked,
         EXISTS(SELECT 1 FROM public.post_reposts WHERE post_id = p.id AND user_id = v_user_id) AS is_reposted,
         p.id AS next_cursor,

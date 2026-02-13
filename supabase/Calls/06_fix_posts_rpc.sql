@@ -1,7 +1,14 @@
--- Fix for get_posts_paginated RPC - Fix JSONB Handling
--- The posts table has 'media_urls' as JSONB, containing array of objects.
--- Previous attempt failed because it tried to 'unnest' a JSONB column.
--- This migration simply selects the JSONB column directly.
+-- ============================================================================
+-- 06_fix_posts_rpc.sql
+-- Fix: "column pl.id does not exist" in get_posts_paginated
+--
+-- Root causes:
+--   1. post_likes has composite PK (user_id, post_id) — no "id" column
+--   2. post_reposts has composite PK (user_id, post_id) — no "id" column
+--   3. profiles.verified is TEXT ('none','verified','kcs'), not BOOLEAN
+--
+-- Run this AFTER all other migrations. It drops and recreates the function.
+-- ============================================================================
 
 DROP FUNCTION IF EXISTS public.get_posts_paginated(INT, BIGINT, TEXT);
 
@@ -35,23 +42,23 @@ DECLARE
     v_user_id UUID := auth.uid();
 BEGIN
     RETURN QUERY
-    SELECT 
-        p.id, 
-        p.content, 
-        p.created_at, 
-        -- media_urls is already JSONB (array of objects), so we just use it directly
+    SELECT
+        p.id,
+        p.content,
+        p.created_at,
         COALESCE(p.media_urls, '[]'::jsonb) AS media,
-        p.poll, 
-        p.quote_of_id, 
+        p.poll,
+        p.quote_of_id,
         p.user_id,
-        author.name, 
-        author.username, 
-        author.avatar_url, 
+        author.name,
+        author.username,
+        author.avatar_url,
+        -- verified is TEXT: 'none', 'verified', or 'kcs'
         COALESCE(author.verified, 'none') AS author_verified,
-        -- post_likes has no "id" column (composite PK); count by user_id
+        -- post_likes has no "id" column; count by user_id instead
         COALESCE(COUNT(DISTINCT pl.user_id), 0) AS likes_count,
         COALESCE(COUNT(DISTINCT c.id), 0) AS comments_count,
-        -- post_reposts has no "id" column (composite PK); count by user_id
+        -- post_reposts has no "id" column; count by user_id instead
         COALESCE(COUNT(DISTINCT pr.user_id), 0) AS reposts_count,
         EXISTS(SELECT 1 FROM public.post_likes WHERE post_id = p.id AND user_id = v_user_id) AS is_liked,
         EXISTS(SELECT 1 FROM public.post_reposts WHERE post_id = p.id AND user_id = v_user_id) AS is_reposted,
@@ -66,7 +73,7 @@ BEGIN
     LEFT JOIN public.bookmarks b ON p.id = b.post_id
     WHERE (p_cursor IS NULL OR p.id < p_cursor)
       AND (
-          p_filter <> 'bookmarks' 
+          p_filter <> 'bookmarks'
           OR (p_filter = 'bookmarks' AND EXISTS (SELECT 1 FROM public.bookmarks bm WHERE bm.post_id = p.id AND bm.user_id = v_user_id))
       )
     GROUP BY p.id, author.id, author.name, author.username, author.avatar_url, author.verified
@@ -74,3 +81,6 @@ BEGIN
     LIMIT p_limit;
 END;
 $$ LANGUAGE plpgsql SECURITY INVOKER;
+
+-- Refresh PostgREST schema cache
+NOTIFY pgrst, 'reload schema';

@@ -15,8 +15,9 @@ Execute the following SQL files **in order** in your Supabase SQL Editor (Dashbo
 | 3 | `supabase/Calls/03_calls_functions.sql` | Creates helper functions and triggers |
 | 4 | `supabase/Calls/04_call_notifications.sql` | Sets up notification triggers for incoming calls |
 | 5 | `supabase/Calls/05_fix_rpc_functions.sql` | **Important**: Fixes function signatures and reloads PostgREST schema cache |
+| 6 | `supabase/Calls/06_fix_posts_rpc.sql` | **Important**: Fixes `get_posts_paginated` RPC (`pl.id` column error) |
 
-> **⚠️ File 05 is critical!** After running all SQL files, always run `05_fix_rpc_functions.sql` last. This drops and recreates functions cleanly and sends a `NOTIFY pgrst, 'reload schema'` to refresh the PostgREST schema cache. Without it, you'll get `PGRST202` errors.
+> **⚠️ Files 05 and 06 are critical!** Always run them last. File 06 fixes the `get_posts_paginated` function which references `pl.id` / `pr.id` columns that don't exist (post_likes/post_reposts use composite PKs). Both send `NOTIFY pgrst, 'reload schema'` to refresh the PostgREST schema cache.
 
 ### 2. Verify Functions Exist
 
