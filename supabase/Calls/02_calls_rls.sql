@@ -1,8 +1,8 @@
 -- ============================================================================
 -- 02_calls_rls.sql
 -- Description: Row Level Security policies for calls and call_signals tables.
--- Note: caller_id / callee_id / sender_id / receiver_id are TEXT columns
---       that store user IDs. auth.uid() returns UUID, so we cast to TEXT.
+-- Note: caller_id / callee_id / sender_id / receiver_id are UUID columns
+--       referencing public.profiles(id). auth.uid() returns UUID natively.
 -- ============================================================================
 
 -- Enable RLS
@@ -18,7 +18,7 @@ DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can view their own calls' AND tablename = 'calls') THEN
         CREATE POLICY "Users can view their own calls"
             ON public.calls FOR SELECT
-            USING (auth.uid()::text = caller_id OR auth.uid()::text = callee_id);
+            USING (auth.uid() = caller_id OR auth.uid() = callee_id);
     END IF;
 END $$;
 
@@ -27,7 +27,7 @@ DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can create calls as caller' AND tablename = 'calls') THEN
         CREATE POLICY "Users can create calls as caller"
             ON public.calls FOR INSERT
-            WITH CHECK (auth.uid()::text = caller_id);
+            WITH CHECK (auth.uid() = caller_id);
     END IF;
 END $$;
 
@@ -36,7 +36,7 @@ DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can update their own calls' AND tablename = 'calls') THEN
         CREATE POLICY "Users can update their own calls"
             ON public.calls FOR UPDATE
-            USING (auth.uid()::text = caller_id OR auth.uid()::text = callee_id);
+            USING (auth.uid() = caller_id OR auth.uid() = callee_id);
     END IF;
 END $$;
 
@@ -49,7 +49,7 @@ DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can view their own signals' AND tablename = 'call_signals') THEN
         CREATE POLICY "Users can view their own signals"
             ON public.call_signals FOR SELECT
-            USING (auth.uid()::text = sender_id OR auth.uid()::text = receiver_id);
+            USING (auth.uid() = sender_id OR auth.uid() = receiver_id);
     END IF;
 END $$;
 
@@ -58,6 +58,6 @@ DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can send signals' AND tablename = 'call_signals') THEN
         CREATE POLICY "Users can send signals"
             ON public.call_signals FOR INSERT
-            WITH CHECK (auth.uid()::text = sender_id);
+            WITH CHECK (auth.uid() = sender_id);
     END IF;
 END $$;

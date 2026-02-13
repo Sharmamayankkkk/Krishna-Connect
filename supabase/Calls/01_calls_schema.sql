@@ -2,7 +2,7 @@
 -- 01_calls_schema.sql
 -- Description: Schema for WebRTC calling functionality.
 -- Tables: calls, call_signals
--- Compatible with: public.users (id TEXT)
+-- Compatible with: public.profiles (id UUID)
 -- ============================================================================
 
 -- ============================================================================
@@ -50,8 +50,8 @@ END $$;
 -- Calls table — stores call records and metadata
 CREATE TABLE IF NOT EXISTS public.calls (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    caller_id TEXT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-    callee_id TEXT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    caller_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    callee_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     call_type public.call_type NOT NULL DEFAULT 'voice',
     status public.call_status NOT NULL DEFAULT 'ringing',
     started_at TIMESTAMPTZ,
@@ -70,8 +70,8 @@ COMMENT ON COLUMN public.calls.duration_seconds IS 'Duration in seconds, calcula
 CREATE TABLE IF NOT EXISTS public.call_signals (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     call_id UUID NOT NULL REFERENCES public.calls(id) ON DELETE CASCADE,
-    sender_id TEXT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-    receiver_id TEXT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    sender_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    receiver_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     signal_type public.call_signal_type NOT NULL,
     payload JSONB NOT NULL DEFAULT '{}'::jsonb,
     created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL

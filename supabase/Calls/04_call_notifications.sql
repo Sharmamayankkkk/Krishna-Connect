@@ -1,7 +1,7 @@
 -- ============================================================================
 -- 04_call_notifications.sql
 -- Description: Functions and triggers to support push notifications for calls.
--- Compatible with: public.users (id TEXT, first_name TEXT, last_name TEXT, image_url TEXT)
+-- Compatible with: public.profiles (id UUID, name TEXT, avatar_url TEXT)
 --
 -- NOTE: The notification insertion is best-effort. If the notifications table
 --       does not exist, the trigger will log a notice and skip silently.

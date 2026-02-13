@@ -7,7 +7,7 @@
 --   was first created, the function may not have been visible to PostgREST
 --   or the parameter type didn't match expectations. This script:
 --   1. Drops existing functions cleanly
---   2. Recreates them with correct signatures
+--   2. Recreates them with correct signatures (UUID to match profiles.id)
 --   3. Sends a schema cache reload notification to PostgREST
 --
 -- Run this AFTER 01-04 SQL files have been executed.
@@ -30,11 +30,11 @@ DROP FUNCTION IF EXISTS public.cleanup_stale_calls();
 
 -- ============================================================================
 -- Step 2: Recreate functions with correct signatures
--- NOTE: All user ID parameters are TEXT to match public.users.id type.
+-- NOTE: All user ID parameters are UUID to match public.profiles.id type.
 -- ============================================================================
 
 -- check_user_busy: Returns true if user is on an active/ringing call
-CREATE OR REPLACE FUNCTION public.check_user_busy(p_user_id TEXT)
+CREATE OR REPLACE FUNCTION public.check_user_busy(p_user_id UUID)
 RETURNS BOOLEAN
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -51,14 +51,14 @@ $$;
 
 -- get_call_history: Returns paginated call history with user details
 CREATE OR REPLACE FUNCTION public.get_call_history(
-    p_user_id TEXT,
+    p_user_id UUID,
     p_limit INTEGER DEFAULT 50,
     p_offset INTEGER DEFAULT 0
 )
 RETURNS TABLE (
     id UUID,
-    caller_id TEXT,
-    callee_id TEXT,
+    caller_id UUID,
+    callee_id UUID,
     call_type public.call_type,
     status public.call_status,
     started_at TIMESTAMPTZ,
@@ -78,7 +78,7 @@ SET search_path = public
 AS $$
 BEGIN
     -- Authorization: users can only query their own call history
-    IF p_user_id <> auth.uid()::text THEN
+    IF p_user_id <> auth.uid() THEN
         RAISE EXCEPTION 'Unauthorized: cannot access another user''s call history';
     END IF;
 
@@ -93,21 +93,15 @@ BEGIN
         c.ended_at,
         c.duration_seconds,
         c.created_at,
-        COALESCE(
-            NULLIF(TRIM(COALESCE(caller_u.first_name, '') || ' ' || COALESCE(caller_u.last_name, '')), ''),
-            caller_u.username
-        ) AS caller_name,
-        caller_u.username AS caller_username,
-        caller_u.image_url AS caller_avatar,
-        COALESCE(
-            NULLIF(TRIM(COALESCE(callee_u.first_name, '') || ' ' || COALESCE(callee_u.last_name, '')), ''),
-            callee_u.username
-        ) AS callee_name,
-        callee_u.username AS callee_username,
-        callee_u.image_url AS callee_avatar
+        COALESCE(caller_p.name, caller_p.username) AS caller_name,
+        caller_p.username AS caller_username,
+        caller_p.avatar_url AS caller_avatar,
+        COALESCE(callee_p.name, callee_p.username) AS callee_name,
+        callee_p.username AS callee_username,
+        callee_p.avatar_url AS callee_avatar
     FROM public.calls c
-    LEFT JOIN public.users caller_u ON c.caller_id = caller_u.id
-    LEFT JOIN public.users callee_u ON c.callee_id = callee_u.id
+    LEFT JOIN public.profiles caller_p ON c.caller_id = caller_p.id
+    LEFT JOIN public.profiles callee_p ON c.callee_id = callee_p.id
     WHERE c.caller_id = p_user_id OR c.callee_id = p_user_id
     ORDER BY c.created_at DESC
     LIMIT p_limit
@@ -129,7 +123,7 @@ BEGIN
         updated_at = NOW()
     WHERE status = 'ringing'
     AND created_at < NOW() - INTERVAL '60 seconds'
-    AND (caller_id = auth.uid()::text OR callee_id = auth.uid()::text OR auth.uid() IS NULL);
+    AND (caller_id = auth.uid() OR callee_id = auth.uid() OR auth.uid() IS NULL);
 END;
 $$;
 
@@ -137,9 +131,9 @@ $$;
 -- Step 3: Grant execute permissions (ensure PostgREST can call them)
 -- ============================================================================
 
-GRANT EXECUTE ON FUNCTION public.check_user_busy(TEXT) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.check_user_busy(TEXT) TO anon;
-GRANT EXECUTE ON FUNCTION public.get_call_history(TEXT, INTEGER, INTEGER) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.check_user_busy(UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.check_user_busy(UUID) TO anon;
+GRANT EXECUTE ON FUNCTION public.get_call_history(UUID, INTEGER, INTEGER) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.cleanup_stale_calls() TO authenticated;
 
 -- ============================================================================

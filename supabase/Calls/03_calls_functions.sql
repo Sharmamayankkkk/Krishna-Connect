@@ -1,8 +1,8 @@
 -- ============================================================================
 -- 03_calls_functions.sql
 -- Description: Database functions and triggers for the calling system.
--- Compatible with: public.users (id TEXT, username TEXT,
---                  first_name TEXT, last_name TEXT, image_url TEXT)
+-- Compatible with: public.profiles (id UUID, name TEXT, username TEXT,
+--                  avatar_url TEXT)
 -- ============================================================================
 
 -- ============================================================================
@@ -35,9 +35,9 @@ END $$;
 -- ============================================================================
 -- FUNCTION: check_user_busy
 -- Checks if a user is currently on an active call.
--- p_user_id is TEXT to match public.users.id
+-- p_user_id is UUID to match public.profiles.id
 -- ============================================================================
-CREATE OR REPLACE FUNCTION public.check_user_busy(p_user_id TEXT)
+CREATE OR REPLACE FUNCTION public.check_user_busy(p_user_id UUID)
 RETURNS BOOLEAN AS $$
 BEGIN
     RETURN EXISTS (
@@ -50,18 +50,18 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ============================================================================
 -- FUNCTION: get_call_history
--- Fetches call history for a user with caller/callee info from users table.
+-- Fetches call history for a user with caller/callee info from profiles table.
 -- Returns: caller_name, caller_username, caller_avatar, etc.
 -- ============================================================================
 CREATE OR REPLACE FUNCTION public.get_call_history(
-    p_user_id TEXT,
+    p_user_id UUID,
     p_limit INTEGER DEFAULT 50,
     p_offset INTEGER DEFAULT 0
 )
 RETURNS TABLE (
     id UUID,
-    caller_id TEXT,
-    callee_id TEXT,
+    caller_id UUID,
+    callee_id UUID,
     call_type public.call_type,
     status public.call_status,
     started_at TIMESTAMPTZ,
@@ -77,7 +77,7 @@ RETURNS TABLE (
 ) AS $$
 BEGIN
     -- Authorization: users can only query their own call history
-    IF p_user_id <> auth.uid()::text THEN
+    IF p_user_id <> auth.uid() THEN
         RAISE EXCEPTION 'Unauthorized: cannot access another user''s call history';
     END IF;
 
@@ -92,21 +92,15 @@ BEGIN
         c.ended_at,
         c.duration_seconds,
         c.created_at,
-        COALESCE(
-            NULLIF(TRIM(COALESCE(caller_u.first_name, '') || ' ' || COALESCE(caller_u.last_name, '')), ''),
-            caller_u.username
-        ) AS caller_name,
-        caller_u.username AS caller_username,
-        caller_u.image_url AS caller_avatar,
-        COALESCE(
-            NULLIF(TRIM(COALESCE(callee_u.first_name, '') || ' ' || COALESCE(callee_u.last_name, '')), ''),
-            callee_u.username
-        ) AS callee_name,
-        callee_u.username AS callee_username,
-        callee_u.image_url AS callee_avatar
+        COALESCE(caller_p.name, caller_p.username) AS caller_name,
+        caller_p.username AS caller_username,
+        caller_p.avatar_url AS caller_avatar,
+        COALESCE(callee_p.name, callee_p.username) AS callee_name,
+        callee_p.username AS callee_username,
+        callee_p.avatar_url AS callee_avatar
     FROM public.calls c
-    LEFT JOIN public.users caller_u ON c.caller_id = caller_u.id
-    LEFT JOIN public.users callee_u ON c.callee_id = callee_u.id
+    LEFT JOIN public.profiles caller_p ON c.caller_id = caller_p.id
+    LEFT JOIN public.profiles callee_p ON c.callee_id = callee_p.id
     WHERE c.caller_id = p_user_id OR c.callee_id = p_user_id
     ORDER BY c.created_at DESC
     LIMIT p_limit
@@ -127,7 +121,7 @@ BEGIN
         updated_at = NOW()
     WHERE status = 'ringing'
     AND created_at < NOW() - INTERVAL '60 seconds'
-    AND (caller_id = auth.uid()::text OR callee_id = auth.uid()::text OR auth.uid() IS NULL);
+    AND (caller_id = auth.uid() OR callee_id = auth.uid() OR auth.uid() IS NULL);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
