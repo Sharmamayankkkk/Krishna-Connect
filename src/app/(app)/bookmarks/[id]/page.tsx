@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
@@ -65,9 +66,9 @@ const transformPostData = (post: any): PostType => {
     };
 };
 
-export default function CollectionDetailsPage({ params }: { params: { id: string } }) {
+export default function CollectionDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
-    const collectionId = params.id;
+    const { id: collectionId } = use(params);
 
     // Fetch collection info (we could pass this via state, but catching it fresh is safer)
     // We can reuse useCollections and find it, or add a get_collection RPC. 
