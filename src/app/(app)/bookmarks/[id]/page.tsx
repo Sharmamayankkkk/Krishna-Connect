@@ -1,7 +1,6 @@
 'use client';
 
-import * as React from 'react';
-import { use } from 'react';
+import React, { use } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
