@@ -10,9 +10,9 @@ interface RichTextRendererProps {
     onHareKrishnaClick?: () => void;
 }
 
-// Process inline formatting (bold, italic, hashtags, mentions, URLs, Hare Krishna)
+// Process inline formatting (bold, italic, hashtags, mentions, URLs, Sacred Phrases)
 function processInlineFormatting(text: string, onHareKrishnaClick?: () => void, keyPrefix: string = ''): React.ReactNode[] {
-    const regex = /(\*\*([^*]+)\*\*)|(\*([^*]+)\*)|(#\w+)|(@\w+)|(https?:\/\/[^\s]+)|((?:Hare|HARE|hare)\s+(?:Krishna|KRISHNA|krishna|Kṛṣṇa))/gi;
+    const regex = /(\*\*([^*]+)\*\*)|(\*([^*]+)\*)|(#\w+)|(@\w+)|(https?:\/\/[^\s]+)|((?:Hare|HARE|hare)\s+(?:Krishna|KRISHNA|krishna|Kṛṣṇa|Rama|RAMA|Ram)|(?:Hari\s+Bol|Haribol)|(?:Radhe\s+Radhe|Radhe|Radha)|(?:(?:Jai|Jaya)\s+(?:Srila\s+Prabhupada|Śrīla\s+Prabhupāda|HG\s+Gauranga\s+Sundar\s+Das\s+Gurudev|His\s+Grace\s+Gauranga\s+Sundar\s+Das\s+Gurudev|Gauranga\s+Sundar|Jagannath|Baladev|Subhadra|Nrsimhadeva))|(?:Bhagwatam|Srimad|Bhagvad\s+(?:Gite|Geeta|Gita))|(?:Nitai\s+Gaur(?:anga)?|Gauranga|Nityananda|Chaitanya|Mahaprabhu|Pancha\s+Tattva|Gadadhar|Srivas|Advaita)|(?:Vrindavan|Mayapur|Goloka|Navadvipa|Jagannath\s+Puri|Dwaraka)|(?:Prabhupada|Gurudev|Maharaj|Acharya|Thakur)|(?:Dandavat|Pranam)|(?:Prasadam|Maha\s+Prasadam)|(?:Ekadasi|Ekadashi|Radhaashtmi|Radha\s+ashtmi)|(?:Kirtan|Sankirtan|Bhajan|Harinaam|Hari\s+naam)|(?:Bhakti|Seva)|(?:Vaisnava|Vaishnava)|(?:Govinda|Gopal|Madhav|Keshava|Damodar|Shyam|Murari|Vasudeva)|(?:Tulsi|Tulasi|Ganga|Yamuna))/gi;
 
     const elements: React.ReactNode[] = [];
     let lastIndex = 0;
@@ -55,7 +55,7 @@ function processInlineFormatting(text: string, onHareKrishnaClick?: () => void, 
                 </a>
             );
         } else if (match[8]) {
-            // Hare Krishna
+            // Sacred Phrases
             elements.push(
                 <span
                     key={key}
