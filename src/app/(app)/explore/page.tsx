@@ -124,18 +124,25 @@ export default function ExplorePage() {
                 const mixedContent = generateExploreContent(transformedPosts, 24);
                 setExploreContent(mixedContent);
 
-                // Extract video thumbnails asynchronously
-                for (const item of mixedContent) {
-                    const post = item.data;
-                    const firstMedia = post.media?.[0];
-                    if (firstMedia?.type === 'video' && firstMedia.url) {
-                        extractVideoThumbnail(firstMedia.url)
-                            .then((thumb) => {
-                                setVideoThumbnails((prev) => ({ ...prev, [post.id]: thumb }));
-                            })
-                            .catch(() => {
-                                // Silently fail - we'll show a play icon placeholder instead
-                            });
+                // Extract video thumbnails in batches of 3 to avoid overwhelming the browser
+                const videoItems = mixedContent.filter(item => {
+                    const firstMedia = item.data.media?.[0];
+                    return firstMedia?.type === 'video' && firstMedia.url;
+                });
+
+                const BATCH_SIZE = 3;
+                for (let i = 0; i < videoItems.length; i += BATCH_SIZE) {
+                    const batch = videoItems.slice(i, i + BATCH_SIZE);
+                    const results = await Promise.allSettled(
+                        batch.map(item =>
+                            extractVideoThumbnail(item.data.media[0].url)
+                                .then(thumb => ({ id: item.data.id, thumb }))
+                        )
+                    );
+                    for (const result of results) {
+                        if (result.status === 'fulfilled') {
+                            setVideoThumbnails(prev => ({ ...prev, [result.value.id]: result.value.thumb }));
+                        }
                     }
                 }
             }

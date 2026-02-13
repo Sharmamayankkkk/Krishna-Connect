@@ -184,14 +184,16 @@ self.addEventListener('notificationclick', (event) => {
     if (isCall && action === 'accept_call') {
         event.waitUntil(
             clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-                // Try to focus existing window and send message to accept call
+                // Send accept message to all clients, then focus the first one
                 for (const client of clientList) {
                     client.postMessage({
                         type: 'CALL_ACTION',
                         action: 'accept',
                         callId: notifData.callId
                     });
-                    return client.focus();
+                }
+                if (clientList.length > 0) {
+                    return clientList[0].focus();
                 }
                 // If no window open, open the app
                 if (clients.openWindow) {
@@ -205,13 +207,13 @@ self.addEventListener('notificationclick', (event) => {
     if (isCall && action === 'decline_call') {
         event.waitUntil(
             clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+                // Send decline message to all clients
                 for (const client of clientList) {
                     client.postMessage({
                         type: 'CALL_ACTION',
                         action: 'decline',
                         callId: notifData.callId
                     });
-                    return;
                 }
             })
         );

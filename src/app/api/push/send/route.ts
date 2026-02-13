@@ -14,8 +14,8 @@ if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
 
 export async function POST(request: Request) {
     try {
-        const body = await request.json();
-        const { userId, title, body: notifBody, url, icon, data } = body;
+        const requestBody = await request.json();
+        const { userId, title, body: notifBody, url, icon, data } = requestBody;
 
         if (!userId || !title || !notifBody) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });

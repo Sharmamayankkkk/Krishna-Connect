@@ -28,6 +28,7 @@ export function extractVideoThumbnail(videoUrl: string): Promise<string> {
     }
 
     video.onseeked = () => {
+      clearTimeout(timeout)
       try {
         const canvas = document.createElement("canvas")
         canvas.width = video.videoWidth || 320
@@ -49,6 +50,7 @@ export function extractVideoThumbnail(videoUrl: string): Promise<string> {
     }
 
     video.onerror = () => {
+      clearTimeout(timeout)
       cleanup()
       reject(new Error("Failed to load video"))
     }
@@ -58,10 +60,6 @@ export function extractVideoThumbnail(videoUrl: string): Promise<string> {
       cleanup()
       reject(new Error("Video thumbnail extraction timed out"))
     }, 10000)
-
-    video.oncanplay = () => {
-      clearTimeout(timeout)
-    }
 
     video.src = videoUrl
   })
