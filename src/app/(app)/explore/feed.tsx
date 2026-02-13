@@ -30,7 +30,10 @@ import { StoriesBar } from '@/components/features/stories/stories-bar';
 import { useInfiniteScroll, useFeedFiltering, type FeedFilter } from './hooks';
 
 // Components
-import { FeedSkeleton, EmptyFeedState } from './components';
+import { FeedSkeleton } from './components/feed-skeleton';
+import { EmptyFeedState } from './components/empty-feed-state';
+import { TrendingTopicsList } from './components/trending-topics-list';
+import { SuggestedUsersWidget } from './components/suggested-users-widget';
 import { transformPost } from './utils';
 
 const POSTS_PER_PAGE = 10;
@@ -524,53 +527,95 @@ export default function Feed() {
                     </div>
                 </header>
 
-                {/* Stories Bar */}
-                <StoriesBar />
-
                 {/* Main Content Area */}
-                <div className="flex-1 container max-w-2xl mx-auto p-0 md:p-4">
-                    {/* New Posts Banner */}
-                    {showNewPostsBanner && (
-                        <div
-                            className="sticky top-16 z-10 bg-primary text-primary-foreground py-2 text-center cursor-pointer mb-4 rounded-b-lg shadow-md animate-in slide-in-from-top-2"
-                            onClick={handleLoadNewPosts}
-                        >
-                            <p className="text-sm font-medium flex items-center justify-center gap-2">
-                                <ArrowUp className="h-4 w-4" />
-                                {newPostsCount} New {newPostsCount === 1 ? 'Post' : 'Posts'}
-                            </p>
-                        </div>
-                    )}
+                <div className="flex-1 container max-w-7xl mx-auto p-0 md:p-4 w-full">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-                    <>
-                        {/* Create Post Input */}
-                        <div className="mb-6 px-4 pt-4 md:px-0 md:pt-0">
-                            <CreatePost onPostCreated={handlePostCreated} />
+                        {/* Feed Column */}
+                        <div className="col-span-1 lg:col-span-8 xl:col-span-7 w-full min-w-0">
+                            {/* Stories Bar - Overflow handled internally but wrapped for safety */}
+                            <div className="mb-4 overflow-hidden rounded-lg border bg-background shadow-sm">
+                                <StoriesBar />
+                            </div>
+
+                            {/* New Posts Banner */}
+                            {showNewPostsBanner && (
+                                <div
+                                    className="sticky top-16 z-10 bg-primary text-primary-foreground py-2 text-center cursor-pointer mb-4 rounded-b-lg shadow-md animate-in slide-in-from-top-2"
+                                    onClick={handleLoadNewPosts}
+                                >
+                                    <p className="text-sm font-medium flex items-center justify-center gap-2">
+                                        <ArrowUp className="h-4 w-4" />
+                                        {newPostsCount} New {newPostsCount === 1 ? 'Post' : 'Posts'}
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Create Post Input */}
+                            <div className="mb-6 px-4 pt-4 md:px-0 md:pt-0">
+                                <CreatePost onPostCreated={handlePostCreated} />
+                            </div>
+
+                            {/* Loading State */}
+                            {isInitialLoading ? (
+                                <FeedSkeleton count={3} />
+                            ) : visiblePosts.length === 0 ? (
+                                <EmptyFeedState
+                                    filter={feedFilter}
+                                    onSwitchTab={() => handleTabChange('latest')}
+                                />
+                            ) : (
+                                /* Feed List */
+                                <FeedList
+                                    posts={visiblePosts}
+                                    isLoading={isInitialLoading}
+                                    isLoadingMore={isLoadingMore}
+                                    hasMore={hasMore}
+                                    onLoadMore={handleLoadMore}
+                                    onPostUpdated={handlePostUpdated}
+                                    onPostDeleted={handlePostDeleted}
+                                    onQuotePost={handleQuotePost}
+                                    onPromote={handlePromoteClick}
+                                />
+                            )}
                         </div>
 
-                        {/* Loading State */}
-                        {isInitialLoading ? (
-                            <FeedSkeleton count={3} />
-                        ) : visiblePosts.length === 0 ? (
-                            <EmptyFeedState
-                                filter={feedFilter}
-                                onSwitchTab={() => handleTabChange('latest')}
-                            />
-                        ) : (
-                            /* Feed List */
-                            <FeedList
-                                posts={visiblePosts}
-                                isLoading={isInitialLoading}
-                                isLoadingMore={isLoadingMore}
-                                hasMore={hasMore}
-                                onLoadMore={handleLoadMore}
-                                onPostUpdated={handlePostUpdated}
-                                onPostDeleted={handlePostDeleted}
-                                onQuotePost={handleQuotePost}
-                                onPromote={handlePromoteClick}
-                            />
-                        )}
-                    </>
+                        {/* Right Sidebar - Widgets */}
+                        <div className="hidden lg:block lg:col-span-4 xl:col-span-5 space-y-6 sticky top-24">
+                            {/* Suggested Users Widget */}
+                            <div className="bg-card rounded-xl border p-4 shadow-sm">
+                                <SuggestedUsersWidget />
+                            </div>
+
+                            {/* Trending Widget */}
+                            <div className="bg-card rounded-xl border p-4 shadow-sm">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <h3 className="font-semibold text-sm">Trending Now</h3>
+                                </div>
+                                <TrendingTopicsList onHashtagClick={(tag: string) => {
+                                    // Use window.location or router if available. Feed component doesn't have router hook yet.
+                                    // Let's add router hook or just use window for now if router not imported.
+                                    // Actually, feed.tsx is a client component, let's use router.
+                                    // We need to import useRouter.
+                                    window.location.href = `/hashtag/${tag}`;
+                                }} />
+                            </div>
+
+                            {/* Footer / Links */}
+                            <div className="text-xs text-muted-foreground px-4">
+                                <div className="flex flex-wrap gap-2">
+                                    <Link href="/about" className="hover:underline">About</Link>
+                                    <span>·</span>
+                                    <Link href="/privacy" className="hover:underline">Privacy</Link>
+                                    <span>·</span>
+                                    <Link href="/terms" className="hover:underline">Terms</Link>
+                                    <span>·</span>
+                                    <span>© 2024 Krishna Connect</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
 
                 {/* Scroll to Top Button */}

@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 // This component is designed to display a Google Ad.
 // It should be placed wherever you want an ad to appear.
 
-export const GoogleAd = ({ slot }: { slot: string }) => {
+export const GoogleAd = ({ slot, client }: { slot: string, client?: string }) => {
 
     useEffect(() => {
         // In React 18's Strict Mode (used in Next.js development),
@@ -27,7 +27,7 @@ export const GoogleAd = ({ slot }: { slot: string }) => {
             <ins
                 className="adsbygoogle"
                 style={{ display: 'block' }}
-                data-ad-client={process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID} // Use environment variable
+                data-ad-client={client || process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID}
                 data-ad-slot={slot}
                 data-ad-format="auto"
                 data-full-width-responsive="true"

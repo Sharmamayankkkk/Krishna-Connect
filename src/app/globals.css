@@ -66,7 +66,7 @@
 @layer base {
   /* The problematic universal selector has been removed. */
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground overflow-x-hidden;
   }
 }
 

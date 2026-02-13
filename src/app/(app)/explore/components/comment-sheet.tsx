@@ -132,12 +132,12 @@ function CommentCard({
   if (comment.isHidden && !isAuthor && !isPostAuthor) return null;
 
   return (
-    <div className={cn("flex flex-col", depth > 0 && "ml-8 mt-4 relative")}>
+    <div className={cn("flex flex-col", depth > 0 && "ml-2 sm:ml-8 mt-4 relative")}>
       {depth > 0 && (
         <div className="absolute -left-4 top-0 bottom-0 w-0.5 bg-border/40 rounded-full" />
       )}
-      <div className={cn("flex gap-3 group", comment.isHidden && "opacity-60")}>
-        <Link href={`/profile/${comment.user.username}`}>
+      <div className={cn("flex flex-col sm:flex-row gap-2 sm:gap-3 group", comment.isHidden && "opacity-60")}>
+        <Link href={`/profile/${comment.user.username}`} className="hidden sm:block">
           <Avatar className="h-8 w-8">
             <AvatarImage src={comment.user.avatar} alt={comment.user.name} />
             <AvatarFallback>{comment.user.name.charAt(0)}</AvatarFallback>
@@ -145,8 +145,14 @@ function CommentCard({
         </Link>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 overflow-hidden">
-              <Link href={`/profile/${comment.user.username}`} className="group/link truncate">
+            <div className="flex items-center gap-2 overflow-hidden min-w-0">
+              <Link href={`/profile/${comment.user.username}`} className="block sm:hidden flex-shrink-0">
+                <Avatar className="h-6 w-6">
+                  <AvatarImage src={comment.user.avatar} alt={comment.user.name} />
+                  <AvatarFallback>{comment.user.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+              </Link>
+              <Link href={`/profile/${comment.user.username}`} className="group/link truncate min-w-0">
                 <span className="font-semibold hover:underline text-sm">
                   {comment.user.name}
                 </span>
@@ -154,13 +160,13 @@ function CommentCard({
                   @{comment.user.username}
                 </span>
               </Link>
-              <span className="text-muted-foreground text-xs">·</span>
-              <span className="text-xs text-muted-foreground whitespace-nowrap">
+              <span className="text-muted-foreground text-xs flex-shrink-0">·</span>
+              <span className="text-xs text-muted-foreground whitespace-nowrap flex-shrink-0">
                 {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
               </span>
-              {comment.editedAt && <span className="text-xs text-muted-foreground">(edited)</span>}
-              {comment.isPinned && <Pin className="h-3 w-3 fill-primary text-primary rotate-45" />}
-              {comment.isHidden && <EyeOff className="h-3 w-3 text-muted-foreground" />}
+              {comment.editedAt && <span className="text-xs text-muted-foreground flex-shrink-0">(edited)</span>}
+              {comment.isPinned && <Pin className="h-3 w-3 fill-primary text-primary rotate-45 flex-shrink-0" />}
+              {comment.isHidden && <EyeOff className="h-3 w-3 text-muted-foreground flex-shrink-0" />}
             </div>
 
             {/* Actions Dropdown */}
@@ -403,7 +409,7 @@ export function CommentSheet({ post, open, onOpenChange, onComment }: CommentShe
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="h-[85vh] flex flex-col p-0 gap-0 sm:max-w-xl sm:mx-auto sm:rounded-t-xl">
+      <SheetContent side="bottom" className="h-[85vh] flex flex-col p-0 gap-0 sm:max-w-3xl sm:mx-auto sm:rounded-t-xl">
         <SheetHeader className="p-4 border-b text-left">
           <SheetTitle>Comments</SheetTitle>
           <SheetDescription className="hidden">Comments section</SheetDescription>

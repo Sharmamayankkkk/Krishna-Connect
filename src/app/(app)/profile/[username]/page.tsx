@@ -178,28 +178,60 @@ export default async function ProfilePage(props: ProfilePageProps) {
   }
 
   if (!profile) {
-    console.error(`Profile not found for username: ${username}`);
+    // Fetch suggested users for the 404 page
+    const { data: suggestedUsers } = await supabase.rpc('get_who_to_follow', { limit_count: 3 });
 
-    // Fetch all usernames for debugging display
-    const { data: allProfiles } = await supabase.from('profiles').select('username').limit(50);
-    const availableUsernames = allProfiles?.map(p => p.username).join(', ') || 'None found';
+    let enhancedUsers = [];
+    if (suggestedUsers) {
+      enhancedUsers = suggestedUsers.map((u: any) => ({
+        ...u,
+        followers: u.followers_count,
+        avatar: u.avatar_url || '/placeholder-user.jpg'
+      }));
+    }
+
+    // Import Client Components
+    const { UserX } = await import("lucide-react");
+    const { Card } = await import("@/components/ui/card");
+    const { SuggestedUsersSection } = await import("./components/suggested-users-section");
+    const { GoogleAd } = await import("@/components/ads/google-ad");
 
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] p-8 text-center space-y-4">
-        <h1 className="text-2xl font-bold text-destructive">Profile Not Found</h1>
-        <p className="text-lg">We couldn't find a user with the username: <strong>"{username}"</strong></p>
+      <div className="flex flex-col items-center justify-center min-h-[80vh] p-4 text-center animate-in fade-in duration-500">
+        <Card className="w-full max-w-md p-8 shadow-lg border-muted">
+          <div className="flex flex-col items-center space-y-6">
+            <div className="p-4 bg-muted/50 rounded-full ring-8 ring-muted/20">
+              <UserX className="h-12 w-12 text-muted-foreground" />
+            </div>
 
-        <div className="p-4 bg-muted rounded-lg text-sm text-left max-w-md w-full overflow-hidden">
-          <p className="font-semibold mb-2">Debug Information:</p>
-          <p><strong>Requested Username:</strong> "{username}"</p>
-          <p><strong>Decoded Username:</strong> "{decodeURIComponent(username)}"</p>
-          <p className="mt-2"><strong>Available Profiles in DB (First 50):</strong></p>
-          <p className="text-muted-foreground break-words">{availableUsernames}</p>
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold tracking-tight">Profile Not Found</h1>
+              <p className="text-muted-foreground text-sm">
+                The user <strong>@{username}</strong> could not be found. They may have changed their username or deleted their account.
+              </p>
+            </div>
+
+            <Button asChild size="lg" className="rounded-full px-8">
+              <Link href="/explore">
+                Go to Explore
+              </Link>
+            </Button>
+          </div>
+        </Card>
+
+        {/* Suggested Users Section */}
+        {enhancedUsers.length > 0 && (
+          <SuggestedUsersSection users={enhancedUsers} />
+        )}
+
+        {/* Google Ad Unit */}
+        <div className="w-full max-w-2xl mt-8">
+          <p className="text-xs text-muted-foreground mb-2 text-center uppercase tracking-widest">Advertisement</p>
+          <GoogleAd
+            slot="6010040695"
+            client="ca-pub-4172622079471868"
+          />
         </div>
-
-        <Button asChild className="mt-4">
-          <Link href="/explore">Go to Explore</Link>
-        </Button>
       </div>
     );
   }

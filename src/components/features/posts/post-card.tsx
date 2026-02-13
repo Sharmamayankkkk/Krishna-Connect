@@ -603,9 +603,9 @@ export function PostCard({
                     </div>
                 )}
 
-                <div className="flex gap-4">
+                <div className="block sm:flex gap-4">
                     {/* Avatar Column */}
-                    <div className="flex flex-col items-center">
+                    <div className="hidden sm:flex flex-col items-center">
                         {/* Avatar Stack logic... */}
                         <div className="flex flex-shrink-0 -space-x-3 isolate"> {/* added isolate for z-index stacking context */}
                             {[post.author, ...(Array.isArray(post.collaborators) ? post.collaborators : [])]
@@ -628,6 +628,20 @@ export function PostCard({
                         {/* Header Row */}
                         <div className="flex items-start justify-between">
                             <div className="flex items-baseline gap-x-2 text-sm flex-wrap min-w-0 leading-tight">
+                                {/* Mobile Avatar */}
+                                <div className="sm:hidden mr-2 self-center">
+                                    {[post.author, ...(Array.isArray(post.collaborators) ? post.collaborators : [])]
+                                        .filter(user => user && user.username)
+                                        .slice(0, 1) // Only show primary author/first collaborator on mobile to save space
+                                        .map((user, index) => (
+                                            <Link href={`/profile/${encodeURIComponent(user.username)}`} key={user.id || index} prefetch={false}>
+                                                <Avatar className="h-8 w-8 border border-border/50">
+                                                    <AvatarImage src={getAvatarUrl((user as any)?.avatar || (user as any)?.avatar_url)} alt={user.name || 'User'} />
+                                                    <AvatarFallback>{(user.name?.charAt(0) || '?').toUpperCase()}</AvatarFallback>
+                                                </Avatar>
+                                            </Link>
+                                        ))}
+                                </div>
 
                                 <div className="flex flex-wrap items-center gap-x-1 font-bold text-base text-foreground">
                                     {[post.author, ...(Array.isArray(post.collaborators) ? post.collaborators : [])]

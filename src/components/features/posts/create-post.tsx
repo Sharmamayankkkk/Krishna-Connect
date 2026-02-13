@@ -907,7 +907,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                     </Button>
                                 </ActionTooltip>
 
-                                <div className="relative">
+                                <div className="relative hidden sm:block">
                                     <ActionTooltip label="Emoji">
                                         <Button variant="ghost" size="icon" className="h-9 w-9 text-primary/80 hover:text-primary hover:bg-primary/10 rounded-full transition-colors" onClick={() => setShowEmojiPicker(!showEmojiPicker)} disabled={isPosting}>
                                             <Smile className="h-5 w-5" />
@@ -923,26 +923,28 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                     )}
                                 </div>
 
-                                <ActionTooltip label="GIF">
-                                    <Popover open={isGifPickerOpen} onOpenChange={setIsGifPickerOpen}>
-                                        <PopoverTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-9 w-9 text-primary/80 hover:text-primary hover:bg-primary/10 rounded-full transition-colors" disabled={isPosting || isPollMode || mediaPreviews.length >= MAX_MEDIA}>
-                                                <Sparkles className="h-5 w-5" />
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-[320px] p-0" align="start">
-                                            <div className="p-2">
-                                                <div className="relative mb-2">
-                                                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                                                    <Input placeholder="Search GIFs..." className="pl-8" value={gifSearchQuery} onChange={(e) => setGifSearchQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleGifSearch()} />
+                                <div className="hidden sm:block">
+                                    <ActionTooltip label="GIF">
+                                        <Popover open={isGifPickerOpen} onOpenChange={setIsGifPickerOpen}>
+                                            <PopoverTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="h-9 w-9 text-primary/80 hover:text-primary hover:bg-primary/10 rounded-full transition-colors" disabled={isPosting || isPollMode || mediaPreviews.length >= MAX_MEDIA}>
+                                                    <Sparkles className="h-5 w-5" />
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-[320px] p-0" align="start">
+                                                <div className="p-2">
+                                                    <div className="relative mb-2">
+                                                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                                                        <Input placeholder="Search GIFs..." className="pl-8" value={gifSearchQuery} onChange={(e) => setGifSearchQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleGifSearch()} />
+                                                    </div>
+                                                    <div className="h-[300px] overflow-y-auto">
+                                                        <Grid key={gifSearchKey} width={300} columns={2} fetchGifs={fetchGifs} onGifClick={handleGifSelect} noLink />
+                                                    </div>
                                                 </div>
-                                                <div className="h-[300px] overflow-y-auto">
-                                                    <Grid key={gifSearchKey} width={300} columns={2} fetchGifs={fetchGifs} onGifClick={handleGifSelect} noLink />
-                                                </div>
-                                            </div>
-                                        </PopoverContent>
-                                    </Popover>
-                                </ActionTooltip>
+                                            </PopoverContent>
+                                        </Popover>
+                                    </ActionTooltip>
+                                </div>
 
                                 {/* More Actions Menu */}
                                 <DropdownMenu>
@@ -964,15 +966,28 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                         <DropdownMenuItem onClick={() => setIsScheduleMode(true)} disabled={isPosting}>
                                             <Clock className="mr-2 h-4 w-4" /> Schedule
                                         </DropdownMenuItem>
+
+                                        {/* Mobile Only Options */}
+                                        <DropdownMenuItem className="sm:hidden" onClick={() => setShowEmojiPicker(!showEmojiPicker)} disabled={isPosting}>
+                                            <Smile className="mr-2 h-4 w-4" /> Emoji
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem className="sm:hidden" onClick={() => setIsGifPickerOpen(true)} disabled={isPosting || isPollMode || mediaPreviews.length >= MAX_MEDIA}>
+                                            <Sparkles className="mr-2 h-4 w-4" /> GIF
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem className="sm:hidden" onClick={() => setShowDraftDialog(true)}>
+                                            <List className="mr-2 h-4 w-4" /> Drafts
+                                        </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
 
                                 {/* Quick Drafts Access */}
-                                <ActionTooltip label="Drafts">
-                                    <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground rounded-full" onClick={() => setShowDraftDialog(true)}>
-                                        <List className="h-5 w-5" />
-                                    </Button>
-                                </ActionTooltip>
+                                <div className="hidden sm:block">
+                                    <ActionTooltip label="Drafts">
+                                        <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground rounded-full" onClick={() => setShowDraftDialog(true)}>
+                                            <List className="h-5 w-5" />
+                                        </Button>
+                                    </ActionTooltip>
+                                </div>
                             </div>
 
                             <div className="flex items-center gap-3">
@@ -993,7 +1008,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                     onClick={handlePost}
                                     disabled={!canPost || isPosting}
                                     className={cn(
-                                        "rounded-full px-6 py-0 font-bold transition-all duration-300 shadow-md hover:shadow-lg",
+                                        "rounded-full px-4 sm:px-6 py-0 font-bold transition-all duration-300 shadow-md hover:shadow-lg",
                                         isPosting ? "opacity-80" : "hover:scale-105 active:scale-95",
                                         "bg-gradient-to-r from-primary to-primary/90 text-primary-foreground"
                                     )}
