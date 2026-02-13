@@ -229,6 +229,7 @@ export function usePostInteractions({ loggedInUser, updatePost, onDeletePost }: 
                 isPinned: false,
                 likes: 0,
                 isHidden: false,
+                replies: [],
                 createdAt: new Date().toISOString(),
                 likedBy: []
             };

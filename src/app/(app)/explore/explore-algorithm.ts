@@ -3,7 +3,7 @@
  * Dynamically mixes posts, Leela suggestions, and events for discovery feed
  */
 
-import { PostType } from '../types';
+import { PostType } from '@/lib/types';
 import { calculateEngagementScore, getTrendingPosts } from '../feed-algorithm';
 
 export interface ExploreContentItem {

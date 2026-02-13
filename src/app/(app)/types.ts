@@ -91,35 +91,7 @@ export type PostAnalyticsType = {
     viewsOverTime: { date: string; views: number }[];
 };
 
-export type PostType = {
-    id: string;
-    author: UserType;
-    createdAt: string;
-    content: string;
-    media: MediaType[];
-    poll?: PollType;
-    stats: {
-        comments: number;
-        reshares: number;
-        reposts: number;
-        likes: number;
-        views: number;
-        bookmarks: number;
-    };
-    comments: CommentType[];
-    originalPost: Omit<PostType, 'originalPost' | 'comments' | 'stats' | 'poll'> | null;
-    editedAt?: string;
-    likedBy: string[];
-    savedBy: string[];
-    repostedBy: string[];
-    isPinned?: boolean;
-    isRepost?: boolean;
-    repostOf?: string;
-    isPromoted?: boolean;
-    collaborators?: UserType[];
-    pendingCollaborators?: CollaborationRequest[];
-    analytics?: PostAnalyticsType;
-};
+// PostType moved to '@/lib/types'
 
 export type NotificationType = {
     id: string;

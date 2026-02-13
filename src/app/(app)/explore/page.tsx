@@ -14,7 +14,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { generateExploreContent, ExploreContentItem } from './explore-algorithm';
-import { PostType } from '@/app/(app)/types';
+import { PostType } from '@/lib/types';
 
 export default function ExplorePage() {
     const { loggedInUser } = useAppContext();

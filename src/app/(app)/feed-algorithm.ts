@@ -3,7 +3,7 @@
  * Improved personalized feed ranking with better scoring, content signals, and feed types
  */
 
-import { PostType } from './types';
+import { PostType } from '@/lib/types';
 
 // ============================================================================
 // TYPES & INTERFACES
