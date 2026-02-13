@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogDescription } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuPortal, DropdownMenuSubContent, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -35,7 +35,9 @@ import {
     Clock,
     CheckCircle2,
     TrendingUp,
-    Users
+    Users,
+    Loader2,
+    Plus
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn, getAvatarUrl, formatNumber } from '@/lib/utils';
@@ -175,6 +177,99 @@ const QuotePostDialog = ({ post, open, onOpenChange, onQuote }: { post: PostType
 
 // Simplified QuoteDialog alias to match likely usage
 const QuoteDialog = QuotePostDialog;
+
+// --- ADD TO COLLECTION DIALOG ---
+import { useCollections, useAddToCollection, useCreateCollection } from '@/app/(app)/bookmarks/hooks/useCollections';
+import { Label } from "@/components/ui/label";
+import { Check } from 'lucide-react';
+
+const AddToCollectionDialog = ({ post, open, onOpenChange }: { post: PostType; open: boolean; onOpenChange: (open: boolean) => void }) => {
+    const { data: collections, isLoading } = useCollections();
+    const { mutate: addToCollection } = useAddToCollection();
+    const { mutate: createCollection } = useCreateCollection();
+    const [newCollectionName, setNewCollectionName] = React.useState('');
+    const [isCreating, setIsCreating] = React.useState(false);
+
+    const handleCreate = () => {
+        if (!newCollectionName.trim()) return;
+        createCollection({ name: newCollectionName, isPrivate: true }, {
+            onSuccess: (newId) => {
+                addToCollection({ collectionId: newId.toString(), postId: post.id });
+                setNewCollectionName('');
+                setIsCreating(false);
+                onOpenChange(false);
+                // Toast handled by mutation or global? adding one here just in case
+            }
+        });
+    };
+
+    const handleAddToCollection = (collectionId: string) => {
+        addToCollection({ collectionId, postId: post.id }, {
+            onSuccess: () => {
+                onOpenChange(false);
+            }
+        });
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle>Add to Collection</DialogTitle>
+                    <DialogDescription>
+                        Save this post to one of your collections.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                    {isLoading ? (
+                        <div className="flex justify-center p-4">
+                            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                        </div>
+                    ) : (
+                        <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                            {collections && collections.length > 0 ? (
+                                collections.map(collection => (
+                                    <Button
+                                        key={collection.id}
+                                        variant="outline"
+                                        className="w-full justify-between font-normal"
+                                        onClick={() => handleAddToCollection(collection.id)}
+                                    >
+                                        <span>{collection.name}</span>
+                                        <span className="text-xs text-muted-foreground">{collection.post_count} posts</span>
+                                    </Button>
+                                ))
+                            ) : (
+                                <p className="text-sm text-center text-muted-foreground py-2">No collections yet.</p>
+                            )}
+                        </div>
+                    )}
+
+                    <div className="border-t pt-4">
+                        {isCreating ? (
+                            <div className="flex gap-2">
+                                <Input
+                                    placeholder="Collection Name"
+                                    value={newCollectionName}
+                                    onChange={(e) => setNewCollectionName(e.target.value)}
+                                    className="h-9"
+                                />
+                                <Button size="sm" onClick={handleCreate} disabled={!newCollectionName.trim()}>Add</Button>
+                                <Button size="sm" variant="ghost" onClick={() => setIsCreating(false)}>Cancel</Button>
+                            </div>
+                        ) : (
+                            <Button variant="ghost" className="w-full justify-start text-primary" onClick={() => setIsCreating(true)}>
+                                <Plus className="mr-2 h-4 w-4" />
+                                Create New Collection
+                            </Button>
+                        )}
+                    </div>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
 
 
 // --- MEDIA COMPONENTS ---
@@ -337,6 +432,7 @@ export function PostCard({
     const [isShareDialogOpen, setIsShareDialogOpen] = React.useState(false);
 
     const [isLikedByDialogOpen, setIsLikedByDialogOpen] = React.useState(false);
+    const [isAddToCollectionOpen, setIsAddToCollectionOpen] = React.useState(false);
 
     // Truncation settings for Read More feature
     const MAX_CONTENT_LENGTH = 280;
@@ -477,6 +573,11 @@ export function PostCard({
                 onOpenChange={setIsCommentsOpen}
                 onComment={onComment}
             />
+            <AddToCollectionDialog
+                post={post}
+                open={isAddToCollectionOpen}
+                onOpenChange={setIsAddToCollectionOpen}
+            />
 
             {/* Post Card */}
             <article ref={cardRef} className="p-4 sm:p-5 transition-all duration-200 hover:bg-muted/30">
@@ -573,19 +674,48 @@ export function PostCard({
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="animate-in fade-in zoom-in-95 duration-200">
-                                    <DropdownMenuItem onClick={handleSave}>
-                                        {isSaved ? (
-                                            <>
-                                                <BookmarkCheck className="mr-2 h-4 w-4 text-primary" />
-                                                <span className="text-primary font-medium">Unsave Post</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Bookmark className="mr-2 h-4 w-4" />
-                                                <span>Save Post</span>
-                                            </>
-                                        )}
-                                    </DropdownMenuItem>
+                                    <DropdownMenuSub>
+                                        <DropdownMenuSubTrigger>
+                                            {isSaved ? (
+                                                <>
+                                                    <BookmarkCheck className="mr-2 h-4 w-4 text-primary" />
+                                                    <span className="text-primary font-medium">Saved</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Bookmark className="mr-2 h-4 w-4" />
+                                                    <span>Save Post</span>
+                                                </>
+                                            )}
+                                        </DropdownMenuSubTrigger>
+                                        <DropdownMenuPortal>
+                                            <DropdownMenuSubContent>
+                                                <DropdownMenuItem onClick={handleSave}>
+                                                    {isSaved ? (
+                                                        <span>Remove from Bookmarks</span>
+                                                    ) : (
+                                                        <span>Save to Bookmarks</span>
+                                                    )}
+                                                </DropdownMenuItem>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuLabel>Add to Collection</DropdownMenuLabel>
+                                                {/* We need to fetch collections here. Since PostCard is a dumb component, 
+                                                    we should probably lift this up or use a hook inside PostCard. 
+                                                    Given existing restrictions, I'll add a 'AddToCollectionDialog' triggered here.
+                                                 */}
+                                                <DropdownMenuItem onSelect={(e) => {
+                                                    e.preventDefault();
+                                                    // Trigger a new dialog state for adding to collection
+                                                    // For now, let's just make the parent handle it by adding a new prop? 
+                                                    // No, let's use the hook directly in a new Dialog component inside PostCard.
+                                                    setIsAddToCollectionOpen(true);
+                                                }}>
+                                                    <Plus className="mr-2 h-4 w-4" />
+                                                    Add to Collection...
+                                                </DropdownMenuItem>
+                                            </DropdownMenuSubContent>
+                                        </DropdownMenuPortal>
+                                    </DropdownMenuSub>
 
                                     {isPostAuthor ? (
                                         <>

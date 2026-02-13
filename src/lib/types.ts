@@ -242,18 +242,6 @@ export type UserType = {
   followingCount?: number;
 };
 
-export type ReplyType = {
-  id: string;
-  user: UserType;
-  text: string;
-  isPinned: boolean;
-  likes: number;
-  isHidden: boolean;
-  createdAt: string;
-  editedAt?: string;
-  likedBy: string[];
-};
-
 export type CommentType = {
   [x: string]: any;
   id: string;
@@ -262,11 +250,15 @@ export type CommentType = {
   isPinned: boolean;
   likes: number;
   isHidden: boolean;
-  replies: ReplyType[];
+  replies: CommentType[];
   createdAt: string;
   editedAt?: string;
   likedBy: string[];
+  is_liked?: boolean;
+  parent_comment_id?: string | null;
 };
+
+export type ReplyType = CommentType;
 
 export type MediaType = {
   type: 'image' | 'video' | 'gif';

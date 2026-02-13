@@ -67,6 +67,7 @@ const fetchPosts = async ({ pageParam = null, filter = 'for_you' }: { pageParam?
 
   if (error) {
     console.error('Error fetching posts:', error);
+    console.error('Error details:', { message: error.message, details: error.details, hint: error.hint, code: error.code });
     throw error;
   }
 
