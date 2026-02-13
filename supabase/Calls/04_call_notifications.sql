@@ -21,15 +21,15 @@ BEGIN
     IF NEW.status = 'ringing' THEN
         -- Attempt to insert notification; skip if table does not exist
         BEGIN
-            EXECUTE format(
-                'INSERT INTO public.notifications (user_id, actor_id, type, entity_id, is_read, created_at)
-                 VALUES ($1, $2, $3, NULL, FALSE, NOW())'
-            ) USING NEW.callee_id, NEW.caller_id, 'mention';
+            INSERT INTO public.notifications (user_id, actor_id, type, entity_id, is_read, created_at)
+            VALUES (NEW.callee_id, NEW.caller_id, 'mention', NULL, FALSE, NOW());
             -- Using 'mention' type as a fallback since 'incoming_call' may not exist in the enum.
             -- The actual push notification is sent via the API, this is just an in-app record.
-        EXCEPTION WHEN undefined_table OR invalid_text_representation OR others THEN
-            -- Table doesn't exist or column types don't match; skip silently.
-            RAISE NOTICE 'Could not insert call notification: %', SQLERRM;
+        EXCEPTION
+            WHEN undefined_table THEN
+                RAISE NOTICE 'notifications table does not exist, skipping call notification';
+            WHEN invalid_text_representation THEN
+                RAISE NOTICE 'Column type mismatch for notifications, skipping: %', SQLERRM;
         END;
     END IF;
 
@@ -62,13 +62,14 @@ BEGIN
     IF NEW.status IN ('answered', 'declined', 'missed', 'ended', 'busy', 'failed')
        AND OLD.status = 'ringing' THEN
         BEGIN
-            EXECUTE format(
-                'UPDATE public.notifications SET is_read = TRUE
-                 WHERE user_id = $1 AND actor_id = $2 AND is_read = FALSE'
-            ) USING NEW.callee_id, NEW.caller_id;
-        EXCEPTION WHEN undefined_table OR others THEN
-            -- Notifications table doesn't exist; skip silently.
-            RAISE NOTICE 'Could not update call notification: %', SQLERRM;
+            UPDATE public.notifications
+            SET is_read = TRUE
+            WHERE user_id = NEW.callee_id
+              AND actor_id = NEW.caller_id
+              AND is_read = FALSE;
+        EXCEPTION
+            WHEN undefined_table THEN
+                RAISE NOTICE 'notifications table does not exist, skipping cleanup';
         END;
     END IF;
 
