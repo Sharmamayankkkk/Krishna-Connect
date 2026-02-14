@@ -52,12 +52,13 @@ import { VerificationBadge } from "@/components/shared/verification-badge";
 interface ProfileViewProps {
   profile: Profile;
   posts: PostType[];
+  repostedPosts: PostType[];
   followers: any[];
   following: any[];
   currentUser: any;
 }
 
-export function ProfileView({ profile, posts, followers, following, currentUser }: ProfileViewProps) {
+export function ProfileView({ profile, posts, repostedPosts, followers, following, currentUser }: ProfileViewProps) {
   const router = useRouter();
   const supabase = createClient();
   const { toast } = useToast();
@@ -523,6 +524,9 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
               <TabsTrigger value="media" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 Media
               </TabsTrigger>
+              <TabsTrigger value="reposts" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
+                Reposts
+              </TabsTrigger>
               <TabsTrigger value="likes" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 Likes
               </TabsTrigger>
@@ -590,6 +594,18 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
                 <p className="text-xl font-bold mb-1">Coming Soon</p>
                 <p className="text-muted-foreground">Liked posts will appear here.</p>
               </div>
+            </TabsContent>
+
+            <TabsContent value="reposts" className="mt-0">
+              <FeedList
+                posts={repostedPosts}
+                isLoading={false}
+                onPostUpdated={updatePost}
+                onPostDeleted={handleDeletePost}
+                onQuotePost={() => { }}
+                onPromote={() => { }}
+                emptyMessage={`When ${isOwnProfile ? 'you repost' : `@${profile.username} reposts`}, it will show up here.`}
+              />
             </TabsContent>
           </Tabs>
         </>

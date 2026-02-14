@@ -97,10 +97,11 @@ export default function HashtagPage() {
                                 avatar: authorData.avatar_url,
                                 verified: authorData.verified
                             } : null,
-                            media: p.media_urls?.filter((url: any) => url && typeof url === 'string' && url.trim()).map((url: string) => ({
-                                type: 'image',
-                                url: url
-                            })) || [],
+                            media: Array.isArray(p.media_urls) ? p.media_urls.map((item: any) => {
+                                if (typeof item === 'string') return { type: 'image' as const, url: item };
+                                if (item && typeof item === 'object' && item.url) return { type: item.type || 'image', url: item.url };
+                                return null;
+                            }).filter(Boolean) : [],
                             stats: {
                                 likes: likesCount || 0,
                                 comments: commentsCount || 0,
