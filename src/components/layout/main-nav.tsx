@@ -3,7 +3,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { MessageSquare, Calendar, Users, Compass, Bell, LayoutDashboard, Trophy, Sparkles, Phone } from 'lucide-react'
+import { MessageSquare, Calendar, Compass, Bell, Trophy, Sparkles } from 'lucide-react'
 import {
   SidebarMenu,
   SidebarMenuItem,
@@ -80,14 +80,8 @@ export function MainNav() {
       href: '/chat',
       label: 'Chat',
       icon: MessageSquare,
-      isActive: pathname.startsWith('/chat'),
+      isActive: pathname.startsWith('/chat') || pathname.startsWith('/calls'),
       mobileHidden: true, // In bottom nav
-    },
-    {
-      href: '/calls',
-      label: 'Calls',
-      icon: Phone,
-      isActive: pathname.startsWith('/calls'),
     },
     {
       href: '/notifications',
@@ -95,12 +89,6 @@ export function MainNav() {
       icon: Bell,
       isActive: pathname.startsWith('/notifications'),
       badge: unreadCount > 0 ? unreadCount : undefined,
-    },
-    {
-      href: '/moodboard',
-      label: 'Moodboard',
-      icon: LayoutDashboard,
-      isActive: pathname.startsWith('/moodboard'),
     },
     {
       href: '/challenges',
@@ -113,12 +101,6 @@ export function MainNav() {
       label: 'Events',
       icon: Calendar,
       isActive: pathname.startsWith('/events'),
-    },
-    {
-      href: '/groups',
-      label: 'Groups',
-      icon: Users,
-      isActive: pathname.startsWith('/groups'),
     },
     {
       href: '/get-verified',
