@@ -9,13 +9,11 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from '@/components/ui/sidebar'
-import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuthGuard } from '@/hooks/use-auth-guard'
 import { useAppContext } from '@/providers/app-provider'
-import { useToast } from '@/hooks/use-toast'
 import Image from 'next/image'
 
 export function MainNav() {
@@ -61,12 +59,14 @@ export function MainNav() {
       label: 'Feed',
       icon: Sparkles,
       isActive: pathname === '/' || pathname.startsWith('/feed'),
+      mobileHidden: true, // In bottom nav
     },
     {
       href: '/explore',
       label: 'Explore',
       icon: Compass,
       isActive: pathname.startsWith('/explore'),
+      mobileHidden: true, // In bottom nav
     },
     {
       href: '/leela',
@@ -74,13 +74,14 @@ export function MainNav() {
       icon: null, // Custom image icon
       customIcon: '/icons/leela.png',
       isActive: pathname.startsWith('/leela'),
-      isComingSoon: true,
+      mobileHidden: true, // In bottom nav
     },
     {
       href: '/chat',
       label: 'Chat',
       icon: MessageSquare,
       isActive: pathname.startsWith('/chat'),
+      mobileHidden: true, // In bottom nav
     },
     {
       href: '/calls',
@@ -108,12 +109,6 @@ export function MainNav() {
       isActive: pathname.startsWith('/challenges'),
     },
     {
-      href: '/status',
-      label: 'Status',
-      icon: Compass,
-      isActive: pathname.startsWith('/status'),
-    },
-    {
       href: '/events',
       label: 'Events',
       icon: Calendar,
@@ -135,20 +130,10 @@ export function MainNav() {
 
   const { loggedInUser } = useAppContext()
   const { requireAuth } = useAuthGuard()
-  const { toast } = useToast()
 
-  const handleLinkClick = (e: React.MouseEvent, href: string, isComingSoon?: boolean) => {
-    // Show info toast for coming soon features (but still allow navigation)
-    if (isComingSoon) {
-      toast({
-        title: "🎁 Win a Verified Badge!",
-        description: "Guess what Leela is and tag @krishnaConnect to win!",
-        duration: 4000,
-      });
-    }
-
+  const handleLinkClick = (e: React.MouseEvent, href: string) => {
     // Public routes that guests can access
-    const publicRoutes = ['/', '/explore', '/get-verified'];
+    const publicRoutes = ['/', '/explore', '/get-verified', '/leela'];
     if (publicRoutes.some(route => href === route || href.startsWith(route + '/'))) return;
 
     // Check auth for everything else
@@ -162,7 +147,7 @@ export function MainNav() {
     <nav>
       <SidebarMenu>
         {menuItems.map((item) => (
-          <SidebarMenuItem key={item.href}>
+          <SidebarMenuItem key={item.href} className={item.mobileHidden ? 'hidden md:block' : ''}>
             <SidebarMenuButton
               asChild
               isActive={item.isActive}
@@ -171,7 +156,7 @@ export function MainNav() {
               <Link
                 href={item.href}
                 className="flex items-center"
-                onClick={(e) => handleLinkClick(e, item.href, item.isComingSoon)}
+                onClick={(e) => handleLinkClick(e, item.href)}
               >
                 {item.customIcon ? (
                   <Image
@@ -179,15 +164,12 @@ export function MainNav() {
                     alt={item.label}
                     width={20}
                     height={20}
-                    className={cn("mr-3", item.isComingSoon && "opacity-50")}
+                    className="mr-3"
                   />
                 ) : item.icon ? (
                   <item.icon className="h-5 w-5 mr-3" />
                 ) : null}
                 <span>{item.label}</span>
-                {item.isComingSoon && (
-                  <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0">SOON</Badge>
-                )}
                 {item.href === '/notifications' && unreadCount > 0 && (
                   <Badge className="ml-auto">{unreadCount}</Badge>
                 )}

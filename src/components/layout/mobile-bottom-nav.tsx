@@ -2,24 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Compass, MessageSquare, User, Sparkles } from 'lucide-react'
+import { Home, Compass, MessageSquare, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useToast } from '@/hooks/use-toast'
 import { useAppContext } from '@/providers/app-provider'
 import Image from 'next/image'
 
 export function MobileBottomNav() {
     const pathname = usePathname()
-    const { toast } = useToast()
     const { loggedInUser } = useAppContext()
-
-    const handleLeelaClick = () => {
-        toast({
-            title: "🎁 Win a Verified Badge!",
-            description: "Guess what Leela is and tag @krishnaConnect to win!",
-            duration: 4000,
-        })
-    }
 
     const navItems = [
         {
@@ -39,8 +29,6 @@ export function MobileBottomNav() {
             label: 'Leela',
             icon: null, // Custom image icon
             isActive: pathname.startsWith('/leela'),
-            isComingSoon: true,
-            onClick: handleLeelaClick,
         },
         {
             href: '/chat',
@@ -67,19 +55,11 @@ export function MobileBottomNav() {
                         <Link
                             key={item.label}
                             href={item.href}
-                            onClick={(e) => {
-                                if (item.onClick) {
-                                    item.onClick()
-                                    // Don't prevent default - let navigation happen
-                                }
-                            }}
                             className={cn(
                                 "flex flex-col items-center justify-center min-w-[60px] h-full gap-1 transition-colors relative",
                                 item.isActive
                                     ? "text-primary"
-                                    : item.isComingSoon
-                                        ? "text-muted-foreground/50"
-                                        : "text-muted-foreground hover:text-foreground"
+                                    : "text-muted-foreground hover:text-foreground"
                             )}
                             aria-label={item.label}
                         >
@@ -91,21 +71,10 @@ export function MobileBottomNav() {
                                         alt="Leela"
                                         width={24}
                                         height={24}
-                                        className={cn(
-                                            "transition-opacity",
-                                            item.isComingSoon && "opacity-50"
-                                        )}
                                     />
                                 ) : IconComponent ? (
                                     <IconComponent className="h-6 w-6" />
                                 ) : null}
-
-                                {/* Coming Soon badge */}
-                                {item.isComingSoon && (
-                                    <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-[8px] font-bold px-1 py-0.5 rounded">
-                                        SOON
-                                    </span>
-                                )}
                             </div>
 
                             {/* Label */}

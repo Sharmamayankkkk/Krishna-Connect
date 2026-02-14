@@ -561,10 +561,7 @@ export function ProfileView({ profile, posts, repostedPosts, followers, followin
             </TabsContent>
 
             <TabsContent value="leela" className="mt-0">
-              <div className="py-12 text-center">
-                <p className="text-xl font-bold mb-1">🎲 Leela</p>
-                <p className="text-muted-foreground">Coming Soon — A divine game of self-discovery.</p>
-              </div>
+              <LeelaProfileTab userId={profile.id} username={profile.username} isOwnProfile={isOwnProfile} />
             </TabsContent>
           </Tabs>
         </>

@@ -6,8 +6,8 @@ import { Plus } from 'lucide-react';
 import { useAppContext } from '@/providers/app-provider';
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
-import { CreateStatusDialog } from '@/app/(app)/status/components/create-status-dialog';
-import { ViewStatusDialog } from '@/app/(app)/status/components/view-status-dialog';
+import { CreateStatusDialog } from './create-status-dialog';
+import { ViewStatusDialog } from './view-status-dialog';
 
 type StatusUpdate = {
     user_id: string;

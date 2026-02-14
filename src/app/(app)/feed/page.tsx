@@ -1,8 +1,6 @@
 "use client";
 
 import * as React from 'react';
-import Link from 'next/link';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sparkles, ArrowUp } from 'lucide-react';
 import { useAppContext } from '@/providers/app-provider';
 import { PostType } from '@/lib/types';
@@ -175,16 +173,6 @@ export default function FeedPage() {
                         <div className="flex items-center gap-2">
                             <Sparkles className="h-5 w-5 text-primary" />
                             <h1 className="text-xl font-bold">For You</h1>
-                        </div>
-                        <div className="ml-auto">
-                            {loggedInUser && (
-                                <Link href={`/profile/${loggedInUser.username}`}>
-                                    <Avatar className="h-8 w-8 transition-transform hover:scale-110">
-                                        <AvatarImage src={loggedInUser.avatar_url || '/placeholder-user.jpg'} />
-                                        <AvatarFallback>U</AvatarFallback>
-                                    </Avatar>
-                                </Link>
-                            )}
                         </div>
                     </div>
                 </header>

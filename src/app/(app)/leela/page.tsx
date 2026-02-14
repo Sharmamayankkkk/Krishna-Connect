@@ -1,112 +1,421 @@
 'use client'
 
+import * as React from 'react'
+import { Heart, MessageCircle, Share2, Music2, Play, Pause, Volume2, VolumeX, ChevronUp, ChevronDown } from 'lucide-react'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import { useAppContext } from '@/providers/app-provider'
+import { createClient } from '@/lib/supabase/client'
+import { useToast } from '@/hooks/use-toast'
 import { SidebarTrigger } from '@/components/ui/sidebar'
+import Link from 'next/link'
 import Image from 'next/image'
-import { Video, Gift, Trophy } from 'lucide-react'
+
+type LeelaVideo = {
+  id: string
+  video_url: string
+  thumbnail_url: string | null
+  caption: string | null
+  audio_name: string | null
+  duration_seconds: number | null
+  view_count: number
+  like_count: number
+  comment_count: number
+  share_count: number
+  created_at: string
+  author_id: string
+  author_name: string
+  author_username: string
+  author_avatar: string | null
+  author_verified: string
+  is_liked: boolean
+}
+
+function formatCount(n: number): string {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M'
+  if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'K'
+  return String(n)
+}
+
+function VideoPlayer({
+  video,
+  isActive,
+  onLike,
+}: {
+  video: LeelaVideo
+  isActive: boolean
+  onLike: (id: string) => void
+}) {
+  const videoRef = React.useRef<HTMLVideoElement>(null)
+  const [isPlaying, setIsPlaying] = React.useState(false)
+  const [isMuted, setIsMuted] = React.useState(false)
+  const [progress, setProgress] = React.useState(0)
+  const [showControls, setShowControls] = React.useState(false)
+  const controlsTimeout = React.useRef<NodeJS.Timeout | null>(null)
+
+  React.useEffect(() => {
+    const el = videoRef.current
+    if (!el) return
+    if (isActive) {
+      el.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false))
+    } else {
+      el.pause()
+      setIsPlaying(false)
+    }
+  }, [isActive])
+
+  React.useEffect(() => {
+    const el = videoRef.current
+    if (!el) return
+    const onTime = () => {
+      if (el.duration) setProgress((el.currentTime / el.duration) * 100)
+    }
+    el.addEventListener('timeupdate', onTime)
+    return () => el.removeEventListener('timeupdate', onTime)
+  }, [])
+
+  const togglePlay = () => {
+    const el = videoRef.current
+    if (!el) return
+    if (el.paused) {
+      el.play().then(() => setIsPlaying(true))
+    } else {
+      el.pause()
+      setIsPlaying(false)
+    }
+  }
+
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (videoRef.current) {
+      videoRef.current.muted = !videoRef.current.muted
+      setIsMuted(!isMuted)
+    }
+  }
+
+  const handleTap = () => {
+    togglePlay()
+    setShowControls(true)
+    if (controlsTimeout.current) clearTimeout(controlsTimeout.current)
+    controlsTimeout.current = setTimeout(() => setShowControls(false), 2000)
+  }
+
+  const handleDoubleTap = (e: React.MouseEvent) => {
+    e.preventDefault()
+    onLike(video.id)
+  }
+
+  return (
+    <div
+      className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden"
+      onClick={handleTap}
+      onDoubleClick={handleDoubleTap}
+    >
+      <video
+        ref={videoRef}
+        src={video.video_url}
+        className="w-full h-full object-contain"
+        loop
+        playsInline
+        muted={isMuted}
+        poster={video.thumbnail_url || undefined}
+      />
+
+      {showControls && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-in fade-in duration-200">
+          <div className="bg-black/40 rounded-full p-4">
+            {isPlaying ? (
+              <Pause className="h-12 w-12 text-white" fill="white" />
+            ) : (
+              <Play className="h-12 w-12 text-white" fill="white" />
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+        <div className="h-full bg-white transition-all duration-100" style={{ width: `${progress}%` }} />
+      </div>
+
+      <button
+        onClick={toggleMute}
+        className="absolute top-4 right-4 bg-black/40 rounded-full p-2 backdrop-blur-sm z-10"
+        aria-label={isMuted ? 'Unmute' : 'Mute'}
+      >
+        {isMuted ? <VolumeX className="h-5 w-5 text-white" /> : <Volume2 className="h-5 w-5 text-white" />}
+      </button>
+
+      <div className="absolute bottom-4 left-4 right-16 z-10">
+        <Link href={`/profile/${video.author_username}`} onClick={e => e.stopPropagation()} className="flex items-center gap-2 mb-3">
+          <Avatar className="h-10 w-10 border-2 border-white">
+            <AvatarImage src={video.author_avatar || undefined} />
+            <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+              {video.author_name?.charAt(0) || '?'}
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-white font-semibold text-sm drop-shadow-lg">
+            @{video.author_username}
+          </span>
+          {video.author_verified !== 'none' && (
+            <span className="text-blue-400 text-xs">✓</span>
+          )}
+        </Link>
+
+        {video.caption && (
+          <p className="text-white text-sm drop-shadow-lg line-clamp-2 mb-2">
+            {video.caption}
+          </p>
+        )}
+
+        {video.audio_name && (
+          <div className="flex items-center gap-2 text-white/80 text-xs">
+            <Music2 className="h-3 w-3 animate-spin" style={{ animationDuration: '3s' }} />
+            <span className="truncate max-w-[200px]">{video.audio_name}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="absolute right-3 bottom-20 flex flex-col items-center gap-5 z-10">
+        <button onClick={(e) => { e.stopPropagation(); onLike(video.id); }} className="flex flex-col items-center gap-1">
+          <div className={cn("p-2 rounded-full", video.is_liked ? "text-red-500" : "text-white")}>
+            <Heart className="h-7 w-7 drop-shadow-lg" fill={video.is_liked ? "currentColor" : "none"} />
+          </div>
+          <span className="text-white text-xs font-semibold drop-shadow-lg">{formatCount(video.like_count)}</span>
+        </button>
+
+        <button className="flex flex-col items-center gap-1" onClick={e => e.stopPropagation()}>
+          <div className="p-2 text-white">
+            <MessageCircle className="h-7 w-7 drop-shadow-lg" />
+          </div>
+          <span className="text-white text-xs font-semibold drop-shadow-lg">{formatCount(video.comment_count)}</span>
+        </button>
+
+        <button className="flex flex-col items-center gap-1" onClick={e => e.stopPropagation()}>
+          <div className="p-2 text-white">
+            <Share2 className="h-7 w-7 drop-shadow-lg" />
+          </div>
+          <span className="text-white text-xs font-semibold drop-shadow-lg">{formatCount(video.share_count)}</span>
+        </button>
+
+        <Link href={`/profile/${video.author_username}`} onClick={e => e.stopPropagation()}>
+          <div className="w-10 h-10 rounded-full border-2 border-white overflow-hidden animate-spin" style={{ animationDuration: '6s' }}>
+            <Avatar className="h-full w-full">
+              <AvatarImage src={video.author_avatar || undefined} />
+              <AvatarFallback className="text-xs">{video.author_name?.charAt(0)}</AvatarFallback>
+            </Avatar>
+          </div>
+        </Link>
+      </div>
+    </div>
+  )
+}
 
 export default function LeelaPage() {
+  const { loggedInUser } = useAppContext()
+  const { toast } = useToast()
+  const supabase = createClient()
+  const containerRef = React.useRef<HTMLDivElement>(null)
+
+  const [videos, setVideos] = React.useState<LeelaVideo[]>([])
+  const [currentIndex, setCurrentIndex] = React.useState(0)
+  const [isLoading, setIsLoading] = React.useState(true)
+  const [hasMore, setHasMore] = React.useState(true)
+
+  const fetchVideos = React.useCallback(async (offset = 0) => {
+    const { data, error } = await supabase.rpc('get_leela_feed', {
+      p_limit: 10,
+      p_offset: offset,
+    })
+
+    if (error) {
+      console.warn('Leela feed error:', error.message)
+      setIsLoading(false)
+      return
+    }
+
+    const newVideos = (data || []) as LeelaVideo[]
+    if (newVideos.length < 10) setHasMore(false)
+
+    if (offset === 0) {
+      setVideos(newVideos)
+    } else {
+      setVideos(prev => [...prev, ...newVideos])
+    }
+    setIsLoading(false)
+  }, [supabase])
+
+  React.useEffect(() => {
+    fetchVideos()
+  }, [fetchVideos])
+
+  React.useEffect(() => {
+    if (currentIndex >= videos.length - 3 && hasMore && !isLoading) {
+      fetchVideos(videos.length)
+    }
+  }, [currentIndex, videos.length, hasMore, isLoading, fetchVideos])
+
+  React.useEffect(() => {
+    if (videos[currentIndex]) {
+      supabase.rpc('record_leela_view', { p_video_id: videos[currentIndex].id }).catch(() => {})
+    }
+  }, [currentIndex, videos, supabase])
+
+  const navigate = React.useCallback((direction: 'up' | 'down') => {
+    setCurrentIndex(prev => {
+      if (direction === 'up') return Math.max(0, prev - 1)
+      if (direction === 'down') return Math.min(videos.length - 1, prev + 1)
+      return prev
+    })
+  }, [videos.length])
+
+  React.useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowUp' || e.key === 'k') navigate('up')
+      if (e.key === 'ArrowDown' || e.key === 'j') navigate('down')
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [navigate])
+
+  const touchStart = React.useRef<number>(0)
+  const handleTouchStart = (e: React.TouchEvent) => { touchStart.current = e.touches[0].clientY }
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const diff = touchStart.current - e.changedTouches[0].clientY
+    if (Math.abs(diff) > 50) {
+      navigate(diff > 0 ? 'down' : 'up')
+    }
+  }
+
+  const lastScroll = React.useRef(0)
+  const handleWheel = (e: React.WheelEvent) => {
+    const now = Date.now()
+    if (now - lastScroll.current < 500) return
+    lastScroll.current = now
+    navigate(e.deltaY > 0 ? 'down' : 'up')
+  }
+
+  const handleLike = async (videoId: string) => {
+    if (!loggedInUser) {
+      toast({ title: 'Log in to like videos' })
+      return
+    }
+    setVideos(prev => prev.map(v => {
+      if (v.id !== videoId) return v
+      return {
+        ...v,
+        is_liked: !v.is_liked,
+        like_count: v.is_liked ? v.like_count - 1 : v.like_count + 1,
+      }
+    }))
+
+    const video = videos.find(v => v.id === videoId)
+    if (video?.is_liked) {
+      await supabase.from('leela_likes').delete().match({ user_id: loggedInUser.id, video_id: videoId })
+    } else {
+      await supabase.from('leela_likes').insert({ user_id: loggedInUser.id, video_id: videoId })
+    }
+  }
+
+  // Empty state
+  if (!isLoading && videos.length === 0) {
     return (
-        <div className="flex flex-col h-screen">
-            {/* Header */}
-            <header className="flex items-center gap-3 border-b p-4">
-                <SidebarTrigger className="md:hidden" />
-                <h1 className="text-xl font-bold">Leela</h1>
-            </header>
-
-            {/* Coming Soon Content */}
-            <div className="flex-1 flex items-center justify-center p-6">
-                <div className="max-w-md text-center space-y-6">
-                    {/* Icon */}
-                    <div className="flex justify-center">
-                        <div className="relative">
-                            <Image
-                                src="/icons/leela.png"
-                                alt="Leela"
-                                width={120}
-                                height={120}
-                                className="opacity-80"
-                            />
-                            <div className="absolute -bottom-2 -right-2 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">
-                                COMING SOON
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Text Content */}
-                    <div className="space-y-3">
-                        <h2 className="text-2xl font-bold">Leela is Coming Soon!</h2>
-                        <p className="text-muted-foreground leading-relaxed">
-                            Something special is coming to Krishna Connect... Can you guess what <span className="font-semibold text-foreground">Leela</span> will be?
-                        </p>
-                        <div className="bg-muted/30 border border-dashed border-muted-foreground/30 rounded-lg p-4">
-                            <p className="text-sm text-center text-muted-foreground italic">
-                                🤔 A new way to experience the community... but how?
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Contest Section */}
-                    <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background border-2 border-primary/20 rounded-lg p-5 space-y-3">
-                        <div className="flex items-center gap-2">
-                            <Gift className="h-6 w-6 text-primary" />
-                            <h3 className="text-lg font-bold">Win a Free Verified Badge!</h3>
-                        </div>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                            Can you guess what <span className="font-semibold text-foreground">Leela</span> will be? Share your prediction and be part of the excitement!
-                        </p>
-                        <div className="bg-background/80 rounded-md p-3 space-y-2 text-sm">
-                            <p className="font-medium">How to participate:</p>
-                            <ol className="list-decimal list-inside space-y-1 text-muted-foreground ml-2">
-                                <li>Create a post with your guess about Leela</li>
-                                <li>Tag <span className="font-mono text-primary">@krishnaConnect</span></li>
-                                <li>Share why you think it's that!</li>
-                            </ol>
-                        </div>
-                        <div className="bg-primary/10 border border-primary/30 rounded-md p-3">
-                            <p className="text-sm font-semibold text-center flex items-center justify-center gap-2">
-                                <Trophy className="h-4 w-4 text-primary" />
-                                <span>Best post + Most accurate guess = <span className="text-primary">1 Week Free Verified Badge!</span></span>
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Mysterious Hints Section - Blurred */}
-                    <div className="relative">
-                        <div className="absolute inset-0 backdrop-blur-md bg-background/30 z-10 rounded-lg flex items-center justify-center">
-                            <div className="text-center space-y-2">
-                                <p className="text-sm font-semibold">🔒 Hints Hidden</p>
-                                <p className="text-xs text-muted-foreground">Make your guess first!</p>
-                            </div>
-                        </div>
-                        <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm text-left blur-sm pointer-events-none select-none">
-                            <div className="flex items-start gap-2">
-                                <Video className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                                <div>
-                                    <p className="font-medium">████████ █████ ████</p>
-                                    <p className="text-muted-foreground text-xs">█████ ███████ █████████ ███████</p>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-2">
-                                <Video className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                                <div>
-                                    <p className="font-medium">█████ & █████████</p>
-                                    <p className="text-muted-foreground text-xs">█████ █████████ ███████</p>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-2">
-                                <Video className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                                <div>
-                                    <p className="font-medium">█████████ ███████</p>
-                                    <p className="text-muted-foreground text-xs">█████ ████ ██████████ ███████</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <p className="text-sm text-muted-foreground italic">
-                        We're working hard to bring this feature to you. Stay tuned!
-                    </p>
-                </div>
-            </div>
+      <div className="flex flex-col h-[100dvh]">
+        <header className="flex items-center gap-3 border-b p-4 bg-background z-10">
+          <SidebarTrigger className="md:hidden" />
+          <Image src="/icons/leela.png" alt="Leela" width={28} height={28} />
+          <h1 className="text-xl font-bold">Leela</h1>
+        </header>
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center gap-6">
+          <div className="relative">
+            <Image src="/icons/leela.png" alt="Leela" width={100} height={100} className="opacity-60" />
+          </div>
+          <div className="space-y-2 max-w-sm">
+            <h2 className="text-2xl font-bold">Welcome to Leela</h2>
+            <p className="text-muted-foreground">
+              Short-form videos from the Krishna Connect community. Be the first to share a Leela!
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Button variant="outline" className="gap-2" asChild>
+              <Link href="/explore">
+                <Play className="h-4 w-4" /> Explore Posts
+              </Link>
+            </Button>
+          </div>
+          <div className="mt-8 bg-muted/50 rounded-lg p-4 max-w-xs text-sm text-muted-foreground">
+            <p className="font-medium text-foreground mb-1">💡 How to create a Leela</p>
+            <p>Upload short videos (up to 60 seconds) to share your moments with the community.</p>
+          </div>
         </div>
+      </div>
     )
+  }
+
+  return (
+    <div className="flex flex-col h-[100dvh] bg-black">
+      {/* Header overlay */}
+      <header className="absolute top-0 left-0 right-0 z-20 flex items-center gap-3 p-4">
+        <SidebarTrigger className="md:hidden text-white" />
+        <Image src="/icons/leela.png" alt="Leela" width={24} height={24} />
+        <h1 className="text-lg font-bold text-white drop-shadow-lg">Leela</h1>
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            onClick={() => navigate('up')}
+            disabled={currentIndex === 0}
+            className="p-1.5 rounded-full bg-white/10 backdrop-blur-sm text-white disabled:opacity-30"
+            aria-label="Previous video"
+          >
+            <ChevronUp className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => navigate('down')}
+            disabled={currentIndex >= videos.length - 1}
+            className="p-1.5 rounded-full bg-white/10 backdrop-blur-sm text-white disabled:opacity-30"
+            aria-label="Next video"
+          >
+            <ChevronDown className="h-4 w-4" />
+          </button>
+        </div>
+      </header>
+
+      {/* Video container */}
+      <div
+        ref={containerRef}
+        className="flex-1 relative overflow-hidden"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onWheel={handleWheel}
+      >
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black z-30">
+            <div className="animate-spin rounded-full h-10 w-10 border-2 border-white border-t-transparent" />
+          </div>
+        )}
+
+        {videos.map((video, index) => {
+          if (Math.abs(index - currentIndex) > 1) return null
+          return (
+            <div
+              key={video.id}
+              className="absolute inset-0 transition-transform duration-300 ease-out"
+              style={{
+                transform: `translateY(${(index - currentIndex) * 100}%)`,
+              }}
+            >
+              <VideoPlayer
+                video={video}
+                isActive={index === currentIndex}
+                onLike={handleLike}
+              />
+            </div>
+          )
+        })}
+
+        <div className="absolute top-4 right-16 md:right-4 z-20 bg-black/30 backdrop-blur-sm rounded-full px-2.5 py-1">
+          <span className="text-white text-xs font-medium">{currentIndex + 1}/{videos.length}</span>
+        </div>
+      </div>
+    </div>
+  )
 }
