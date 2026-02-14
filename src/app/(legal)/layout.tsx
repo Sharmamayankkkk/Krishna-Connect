@@ -23,7 +23,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
         </div>
       </main>
       <footer className="text-center py-6 text-sm text-muted-foreground">
-        <p>&copy; {new Date().getFullYear()} Krishna Connect. All rights reserved.</p>
+        <p>&copy; 2026 Krishna Connect. All rights reserved.</p>
       </footer>
     </div>
   );
