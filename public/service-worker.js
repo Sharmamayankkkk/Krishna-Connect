@@ -7,7 +7,6 @@ const APP_SHELL = [
     '/logo/krishna_connect.png',
     '/logo/light_KCS.png',
     '/logo/dark_KCS.png',
-    '/logo/krishna_connect.png',
     '/chat-bg/light.png',
     '/chat-bg/dark.png',
     '/chat-bg/BG_3.svg',

@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, TrendingUp, Users, Flame, Heart, MessageCircle, Play, ImageIcon } from 'lucide-react';
+import { Search, TrendingUp, Users, Flame, Heart, MessageCircle, Play, ImageIcon, Compass, Bookmark, Eye, Share2, Sparkles, ChevronRight } from 'lucide-react';
 import { useAppContext } from '@/providers/app-provider';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useToast } from '@/hooks/use-toast';
@@ -18,12 +18,9 @@ import { PostType } from '@/lib/types';
 import { extractVideoThumbnail } from '@/lib/video-thumbnail';
 import { cn } from '@/lib/utils';
 
-// Instagram-style grid pattern: every 3rd row has a large tile
-// Pattern: [small, small, small], [small, small, small], [large (2x2), small, small], repeat
 function getGridSpan(index: number): { col: string; row: string } {
-    // Every 10th item starting from index 2 gets a large tile (2x2)
     const patternIndex = index % 12;
-    if (patternIndex === 2 || patternIndex === 9) {
+    if (patternIndex === 0 || patternIndex === 7) {
         return { col: 'col-span-2', row: 'row-span-2' };
     }
     return { col: 'col-span-1', row: 'row-span-1' };
@@ -45,13 +42,20 @@ export default function ExplorePage() {
     const [isLoading, setIsLoading] = React.useState(true);
     const [videoThumbnails, setVideoThumbnails] = React.useState<Record<string, string>>({});
     const [failedImages, setFailedImages] = React.useState<Set<string>>(new Set());
+    const [activeCategory, setActiveCategory] = React.useState('all');
+
+    const categories = [
+        { id: 'all', label: 'For You', icon: Sparkles },
+        { id: 'trending', label: 'Trending', icon: Flame },
+        { id: 'latest', label: 'Latest', icon: TrendingUp },
+        { id: 'people', label: 'People', icon: Users },
+    ];
 
     React.useEffect(() => {
         const fetchData = async () => {
             const supabase = createClient();
 
-            // Fetch suggested users using RPC to get real follower counts
-            const { data: usersData } = await supabase.rpc('get_who_to_follow', { limit_count: 6 });
+            const { data: usersData } = await supabase.rpc('get_who_to_follow', { limit_count: 8 });
 
             if (usersData) {
                 const enhanced = usersData.map((u: any) => ({
@@ -62,7 +66,6 @@ export default function ExplorePage() {
                 setSuggestedUsers(enhanced);
             }
 
-            // Fetch posts for the explore algorithm
             const { data: postsData } = await supabase
                 .from('posts')
                 .select(`
@@ -84,20 +87,19 @@ export default function ExplorePage() {
                     reposts:post_reposts(count)
                 `)
                 .order('created_at', { ascending: false })
-                .limit(50);
+                .limit(60);
 
             if (postsData) {
-                // Transform to PostType format
                 const transformedPosts: PostType[] = postsData.map((p: any) => ({
                     id: p.id,
                     content: p.content,
                     createdAt: p.created_at,
                     author: {
-                        id: p.author.id,
-                        username: p.author.username,
-                        name: p.author.name,
-                        avatar: p.author.avatar_url,
-                        verified: p.author.verified || false
+                        id: p.author?.id || p.user_id,
+                        username: p.author?.username || 'user',
+                        name: p.author?.name || 'User',
+                        avatar: p.author?.avatar_url,
+                        verified: p.author?.verified || 'none'
                     },
                     media: p.media_urls?.map((url: string) => ({
                         url,
@@ -121,11 +123,9 @@ export default function ExplorePage() {
                     poll: undefined
                 }));
 
-                // Generate mixed content using algorithm
-                const mixedContent = generateExploreContent(transformedPosts, 24);
+                const mixedContent = generateExploreContent(transformedPosts, 30);
                 setExploreContent(mixedContent);
 
-                // Extract video thumbnails in batches of 3 to avoid overwhelming the browser
                 const videoItems = mixedContent.filter(item => {
                     const firstMedia = item.data.media?.[0];
                     return firstMedia?.type === 'video' && firstMedia.url;
@@ -161,7 +161,7 @@ export default function ExplorePage() {
     };
 
     const handlePostClick = (post: any) => {
-        router.push(`/profile/${post.author.username}/post/${post.id}`);
+        router.push(`/profile/${post.author?.username || 'user'}/post/${post.id}`);
     };
 
     const formatCount = (count: number) => {
@@ -172,51 +172,38 @@ export default function ExplorePage() {
 
     const renderGridItem = (item: ExploreContentItem, index: number) => {
         const post = item.data;
-        const mediaUrl = post.media?.[0]?.url || (Array.isArray(post.media_urls) ? post.media_urls[0] : null);
+        const mediaUrl = post.media?.[0]?.url || (Array.isArray((post as any).media_urls) ? (post as any).media_urls[0] : null);
         const firstMedia = mediaUrl && typeof mediaUrl === 'string' && mediaUrl.trim() !== '' ? mediaUrl : null;
-        const isVideo = post.media?.[0]?.type === 'video' || (firstMedia && isVideoUrl(firstMedia));
+        const isVideo = post.media?.[0]?.type === 'video' || (firstMedia != null && isVideoUrl(firstMedia));
         const thumbnailUrl = videoThumbnails[post.id];
-        const contentPreview = post.content?.replace(/[#@]/g, '').substring(0, 80);
+        const contentPreview = post.content?.replace(/[#@]/g, '').substring(0, 100);
         const { col, row } = getGridSpan(index);
+        const isLarge = col === 'col-span-2';
         const hasMultipleImages = (post.media?.length || 0) > 1;
         const imageHasFailed = failedImages.has(post.id);
 
-        // Determine the display image source
         const displaySrc = isVideo ? (thumbnailUrl || firstMedia) : firstMedia;
         const showImage = displaySrc && !imageHasFailed;
 
-        // Gradient backgrounds for text-only or failed image posts
         const gradients = [
-            'from-primary/40 via-purple-500/30 to-pink-500/40',
-            'from-blue-500/40 via-cyan-500/30 to-teal-500/40',
-            'from-orange-500/40 via-red-500/30 to-pink-500/40',
-            'from-green-500/40 via-emerald-500/30 to-teal-500/40',
-            'from-violet-500/40 via-purple-500/30 to-fuchsia-500/40',
-            'from-amber-500/40 via-orange-500/30 to-red-500/40',
+            'from-violet-600 via-purple-500 to-fuchsia-500',
+            'from-cyan-500 via-blue-500 to-indigo-600',
+            'from-rose-500 via-pink-500 to-purple-600',
+            'from-emerald-500 via-teal-500 to-cyan-600',
+            'from-amber-500 via-orange-500 to-red-500',
+            'from-sky-400 via-blue-500 to-violet-600',
+            'from-lime-500 via-green-500 to-emerald-600',
+            'from-fuchsia-500 via-pink-500 to-rose-600',
         ];
         const gradient = gradients[index % gradients.length];
-
-        const statsOverlay = (
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
-                <div className="flex items-center gap-6 text-white">
-                    <div className="flex items-center gap-1.5">
-                        <Heart className="h-5 w-5 fill-white" />
-                        <span className="font-semibold text-sm">{formatCount(post.stats?.likes || 0)}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                        <MessageCircle className="h-5 w-5 fill-white" />
-                        <span className="font-semibold text-sm">{formatCount(post.stats?.comments || 0)}</span>
-                    </div>
-                </div>
-            </div>
-        );
 
         return (
             <div
                 key={item.id}
                 onClick={() => handlePostClick(post)}
                 className={cn(
-                    "group relative overflow-hidden bg-muted cursor-pointer",
+                    "group relative overflow-hidden cursor-pointer",
+                    "rounded-sm md:rounded-md",
                     col, row,
                     "aspect-square"
                 )}
@@ -228,46 +215,94 @@ export default function ExplorePage() {
                             alt="Post"
                             fill
                             unoptimized
-                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            className="object-cover transition-all duration-500 group-hover:scale-110"
                             onError={() => {
                                 setFailedImages(prev => new Set(prev).add(post.id));
                             }}
                         />
 
-                        {/* Video indicator */}
-                        {isVideo && (
-                            <div className="absolute top-2 right-2 z-10">
-                                <Play className="h-5 w-5 text-white drop-shadow-lg fill-white" />
+                        {/* Gradient overlay on hover */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-all duration-300" />
+
+                        {/* Top-right badges */}
+                        <div className="absolute top-2 right-2 z-10 flex items-center gap-1.5">
+                            {isVideo && (
+                                <div className="bg-black/60 backdrop-blur-sm rounded-full p-1.5">
+                                    <Play className="h-3.5 w-3.5 text-white fill-white" />
+                                </div>
+                            )}
+                            {hasMultipleImages && !isVideo && (
+                                <div className="bg-black/60 backdrop-blur-sm rounded-full p-1.5">
+                                    <ImageIcon className="h-3.5 w-3.5 text-white" />
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Stats overlay on hover */}
+                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
+                            <div className="flex items-center gap-5 text-white">
+                                <div className="flex items-center gap-1.5">
+                                    <Heart className="h-5 w-5 fill-white drop-shadow-lg" />
+                                    <span className="font-bold text-sm drop-shadow-lg">{formatCount(post.stats?.likes || 0)}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                    <MessageCircle className="h-5 w-5 fill-white drop-shadow-lg" />
+                                    <span className="font-bold text-sm drop-shadow-lg">{formatCount(post.stats?.comments || 0)}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Bottom author info on hover (large tiles only) */}
+                        {isLarge && (
+                            <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+                                <div className="flex items-center gap-2">
+                                    <Avatar className="h-6 w-6 ring-2 ring-white/50">
+                                        <AvatarImage src={post.author?.avatar || '/user_Avatar/male.png'} />
+                                        <AvatarFallback className="text-[10px]">{post.author?.name?.[0] || 'U'}</AvatarFallback>
+                                    </Avatar>
+                                    <span className="text-white text-xs font-semibold drop-shadow-lg truncate">
+                                        @{post.author?.username || 'user'}
+                                    </span>
+                                </div>
                             </div>
                         )}
-
-                        {/* Multiple images indicator */}
-                        {hasMultipleImages && !isVideo && (
-                            <div className="absolute top-2 right-2 z-10">
-                                <ImageIcon className="h-5 w-5 text-white drop-shadow-lg" />
-                            </div>
-                        )}
-
-                        {statsOverlay}
                     </>
                 ) : (
-                    /* Text-only / failed-image post with gradient background */
                     <div className={cn(
-                        "absolute inset-0 bg-gradient-to-br flex items-center justify-center p-4",
+                        "absolute inset-0 bg-gradient-to-br flex flex-col items-center justify-center p-4",
                         gradient
                     )}>
-                        <div className="text-center space-y-2">
-                            {firstMedia && imageHasFailed && (
-                                <ImageIcon className="h-8 w-8 text-foreground/40 mx-auto" />
-                            )}
-                            <p className="text-sm font-medium line-clamp-4 text-foreground">
-                                {contentPreview || 'No preview available'}
+                        <div className="text-center space-y-2 max-w-full">
+                            <p className={cn(
+                                "font-semibold text-white/95 leading-snug",
+                                isLarge ? "text-base line-clamp-6" : "text-xs line-clamp-4"
+                            )}>
+                                {contentPreview || 'Shared a thought ✨'}
                             </p>
-                            <p className="text-xs text-muted-foreground">
-                                @{post.author?.username || 'user'}
-                            </p>
+                            <div className="flex items-center justify-center gap-1.5">
+                                <Avatar className="h-4 w-4">
+                                    <AvatarImage src={post.author?.avatar || '/user_Avatar/male.png'} />
+                                    <AvatarFallback className="text-[8px]">{post.author?.name?.[0] || 'U'}</AvatarFallback>
+                                </Avatar>
+                                <p className="text-[10px] text-white/70 font-medium">
+                                    @{post.author?.username || 'user'}
+                                </p>
+                            </div>
                         </div>
-                        {statsOverlay}
+
+                        {/* Stats overlay on hover */}
+                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
+                            <div className="flex items-center gap-5 text-white">
+                                <div className="flex items-center gap-1.5">
+                                    <Heart className="h-5 w-5 fill-white" />
+                                    <span className="font-bold text-sm">{formatCount(post.stats?.likes || 0)}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                    <MessageCircle className="h-5 w-5 fill-white" />
+                                    <span className="font-bold text-sm">{formatCount(post.stats?.comments || 0)}</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>
@@ -275,21 +310,18 @@ export default function ExplorePage() {
     };
 
     return (
-        <div className="flex h-full flex-col">
-            {/* Header with Search */}
-            <header className="sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-                <div className="flex items-center gap-4 p-4">
+        <div className="flex h-full flex-col bg-background">
+            {/* Header */}
+            <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b">
+                <div className="flex items-center gap-3 px-4 py-3">
                     <SidebarTrigger className="md:hidden" />
-
                     <div className="flex items-center gap-2 flex-1">
-                        <Search className="h-5 w-5 text-muted-foreground" />
-                        <h1 className="text-xl font-bold">Explore</h1>
+                        <Compass className="h-5 w-5 text-primary" />
+                        <h1 className="text-lg font-bold">Explore</h1>
                     </div>
-
-                    {/* User Avatar */}
                     {loggedInUser && (
                         <Link href={`/profile/${loggedInUser.username}`}>
-                            <Avatar className="h-8 w-8 transition-transform hover:scale-110">
+                            <Avatar className="h-8 w-8 ring-2 ring-primary/20 transition-all hover:ring-primary/50 hover:scale-105">
                                 <AvatarImage src={loggedInUser.avatar_url || '/placeholder-user.jpg'} />
                                 <AvatarFallback>U</AvatarFallback>
                             </Avatar>
@@ -297,96 +329,113 @@ export default function ExplorePage() {
                     )}
                 </div>
 
-                {/* Search Bar */}
-                <div className="px-4 pb-4">
+                {/* Search */}
+                <div className="px-4 pb-3">
                     <GlobalSearchBar placeholder="Search posts, users, hashtags..." />
+                </div>
+
+                {/* Category Pills */}
+                <div className="flex gap-2 px-4 pb-3 overflow-x-auto scrollbar-hide">
+                    {categories.map(cat => (
+                        <button
+                            key={cat.id}
+                            onClick={() => setActiveCategory(cat.id)}
+                            className={cn(
+                                "flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200",
+                                activeCategory === cat.id
+                                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
+                                    : "bg-muted hover:bg-muted/80 text-muted-foreground"
+                            )}
+                        >
+                            <cat.icon className="h-3.5 w-3.5" />
+                            {cat.label}
+                        </button>
+                    ))}
                 </div>
             </header>
 
             {/* Main Content */}
-            <div className="flex-1 container max-w-5xl mx-auto p-4 md:p-6">
-                <div className="space-y-8">
-                    {/* Trending Topics */}
-                    <section>
-                        <div className="flex items-center gap-2 mb-4">
-                            <Flame className="h-5 w-5 text-orange-500" />
-                            <h2 className="text-xl font-bold">Trending Now</h2>
-                        </div>
-                        <TrendingTopicsList
-                            onHashtagClick={(tag) => {
-                                router.push(`/hashtag/${tag}`);
-                            }}
-                        />
-                    </section>
+            <div className="flex-1 overflow-y-auto">
+                <div className="max-w-6xl mx-auto">
 
-                    {/* Suggested Users - horizontal scroll on mobile */}
-                    <section>
-                        <div className="flex items-center gap-2 mb-4">
-                            <Users className="h-5 w-5 text-blue-500" />
-                            <h2 className="text-xl font-bold">Who to Follow</h2>
-                        </div>
-                        {suggestedUsers.length > 0 ? (
-                            <div className="flex gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-3 md:overflow-visible scrollbar-hide">
-                                {suggestedUsers.map((user: any) => (
-                                    <div key={user.id} className="min-w-[200px] md:min-w-0">
-                                        <UserCard
-                                            user={user}
-                                            onFollow={handleFollowUser}
-                                            isFollowing={false}
-                                        />
-                                    </div>
-                                ))}
+                    {/* Suggested Users — Compact Horizontal Stories-like Row */}
+                    {(activeCategory === 'all' || activeCategory === 'people') && suggestedUsers.length > 0 && (
+                        <section className="px-4 py-4 border-b">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                    <Users className="h-4 w-4 text-primary" />
+                                    <h2 className="text-sm font-semibold">Suggested for you</h2>
+                                </div>
+                                <button className="text-xs text-primary font-semibold hover:text-primary/80 flex items-center gap-0.5">
+                                    See All <ChevronRight className="h-3 w-3" />
+                                </button>
                             </div>
-                        ) : (
-                            <div className="flex gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-3 md:overflow-visible">
-                                {[1, 2, 3, 4, 5, 6].map((i) => (
-                                    <div key={i} className="border rounded-lg p-4 space-y-3 min-w-[200px] md:min-w-0">
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-12 w-12 rounded-full bg-muted animate-pulse" />
-                                            <div className="flex-1 space-y-2">
-                                                <div className="h-4 w-24 bg-muted rounded animate-pulse" />
-                                                <div className="h-3 w-16 bg-muted rounded animate-pulse" />
+                            <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
+                                {suggestedUsers.map((user: any) => (
+                                    <Link
+                                        key={user.id}
+                                        href={`/profile/${user.username}`}
+                                        className="flex flex-col items-center gap-1.5 min-w-[72px] group"
+                                    >
+                                        <div className="relative">
+                                            <div className="p-0.5 rounded-full bg-gradient-to-br from-primary via-purple-500 to-pink-500">
+                                                <Avatar className="h-14 w-14 ring-2 ring-background">
+                                                    <AvatarImage src={user.avatar_url || user.avatar || '/user_Avatar/male.png'} />
+                                                    <AvatarFallback className="text-xs">{user.name?.[0] || user.username?.[0] || 'U'}</AvatarFallback>
+                                                </Avatar>
                                             </div>
                                         </div>
-                                        <div className="h-9 w-full bg-muted rounded animate-pulse" />
-                                    </div>
+                                        <span className="text-[11px] text-center truncate w-full font-medium group-hover:text-primary transition-colors">
+                                            {user.username?.length > 10 ? user.username.substring(0, 9) + '…' : user.username}
+                                        </span>
+                                    </Link>
                                 ))}
                             </div>
-                        )}
-                    </section>
+                        </section>
+                    )}
 
-                    {/* Instagram-Style Grid */}
-                    <section>
-                        <div className="flex items-center gap-2 mb-4">
-                            <TrendingUp className="h-5 w-5 text-green-500" />
-                            <h2 className="text-xl font-bold">Discover</h2>
-                        </div>
+                    {/* Trending Topics */}
+                    {(activeCategory === 'all' || activeCategory === 'trending') && (
+                        <section className="px-4 py-4 border-b">
+                            <div className="flex items-center gap-2 mb-3">
+                                <Flame className="h-4 w-4 text-orange-500" />
+                                <h2 className="text-sm font-semibold">Trending</h2>
+                            </div>
+                            <TrendingTopicsList
+                                onHashtagClick={(tag) => {
+                                    router.push(`/hashtag/${tag}`);
+                                }}
+                            />
+                        </section>
+                    )}
 
-                        <div className="grid grid-cols-3 gap-0.5 md:gap-1">
+                    {/* Grid */}
+                    <section className="p-1 md:p-2">
+                        <div className="grid grid-cols-3 gap-0.5 md:gap-1 auto-rows-fr">
                             {isLoading ? (
-                                Array.from({ length: 12 }).map((_, i) => {
+                                Array.from({ length: 15 }).map((_, i) => {
                                     const { col, row } = getGridSpan(i);
                                     return (
                                         <div
                                             key={i}
                                             className={cn(
-                                                "relative aspect-square overflow-hidden bg-muted",
+                                                "relative aspect-square overflow-hidden rounded-sm md:rounded-md",
                                                 col, row
                                             )}
                                         >
-                                            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/10 animate-pulse" />
+                                            <div className="absolute inset-0 bg-muted animate-pulse" />
                                         </div>
                                     );
                                 })
                             ) : exploreContent.length > 0 ? (
                                 exploreContent.map((item, index) => renderGridItem(item, index))
                             ) : (
-                                <div className="col-span-3 text-center py-16 text-muted-foreground">
-                                    <div className="flex flex-col items-center gap-3">
-                                        <Search className="h-12 w-12 text-muted-foreground/40" />
-                                        <p className="text-lg font-medium">No content to explore yet</p>
-                                        <p className="text-sm">Be the first to share something!</p>
+                                <div className="col-span-3 flex flex-col items-center justify-center py-20 text-muted-foreground">
+                                    <div className="p-4 rounded-full bg-muted mb-4">
+                                        <Compass className="h-10 w-10 text-muted-foreground/50" />
                                     </div>
+                                    <p className="text-lg font-semibold">Nothing to explore yet</p>
+                                    <p className="text-sm mt-1">Posts from the community will appear here</p>
                                 </div>
                             )}
                         </div>

@@ -16,8 +16,9 @@ Execute the following SQL files **in order** in your Supabase SQL Editor (Dashbo
 | 4 | `supabase/Calls/04_call_notifications.sql` | Sets up notification triggers for incoming calls |
 | 5 | `supabase/Calls/05_fix_rpc_functions.sql` | **Important**: Fixes function signatures and reloads PostgREST schema cache |
 | 6 | `supabase/Calls/06_fix_posts_rpc.sql` | **Important**: Fixes `get_posts_paginated` RPC (`pl.id` column error) |
+| 7 | `supabase/Calls/07_fix_ambiguous_user_id.sql` | **Important**: Fixes "column reference user_id is ambiguous" in `get_posts_paginated` |
 
-> **⚠️ Files 05 and 06 are critical!** Always run them last. File 06 fixes the `get_posts_paginated` function which references `pl.id` / `pr.id` columns that don't exist (post_likes/post_reposts use composite PKs). Both send `NOTIFY pgrst, 'reload schema'` to refresh the PostgREST schema cache.
+> **⚠️ Files 05, 06, and 07 are critical!** Always run them in order. File 07 fixes the ambiguous `user_id` reference caused by the RETURNS TABLE `user_id` column conflicting with table column names in EXISTS subqueries. All send `NOTIFY pgrst, 'reload schema'` to refresh the PostgREST schema cache.
 
 ### 2. Verify Functions Exist
 
