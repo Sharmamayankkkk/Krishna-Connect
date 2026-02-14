@@ -9,7 +9,7 @@ import { useAppContext } from '@/providers/app-provider';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import {
     ArrowLeft, Loader2, Heart, MessageCircle, Repeat2,
-    Share2, BarChart3, Bookmark, MoreHorizontal, Image as ImageIcon, Quote, Users
+    Share2, BarChart3, Bookmark, MoreHorizontal, Image as ImageIcon, Quote
 } from 'lucide-react';
 import { PostCard, PostSkeleton } from '@/components/features/posts/post-card';
 import { Separator } from '@/components/ui/separator';
