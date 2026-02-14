@@ -4,7 +4,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/utils"
 import { useRouter } from "next/navigation"
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import {
@@ -46,21 +46,24 @@ export default function SecurityPage() {
   const supabase = createClient()
   const router = useRouter()
   const { toast } = useToast()
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
-  const [loginAlerts, setLoginAlerts] = useState(true)
   const [sessions, setSessions] = useState<SessionInfo[]>([])
 
   useEffect(() => {
     // Detect current session info from browser
     const ua = navigator.userAgent
     const isMobile = /Mobile|Android|iPhone/.test(ua)
-    const browser = /Chrome/.test(ua) ? "Chrome" : /Firefox/.test(ua) ? "Firefox" : /Safari/.test(ua) ? "Safari" : /Edge/.test(ua) ? "Edge" : "Browser"
+
+    let browser = "Browser"
+    if (/Edg/.test(ua)) browser = "Edge"
+    else if (/Chrome/.test(ua)) browser = "Chrome"
+    else if (/Firefox/.test(ua)) browser = "Firefox"
+    else if (/Safari/.test(ua)) browser = "Safari"
 
     setSessions([
       {
         id: "current",
         device: isMobile ? "Mobile Device" : "Desktop",
-        browser: browser,
+        browser,
         location: "Current Location",
         lastActive: "Active now",
         isCurrent: true,
@@ -134,8 +137,7 @@ export default function SecurityPage() {
             </div>
           </div>
           <Switch
-            checked={twoFactorEnabled}
-            onCheckedChange={setTwoFactorEnabled}
+            checked={false}
             disabled
             aria-label="Toggle two-factor authentication"
           />
@@ -148,15 +150,18 @@ export default function SecurityPage() {
               <AlertTriangle className="h-4 w-4 text-amber-500" />
             </div>
             <div className="space-y-0.5">
-              <h4 className="text-sm font-medium">Login Alerts</h4>
+              <div className="flex items-center gap-2">
+                <h4 className="text-sm font-medium">Login Alerts</h4>
+                <Badge variant="secondary" className="text-[10px]">Coming Soon</Badge>
+              </div>
               <p className="text-sm text-muted-foreground">
                 Get notified about new sign-ins to your account.
               </p>
             </div>
           </div>
           <Switch
-            checked={loginAlerts}
-            onCheckedChange={setLoginAlerts}
+            checked={false}
+            disabled
             aria-label="Toggle login alerts"
           />
         </div>

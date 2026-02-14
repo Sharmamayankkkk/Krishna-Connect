@@ -4,7 +4,10 @@ import { NextResponse } from "next/server"
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get("code")
-  const next = searchParams.get("next") || "/"
+  const nextParam = searchParams.get("next") || "/"
+
+  // Validate next param to prevent open redirect — must be a relative path
+  const next = nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : "/"
 
   // if `code` is present, use it to exchange for a session
   if (code) {
