@@ -9,7 +9,7 @@ import { useAppContext } from '@/providers/app-provider';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import {
     ArrowLeft, Loader2, Heart, MessageCircle, Repeat2,
-    Share2, BarChart3, Bookmark, MoreHorizontal, Image as ImageIcon
+    Share2, BarChart3, Bookmark, MoreHorizontal, Image as ImageIcon, Quote, Users
 } from 'lucide-react';
 import { PostCard, PostSkeleton } from '@/components/features/posts/post-card';
 import { Separator } from '@/components/ui/separator';
@@ -22,6 +22,13 @@ import { transformPost } from '@/lib/post-utils';
 import { formatDistanceToNow, format } from 'date-fns';
 import Link from 'next/link';
 import { VerificationBadge } from '@/components/shared/verification-badge';
+import {
+    DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem
+} from '@/components/ui/dropdown-menu';
+import {
+    Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
+} from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 
 const POST_QUERY = `
     id,
@@ -109,6 +116,9 @@ export default function PostView() {
     const [isLoading, setIsLoading] = useState(true);
     const [commentContent, setCommentContent] = useState('');
     const [isPostingComment, setIsPostingComment] = useState(false);
+    const [showRepostMenu, setShowRepostMenu] = useState(false);
+    const [isQuoteOpen, setIsQuoteOpen] = useState(false);
+    const [quoteText, setQuoteText] = useState('');
     const commentInputRef = useRef<HTMLTextAreaElement>(null);
     const supabase = createClient();
 
@@ -222,6 +232,29 @@ export default function PostView() {
 
     const handleCommentClick = () => {
         commentInputRef.current?.focus();
+    };
+
+    const handleQuoteSubmit = async () => {
+        if (!loggedInUser || !post || !quoteText.trim()) return;
+        try {
+            const { error } = await supabase.from('posts').insert({
+                user_id: loggedInUser.id,
+                content: quoteText.trim(),
+                quote_of_id: parseInt(post.id),
+            });
+            if (error) throw error;
+            setPost({
+                ...post,
+                stats: { ...post.stats, reposts: post.stats.reposts + 1 },
+            });
+            toast({ title: 'Quote posted!' });
+        } catch (error) {
+            console.error('Error quoting post:', error);
+            toast({ title: 'Error posting quote', variant: 'destructive' });
+        } finally {
+            setQuoteText('');
+            setIsQuoteOpen(false);
+        }
     };
 
     const formatFullDate = (dateStr: string) => {
@@ -401,12 +434,25 @@ export default function PostView() {
                                     >
                                         <MessageCircle className="h-5 w-5" />
                                     </button>
-                                    <button
-                                        onClick={() => handleRepost(post)}
-                                        className={`flex items-center gap-1.5 transition-colors p-2 rounded-full hover:bg-green-500/10 ${post.repostedBy?.includes(loggedInUser?.id || '') ? 'text-green-500' : 'text-muted-foreground hover:text-green-500'}`}
-                                    >
-                                        <Repeat2 className="h-5 w-5" />
-                                    </button>
+                                    <DropdownMenu open={showRepostMenu} onOpenChange={setShowRepostMenu}>
+                                        <DropdownMenuTrigger asChild>
+                                            <button
+                                                className={`flex items-center gap-1.5 transition-colors p-2 rounded-full hover:bg-green-500/10 ${post.repostedBy?.includes(loggedInUser?.id || '') ? 'text-green-500' : 'text-muted-foreground hover:text-green-500'}`}
+                                            >
+                                                <Repeat2 className="h-5 w-5" />
+                                            </button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="center">
+                                            <DropdownMenuItem onClick={() => { handleRepost(post); setShowRepostMenu(false); }}>
+                                                <Repeat2 className="mr-2 h-4 w-4" />
+                                                {post.repostedBy?.includes(loggedInUser?.id || '') ? 'Undo Repost' : 'Repost'}
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => { setShowRepostMenu(false); setIsQuoteOpen(true); }}>
+                                                <Quote className="mr-2 h-4 w-4" />
+                                                Quote Post
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                     <button
                                         onClick={() => handlePostLikeToggle(post)}
                                         className={`flex items-center gap-1.5 transition-colors p-2 rounded-full hover:bg-rose-500/10 ${post.likedBy?.includes(loggedInUser?.id || '') ? 'text-rose-500' : 'text-muted-foreground hover:text-rose-500'}`}
@@ -490,6 +536,33 @@ export default function PostView() {
                     )}
                 </main>
             </ScrollArea>
+
+            {/* Quote Post Dialog */}
+            <Dialog open={isQuoteOpen} onOpenChange={setIsQuoteOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Quote Post</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        {post && (
+                            <div className="border rounded-md p-3 bg-muted/50 text-sm text-muted-foreground">
+                                <p className="font-semibold">{post.author.name}</p>
+                                <p className="line-clamp-3">{post.content}</p>
+                            </div>
+                        )}
+                        <Textarea
+                            placeholder="Add a comment..."
+                            value={quoteText}
+                            onChange={(e) => setQuoteText(e.target.value)}
+                            className="min-h-[100px]"
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={() => setIsQuoteOpen(false)}>Cancel</Button>
+                        <Button onClick={handleQuoteSubmit} disabled={!quoteText.trim()}>Post Quote</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

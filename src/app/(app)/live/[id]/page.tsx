@@ -1,4 +1,10 @@
+import { Metadata } from 'next';
 import { LiveStreamingView } from './components/live-streaming-view';
+
+export const metadata: Metadata = {
+  title: "Live Stream",
+  description: "Watch live streams on Krishna Connect.",
+};
 
 // The main component for the live streaming page
 export default async function LiveStreamingPage({ params }: any) {

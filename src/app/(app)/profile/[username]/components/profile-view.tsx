@@ -156,11 +156,6 @@ export function ProfileView({ profile, posts, repostedPosts, followers, followin
     return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/attachments/${url}`;
   };
 
-  const handlePostClick = (post: PostType) => {
-    setSelectedPost(post);
-    setIsPostDialogOpen(true);
-  };
-
   // Convert Profile to User format for PostDetailDialog
   const profileUser = {
     id: profile.id,
@@ -219,7 +214,6 @@ export function ProfileView({ profile, posts, repostedPosts, followers, followin
   // Filter posts based on local state
   const userPosts = localPosts.filter(p => !(p as any).is_reply && !(p as any).parent_id);
   const userReplies = localPosts.filter(p => (p as any).is_reply || (p as any).parent_id);
-  const mediaPosts = localPosts.filter(p => p.media && p.media.length > 0);
   const pinnedPosts = userPosts.filter(p => (p as any).isPinned || (p as any).pinned_at);
   const unpinnedPosts = userPosts.filter(p => !(p as any).isPinned && !(p as any).pinned_at);
 
@@ -521,14 +515,11 @@ export function ProfileView({ profile, posts, repostedPosts, followers, followin
               <TabsTrigger value="replies" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 Replies
               </TabsTrigger>
-              <TabsTrigger value="media" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
-                Media
-              </TabsTrigger>
               <TabsTrigger value="reposts" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 Reposts
               </TabsTrigger>
-              <TabsTrigger value="likes" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
-                Likes
+              <TabsTrigger value="leela" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
+                Leela
               </TabsTrigger>
             </TabsList>
 
@@ -557,45 +548,6 @@ export function ProfileView({ profile, posts, repostedPosts, followers, followin
               />
             </TabsContent>
 
-            <TabsContent value="media" className="mt-0">
-              {mediaPosts.length === 0 ? (
-                <div className="py-12 text-center">
-                  <p className="text-xl font-bold mb-1">No media yet</p>
-                  <p className="text-muted-foreground">Photos and videos will appear here.</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-3 gap-0.5">
-                  {mediaPosts.map((post) => {
-                    // Support both new structure (media array) and old structure (media_urls) just in case
-                    const mediaItem = post.media?.[0];
-                    const mediaUrl = mediaItem?.url || (post as any).image_url;
-
-                    return mediaUrl ? (
-                      <button
-                        key={post.id}
-                        onClick={() => handlePostClick(post)}
-                        className="aspect-square relative overflow-hidden bg-muted hover:opacity-90 transition-opacity"
-                      >
-                        <Image
-                          src={mediaUrl}
-                          alt="Media"
-                          fill
-                          className="object-cover"
-                        />
-                      </button>
-                    ) : null;
-                  })}
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="likes" className="mt-0">
-              <div className="py-12 text-center">
-                <p className="text-xl font-bold mb-1">Coming Soon</p>
-                <p className="text-muted-foreground">Liked posts will appear here.</p>
-              </div>
-            </TabsContent>
-
             <TabsContent value="reposts" className="mt-0">
               <FeedList
                 posts={repostedPosts}
@@ -606,6 +558,13 @@ export function ProfileView({ profile, posts, repostedPosts, followers, followin
                 onPromote={() => { }}
                 emptyMessage={`When ${isOwnProfile ? 'you repost' : `@${profile.username} reposts`}, it will show up here.`}
               />
+            </TabsContent>
+
+            <TabsContent value="leela" className="mt-0">
+              <div className="py-12 text-center">
+                <p className="text-xl font-bold mb-1">🎲 Leela</p>
+                <p className="text-muted-foreground">Coming Soon — A divine game of self-discovery.</p>
+              </div>
             </TabsContent>
           </Tabs>
         </>
