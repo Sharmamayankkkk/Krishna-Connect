@@ -101,7 +101,7 @@ export default function HashtagPage() {
                                 if (typeof item === 'string') return { type: 'image' as const, url: item };
                                 if (item && typeof item === 'object' && item.url) return { type: item.type || 'image', url: item.url };
                                 return null;
-                            }).filter(Boolean) : [],
+                            }).filter((item: any): item is { type: string; url: string } => item !== null) : [],
                             stats: {
                                 likes: likesCount || 0,
                                 comments: commentsCount || 0,
