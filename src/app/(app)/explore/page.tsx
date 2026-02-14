@@ -98,7 +98,7 @@ export default function ExplorePage() {
                         id: p.author?.id || p.user_id,
                         username: p.author?.username || 'user',
                         name: p.author?.name || 'User',
-                        avatar: p.author?.avatar_url,
+                        avatar: p.author?.avatar_url || '/user_Avatar/male.png',
                         verified: p.author?.verified || 'none'
                     },
                     media: p.media_urls?.map((url: string) => ({
@@ -170,11 +170,24 @@ export default function ExplorePage() {
         return count.toString();
     };
 
+    const filteredContent = React.useMemo(() => {
+        if (activeCategory === 'all') return exploreContent;
+        if (activeCategory === 'trending') {
+            return [...exploreContent].sort((a, b) => (b.data.stats?.likes || 0) - (a.data.stats?.likes || 0));
+        }
+        if (activeCategory === 'latest') {
+            return [...exploreContent].sort((a, b) =>
+                new Date(b.data.createdAt || 0).getTime() - new Date(a.data.createdAt || 0).getTime()
+            );
+        }
+        return exploreContent;
+    }, [exploreContent, activeCategory]);
+
     const renderGridItem = (item: ExploreContentItem, index: number) => {
         const post = item.data;
         const mediaUrl = post.media?.[0]?.url || (Array.isArray((post as any).media_urls) ? (post as any).media_urls[0] : null);
         const firstMedia = mediaUrl && typeof mediaUrl === 'string' && mediaUrl.trim() !== '' ? mediaUrl : null;
-        const isVideo = post.media?.[0]?.type === 'video' || (firstMedia != null && isVideoUrl(firstMedia));
+        const isVideo = post.media?.[0]?.type === 'video' || (firstMedia ? isVideoUrl(firstMedia) : false);
         const thumbnailUrl = videoThumbnails[post.id];
         const contentPreview = post.content?.replace(/[#@]/g, '').substring(0, 100);
         const { col, row } = getGridSpan(index);
@@ -366,9 +379,9 @@ export default function ExplorePage() {
                                     <Users className="h-4 w-4 text-primary" />
                                     <h2 className="text-sm font-semibold">Suggested for you</h2>
                                 </div>
-                                <button className="text-xs text-primary font-semibold hover:text-primary/80 flex items-center gap-0.5">
+                                <Link href="/explore" className="text-xs text-primary font-semibold hover:text-primary/80 flex items-center gap-0.5">
                                     See All <ChevronRight className="h-3 w-3" />
-                                </button>
+                                </Link>
                             </div>
                             <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
                                 {suggestedUsers.map((user: any) => (
@@ -386,7 +399,7 @@ export default function ExplorePage() {
                                             </div>
                                         </div>
                                         <span className="text-[11px] text-center truncate w-full font-medium group-hover:text-primary transition-colors">
-                                            {user.username?.length > 10 ? user.username.substring(0, 9) + '…' : user.username}
+                                            {user.username}
                                         </span>
                                     </Link>
                                 ))}
@@ -427,8 +440,8 @@ export default function ExplorePage() {
                                         </div>
                                     );
                                 })
-                            ) : exploreContent.length > 0 ? (
-                                exploreContent.map((item, index) => renderGridItem(item, index))
+                            ) : filteredContent.length > 0 ? (
+                                filteredContent.map((item, index) => renderGridItem(item, index))
                             ) : (
                                 <div className="col-span-3 flex flex-col items-center justify-center py-20 text-muted-foreground">
                                     <div className="p-4 rounded-full bg-muted mb-4">
