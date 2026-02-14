@@ -331,6 +331,8 @@ export type PollType = {
   totalVotes: number;
   endsAt: string;
   allowMultipleChoices: boolean;
+  isQuiz?: boolean;
+  correctAnswerId?: string;
 };
 
 export type CollaborationRequest = {
@@ -441,19 +443,22 @@ export const generateId = (prefix: 'post' | 'comment' | 'reply' | 'poll' | 'noti
   return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 };
 
-export const createEmptyPoll = (question: string, options: string[], endsInHours: number = 24): PollType => {
+export const createEmptyPoll = (question: string, options: string[], endsInHours: number = 24, isQuiz: boolean = false, correctAnswerIndex: number = -1): PollType => {
+  const pollOptions = options.map((text, index) => ({
+    id: `opt_${Date.now()}_${index}`,
+    text,
+    votes: 0,
+    votedBy: []
+  }));
   return {
     id: generateId('poll'),
     question,
-    options: options.map((text, index) => ({
-      id: `opt_${Date.now()}_${index}`,
-      text,
-      votes: 0,
-      votedBy: []
-    })),
+    options: pollOptions,
     totalVotes: 0,
     endsAt: new Date(Date.now() + 1000 * 60 * 60 * endsInHours).toISOString(),
-    allowMultipleChoices: false
+    allowMultipleChoices: false,
+    isQuiz,
+    correctAnswerId: isQuiz && correctAnswerIndex >= 0 ? pollOptions[correctAnswerIndex]?.id : undefined,
   };
 };
 

@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Heart, MessageCircle, Share2, Music2, Play, Pause, Volume2, VolumeX, ChevronUp, ChevronDown } from 'lucide-react'
+import { Heart, MessageCircle, Share2, Music2, Play, Pause, Volume2, VolumeX, ChevronUp, ChevronDown, Upload, Film } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -322,6 +322,53 @@ export default function LeelaPage() {
     }
   }
 
+  // Upload handler
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
+  const [isUploading, setIsUploading] = React.useState(false)
+
+  const handleUploadLeela = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !loggedInUser) return
+
+    if (!file.type.startsWith('video/')) {
+      toast({ title: 'Only video files are allowed', variant: 'destructive' })
+      return
+    }
+
+    if (file.size > 100 * 1024 * 1024) {
+      toast({ title: 'Video must be under 100MB', variant: 'destructive' })
+      return
+    }
+
+    setIsUploading(true)
+    try {
+      const ext = file.name.split('.').pop() || 'mp4'
+      const filePath = `leela/${loggedInUser.id}/${Date.now()}.${ext}`
+      const { error: uploadError } = await supabase.storage.from('media').upload(filePath, file)
+      if (uploadError) throw uploadError
+
+      const { data: urlData } = supabase.storage.from('media').getPublicUrl(filePath)
+
+      const caption = prompt('Add a caption (optional):') || ''
+
+      const { error: insertError } = await supabase.from('leela_videos').insert({
+        user_id: loggedInUser.id,
+        video_url: urlData.publicUrl,
+        caption: caption || null,
+      })
+
+      if (insertError) throw insertError
+
+      toast({ title: 'Leela uploaded successfully! 🎉' })
+      fetchVideos()
+    } catch (err: any) {
+      toast({ title: 'Upload failed', description: err.message, variant: 'destructive' })
+    } finally {
+      setIsUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
   // Empty state
   if (!isLoading && videos.length === 0) {
     return (
@@ -331,9 +378,12 @@ export default function LeelaPage() {
           <Image src="/icons/leela.png" alt="Leela" width={28} height={28} />
           <h1 className="text-xl font-bold">Leela</h1>
         </header>
+        <input ref={fileInputRef} type="file" accept="video/*" className="hidden" onChange={handleUploadLeela} />
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center gap-6">
           <div className="relative">
-            <Image src="/icons/leela.png" alt="Leela" width={100} height={100} className="opacity-60" />
+            <div className="h-24 w-24 rounded-full bg-gradient-to-br from-primary/20 to-purple-500/20 flex items-center justify-center">
+              <Film className="h-12 w-12 text-primary/60" />
+            </div>
           </div>
           <div className="space-y-2 max-w-sm">
             <h2 className="text-2xl font-bold">Welcome to Leela</h2>
@@ -341,16 +391,13 @@ export default function LeelaPage() {
               Short-form videos from the Krishna Connect community. Be the first to share a Leela!
             </p>
           </div>
-          <div className="flex gap-3">
-            <Button variant="outline" className="gap-2" asChild>
-              <Link href="/explore">
-                <Play className="h-4 w-4" /> Explore Posts
-              </Link>
-            </Button>
-          </div>
-          <div className="mt-8 bg-muted/50 rounded-lg p-4 max-w-xs text-sm text-muted-foreground">
-            <p className="font-medium text-foreground mb-1">💡 How to create a Leela</p>
-            <p>Upload short videos (up to 60 seconds) to share your moments with the community.</p>
+          <Button className="gap-2" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+            {isUploading ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <Upload className="h-4 w-4" />}
+            {isUploading ? 'Uploading...' : 'Upload Your First Leela'}
+          </Button>
+          <div className="mt-4 bg-muted/50 rounded-lg p-4 max-w-xs text-sm text-muted-foreground">
+            <p className="font-medium text-foreground mb-1">💡 What is Leela?</p>
+            <p>Short-form videos (like Reels or Shorts). Upload videos up to 60 seconds to share with the community.</p>
           </div>
         </div>
       </div>
@@ -359,12 +406,21 @@ export default function LeelaPage() {
 
   return (
     <div className="flex flex-col h-[100dvh] bg-black">
+      <input ref={fileInputRef} type="file" accept="video/*" className="hidden" onChange={handleUploadLeela} />
       {/* Header overlay */}
       <header className="absolute top-0 left-0 right-0 z-20 flex items-center gap-3 p-4">
         <SidebarTrigger className="md:hidden text-white" />
         <Image src="/icons/leela.png" alt="Leela" width={24} height={24} />
         <h1 className="text-lg font-bold text-white drop-shadow-lg">Leela</h1>
         <div className="ml-auto flex items-center gap-2">
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            className="p-1.5 rounded-full bg-white/10 backdrop-blur-sm text-white disabled:opacity-30"
+            aria-label="Upload Leela"
+          >
+            <Upload className="h-4 w-4" />
+          </button>
           <button
             onClick={() => navigate('up')}
             disabled={currentIndex === 0}

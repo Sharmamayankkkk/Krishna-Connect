@@ -297,7 +297,7 @@ export function ChatList({ chats }: ChatListProps) {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
                           <span className={cn(
-                            "truncate text-sm",
+                            "truncate text-sm max-w-[180px] sm:max-w-[200px]",
                             hasUnread ? "font-bold" : "font-medium"
                           )}>
                             {name}

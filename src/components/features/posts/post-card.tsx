@@ -358,14 +358,17 @@ const PollDisplay = ({ poll, postId, onVote, hasVoted, userId }: { poll: PollTyp
     const [showVoters, setShowVoters] = React.useState<string | null>(null);
     if (!poll) return null;
     const totalVotes = poll.options.reduce((acc, curr) => acc + curr.votes, 0);
-    const isQuiz = (poll as any).isQuiz === true;
-    const correctAnswerId = (poll as any).correctAnswerId;
+    const isQuiz = poll.isQuiz === true;
+    const correctAnswerId = poll.correctAnswerId;
     const userVotedOptionId = poll.options.find(opt => opt.votedBy?.includes(userId || ''))?.id;
 
     return (
         <div className="mt-3 space-y-2">
             {poll.question && (
-                <p className="font-semibold text-sm mb-2">{poll.question}</p>
+                <div className="flex items-center gap-2 mb-2">
+                    <p className="font-semibold text-sm">{poll.question}</p>
+                    {isQuiz && <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 font-medium">Quiz</span>}
+                </div>
             )}
             {poll.options.map((option) => {
                 const percentage = totalVotes === 0 ? 0 : Math.round((option.votes / totalVotes) * 100);
