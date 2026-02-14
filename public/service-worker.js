@@ -201,7 +201,7 @@ self.addEventListener('notificationclick', (event) => {
                 if (clientList.length > 0) {
                     return clientList[0].focus();
                 }
-                // If no window open, open the app
+                // If no window open, open the app (calls are now integrated into /chat)
                 return clients.openWindow ? clients.openWindow('/chat') : Promise.resolve();
             }).catch((err) => {
                 console.warn('[SW] Error handling accept action:', err);

@@ -539,14 +539,14 @@ export function CallProvider({ children }: { children: ReactNode }) {
           if ("Notification" in window && Notification.permission === "granted") {
             navigator.serviceWorker?.getRegistration().then((reg) => {
               if (reg) {
-                // Build notification options — Safari doesn't support requireInteraction
-                const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+                // Build notification options — use feature detection for requireInteraction
                 const notifOptions: NotificationOptions & { requireInteraction?: boolean } = {
                   body: `${callerUser.name} is calling you`,
                   icon: callerUser.avatar_url || "/logo/light_KCS.png",
                   tag: `call-${callRecord.id}`,
                 }
-                if (!isSafari) {
+                // Feature detect: Safari doesn't support maxActions on Notification, so skip requireInteraction
+                if (typeof Notification !== "undefined" && "maxActions" in Notification) {
                   notifOptions.requireInteraction = true
                 }
                 reg.showNotification(`Incoming ${callRecord.call_type} call`, notifOptions)

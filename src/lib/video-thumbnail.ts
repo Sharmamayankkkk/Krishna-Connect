@@ -11,7 +11,7 @@ export function extractVideoThumbnail(videoUrl: string): Promise<string> {
     video.muted = true
     video.preload = "auto" // Safari needs 'auto' instead of 'metadata' for seeking
     video.playsInline = true // Required for iOS Safari
-    // @ts-ignore — webkit-playsinline is for older iOS Safari
+    // Older iOS Safari needs webkit-playsinline attribute
     video.setAttribute("webkit-playsinline", "true")
 
     let resolved = false
@@ -53,7 +53,7 @@ export function extractVideoThumbnail(videoUrl: string): Promise<string> {
       const duration = video.duration
       if (!duration || !isFinite(duration) || duration <= 0) {
         // Some browsers (Firefox) may report Infinity for streaming videos
-        // Try capturing at 0.1s as fallback
+        // Fall back to seeking near the start — subsequent event handlers will capture the frame
         video.currentTime = 0.1
         return
       }
