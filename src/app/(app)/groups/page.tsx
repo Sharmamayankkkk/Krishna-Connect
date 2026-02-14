@@ -114,7 +114,7 @@ export default function GroupsPage() {
 
             if (data?.success) {
                 toast({
-                    title: "✓ Joined group!",
+                    title: "Joined group",
                     description: "You are now a member of this group"
                 });
                 // Refresh groups
@@ -212,7 +212,7 @@ export default function GroupsPage() {
                 });
 
             toast({
-                title: "✓ Group created!",
+                title: "Group created",
                 description: `${newGroupName} has been created successfully`
             });
 

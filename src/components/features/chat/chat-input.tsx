@@ -7,7 +7,7 @@
 
 import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { MoreVertical, Paperclip, Phone, Send, Smile, Video, Mic, Check, CheckCheck, Pencil, Trash2, SmilePlus, X, FileIcon, Download, StopCircle, Copy, Star, Share2, Shield, Loader2, Pause, Play, StickyNote, Users, UserX, ShieldAlert, Pin, PinOff, Reply, Clock, CircleSlash, ArrowDown, AtSign, Image as ImageIcon, Info, Bold, Italic, Strikethrough, Code } from 'lucide-react';
+import { MoreVertical, Paperclip, Phone, Send, Smile, Video, Mic, Check, CheckCheck, Pencil, Trash2, SmilePlus, X, FileIcon, Download, StopCircle, Copy, Star, Share2, Shield, Loader2, Pause, Play, StickyNote, Users, UserX, ShieldAlert, Pin, PinOff, Reply, Clock, CircleSlash, ArrowDown, AtSign, Image as ImageIcon, Info, Bold, Italic, Strikethrough, Code, Sparkles, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import TextareaAutosize from 'react-textarea-autosize';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -859,9 +859,9 @@ export function ChatInput({
                             <Tabs defaultValue="emoji" className="w-full">
                                 <TabsList className="grid w-full grid-cols-3">
                                     {(loggedInUser.is_verified === 'verified' || loggedInUser.is_verified === 'kcs') ? (
-                                        <TabsTrigger value="custom-emoji"><ImageIcon className="mr-2 h-4 w-4" />Official ✨</TabsTrigger>
+                                        <TabsTrigger value="custom-emoji"><ImageIcon className="mr-2 h-4 w-4" />Official <Sparkles className="ml-1 h-3 w-3" /></TabsTrigger>
                                     ) : (
-                                        <TabsTrigger value="custom-emoji" disabled className="opacity-50" aria-label="Official emojis - Premium feature"><ImageIcon className="mr-2 h-4 w-4" />Official 🔒</TabsTrigger>
+                                        <TabsTrigger value="custom-emoji" disabled className="opacity-50" aria-label="Official emojis - Premium feature"><ImageIcon className="mr-2 h-4 w-4" />Official <Lock className="ml-1 h-3 w-3" /></TabsTrigger>
                                     )}
                                     <TabsTrigger value="emoji"><Smile className="mr-2 h-4 w-4" />Emojis</TabsTrigger>
                                     <TabsTrigger value="stickers"><StickyNote className="mr-2 h-4 w-4" />Stickers</TabsTrigger>

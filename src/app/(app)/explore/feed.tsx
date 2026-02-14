@@ -610,7 +610,7 @@ export default function Feed() {
                                     <span>·</span>
                                     <Link href="/terms" className="hover:underline">Terms</Link>
                                     <span>·</span>
-                                    <span>© 2024 Krishna Connect</span>
+                                    <span>© 2026 Krishna Connect</span>
                                 </div>
                             </div>
                         </div>

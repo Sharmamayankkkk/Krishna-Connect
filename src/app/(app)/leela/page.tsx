@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Heart, MessageCircle, Share2, Music2, Play, Pause, Volume2, VolumeX, ChevronUp, ChevronDown, Upload, Film } from 'lucide-react'
+import { Heart, MessageCircle, Share2, Music2, Play, Pause, Volume2, VolumeX, ChevronUp, ChevronDown, Upload, Film, Lightbulb, CheckCircle } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -158,7 +158,7 @@ function VideoPlayer({
             @{video.author_username}
           </span>
           {video.author_verified !== 'none' && (
-            <span className="text-blue-400 text-xs">✓</span>
+            <CheckCircle className="h-3.5 w-3.5 text-blue-400" />
           )}
         </Link>
 
@@ -357,7 +357,7 @@ export default function LeelaPage() {
 
       if (insertError) throw insertError
 
-      toast({ title: 'Leela uploaded successfully! 🎉' })
+      toast({ title: 'Leela uploaded successfully' })
       fetchVideos()
     } catch (err: any) {
       toast({ title: 'Upload failed', description: err.message, variant: 'destructive' })
@@ -394,8 +394,8 @@ export default function LeelaPage() {
             {isUploading ? 'Uploading...' : 'Upload Your First Leela'}
           </Button>
           <div className="mt-4 bg-muted/50 rounded-lg p-4 max-w-xs text-sm text-muted-foreground">
-            <p className="font-medium text-foreground mb-1">💡 What is Leela?</p>
-            <p>Short-form videos (like Reels or Shorts). Upload videos up to 60 seconds to share with the community.</p>
+            <p className="font-medium text-foreground mb-1 flex items-center gap-1.5"><Lightbulb className="h-3.5 w-3.5" /> What is Leela?</p>
+            <p>Share divine moments through short-form videos up to 60 seconds. Express your devotion, share teachings, and connect with the community through visual stories.</p>
           </div>
         </div>
       </div>

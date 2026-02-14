@@ -884,7 +884,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                         onClick={() => { setIsQuizMode(!isQuizMode); setCorrectAnswerIndex(-1); }}
                                         className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${isQuizMode ? 'bg-green-500/10 border-green-500/30 text-green-600' : 'border-border text-muted-foreground hover:text-foreground'}`}
                                     >
-                                        {isQuizMode ? '✓ Quiz Mode' : 'Quiz Mode'}
+                                        {isQuizMode ? <><CheckCircle2 className="h-3 w-3 inline mr-0.5" /> Quiz Mode</> : 'Quiz Mode'}
                                     </button>
                                     <Button variant="ghost" size="icon" onClick={togglePollMode} className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive">
                                         <X className="h-4 w-4" />
@@ -996,7 +996,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                                 <Tabs defaultValue="emojis" className="w-[320px]">
                                                     <TabsList className="w-full rounded-none bg-muted/50 h-9">
                                                         {customEmojiList.length > 0 && isVerified && (
-                                                            <TabsTrigger value="official" className="flex-1 text-xs">Official ✨</TabsTrigger>
+                                                            <TabsTrigger value="official" className="flex-1 text-xs gap-1">Official <Sparkles className="h-3 w-3" /></TabsTrigger>
                                                         )}
                                                         <TabsTrigger value="emojis" className="flex-1 text-xs">Emojis</TabsTrigger>
                                                         {stickerList.length > 0 && (
@@ -1039,7 +1039,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                                     {!isVerified && customEmojiList.length > 0 && (
                                                         <div className="px-3 py-2 bg-muted/30 border-t text-center">
                                                             <p className="text-xs text-muted-foreground">
-                                                                ✨ <a href="/get-verified" className="text-primary hover:underline font-medium">Get Verified</a> to unlock Official Emojis & Stickers
+                                                                <Sparkles className="h-3 w-3 inline mr-1" /><a href="/get-verified" className="text-primary hover:underline font-medium">Get Verified</a> to unlock Official Emojis
                                                             </p>
                                                         </div>
                                                     )}

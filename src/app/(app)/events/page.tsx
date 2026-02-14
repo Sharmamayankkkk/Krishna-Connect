@@ -112,7 +112,7 @@ export default function EventsPage() {
                                 <Link href="/get-verified">
                                     <PlusCircle className="h-4 w-4" />
                                     <span className="hidden sm:inline">Get Verified to Create</span>
-                                    <span className="sm:hidden">✨</span>
+                                    <span className="sm:hidden"><PlusCircle className="h-3.5 w-3.5" /></span>
                                 </Link>
                             </Button>
                         )}

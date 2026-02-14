@@ -6,7 +6,7 @@ import webpush from 'web-push';
 // NOTE: You must have set these in .env.local!
 if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
     webpush.setVapidDetails(
-        'mailto:support@krishnaconnect.in',
+        'mailto:madanmohandas@krishnaconnect.in',
         process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
         process.env.VAPID_PRIVATE_KEY
     );

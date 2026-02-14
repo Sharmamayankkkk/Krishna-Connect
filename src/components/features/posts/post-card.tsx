@@ -34,6 +34,8 @@ import {
     Repeat2,
     Clock,
     CheckCircle2,
+    CheckCircle,
+    XCircle,
     TrendingUp,
     Users,
     Loader2,
@@ -463,7 +465,10 @@ const PollDisplay = ({ poll, postId, onVote, hasVoted, userId }: { poll: PollTyp
                         ? "bg-green-500/10 text-green-700 dark:text-green-400"
                         : "bg-red-500/10 text-red-700 dark:text-red-400"
                 )}>
-                    {userVotedOptionId === correctAnswerId ? '✅ Correct!' : '❌ Wrong answer'}
+                    {userVotedOptionId === correctAnswerId
+                        ? <><CheckCircle className="h-4 w-4 inline mr-1" />Correct!</>
+                        : <><XCircle className="h-4 w-4 inline mr-1" />Wrong answer</>
+                    }
                 </div>
             )}
 

@@ -266,7 +266,7 @@ export default function GetVerifiedPage() {
                         <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-emerald-600 shadow-lg shadow-green-500/20">
                             <PartyPopper className="h-10 w-10 text-white" />
                         </div>
-                        <DialogTitle className="text-2xl">Application Received! 🎉</DialogTitle>
+                        <DialogTitle className="text-2xl">Application Received</DialogTitle>
                         <DialogDescription className="text-base leading-relaxed">
                             Thank you for applying! We will review your application and contact you shortly to schedule your KCS Meet.
                         </DialogDescription>

@@ -113,7 +113,7 @@ export function WhatsNewDialog() {
 
                 <DialogFooter>
                     <Button onClick={handleClose} className="w-full bg-primary hover:bg-primary/90">
-                        Jay Sri Krishna! 🙏
+                        Jay Sri Krishna
                     </Button>
                 </DialogFooter>
             </DialogContent>

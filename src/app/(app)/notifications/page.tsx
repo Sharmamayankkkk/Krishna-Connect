@@ -530,7 +530,7 @@ export default function NotificationsPage() {
         }
 
         toast({
-            title: "✓ All marked as read",
+            title: "All marked as read",
         });
     }, [toast]);
 
@@ -550,7 +550,7 @@ export default function NotificationsPage() {
         }
 
         toast({
-            title: "✗ Notification deleted",
+            title: "Notification deleted",
             variant: 'destructive'
         });
     }, [toast]);
@@ -587,7 +587,7 @@ export default function NotificationsPage() {
             });
         } else {
             toast({
-                title: "✓ Collaboration accepted!",
+                title: "Collaboration accepted",
                 description: "You are now a collaborator on the post."
             });
             // Mark notification as read
@@ -627,7 +627,7 @@ export default function NotificationsPage() {
             });
         } else {
             toast({
-                title: "✗ Collaboration declined.",
+                title: "Collaboration declined",
                 variant: 'destructive'
             });
             // Mark notification as read
@@ -654,7 +654,7 @@ export default function NotificationsPage() {
         }
 
         toast({
-            title: "✓ All notifications cleared",
+            title: "All notifications cleared",
             description: "Your notification inbox is now empty"
         });
     }, [toast]);

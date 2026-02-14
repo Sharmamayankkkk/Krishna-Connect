@@ -331,7 +331,7 @@ export default function ExplorePage() {
                                 "font-semibold text-white/95 leading-snug",
                                 isLarge ? "text-xs sm:text-base line-clamp-6" : "text-[10px] sm:text-xs line-clamp-3 sm:line-clamp-4"
                             )}>
-                                {contentPreview || 'Shared a thought ✨'}
+                                {contentPreview || 'Shared a thought'}
                             </p>
                             <div className="flex items-center justify-center gap-1">
                                 <Avatar className="h-3.5 w-3.5 sm:h-4 sm:w-4">
