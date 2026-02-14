@@ -458,7 +458,7 @@ export const createEmptyPoll = (question: string, options: string[], endsInHours
     endsAt: new Date(Date.now() + 1000 * 60 * 60 * endsInHours).toISOString(),
     allowMultipleChoices: false,
     isQuiz,
-    correctAnswerId: isQuiz && correctAnswerIndex >= 0 ? pollOptions[correctAnswerIndex]?.id : undefined,
+    correctAnswerId: isQuiz && correctAnswerIndex >= 0 && correctAnswerIndex < pollOptions.length ? pollOptions[correctAnswerIndex].id : undefined,
   };
 };
 

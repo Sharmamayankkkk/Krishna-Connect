@@ -861,13 +861,13 @@ export function ChatInput({
                                     {(loggedInUser.is_verified === 'verified' || loggedInUser.is_verified === 'kcs') ? (
                                         <TabsTrigger value="custom-emoji"><ImageIcon className="mr-2 h-4 w-4" />Official ✨</TabsTrigger>
                                     ) : (
-                                        <TabsTrigger value="custom-emoji" disabled className="opacity-50"><ImageIcon className="mr-2 h-4 w-4" />Official 🔒</TabsTrigger>
+                                        <TabsTrigger value="custom-emoji" disabled className="opacity-50" aria-label="Official emojis - Premium feature"><ImageIcon className="mr-2 h-4 w-4" />Official 🔒</TabsTrigger>
                                     )}
                                     <TabsTrigger value="emoji"><Smile className="mr-2 h-4 w-4" />Emojis</TabsTrigger>
                                     {(loggedInUser.is_verified === 'verified' || loggedInUser.is_verified === 'kcs') ? (
                                         <TabsTrigger value="stickers"><StickyNote className="mr-2 h-4 w-4" />Stickers</TabsTrigger>
                                     ) : (
-                                        <TabsTrigger value="stickers" disabled className="opacity-50"><StickyNote className="mr-2 h-4 w-4" />Stickers 🔒</TabsTrigger>
+                                        <TabsTrigger value="stickers" disabled className="opacity-50" aria-label="Stickers - Premium feature"><StickyNote className="mr-2 h-4 w-4" />Stickers 🔒</TabsTrigger>
                                     )}
                                 </TabsList>
                                 <TabsContent value="custom-emoji">

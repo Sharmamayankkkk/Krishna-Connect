@@ -349,12 +349,10 @@ export default function LeelaPage() {
 
       const { data: urlData } = supabase.storage.from('media').getPublicUrl(filePath)
 
-      const caption = prompt('Add a caption (optional):') || ''
-
       const { error: insertError } = await supabase.from('leela_videos').insert({
         user_id: loggedInUser.id,
         video_url: urlData.publicUrl,
-        caption: caption || null,
+        caption: null,
       })
 
       if (insertError) throw insertError

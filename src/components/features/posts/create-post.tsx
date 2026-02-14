@@ -389,6 +389,8 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     const removePollOption = (index: number) => {
         if (pollOptions.length > 2) {
             setPollOptions(pollOptions.filter((_, i) => i !== index));
+            if (correctAnswerIndex === index) setCorrectAnswerIndex(-1);
+            else if (correctAnswerIndex > index) setCorrectAnswerIndex(correctAnswerIndex - 1);
         }
     };
 
@@ -928,7 +930,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                             className={`flex-1 ${isQuizMode && correctAnswerIndex === index ? 'border-green-500/30 bg-green-500/5' : ''}`}
                                         />
                                         {pollOptions.length > 2 && (
-                                            <Button variant="ghost" size="icon" onClick={() => { removePollOption(index); if (correctAnswerIndex === index) setCorrectAnswerIndex(-1); else if (correctAnswerIndex > index) setCorrectAnswerIndex(correctAnswerIndex - 1); }} className="text-muted-foreground hover:text-destructive">
+                                            <Button variant="ghost" size="icon" onClick={() => removePollOption(index)} className="text-muted-foreground hover:text-destructive">
                                                 <X className="h-4 w-4" />
                                             </Button>
                                         )}
