@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Our Team | Krishna Connect",
-  description: "Meet the developers and the inspiration behind Krishna Connect.",
+  description: "Meet the departments and the inspiration behind Krishna Connect.",
 };
 
 // Helper component for team cards
@@ -30,12 +30,12 @@ const TeamMemberCard = ({ name, role, imageSrc, initial }: { name: string; role?
 );
 
 const DevelopersPage = () => {
-  // Developer Data
-  const developers = [
-    { name: "Mayank Sharma", role: "Frontend & Backend" },
-    { name: "Bhavya Shingari", role: "UI/UX Designer" },
-    { name: "Himani Vaishnav", role: "Contributor" },
-    { name: "Omkar Joshi", role: "Contributor" },
+  // Department Data
+  const departments = [
+    { name: "KCS Web Development", role: "Frontend & Backend Engineering", initial: "WD" },
+    { name: "KCS Design Studio", role: "UI/UX & Visual Design", initial: "DS" },
+    { name: "KCS Quality Assurance", role: "Testing & Performance", initial: "QA" },
+    { name: "KCS DevOps", role: "Infrastructure & Deployment", initial: "DO" },
   ];
 
   return (
@@ -93,17 +93,18 @@ const DevelopersPage = () => {
         <div className="flex items-center justify-center gap-4 mb-10">
           <div className="h-px bg-border flex-1 max-w-[100px]" />
           <h2 className="text-2xl font-bold text-center text-foreground">
-            Development Team
+            Our Departments
           </h2>
           <div className="h-px bg-border flex-1 max-w-[100px]" />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {developers.map((dev, index) => (
+          {departments.map((dept, index) => (
             <TeamMemberCard
               key={index}
-              name={dev.name}
-              role={dev.role}
+              name={dept.name}
+              role={dept.role}
+              initial={dept.initial}
             />
           ))}
         </div>
