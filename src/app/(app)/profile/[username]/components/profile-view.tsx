@@ -21,7 +21,8 @@ import {
   Ban,
   Loader2,
   Share2,
-  Pin
+  Pin,
+  Play
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { PostCard } from "@/components/features/posts/post-card";
@@ -561,7 +562,21 @@ export function ProfileView({ profile, posts, repostedPosts, followers, followin
             </TabsContent>
 
             <TabsContent value="leela" className="mt-0">
-              <LeelaProfileTab userId={profile.id} username={profile.username} isOwnProfile={isOwnProfile} />
+              <div className="py-12 text-center space-y-3">
+                <div className="flex justify-center">
+                  <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
+                    <Play className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                </div>
+                <p className="text-lg font-semibold">
+                  {isOwnProfile ? "Your Leela videos" : `@${profile.username}'s Leela videos`}
+                </p>
+                <p className="text-muted-foreground text-sm">
+                  {isOwnProfile
+                    ? "Short-form videos you share will appear here."
+                    : "Short-form videos will appear here."}
+                </p>
+              </div>
             </TabsContent>
           </Tabs>
         </>

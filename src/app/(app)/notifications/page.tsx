@@ -26,6 +26,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { NotificationType } from '@/lib/types';
 import { PushNotificationManager } from '@/components/layout/push-notification-manager';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 
 type NotificationFilter = 'all' | 'mentions' | 'likes' | 'comments' | 'follows';
 
@@ -660,11 +661,12 @@ export default function NotificationsPage() {
     return (
         <div className="flex flex-col min-h-screen w-full bg-background">
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b">
+            <div className="sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
                 <div className="flex items-center justify-between py-4 px-4 sm:px-6">
                     <div className="flex items-center gap-3 min-w-0">
-                        <Bell className="h-6 w-6 text-primary" />
-                        <h1 className="text-2xl font-bold">Notifications</h1>
+                        <SidebarTrigger className="md:hidden" />
+                        <Bell className="h-5 w-5 text-primary" />
+                        <h1 className="text-xl font-bold">Notifications</h1>
                         {unreadCount > 0 && (
                             <Badge variant="default" className="rounded-full px-2 py-0.5">
                                 {unreadCount}

@@ -118,6 +118,18 @@ function processInlineFormatting(text: string, onHareKrishnaClick?: () => void, 
 }
 
 export function RichTextRenderer({ content, className, onHareKrishnaClick }: RichTextRendererProps) {
+    const [emojiMap, setEmojiMap] = React.useState<Map<string, string>>(customEmojiCache || new Map());
+
+    // Fetch custom emojis once
+    React.useEffect(() => {
+        // Only fetch if content contains potential custom emojis
+        if (content && content.includes(':')) {
+            fetchCustomEmojis().then(map => {
+                if (map.size > 0) setEmojiMap(map);
+            });
+        }
+    }, [content]);
+
     if (!content) return null;
 
     const lines = content.split('\n');
@@ -140,7 +152,7 @@ export function RichTextRenderer({ content, className, onHareKrishnaClick }: Ric
         if (headingMatch) {
             elements.push(
                 <h2 key={key} className="text-lg font-bold mt-2 mb-1">
-                    {processInlineFormatting(headingMatch[1], onHareKrishnaClick, key)}
+                    {processInlineFormatting(headingMatch[1], onHareKrishnaClick, key, emojiMap)}
                 </h2>
             );
             lineIndex++;
@@ -154,7 +166,7 @@ export function RichTextRenderer({ content, className, onHareKrishnaClick }: Ric
                 const itemText = lines[lineIndex].replace(/^-\s+/, '');
                 listItems.push(
                     <li key={`${key}-item-${listItems.length}`} className="ml-1">
-                        {processInlineFormatting(itemText, onHareKrishnaClick, `${key}-${listItems.length}`)}
+                        {processInlineFormatting(itemText, onHareKrishnaClick, `${key}-${listItems.length}`, emojiMap)}
                     </li>
                 );
                 lineIndex++;
@@ -174,7 +186,7 @@ export function RichTextRenderer({ content, className, onHareKrishnaClick }: Ric
                 const itemText = lines[lineIndex].replace(/^\d+\.\s+/, '');
                 listItems.push(
                     <li key={`${key}-item-${listItems.length}`} className="ml-1">
-                        {processInlineFormatting(itemText, onHareKrishnaClick, `${key}-${listItems.length}`)}
+                        {processInlineFormatting(itemText, onHareKrishnaClick, `${key}-${listItems.length}`, emojiMap)}
                     </li>
                 );
                 lineIndex++;
@@ -191,7 +203,7 @@ export function RichTextRenderer({ content, className, onHareKrishnaClick }: Ric
         if (line.trim()) {
             elements.push(
                 <React.Fragment key={key}>
-                    {processInlineFormatting(line, onHareKrishnaClick, key)}
+                    {processInlineFormatting(line, onHareKrishnaClick, key, emojiMap)}
                     {lineIndex < lines.length - 1 && '\n'}
                 </React.Fragment>
             );

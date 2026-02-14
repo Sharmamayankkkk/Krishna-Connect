@@ -57,6 +57,8 @@ import { PromotePostDialog } from './dialogs/promote-post-dialog';
 import { SharePostDialog } from './dialogs/share-post-dialog';
 import { LikedByDialog } from './dialogs/liked-by-dialog';
 import { VerificationBadge } from "@/components/shared/verification-badge";
+import { AutoLinkPreview } from './auto-link-preview';
+import { QrCodeOverlay } from '../media/qr-code-overlay';
 
 interface PostCardProps {
     post: PostType;
@@ -293,7 +295,7 @@ const MediaGrid = ({ media, onMediaClick }: { media: MediaType[], onMediaClick: 
                 >
                     {m.type === 'image' ? (
                         <div
-                            className="w-full h-full cursor-pointer overflow-hidden group/image"
+                            className="w-full h-full cursor-pointer overflow-hidden group/image relative"
                             onClick={(e) => { e.stopPropagation(); onMediaClick(index); }}
                         >
                             <Image
@@ -303,6 +305,7 @@ const MediaGrid = ({ media, onMediaClick }: { media: MediaType[], onMediaClick: 
                                 className="object-cover transition-transform duration-500 group-hover/image:scale-105"
                                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                             />
+                            <QrCodeOverlay imageUrl={m.url} />
                         </div>
                     ) : (
                         <VideoPlayer src={m.url} poster={m.thumbnailUrl} />
@@ -949,6 +952,9 @@ export function PostCard({
                         {/* Embedded Post */}
                         {originalPost && <EmbeddedPost post={originalPost} />}
 
+                        {/* Link Preview */}
+                        {content && !post.poll && <AutoLinkPreview content={content} />}
+
                         {/* Action Bar */}
                         <div className="flex items-center justify-between mt-4">
                             {/* Comment */}
@@ -1019,13 +1025,18 @@ export function PostCard({
                                             isLiked ? "fill-current scale-110" : "group-hover:scale-110"
                                         )} />
                                     </div>
-                                    <span className={cn(
-                                        "text-xs font-medium tabular-nums",
-                                        isLiked && "font-bold"
-                                    )}>
-                                        {formatNumber(stats.likes || 0)}
-                                    </span>
                                 </Button>
+                                {(stats.likes || 0) > 0 && (
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); setIsLikedByDialogOpen(true); }}
+                                        className={cn(
+                                            "text-xs font-medium tabular-nums hover:underline cursor-pointer -ml-1",
+                                            isLiked ? "text-pink-600 font-bold" : "text-muted-foreground"
+                                        )}
+                                    >
+                                        {formatNumber(stats.likes)}
+                                    </button>
+                                )}
                             </div>
 
                             {/* Views */}

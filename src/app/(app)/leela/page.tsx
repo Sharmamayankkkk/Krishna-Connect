@@ -257,7 +257,7 @@ export default function LeelaPage() {
 
   React.useEffect(() => {
     if (videos[currentIndex]) {
-      supabase.rpc('record_leela_view', { p_video_id: videos[currentIndex].id }).catch(() => {})
+      void supabase.rpc('record_leela_view', { p_video_id: videos[currentIndex].id })
     }
   }, [currentIndex, videos, supabase])
 

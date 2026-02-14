@@ -91,16 +91,21 @@ export default function EventsPage() {
     return (
         <div className="flex h-full flex-col">
             {loggedInUser?.is_verified && <CreateEventDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} onEventCreated={fetchEvents} onEventUpdated={fetchEvents} />}
-            <header className="flex items-center gap-4 p-4 border-b bg-background sticky top-0 z-10">
-                <SidebarTrigger className="md:hidden" />
-                <h2 className="text-xl font-bold tracking-tight">Events</h2>
-                <div className="ml-auto">
-                    {loggedInUser?.is_verified && (
-                        <Button onClick={() => setIsCreateOpen(true)}>
-                            <PlusCircle className="mr-2 h-4 w-4" />
-                            Create Event
-                        </Button>
-                    )}
+            <header className="sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+                <div className="flex items-center gap-4 p-4">
+                    <SidebarTrigger className="md:hidden" />
+                    <div className="flex items-center gap-2">
+                        <Calendar className="h-5 w-5 text-primary" />
+                        <h1 className="text-xl font-bold">Events</h1>
+                    </div>
+                    <div className="ml-auto">
+                        {loggedInUser?.is_verified && (
+                            <Button onClick={() => setIsCreateOpen(true)} size="sm" className="gap-2 rounded-full">
+                                <PlusCircle className="h-4 w-4" />
+                                <span className="hidden sm:inline">Create Event</span>
+                            </Button>
+                        )}
+                    </div>
                 </div>
             </header>
             <main className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8">
