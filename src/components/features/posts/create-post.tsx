@@ -204,6 +204,39 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
         setShowEmojiPicker(false);
     };
 
+    // Custom emoji handler (inserts :emojiName: syntax)
+    const handleCustomEmojiClick = (emojiUrl: string) => {
+        const name = emojiUrl.split('/').pop()?.split('.')[0] || 'emoji';
+        const emojiSyntax = `:${name}:`;
+        const textarea = textareaRef.current;
+        if (textarea) {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const newContent = content.substring(0, start) + emojiSyntax + content.substring(end);
+            setContent(newContent);
+            setTimeout(() => {
+                textarea.selectionStart = textarea.selectionEnd = start + emojiSyntax.length;
+                textarea.focus();
+            }, 0);
+        } else {
+            setContent(prev => prev + emojiSyntax);
+        }
+        setShowEmojiPicker(false);
+    };
+
+    // Fetch custom emojis and stickers
+    const [customEmojiList, setCustomEmojiList] = React.useState<string[]>([]);
+    const [stickerList, setStickerList] = React.useState<string[]>([]);
+    React.useEffect(() => {
+        fetch('/api/assets')
+            .then(res => res.json())
+            .then(data => {
+                setCustomEmojiList(data.emojis || []);
+                setStickerList(data.stickers || []);
+            })
+            .catch(() => {});
+    }, []);
+
     // Image upload
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
@@ -917,7 +950,50 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                         <div className="absolute top-10 left-0 z-50 animate-in fade-in zoom-in-95 duration-200">
                                             <div className="fixed inset-0 z-40" onClick={() => setShowEmojiPicker(false)} />
                                             <div className="relative z-50 shadow-2xl rounded-xl overflow-hidden border bg-background">
-                                                <EmojiPicker onEmojiClick={handleEmojiClick} width={320} height={400} theme={Theme.AUTO} />
+                                                <Tabs defaultValue="emojis" className="w-[320px]">
+                                                    <TabsList className="w-full rounded-none bg-muted/50 h-9">
+                                                        {customEmojiList.length > 0 && (
+                                                            <TabsTrigger value="official" className="flex-1 text-xs">Official</TabsTrigger>
+                                                        )}
+                                                        <TabsTrigger value="emojis" className="flex-1 text-xs">Emojis</TabsTrigger>
+                                                        {stickerList.length > 0 && (
+                                                            <TabsTrigger value="stickers" className="flex-1 text-xs">Stickers</TabsTrigger>
+                                                        )}
+                                                    </TabsList>
+                                                    {customEmojiList.length > 0 && (
+                                                        <TabsContent value="official" className="mt-0">
+                                                            <div className="grid grid-cols-6 gap-2 p-3 max-h-[300px] overflow-y-auto">
+                                                                {customEmojiList.map((url, i) => (
+                                                                    <button
+                                                                        key={i}
+                                                                        onClick={() => handleCustomEmojiClick(url)}
+                                                                        className="h-12 w-12 rounded-lg hover:bg-muted/80 flex items-center justify-center transition-colors p-1"
+                                                                    >
+                                                                        <Image src={url} alt="emoji" width={36} height={36} className="object-contain" unoptimized />
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        </TabsContent>
+                                                    )}
+                                                    <TabsContent value="emojis" className="mt-0">
+                                                        <EmojiPicker onEmojiClick={handleEmojiClick} width={320} height={350} theme={Theme.AUTO} />
+                                                    </TabsContent>
+                                                    {stickerList.length > 0 && (
+                                                        <TabsContent value="stickers" className="mt-0">
+                                                            <div className="grid grid-cols-4 gap-2 p-3 max-h-[300px] overflow-y-auto">
+                                                                {stickerList.map((url, i) => (
+                                                                    <button
+                                                                        key={i}
+                                                                        onClick={() => handleCustomEmojiClick(url)}
+                                                                        className="rounded-lg hover:bg-muted/80 flex items-center justify-center transition-colors p-1"
+                                                                    >
+                                                                        <Image src={url} alt="sticker" width={64} height={64} className="object-contain" unoptimized />
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        </TabsContent>
+                                                    )}
+                                                </Tabs>
                                             </div>
                                         </div>
                                     )}
