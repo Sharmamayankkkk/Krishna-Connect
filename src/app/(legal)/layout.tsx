@@ -22,8 +22,31 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
           {children}
         </div>
       </main>
-      <footer className="text-center py-6 text-sm text-muted-foreground">
-        <p>&copy; 2026 Krishna Connect. All rights reserved.</p>
+      <footer className="border-t bg-background/80 backdrop-blur-sm">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm">
+              <Link href="/privacy-policy" className="text-muted-foreground hover:text-foreground transition-colors">
+                Privacy Policy
+              </Link>
+              <Link href="/terms-and-conditions" className="text-muted-foreground hover:text-foreground transition-colors">
+                Terms & Conditions
+              </Link>
+              <Link href="/contact-us" className="text-muted-foreground hover:text-foreground transition-colors">
+                Contact Us
+              </Link>
+              <Link href="/faq" className="text-muted-foreground hover:text-foreground transition-colors">
+                FAQ
+              </Link>
+              <Link href="/developers" className="text-muted-foreground hover:text-foreground transition-colors">
+                Developers
+              </Link>
+            </div>
+            <div className="mt-4 text-center text-xs text-muted-foreground">
+              <p>&copy; 2026 Krishna Connect. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
       </footer>
     </div>
   );
