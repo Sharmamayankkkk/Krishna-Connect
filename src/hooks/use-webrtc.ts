@@ -3,12 +3,16 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 
 // Free STUN servers for NAT traversal
+// Multiple servers for cross-browser compatibility (Safari, Firefox, Edge)
 const ICE_SERVERS: RTCConfiguration = {
   iceServers: [
     { urls: "stun:stun.l.google.com:19302" },
     { urls: "stun:stun1.l.google.com:19302" },
     { urls: "stun:stun2.l.google.com:19302" },
   ],
+  // bundlePolicy improves connectivity in Firefox/Safari
+  bundlePolicy: "max-bundle",
+  iceCandidatePoolSize: 1,
 }
 
 export type WebRTCState = {
@@ -63,10 +67,25 @@ export function useWebRTC() {
   // Initialize local media stream
   const initializeMedia = useCallback(async (video: boolean) => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: video ? { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } } : false,
-      })
+      // Check for getUserMedia support (Safari may use webkit prefix)
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error("Your browser does not support media devices. Please use a modern browser.")
+      }
+      const constraints: MediaStreamConstraints = {
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+        video: video
+          ? {
+              facingMode: "user",
+              width: { ideal: 1280, max: 1920 },
+              height: { ideal: 720, max: 1080 },
+            }
+          : false,
+      }
+      const stream = await navigator.mediaDevices.getUserMedia(constraints)
       localStreamRef.current = stream
       setState((prev) => ({ ...prev, localStream: stream }))
       return stream
@@ -141,18 +160,20 @@ export function useWebRTC() {
   }, [])
 
   // Set remote description (offer or answer)
+  // Note: Pass plain object instead of new RTCSessionDescription() for Safari/Firefox compat
   const setRemoteDescription = useCallback(async (description: RTCSessionDescriptionInit) => {
     const pc = peerConnectionRef.current
     if (!pc) throw new Error("No peer connection")
-    await pc.setRemoteDescription(new RTCSessionDescription(description))
+    await pc.setRemoteDescription(description)
   }, [])
 
   // Add ICE candidate from remote peer
+  // Note: Pass plain object instead of new RTCIceCandidate() for Safari/Firefox compat
   const addIceCandidate = useCallback(async (candidate: RTCIceCandidateInit) => {
     const pc = peerConnectionRef.current
     if (!pc) return
     try {
-      await pc.addIceCandidate(new RTCIceCandidate(candidate))
+      await pc.addIceCandidate(candidate)
     } catch (error) {
       console.error("Error adding ICE candidate:", error)
     }
@@ -201,6 +222,10 @@ export function useWebRTC() {
     } else {
       // Start screen share
       try {
+        // Check for getDisplayMedia support — not available on older Safari/Firefox mobile
+        if (!navigator.mediaDevices?.getDisplayMedia) {
+          throw new Error("Screen sharing is not supported in this browser.")
+        }
         const screenStream = await navigator.mediaDevices.getDisplayMedia({
           video: true,
           audio: false,

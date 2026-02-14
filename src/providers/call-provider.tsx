@@ -539,14 +539,19 @@ export function CallProvider({ children }: { children: ReactNode }) {
           if ("Notification" in window && Notification.permission === "granted") {
             navigator.serviceWorker?.getRegistration().then((reg) => {
               if (reg) {
-                reg.showNotification(`Incoming ${callRecord.call_type} call`, {
+                // Build notification options — Safari doesn't support requireInteraction
+                const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+                const notifOptions: NotificationOptions & { requireInteraction?: boolean } = {
                   body: `${callerUser.name} is calling you`,
                   icon: callerUser.avatar_url || "/logo/light_KCS.png",
                   tag: `call-${callRecord.id}`,
-                  requireInteraction: true,
-                })
+                }
+                if (!isSafari) {
+                  notifOptions.requireInteraction = true
+                }
+                reg.showNotification(`Incoming ${callRecord.call_type} call`, notifOptions)
               }
-            })
+            }).catch(() => { /* notification is best-effort */ })
           }
         }
       )

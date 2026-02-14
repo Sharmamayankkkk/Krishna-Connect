@@ -137,6 +137,9 @@ self.addEventListener('push', (event) => {
         const data = event.data.json();
         const isCallNotification = data.type === 'incoming_call';
 
+        // Detect Safari: doesn't support requireInteraction or notification actions
+        const isSafari = !self.Notification?.maxActions;
+
         const options = {
             body: data.body,
             icon: data.icon || '/logo/krishna_connect.png',
@@ -150,17 +153,21 @@ self.addEventListener('push', (event) => {
                 callerId: data.callerId,
                 timestamp: Date.now()
             },
-            actions: isCallNotification
-                ? [
-                    { action: 'accept_call', title: '✅ Accept' },
-                    { action: 'decline_call', title: '❌ Decline' }
-                ]
-                : data.actions || [
-                    { action: 'open', title: 'Open' }
-                ],
+            // Safari doesn't support notification actions - skip them
+            ...(isSafari ? {} : {
+                actions: isCallNotification
+                    ? [
+                        { action: 'accept_call', title: '✅ Accept' },
+                        { action: 'decline_call', title: '❌ Decline' }
+                    ]
+                    : data.actions || [
+                        { action: 'open', title: 'Open' }
+                    ],
+            }),
             tag: isCallNotification ? `call-${data.callId}` : (data.tag || 'default-notification'),
             renotify: true,
-            requireInteraction: isCallNotification,
+            // Safari doesn't support requireInteraction
+            ...(isSafari ? {} : { requireInteraction: isCallNotification }),
             silent: false
         };
 
@@ -195,9 +202,9 @@ self.addEventListener('notificationclick', (event) => {
                     return clientList[0].focus();
                 }
                 // If no window open, open the app
-                if (clients.openWindow) {
-                    return clients.openWindow('/calls');
-                }
+                return clients.openWindow ? clients.openWindow('/chat') : Promise.resolve();
+            }).catch((err) => {
+                console.warn('[SW] Error handling accept action:', err);
             })
         );
         return;
@@ -214,12 +221,36 @@ self.addEventListener('notificationclick', (event) => {
                         callId: notifData.callId
                     });
                 }
+            }).catch((err) => {
+                console.warn('[SW] Error handling decline action:', err);
             })
         );
         return;
     }
 
-    // Default: open URL
+    // Default: open URL (or focus existing window)
+    // For Safari: on call notification click without action buttons, treat as accept
+    if (isCall && !action) {
+        event.waitUntil(
+            clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+                for (const client of clientList) {
+                    client.postMessage({
+                        type: 'CALL_ACTION',
+                        action: 'accept',
+                        callId: notifData.callId
+                    });
+                }
+                if (clientList.length > 0) {
+                    return clientList[0].focus();
+                }
+                return clients.openWindow ? clients.openWindow('/chat') : Promise.resolve();
+            }).catch((err) => {
+                console.warn('[SW] Error handling notification click:', err);
+            })
+        );
+        return;
+    }
+
     const targetUrl = notifData.url || '/';
 
     event.waitUntil(
@@ -229,9 +260,9 @@ self.addEventListener('notificationclick', (event) => {
                     return client.focus();
                 }
             }
-            if (clients.openWindow) {
-                return clients.openWindow(targetUrl);
-            }
+            return clients.openWindow ? clients.openWindow(targetUrl) : Promise.resolve();
+        }).catch((err) => {
+            console.warn('[SW] Error handling notification click:', err);
         })
     );
 });

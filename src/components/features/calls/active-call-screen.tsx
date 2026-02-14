@@ -44,6 +44,8 @@ export function ActiveCallScreen() {
   useEffect(() => {
     if (localVideoRef.current && localStream) {
       localVideoRef.current.srcObject = localStream
+      // iOS Safari compatibility
+      localVideoRef.current.setAttribute("webkit-playsinline", "true")
     }
   }, [localStream])
 
@@ -51,6 +53,8 @@ export function ActiveCallScreen() {
   useEffect(() => {
     if (remoteVideoRef.current && remoteStream) {
       remoteVideoRef.current.srcObject = remoteStream
+      // iOS Safari compatibility
+      remoteVideoRef.current.setAttribute("webkit-playsinline", "true")
     }
   }, [remoteStream])
 
