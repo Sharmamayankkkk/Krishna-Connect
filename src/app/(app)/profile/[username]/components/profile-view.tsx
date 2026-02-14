@@ -77,7 +77,6 @@ export function ProfileView({ profile, posts, repostedPosts, followers, followin
   const handleMessage = async () => {
     if (!currentUser) return;
     setIsMessageLoading(true);
-    console.log("Debug HandleMessage:", { targetId: profile.id, userId: currentUser.id });
     try {
       // Check for existing DM
       const { data: chatId, error } = await supabase.rpc('get_dm_chat_id', {

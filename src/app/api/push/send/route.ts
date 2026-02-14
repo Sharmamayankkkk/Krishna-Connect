@@ -30,8 +30,7 @@ export async function POST(request: Request) {
             .eq('user_id', userId);
 
         if (error || !subscriptions || subscriptions.length === 0) {
-            console.log('No subscriptions found for user:', userId);
-            // Not an error, just no devices to push to
+            // No devices to push to
             return NextResponse.json({ success: true, count: 0 });
         }
 
@@ -70,7 +69,6 @@ export async function POST(request: Request) {
             } catch (err: any) {
                 // If 410 Gone, the subscription is invalid/expired
                 if (err.statusCode === 410) {
-                    console.log('Subscription expired, deleting:', sub.id);
                     await supabase.from('push_subscriptions').delete().eq('id', sub.id);
                 } else {
                     console.error('Error sending push to subscription:', sub.id, err);

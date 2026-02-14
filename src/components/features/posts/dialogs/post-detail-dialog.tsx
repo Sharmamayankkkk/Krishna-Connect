@@ -26,7 +26,6 @@ interface PostDetailDialogProps {
 }
 
 export function PostDetailDialog({ post, author, initialComments = [], open, onOpenChange }: PostDetailDialogProps) {
-  console.log('PostDetailDialog rendering. Open:', open, 'Post ID:', post?.id);
   const { loggedInUser } = useAppContext();
   const { toast } = useToast();
   const [comments, setComments] = useState<Comment[]>(initialComments);
@@ -57,7 +56,6 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
   // Fetch comments when dialog opens
   useEffect(() => {
     const fetchComments = async () => {
-      console.log('Fetching comments for post:', post?.id, 'Open:', open);
       if (!post?.id || !open) return;
 
       const supabase = createClient();
@@ -76,15 +74,8 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
         return;
       }
 
-      console.log('Fetched comments data:', data);
-
       if (data) {
-        // Transform data to match Comment type if needed, or cast if structure matches
-        // The type expects 'profiles' property which is joined by user_id
-        console.log('Fetched comments:', data);
         setComments(data as unknown as Comment[]);
-      } else {
-        console.log('Fetched comments but data is null/empty');
       }
     };
 

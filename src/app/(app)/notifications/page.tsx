@@ -300,7 +300,6 @@ export default function NotificationsPage() {
             }
 
             if (data) {
-                console.log('Fetched notifications:', data.length);
                 // Transform database notifications to UI format
                 let transformedNotifications: NotificationType[] = data.map((n: any) => ({
                     id: n.id.toString(),
@@ -363,7 +362,6 @@ export default function NotificationsPage() {
             const { data: { user } } = await supabase.auth.getUser();
 
             if (!user) {
-                console.log('No user found for realtime subscription');
                 return null;
             }
 
@@ -374,8 +372,7 @@ export default function NotificationsPage() {
                     schema: 'public',
                     table: 'notifications',
                     filter: `user_id=eq.${user.id}`
-                }, (payload) => {
-                    console.log('Notification change detected:', payload);
+                }, () => {
                     // Refresh notifications when any change occurs
                     fetchNotifications();
                 })

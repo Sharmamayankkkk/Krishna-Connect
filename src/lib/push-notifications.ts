@@ -51,7 +51,6 @@ export async function subscribeUserToPush() {
         }
     });
 
-    console.log('Push Subscription sent to server');
     return pushSubscription;
 }
 

@@ -19,8 +19,6 @@ function ConsentContent() {
     const handleAuthorize = () => {
         // Mock authorization logic
         // In a real flow, this would post to an API
-        console.log("Authorized", { clientId, scope, redirectUri });
-
         if (redirectUri) {
             // Add code=mock_code and state=mock_state for simulation
             const separator = redirectUri.includes('?') ? '&' : '?';
