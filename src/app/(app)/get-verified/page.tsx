@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -739,7 +740,7 @@ function StatusDashboard({
                                 )}
                             </p>
                             <p className="text-sm">
-                                If you believe this is an error, please contact support.
+                                If you believe this is an error, please <Link href="/contact-us" className="underline hover:text-primary">contact support</Link>.
                             </p>
                         </CardContent>
                     </Card>
@@ -867,7 +868,7 @@ function AlreadyVerifiedState({ request }: { request: VerificationRequest | null
                         </div>
 
                         <p className="text-xs text-muted-foreground pt-2 border-t">
-                            Need help? <a href="#" className="underline hover:text-primary">Contact Support</a>
+                            Need help? <Link href="/contact-us" className="underline hover:text-primary">Contact Support</Link>
                         </p>
                     </CardContent>
                 </Card>
