@@ -41,7 +41,10 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
             )}
             {/* Mobile Root Title */}
             {isSettingsRoot && (
-                <div className="md:hidden mb-6">
+                <div className="md:hidden mb-6 flex items-center gap-3">
+                    <Link href="/feed" className="flex items-center text-muted-foreground hover:text-foreground transition-colors">
+                        <ChevronLeft className="h-5 w-5" />
+                    </Link>
                     <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
                 </div>
             )}
