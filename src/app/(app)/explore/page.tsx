@@ -49,11 +49,12 @@ function getMediaType(item: any): string {
     return 'image';
 }
 
-/** Pick a random image from the media array (for multi-image posts) */
-function pickRandomMedia(mediaArray: any[]): { url: string; type: string } | null {
+/** Pick a display media item using post ID for deterministic selection */
+function pickDisplayMedia(postId: number | string, mediaArray: any[]): { url: string; type: string } | null {
     if (!mediaArray || mediaArray.length === 0) return null;
-    // For display variety in the grid, pick a random item
-    const idx = Math.floor(Math.random() * mediaArray.length);
+    // Use post ID as a seed for deterministic but varied selection
+    const numericId = typeof postId === 'string' ? parseInt(postId, 10) || 0 : postId;
+    const idx = numericId % mediaArray.length;
     const item = mediaArray[idx];
     const url = getMediaUrl(item);
     if (!url) return null;
@@ -130,10 +131,9 @@ export default function ExplorePage() {
                         type: getMediaType(m)
                     })).filter((m: any) => m.url);
 
-                    // Pick a random media item for the grid thumbnail
+                    // Pick a deterministic media item for the grid thumbnail
                     if (normalizedMedia.length > 0) {
-                        const idx = Math.floor(Math.random() * normalizedMedia.length);
-                        mediaSelection[p.id] = normalizedMedia[idx];
+                        mediaSelection[p.id] = pickDisplayMedia(p.id, normalizedMedia)!;
                     }
 
                     return {
@@ -264,7 +264,7 @@ export default function ExplorePage() {
                     <>
                         <Image
                             src={displaySrc!}
-                            alt=""
+                            alt={post.content?.substring(0, 100) || 'Post image'}
                             fill
                             unoptimized
                             sizes={isLarge ? "(max-width: 640px) 66vw, 400px" : "(max-width: 640px) 33vw, 200px"}

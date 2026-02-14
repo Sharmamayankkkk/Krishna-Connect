@@ -41,7 +41,7 @@ export function TrendingTopicsList({ onHashtagClick }: { onHashtagClick: (tag: s
         );
     }
 
-    const maxPosts = Math.max(...topics.map((t: any) => t.posts_count || 1));
+    const maxPosts = Math.max(...topics.map((t: any) => t.posts_count || 1), 1);
 
     return (
         <div className="flex flex-wrap gap-2">
