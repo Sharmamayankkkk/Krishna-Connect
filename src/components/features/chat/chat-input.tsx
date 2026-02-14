@@ -864,11 +864,7 @@ export function ChatInput({
                                         <TabsTrigger value="custom-emoji" disabled className="opacity-50" aria-label="Official emojis - Premium feature"><ImageIcon className="mr-2 h-4 w-4" />Official 🔒</TabsTrigger>
                                     )}
                                     <TabsTrigger value="emoji"><Smile className="mr-2 h-4 w-4" />Emojis</TabsTrigger>
-                                    {(loggedInUser.is_verified === 'verified' || loggedInUser.is_verified === 'kcs') ? (
-                                        <TabsTrigger value="stickers"><StickyNote className="mr-2 h-4 w-4" />Stickers</TabsTrigger>
-                                    ) : (
-                                        <TabsTrigger value="stickers" disabled className="opacity-50" aria-label="Stickers - Premium feature"><StickyNote className="mr-2 h-4 w-4" />Stickers 🔒</TabsTrigger>
-                                    )}
+                                    <TabsTrigger value="stickers"><StickyNote className="mr-2 h-4 w-4" />Stickers</TabsTrigger>
                                 </TabsList>
                                 <TabsContent value="custom-emoji">
                                     {(loggedInUser.is_verified === 'verified' || loggedInUser.is_verified === 'kcs') ? (
@@ -898,30 +894,19 @@ export function ChatInput({
                                 </TabsContent>
                                 <TabsContent value="emoji"><EmojiPicker onEmojiClick={handleEmojiClick} height={350} width="100%" defaultSkinTone={SkinTones.NEUTRAL} /></TabsContent>
                                 <TabsContent value="stickers">
-                                    {(loggedInUser.is_verified === 'verified' || loggedInUser.is_verified === 'kcs') ? (
-                                        <ScrollArea className="h-[350px]">
-                                            <div className="p-2 grid grid-cols-3 gap-2">
-                                                {stickerList.map(stickerUrl => (
-                                                    <button
-                                                        key={stickerUrl}
-                                                        onClick={() => handleCustomEmojiMessage(stickerUrl)}
-                                                        className="aspect-square flex items-center justify-center rounded-md hover:bg-accent"
-                                                    >
-                                                        <Image src={stickerUrl} alt={stickerUrl.split('/').pop() || ''} width={96} height={96} />
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </ScrollArea>
-                                    ) : (
-                                        <div className="p-6 text-center space-y-3">
-                                            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                                                <StickyNote className="h-6 w-6 text-primary" />
-                                            </div>
-                                            <p className="text-sm font-medium">Stickers are a premium feature</p>
-                                            <p className="text-xs text-muted-foreground">Get verified to unlock exclusive stickers</p>
-                                            <a href="/get-verified" className="inline-block text-xs text-primary font-medium hover:underline">Get Verified →</a>
+                                    <ScrollArea className="h-[350px]">
+                                        <div className="p-2 grid grid-cols-3 gap-2">
+                                            {stickerList.map(stickerUrl => (
+                                                <button
+                                                    key={stickerUrl}
+                                                    onClick={() => handleCustomEmojiMessage(stickerUrl)}
+                                                    className="aspect-square flex items-center justify-center rounded-md hover:bg-accent"
+                                                >
+                                                    <Image src={stickerUrl} alt={stickerUrl.split('/').pop() || ''} width={96} height={96} />
+                                                </button>
+                                            ))}
                                         </div>
-                                    )}
+                                    </ScrollArea>
                                 </TabsContent>
                             </Tabs>
                         </PopoverContent>

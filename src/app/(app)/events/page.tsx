@@ -13,6 +13,7 @@ import { createClient } from '@/lib/utils';
 import type { Event } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import Link from 'next/link';
 
 function EventsPageLoader() {
   return (
@@ -88,9 +89,11 @@ export default function EventsPage() {
         return { upcomingEvents: upcoming, pastEvents: past };
     }, [events]);
 
+    const isVerified = loggedInUser?.is_verified === 'verified' || loggedInUser?.is_verified === 'kcs';
+
     return (
         <div className="flex h-full flex-col">
-            {loggedInUser?.is_verified && <CreateEventDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} onEventCreated={fetchEvents} onEventUpdated={fetchEvents} />}
+            {isVerified && <CreateEventDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} onEventCreated={fetchEvents} onEventUpdated={fetchEvents} />}
             <header className="sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
                 <div className="flex items-center gap-4 p-4">
                     <SidebarTrigger className="md:hidden" />
@@ -99,10 +102,18 @@ export default function EventsPage() {
                         <h1 className="text-xl font-bold">Events</h1>
                     </div>
                     <div className="ml-auto">
-                        {loggedInUser?.is_verified && (
+                        {isVerified ? (
                             <Button onClick={() => setIsCreateOpen(true)} size="sm" className="gap-2 rounded-full">
                                 <PlusCircle className="h-4 w-4" />
                                 <span className="hidden sm:inline">Create Event</span>
+                            </Button>
+                        ) : (
+                            <Button asChild size="sm" variant="outline" className="gap-2 rounded-full">
+                                <Link href="/get-verified">
+                                    <PlusCircle className="h-4 w-4" />
+                                    <span className="hidden sm:inline">Get Verified to Create</span>
+                                    <span className="sm:hidden">✨</span>
+                                </Link>
                             </Button>
                         )}
                     </div>

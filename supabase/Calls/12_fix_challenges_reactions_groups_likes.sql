@@ -1,44 +1,56 @@
 -- ============================================================
 -- 12_fix_challenges_reactions_groups_likes.sql
 -- Fixes for:
---   1. challenges ALTER TABLE syntax (individual statements)
+--   1. challenges ALTER TABLE syntax (wrapped in IF EXISTS)
 --   2. toggle_reaction DROP before recreate
 --   3. get_user_groups RPC (missing)
 --   4. get_post_likes_users RPC (verified type mismatch)
 -- ============================================================
 
 -- ============================================================
--- 1. Fix challenges table columns (individual ALTER statements)
---    File 10 failed because some Postgres versions don't support
---    multi-column ADD COLUMN IF NOT EXISTS in a single ALTER TABLE
+-- 1. Fix challenges table columns (only if table exists)
+--    The challenges table is created by 10_challenges_schema.sql.
+--    If file 10 hasn't been run yet, skip these ALTER statements.
 -- ============================================================
 
-ALTER TABLE public.challenges ADD COLUMN IF NOT EXISTS cover_image TEXT;
-ALTER TABLE public.challenges ADD COLUMN IF NOT EXISTS rules TEXT;
-ALTER TABLE public.challenges ADD COLUMN IF NOT EXISTS prize_description TEXT;
-ALTER TABLE public.challenges ADD COLUMN IF NOT EXISTS max_participants INTEGER;
-ALTER TABLE public.challenges ADD COLUMN IF NOT EXISTS requires_proof BOOLEAN DEFAULT true;
-ALTER TABLE public.challenges ADD COLUMN IF NOT EXISTS is_featured BOOLEAN DEFAULT false;
-ALTER TABLE public.challenges ADD COLUMN IF NOT EXISTS winner_id UUID REFERENCES public.profiles(id);
-ALTER TABLE public.challenges ADD COLUMN IF NOT EXISTS winner_declared_at TIMESTAMPTZ;
-ALTER TABLE public.challenges ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'general';
-ALTER TABLE public.challenges ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
-
--- Fix challenge_participants too
-ALTER TABLE public.challenge_participants ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'joined';
-ALTER TABLE public.challenge_participants ADD COLUMN IF NOT EXISTS rank INTEGER;
-ALTER TABLE public.challenge_participants ADD COLUMN IF NOT EXISTS score INTEGER DEFAULT 0;
-ALTER TABLE public.challenge_participants ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ;
-
--- Add check constraint separately (idempotent)
 DO $$
 BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'challenge_participants_status_check'
-  ) THEN
-    ALTER TABLE public.challenge_participants
-      ADD CONSTRAINT challenge_participants_status_check
-      CHECK (status IN ('joined', 'submitted', 'verified', 'rejected', 'winner'));
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'challenges') THEN
+    ALTER TABLE public.challenges ADD COLUMN IF NOT EXISTS cover_image TEXT;
+    ALTER TABLE public.challenges ADD COLUMN IF NOT EXISTS rules TEXT;
+    ALTER TABLE public.challenges ADD COLUMN IF NOT EXISTS prize_description TEXT;
+    ALTER TABLE public.challenges ADD COLUMN IF NOT EXISTS max_participants INTEGER;
+    ALTER TABLE public.challenges ADD COLUMN IF NOT EXISTS requires_proof BOOLEAN DEFAULT true;
+    ALTER TABLE public.challenges ADD COLUMN IF NOT EXISTS is_featured BOOLEAN DEFAULT false;
+    ALTER TABLE public.challenges ADD COLUMN IF NOT EXISTS winner_id UUID REFERENCES public.profiles(id);
+    ALTER TABLE public.challenges ADD COLUMN IF NOT EXISTS winner_declared_at TIMESTAMPTZ;
+    ALTER TABLE public.challenges ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'general';
+    ALTER TABLE public.challenges ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
+  END IF;
+END $$;
+
+-- Fix challenge_participants too (only if table exists)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'challenge_participants') THEN
+    ALTER TABLE public.challenge_participants ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'joined';
+    ALTER TABLE public.challenge_participants ADD COLUMN IF NOT EXISTS rank INTEGER;
+    ALTER TABLE public.challenge_participants ADD COLUMN IF NOT EXISTS score INTEGER DEFAULT 0;
+    ALTER TABLE public.challenge_participants ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ;
+  END IF;
+END $$;
+
+-- Add check constraint separately (idempotent, only if table exists)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'challenge_participants') THEN
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_constraint WHERE conname = 'challenge_participants_status_check'
+    ) THEN
+      ALTER TABLE public.challenge_participants
+        ADD CONSTRAINT challenge_participants_status_check
+        CHECK (status IN ('joined', 'submitted', 'verified', 'rejected', 'winner'));
+    END IF;
   END IF;
 END $$;
 

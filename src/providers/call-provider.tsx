@@ -116,6 +116,41 @@ export function CallProvider({ children }: { children: ReactNode }) {
     []
   )
 
+  // Insert a call history message into the chat between caller and callee
+  const insertCallHistoryMessage = useCallback(
+    async (callRecord: CallRecord, status: string, durationSeconds: number) => {
+      if (!loggedInUser) return
+      try {
+        // Find the DM chat between these two users
+        const otherUserId = callRecord.caller_id === loggedInUser.id ? callRecord.callee_id : callRecord.caller_id
+        const { data: chats } = await supabaseRef.current
+          .from("chats")
+          .select("id, participants:chat_participants(user_id)")
+          .eq("is_group", false)
+
+        if (!chats) return
+        const dmChat = chats.find((c: { id: number; participants: { user_id: string }[] }) =>
+          c.participants?.length === 2 &&
+          c.participants.some((p: { user_id: string }) => p.user_id === loggedInUser.id) &&
+          c.participants.some((p: { user_id: string }) => p.user_id === otherUserId)
+        )
+
+        if (!dmChat) return
+
+        // Insert call history message: [[CALL:type|status|duration|caller_id]]
+        const content = `[[CALL:${callRecord.call_type}|${status}|${durationSeconds}|${callRecord.caller_id}]]`
+        await supabaseRef.current.from("messages").insert({
+          chat_id: dmChat.id,
+          user_id: loggedInUser.id,
+          content,
+        })
+      } catch (err) {
+        console.warn("Could not insert call history message:", err)
+      }
+    },
+    [loggedInUser]
+  )
+
   // Handle incoming signals
   const handleSignal = useCallback(
     async (signal: CallSignal) => {
@@ -297,6 +332,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         ringTimeoutRef.current = setTimeout(async () => {
           if (callRecordRef.current?.status === "ringing") {
             await updateCallInDb(callRecord.id, { status: "missed", ended_at: new Date().toISOString() })
+            await insertCallHistoryMessage(callRecord, "missed", 0)
             cleanupCall()
             toast({ title: "No Answer", description: `${remoteUser.name} didn't answer.` })
           }
@@ -428,12 +464,14 @@ export function CallProvider({ children }: { children: ReactNode }) {
       ended_at: new Date().toISOString(),
     })
 
+    await insertCallHistoryMessage(callRecord, "declined", 0)
+
     setIncomingCall(null)
     if (ringtoneRef.current) {
       ringtoneRef.current.pause()
       ringtoneRef.current.currentTime = 0
     }
-  }, [incomingCall, sendSignal, updateCallInDb])
+  }, [incomingCall, sendSignal, updateCallInDb, insertCallHistoryMessage])
 
   // End the active call
   const endCall = useCallback(async () => {
@@ -447,8 +485,13 @@ export function CallProvider({ children }: { children: ReactNode }) {
       ended_at: new Date().toISOString(),
     })
 
+    // Calculate duration and insert call history into chat
+    const startedAt = callRecord.started_at ? new Date(callRecord.started_at).getTime() : Date.now()
+    const durationSec = Math.round((Date.now() - startedAt) / 1000)
+    await insertCallHistoryMessage(callRecord, "ended", durationSec)
+
     cleanupCall()
-  }, [activeCall, sendSignal, updateCallInDb, cleanupCall])
+  }, [activeCall, sendSignal, updateCallInDb, cleanupCall, insertCallHistoryMessage])
 
   // ==================== LISTENERS ====================
 

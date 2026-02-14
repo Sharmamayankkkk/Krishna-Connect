@@ -999,7 +999,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                                             <TabsTrigger value="official" className="flex-1 text-xs">Official ✨</TabsTrigger>
                                                         )}
                                                         <TabsTrigger value="emojis" className="flex-1 text-xs">Emojis</TabsTrigger>
-                                                        {stickerList.length > 0 && isVerified && (
+                                                        {stickerList.length > 0 && (
                                                             <TabsTrigger value="stickers" className="flex-1 text-xs">Stickers</TabsTrigger>
                                                         )}
                                                     </TabsList>
@@ -1021,7 +1021,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                                     <TabsContent value="emojis" className="mt-0">
                                                         <EmojiPicker onEmojiClick={handleEmojiClick} width={320} height={350} theme={Theme.AUTO} />
                                                     </TabsContent>
-                                                    {stickerList.length > 0 && isVerified && (
+                                                    {stickerList.length > 0 && (
                                                         <TabsContent value="stickers" className="mt-0">
                                                             <div className="grid grid-cols-4 gap-2 p-3 max-h-[300px] overflow-y-auto">
                                                                 {stickerList.map((url, i) => (

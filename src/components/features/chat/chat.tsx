@@ -62,6 +62,7 @@ const formatBytes = (bytes: number, decimals = 2) => {
 
 const DELETED_MESSAGE_MARKER = '[[MSG_DELETED]]';
 const SYSTEM_MESSAGE_PREFIX = '[[SYS:';
+const CALL_MESSAGE_PREFIX = '[[CALL:';
 
 const Spoiler = ({ content }: { content: string }) => {
     const [revealed, setRevealed] = useState(false);
@@ -899,11 +900,78 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
         );
     }
 
+    // Call history message (e.g., "[[CALL:video|ended|125|caller_id]]")
+    const CallMessage = ({ content, message }: { content: string; message: Message }) => {
+        const callData = content.replace(CALL_MESSAGE_PREFIX, '').replace(']]', '');
+        const [callType, callStatus, durationStr, callerId] = callData.split('|');
+        const duration = parseInt(durationStr) || 0;
+        const isMyCall = message.user_id === loggedInUser.id;
+        const isMissed = callStatus === 'missed' || callStatus === 'declined';
+        const isVideo = callType === 'video';
+
+        const formatDuration = (s: number) => {
+            if (s < 60) return `${s}s`;
+            const m = Math.floor(s / 60);
+            const remaining = s % 60;
+            return remaining > 0 ? `${m}m ${remaining}s` : `${m}m`;
+        };
+
+        return (
+            <div className="flex items-center justify-center my-3">
+                <div className={cn(
+                    "flex items-center gap-3 px-4 py-2.5 rounded-xl border",
+                    isMissed ? "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900/30" : "bg-muted/50 border-border"
+                )}>
+                    <div className={cn(
+                        "h-8 w-8 rounded-full flex items-center justify-center",
+                        isMissed ? "bg-red-100 dark:bg-red-900/30" : "bg-green-100 dark:bg-green-900/30"
+                    )}>
+                        {isVideo ? (
+                            <Video className={cn("h-4 w-4", isMissed ? "text-red-500" : "text-green-600")} />
+                        ) : (
+                            <Phone className={cn("h-4 w-4", isMissed ? "text-red-500" : "text-green-600")} />
+                        )}
+                    </div>
+                    <div className="flex flex-col">
+                        <span className={cn("text-sm font-medium", isMissed && "text-red-600 dark:text-red-400")}>
+                            {isMissed
+                                ? `Missed ${isVideo ? 'Video' : 'Voice'} Call`
+                                : `${isVideo ? 'Video' : 'Voice'} Call`}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                            {isMissed
+                                ? (isMyCall ? 'No answer' : 'Tap to call back')
+                                : formatDuration(duration)}
+                        </span>
+                    </div>
+                    {isMissed && !isMyCall && startCall && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="ml-2 h-7 text-xs text-primary"
+                            onClick={() => {
+                                const otherUser = chat.participants?.find(p => p.id !== loggedInUser.id);
+                                if (otherUser) startCall(otherUser.id, isVideo ? 'video' : 'voice');
+                            }}
+                        >
+                            Call Back
+                        </Button>
+                    )}
+                </div>
+            </div>
+        );
+    };
+
     // This is the component for a single message bubble.
     const MessageBubble = ({ message }: { message: Message }) => {
         // Handle system messages (e.g., "User pinned a message").
         if (message.content && message.content.startsWith(SYSTEM_MESSAGE_PREFIX)) {
             return <SystemMessage content={message.content} />;
+        }
+
+        // Handle call history messages
+        if (message.content && message.content.startsWith(CALL_MESSAGE_PREFIX)) {
+            return <CallMessage content={message.content} message={message} />;
         }
 
         // Handle deleted messages.
