@@ -122,8 +122,8 @@ export function RichTextRenderer({ content, className, onHareKrishnaClick }: Ric
 
     // Fetch custom emojis once
     React.useEffect(() => {
-        // Only fetch if content contains potential custom emojis
-        if (content && content.includes(':')) {
+        // Only fetch if content contains potential custom emoji syntax (:word:)
+        if (content && /:[a-zA-Z0-9_]+:/.test(content)) {
             fetchCustomEmojis().then(map => {
                 if (map.size > 0) setEmojiMap(map);
             });

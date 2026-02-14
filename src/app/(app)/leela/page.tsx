@@ -255,9 +255,14 @@ export default function LeelaPage() {
     }
   }, [currentIndex, videos.length, hasMore, isLoading, fetchVideos])
 
+  // Track which videos have been viewed this session
+  const viewedVideos = React.useRef(new Set<string>())
+
   React.useEffect(() => {
-    if (videos[currentIndex]) {
-      void supabase.rpc('record_leela_view', { p_video_id: videos[currentIndex].id })
+    const videoId = videos[currentIndex]?.id
+    if (videoId && !viewedVideos.current.has(videoId)) {
+      viewedVideos.current.add(videoId)
+      void supabase.rpc('record_leela_view', { p_video_id: videoId })
     }
   }, [currentIndex, videos, supabase])
 

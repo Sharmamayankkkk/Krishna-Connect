@@ -127,21 +127,26 @@ END $$;
 -- Functions
 -- ============================================================
 
--- Increment view count + track unique view
+-- Track unique view and increment count only for new views
 CREATE OR REPLACE FUNCTION public.record_leela_view(p_video_id UUID, p_watched_seconds INTEGER DEFAULT 0)
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
+DECLARE
+  v_is_new BOOLEAN;
 BEGIN
-  -- Upsert view record
+  -- Upsert view record; check if this is a new view
   INSERT INTO public.leela_views (user_id, video_id, watched_seconds)
   VALUES (auth.uid(), p_video_id, p_watched_seconds)
-  ON CONFLICT (user_id, video_id) DO UPDATE SET watched_seconds = GREATEST(leela_views.watched_seconds, p_watched_seconds);
+  ON CONFLICT (user_id, video_id) DO UPDATE SET watched_seconds = GREATEST(leela_views.watched_seconds, p_watched_seconds)
+  RETURNING (xmax = 0) INTO v_is_new;
 
-  -- Increment view count on video
-  UPDATE public.leela_videos SET view_count = view_count + 1 WHERE id = p_video_id;
+  -- Only increment view count for new views
+  IF v_is_new THEN
+    UPDATE public.leela_videos SET view_count = view_count + 1 WHERE id = p_video_id;
+  END IF;
 END;
 $$;
 

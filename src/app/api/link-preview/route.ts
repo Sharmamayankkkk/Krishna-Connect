@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 // Simple in-memory cache for link previews (per server instance)
 const cache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_TTL = 1000 * 60 * 60; // 1 hour
+const MAX_HTML_BYTES = 50_000; // Read only first 50KB of HTML to avoid large payloads
+const FETCH_TIMEOUT_MS = 5000;
 
 export async function GET(req: NextRequest) {
   const url = req.nextUrl.searchParams.get('url');
@@ -29,7 +31,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
+    const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
     const res = await fetch(url, {
       signal: controller.signal,
@@ -50,7 +52,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ url, title: parsedUrl.hostname });
     }
 
-    // Read only first 50KB to avoid large payloads
+    // Read only first portion of HTML to avoid large payloads
     const reader = res.body?.getReader();
     if (!reader) {
       return NextResponse.json({ url, title: parsedUrl.hostname });
@@ -59,9 +61,8 @@ export async function GET(req: NextRequest) {
     let html = '';
     const decoder = new TextDecoder();
     let totalBytes = 0;
-    const MAX_BYTES = 50000;
 
-    while (totalBytes < MAX_BYTES) {
+    while (totalBytes < MAX_HTML_BYTES) {
       const { done, value } = await reader.read();
       if (done) break;
       html += decoder.decode(value, { stream: true });
