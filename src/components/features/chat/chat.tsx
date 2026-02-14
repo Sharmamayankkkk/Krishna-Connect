@@ -950,8 +950,8 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                             size="sm"
                             className="ml-2 h-7 text-xs text-primary"
                             onClick={() => {
-                                const otherUser = chat.participants?.find(p => p.id !== loggedInUser.id);
-                                if (otherUser) startCall(otherUser.id, isVideo ? 'video' : 'voice');
+                                const otherUser = chat.participants?.find(p => p.user_id !== loggedInUser.id);
+                                if (otherUser) startCall(otherUser.user_id, isVideo ? 'video' : 'voice');
                             }}
                         >
                             Call Back
