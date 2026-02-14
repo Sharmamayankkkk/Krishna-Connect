@@ -858,40 +858,70 @@ export function ChatInput({
                         <PopoverContent className="w-full max-w-sm sm:max-w-sm p-0 border-none mb-2" side="top" align="end">
                             <Tabs defaultValue="emoji" className="w-full">
                                 <TabsList className="grid w-full grid-cols-3">
-                                    <TabsTrigger value="custom-emoji"><ImageIcon className="mr-2 h-4 w-4" />Official</TabsTrigger>
+                                    {(loggedInUser.is_verified === 'verified' || loggedInUser.is_verified === 'kcs') ? (
+                                        <TabsTrigger value="custom-emoji"><ImageIcon className="mr-2 h-4 w-4" />Official ✨</TabsTrigger>
+                                    ) : (
+                                        <TabsTrigger value="custom-emoji" disabled className="opacity-50"><ImageIcon className="mr-2 h-4 w-4" />Official 🔒</TabsTrigger>
+                                    )}
                                     <TabsTrigger value="emoji"><Smile className="mr-2 h-4 w-4" />Emojis</TabsTrigger>
-                                    <TabsTrigger value="stickers"><StickyNote className="mr-2 h-4 w-4" />Stickers</TabsTrigger>
+                                    {(loggedInUser.is_verified === 'verified' || loggedInUser.is_verified === 'kcs') ? (
+                                        <TabsTrigger value="stickers"><StickyNote className="mr-2 h-4 w-4" />Stickers</TabsTrigger>
+                                    ) : (
+                                        <TabsTrigger value="stickers" disabled className="opacity-50"><StickyNote className="mr-2 h-4 w-4" />Stickers 🔒</TabsTrigger>
+                                    )}
                                 </TabsList>
                                 <TabsContent value="custom-emoji">
-                                    <ScrollArea className="h-[350px]">
-                                        <div className="p-2 grid grid-cols-8 gap-2">
-                                            {customEmojiList.map(emojiUrl => (
-                                                <button
-                                                    key={emojiUrl}
-                                                    onClick={() => handleCustomEmojiMessage(emojiUrl)}
-                                                    className="aspect-square flex items-center justify-center rounded-md hover:bg-accent"
-                                                >
-                                                    <Image src={emojiUrl} alt={emojiUrl.split('/').pop() || ''} width={32} height={32} />
-                                                </button>
-                                            ))}
+                                    {(loggedInUser.is_verified === 'verified' || loggedInUser.is_verified === 'kcs') ? (
+                                        <ScrollArea className="h-[350px]">
+                                            <div className="p-2 grid grid-cols-8 gap-2">
+                                                {customEmojiList.map(emojiUrl => (
+                                                    <button
+                                                        key={emojiUrl}
+                                                        onClick={() => handleCustomEmojiMessage(emojiUrl)}
+                                                        className="aspect-square flex items-center justify-center rounded-md hover:bg-accent"
+                                                    >
+                                                        <Image src={emojiUrl} alt={emojiUrl.split('/').pop() || ''} width={32} height={32} />
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </ScrollArea>
+                                    ) : (
+                                        <div className="p-6 text-center space-y-3">
+                                            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                                                <ImageIcon className="h-6 w-6 text-primary" />
+                                            </div>
+                                            <p className="text-sm font-medium">Official Emojis are a premium feature</p>
+                                            <p className="text-xs text-muted-foreground">Get verified to unlock exclusive emojis & stickers</p>
+                                            <a href="/get-verified" className="inline-block text-xs text-primary font-medium hover:underline">Get Verified →</a>
                                         </div>
-                                    </ScrollArea>
+                                    )}
                                 </TabsContent>
                                 <TabsContent value="emoji"><EmojiPicker onEmojiClick={handleEmojiClick} height={350} width="100%" defaultSkinTone={SkinTones.NEUTRAL} /></TabsContent>
                                 <TabsContent value="stickers">
-                                    <ScrollArea className="h-[350px]">
-                                        <div className="p-2 grid grid-cols-3 gap-2">
-                                            {stickerList.map(stickerUrl => (
-                                                <button
-                                                    key={stickerUrl}
-                                                    onClick={() => handleCustomEmojiMessage(stickerUrl)}
-                                                    className="aspect-square flex items-center justify-center rounded-md hover:bg-accent"
-                                                >
-                                                    <Image src={stickerUrl} alt={stickerUrl.split('/').pop() || ''} width={96} height={96} />
-                                                </button>
-                                            ))}
+                                    {(loggedInUser.is_verified === 'verified' || loggedInUser.is_verified === 'kcs') ? (
+                                        <ScrollArea className="h-[350px]">
+                                            <div className="p-2 grid grid-cols-3 gap-2">
+                                                {stickerList.map(stickerUrl => (
+                                                    <button
+                                                        key={stickerUrl}
+                                                        onClick={() => handleCustomEmojiMessage(stickerUrl)}
+                                                        className="aspect-square flex items-center justify-center rounded-md hover:bg-accent"
+                                                    >
+                                                        <Image src={stickerUrl} alt={stickerUrl.split('/').pop() || ''} width={96} height={96} />
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </ScrollArea>
+                                    ) : (
+                                        <div className="p-6 text-center space-y-3">
+                                            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                                                <StickyNote className="h-6 w-6 text-primary" />
+                                            </div>
+                                            <p className="text-sm font-medium">Stickers are a premium feature</p>
+                                            <p className="text-xs text-muted-foreground">Get verified to unlock exclusive stickers</p>
+                                            <a href="/get-verified" className="inline-block text-xs text-primary font-medium hover:underline">Get Verified →</a>
                                         </div>
-                                    </ScrollArea>
+                                    )}
                                 </TabsContent>
                             </Tabs>
                         </PopoverContent>

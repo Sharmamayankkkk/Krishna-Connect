@@ -124,7 +124,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     const remainingChars = MAX_CHARACTERS - characterCount;
     const characterPercentage = (characterCount / MAX_CHARACTERS) * 100;
     // Verified users have no character limit - they're premium!
-    const isVerified = loggedInUser?.is_verified ?? false;
+    const isVerified = loggedInUser?.is_verified === 'verified' || loggedInUser?.is_verified === 'kcs';
     const isOverLimit = !isVerified && characterCount > MAX_CHARACTERS;
     const canPost = (content.trim().length > 0 || mediaPreviews.length > 0 || isPollMode) && !isOverLimit;
 
@@ -993,15 +993,15 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                             <div className="relative z-50 shadow-2xl rounded-xl overflow-hidden border bg-background">
                                                 <Tabs defaultValue="emojis" className="w-[320px]">
                                                     <TabsList className="w-full rounded-none bg-muted/50 h-9">
-                                                        {customEmojiList.length > 0 && (
-                                                            <TabsTrigger value="official" className="flex-1 text-xs">Official</TabsTrigger>
+                                                        {customEmojiList.length > 0 && isVerified && (
+                                                            <TabsTrigger value="official" className="flex-1 text-xs">Official ✨</TabsTrigger>
                                                         )}
                                                         <TabsTrigger value="emojis" className="flex-1 text-xs">Emojis</TabsTrigger>
-                                                        {stickerList.length > 0 && (
+                                                        {stickerList.length > 0 && isVerified && (
                                                             <TabsTrigger value="stickers" className="flex-1 text-xs">Stickers</TabsTrigger>
                                                         )}
                                                     </TabsList>
-                                                    {customEmojiList.length > 0 && (
+                                                    {customEmojiList.length > 0 && isVerified && (
                                                         <TabsContent value="official" className="mt-0">
                                                             <div className="grid grid-cols-6 gap-2 p-3 max-h-[300px] overflow-y-auto">
                                                                 {customEmojiList.map((url, i) => (
@@ -1019,7 +1019,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                                     <TabsContent value="emojis" className="mt-0">
                                                         <EmojiPicker onEmojiClick={handleEmojiClick} width={320} height={350} theme={Theme.AUTO} />
                                                     </TabsContent>
-                                                    {stickerList.length > 0 && (
+                                                    {stickerList.length > 0 && isVerified && (
                                                         <TabsContent value="stickers" className="mt-0">
                                                             <div className="grid grid-cols-4 gap-2 p-3 max-h-[300px] overflow-y-auto">
                                                                 {stickerList.map((url, i) => (
@@ -1033,6 +1033,13 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                                                 ))}
                                                             </div>
                                                         </TabsContent>
+                                                    )}
+                                                    {!isVerified && customEmojiList.length > 0 && (
+                                                        <div className="px-3 py-2 bg-muted/30 border-t text-center">
+                                                            <p className="text-xs text-muted-foreground">
+                                                                ✨ <a href="/get-verified" className="text-primary hover:underline font-medium">Get Verified</a> to unlock Official Emojis & Stickers
+                                                            </p>
+                                                        </div>
                                                     )}
                                                 </Tabs>
                                             </div>
