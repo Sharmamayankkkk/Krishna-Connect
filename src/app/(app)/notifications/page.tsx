@@ -47,10 +47,10 @@ const NotificationIconBubble = ({ type }: { type: NotificationType['type'] }) =>
         poll_vote: { icon: <BarChart3 className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-cyan-400 to-sky-600' },
         collaboration_request: { icon: <Users className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-indigo-400 to-indigo-600' },
     };
-    const c = config[type] || { icon: <Bell className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-gray-400 to-gray-600' };
+    const iconConfig = config[type] || { icon: <Bell className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-gray-400 to-gray-600' };
     return (
-        <div className={cn("absolute -bottom-1 -right-1 h-6 w-6 rounded-full flex items-center justify-center ring-2 ring-background", c.bg)} aria-hidden="true">
-            {c.icon}
+        <div className={cn("absolute -bottom-1 -right-1 h-6 w-6 rounded-full flex items-center justify-center ring-2 ring-background", iconConfig.bg)} aria-hidden="true">
+            {iconConfig.icon}
         </div>
     );
 };
@@ -133,7 +133,7 @@ const NotificationItem = React.memo(({
                     </Link>
                     <span className="text-muted-foreground ml-1">{actionText}</span>
                     <span className="text-xs text-muted-foreground/70 ml-2">
-                        {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: false })}
+                        {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                     </span>
                 </p>
 
@@ -238,15 +238,15 @@ function EmptyState({ filter }: { filter: NotificationFilter }) {
         follows: { icon: <UserPlus className="h-8 w-8 text-white" />, bg: 'from-purple-400 to-violet-600', title: 'No new followers', desc: "When someone follows you, you'll see it here" },
         all: { icon: <Sparkles className="h-8 w-8 text-white" />, bg: 'from-primary/80 to-primary', title: "You're all caught up!", desc: "When you get notifications, they'll show up here" },
     };
-    const c = configs[filter] || configs.all;
+    const emptyConfig = configs[filter] || configs.all;
 
     return (
         <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-            <div className={cn("h-16 w-16 rounded-2xl bg-gradient-to-br flex items-center justify-center mb-5 shadow-lg", c.bg)}>
-                {c.icon}
+            <div className={cn("h-16 w-16 rounded-2xl bg-gradient-to-br flex items-center justify-center mb-5 shadow-lg", emptyConfig.bg)}>
+                {emptyConfig.icon}
             </div>
-            <h3 className="text-lg font-bold mb-1.5">{c.title}</h3>
-            <p className="text-sm text-muted-foreground max-w-xs">{c.desc}</p>
+            <h3 className="text-lg font-bold mb-1.5">{emptyConfig.title}</h3>
+            <p className="text-sm text-muted-foreground max-w-xs">{emptyConfig.desc}</p>
         </div>
     );
 }
@@ -659,7 +659,7 @@ export default function NotificationsPage() {
         });
     }, [toast]);
 
-    const tabClass = "rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-sm px-3 sm:px-4 py-3 font-medium whitespace-nowrap gap-1.5";
+    const filterTabClassName = "rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-sm px-3 sm:px-4 py-3 font-medium whitespace-nowrap gap-1.5";
 
     return (
         <div className="flex flex-col min-h-screen w-full bg-background">
@@ -695,23 +695,23 @@ export default function NotificationsPage() {
                 {/* Filter Tabs with unread counts */}
                 <Tabs value={filter} onValueChange={(v) => setFilter(v as NotificationFilter)} className="w-full">
                     <TabsList className="w-full justify-start rounded-none border-b-0 bg-transparent h-auto p-0 overflow-x-auto flex-nowrap">
-                        <TabsTrigger value="all" className={tabClass}>All</TabsTrigger>
-                        <TabsTrigger value="mentions" className={tabClass}>
+                        <TabsTrigger value="all" className={filterTabClassName}>All</TabsTrigger>
+                        <TabsTrigger value="mentions" className={filterTabClassName}>
                             <AtSign className="h-3.5 w-3.5" />
                             Mentions
                             {filterCounts.mentions > 0 && <Badge variant="secondary" className="h-4 px-1 text-[10px] rounded-full ml-0.5">{filterCounts.mentions}</Badge>}
                         </TabsTrigger>
-                        <TabsTrigger value="likes" className={tabClass}>
+                        <TabsTrigger value="likes" className={filterTabClassName}>
                             <Heart className="h-3.5 w-3.5" />
                             Likes
                             {filterCounts.likes > 0 && <Badge variant="secondary" className="h-4 px-1 text-[10px] rounded-full ml-0.5">{filterCounts.likes}</Badge>}
                         </TabsTrigger>
-                        <TabsTrigger value="comments" className={tabClass}>
+                        <TabsTrigger value="comments" className={filterTabClassName}>
                             <MessageCircle className="h-3.5 w-3.5" />
                             Comments
                             {filterCounts.comments > 0 && <Badge variant="secondary" className="h-4 px-1 text-[10px] rounded-full ml-0.5">{filterCounts.comments}</Badge>}
                         </TabsTrigger>
-                        <TabsTrigger value="follows" className={tabClass}>
+                        <TabsTrigger value="follows" className={filterTabClassName}>
                             <UserPlus className="h-3.5 w-3.5" />
                             Follows
                             {filterCounts.follows > 0 && <Badge variant="secondary" className="h-4 px-1 text-[10px] rounded-full ml-0.5">{filterCounts.follows}</Badge>}
