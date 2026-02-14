@@ -903,7 +903,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
     // Call history message (e.g., "[[CALL:video|ended|125|caller_id]]")
     const CallMessage = ({ content, message }: { content: string; message: Message }) => {
         const callData = content.replace(CALL_MESSAGE_PREFIX, '').replace(']]', '');
-        const [callType, callStatus, durationStr, callerId] = callData.split('|');
+        const [callType, callStatus, durationStr] = callData.split('|');
         const duration = parseInt(durationStr) || 0;
         const isMyCall = message.user_id === loggedInUser.id;
         const isMissed = callStatus === 'missed' || callStatus === 'declined';
