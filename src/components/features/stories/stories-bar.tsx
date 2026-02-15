@@ -300,10 +300,10 @@ export function StoriesBar() {
         }
     }, []);
 
-    const longPressProps = useLongPress(handleOwnStoryLongPress, 500);
+    const { didLongPress, ...longPressHandlers } = useLongPress(handleOwnStoryLongPress, 500);
 
     const handleOwnStoryClick = () => {
-        if (longPressProps.didLongPress.current) return;
+        if (didLongPress.current) return;
         if (myStatus) {
             openMyStatusViewer();
         } else {
@@ -371,7 +371,7 @@ export function StoriesBar() {
                         <button
                             ref={myStoryBtnRef}
                             onClick={handleOwnStoryClick}
-                            {...longPressProps}
+                            {...longPressHandlers}
                             className="relative transition-transform duration-200 group-hover:scale-105 select-none touch-manipulation"
                             aria-label={myStatus ? 'View your story' : 'Add new story'}
                         >
