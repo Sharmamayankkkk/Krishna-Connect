@@ -456,13 +456,15 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
 
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2.5 shrink-0 border-b border-white/10">
-          {mode !== 'select' ? (
-            <Button variant="ghost" size="sm" className="text-white hover:bg-white/10" onClick={() => { setMode('select'); setFile(null); setPreview(null); setStickers([]); setDrawActions([]); setTextBlocks([]); setActiveTool('none'); }}>
-              <ChevronLeft className="h-4 w-4 mr-1" /> Back
-            </Button>
-          ) : (
-            <div className="w-16" />
-          )}
+          <Button variant="ghost" size="sm" className="text-white hover:bg-white/10" onClick={() => {
+            if (mode !== 'select') {
+              setMode('select'); setFile(null); setPreview(null); setStickers([]); setDrawActions([]); setTextBlocks([]); setActiveTool('none');
+            } else {
+              handleOpenChange(false);
+            }
+          }}>
+            <ChevronLeft className="h-4 w-4 mr-1" /> {mode !== 'select' ? 'Back' : 'Close'}
+          </Button>
           <h2 className="text-white font-semibold text-base">Create Story</h2>
           {(mode === 'photo' || mode === 'video' || mode === 'text') ? (
             <Button

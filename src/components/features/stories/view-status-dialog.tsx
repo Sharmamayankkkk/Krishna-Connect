@@ -544,7 +544,7 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
                     <MoreHorizontal className="h-4 w-4 sm:h-5 sm:w-5" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="min-w-[160px]">
+                <DropdownMenuContent align="end" className="min-w-[160px] z-[100]">
                   {isMyStatus ? (
                     <>
                       <DropdownMenuItem onClick={handleDeleteStory} className="text-destructive focus:text-destructive">
