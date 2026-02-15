@@ -1,8 +1,8 @@
 'use client'
 
 import * as React from 'react'
-import { Film } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import Image from 'next/image'
 import { useAppContext } from '@/providers/app-provider'
 import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
@@ -29,8 +29,8 @@ export function UploadLeelaFab() {
       return
     }
 
-    if (file.size > 100 * 1024 * 1024) {
-      toast({ title: 'Video must be under 100MB', variant: 'destructive' })
+    if (file.size > 50 * 1024 * 1024) {
+      toast({ title: 'Video must be under 50MB', variant: 'destructive' })
       return
     }
 
@@ -84,7 +84,7 @@ export function UploadLeelaFab() {
               {isUploading ? (
                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
               ) : (
-                <Film className="h-6 w-6" />
+                <Image src="/icons/leela.png" alt="Leela" width={24} height={24} />
               )}
             </Button>
           </TooltipTrigger>

@@ -494,8 +494,8 @@ export default function LeelaPage() {
       return
     }
 
-    if (file.size > 100 * 1024 * 1024) {
-      toast({ title: 'Video must be under 100MB', variant: 'destructive' })
+    if (file.size > 50 * 1024 * 1024) {
+      toast({ title: 'Video must be under 50MB', variant: 'destructive' })
       return
     }
 
@@ -588,21 +588,6 @@ export default function LeelaPage() {
           </button>
         </div>
       </header>
-
-      {/* Upload Leela FAB */}
-      <button
-        onClick={() => fileInputRef.current?.click()}
-        disabled={isUploading}
-        className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-5 py-3 rounded-full bg-white/15 backdrop-blur-md text-white font-semibold shadow-lg hover:bg-white/25 transition-all disabled:opacity-40"
-        aria-label="Upload Leela"
-      >
-        {isUploading ? (
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-        ) : (
-          <Upload className="h-5 w-5" />
-        )}
-        <span className="text-sm">{isUploading ? 'Uploading...' : 'Upload Leela'}</span>
-      </button>
 
       {/* Video container */}
       <div

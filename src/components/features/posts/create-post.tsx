@@ -48,8 +48,7 @@ import {
     ListOrdered,
     Minus,
     CheckCircle2,
-    HelpCircle,
-    Film
+    HelpCircle
 } from 'lucide-react';
 import { CollaborativePostDialog, type Collaborator } from './dialogs/collaborative-post-dialog';
 import { useAppContext } from '@/providers/app-provider';
@@ -339,8 +338,8 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             return;
         }
 
-        if (file.size > 100 * 1024 * 1024) {
-            toast({ title: 'Video must be under 100MB', variant: 'destructive' });
+        if (file.size > 50 * 1024 * 1024) {
+            toast({ title: 'Video must be under 50MB', variant: 'destructive' });
             return;
         }
 
@@ -1140,7 +1139,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                             <Clock className="mr-2 h-4 w-4" /> Schedule
                                         </DropdownMenuItem>
                                         <DropdownMenuItem onClick={() => leelaInputRef.current?.click()} disabled={isPosting || isUploadingLeela}>
-                                            <Film className="mr-2 h-4 w-4" /> {isUploadingLeela ? 'Uploading Leela...' : 'Leela (Short Video)'}
+                                            <Image src="/icons/leela.png" alt="Leela" width={16} height={16} className="mr-2" /> {isUploadingLeela ? 'Uploading Leela...' : 'Leela (Short Video)'}
                                         </DropdownMenuItem>
 
                                         {/* Mobile Only Options */}
