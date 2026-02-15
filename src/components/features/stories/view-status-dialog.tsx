@@ -39,20 +39,22 @@ const STATUS_DURATION = 5000;
 const VIDEO_MAX_DURATION = 30000;
 const QUICK_EMOJIS = ['❤️', '🔥', '😂', '😮', '😢', '👏'];
 
-// --- Viewers Sheet (for story owner) ---
+// --- Viewers Sheet (for story owner) — shows views + who liked ---
 function ViewersSheet({ statusId, viewCount }: { statusId: number; viewCount: number }) {
-  const [viewers, setViewers] = useState<User[]>([]);
+  const [viewers, setViewers] = useState<(User & { hasLiked?: boolean })[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const supabase = createClient();
 
   const fetchViewers = async () => {
     setIsLoading(true);
-    const { data, error } = await supabase
-      .from('status_views')
-      .select('profiles:viewer_id(*)')
-      .eq('status_id', statusId);
-    if (!error && data) {
-      setViewers(data.map(d => d.profiles).filter(Boolean) as unknown as User[]);
+    const [viewsRes, likesRes] = await Promise.all([
+      supabase.from('status_views').select('profiles:viewer_id(*)').eq('status_id', statusId),
+      supabase.from('story_reactions').select('user_id').eq('status_id', statusId),
+    ]);
+    const likerIds = new Set((likesRes.data || []).map(r => r.user_id));
+    if (!viewsRes.error && viewsRes.data) {
+      const viewerList = viewsRes.data.map(d => d.profiles).filter(Boolean) as unknown as User[];
+      setViewers(viewerList.map(v => ({ ...v, hasLiked: likerIds.has(v.id) })));
     }
     setIsLoading(false);
   };
@@ -91,6 +93,12 @@ function ViewersSheet({ statusId, viewCount }: { statusId: number; viewCount: nu
                     <p className="font-semibold text-sm truncate">{viewer.name}</p>
                     <p className="text-xs text-muted-foreground truncate">@{viewer.username}</p>
                   </div>
+                  {viewer.hasLiked && (
+                    <div className="flex items-center gap-1 text-red-500">
+                      <Heart className="h-4 w-4 fill-current" />
+                      <span className="text-xs">Liked</span>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -410,14 +418,64 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
     setIsSendingReply(true);
     setIsPaused(true);
     try {
+      // 1. Find or create DM conversation with story author
+      const { data: existingChats } = await supabase
+        .from('chat_participants')
+        .select('chat_id')
+        .eq('user_id', loggedInUser.id);
+      const myChats = (existingChats || []).map(c => c.chat_id);
+
+      let dmChatId: string | null = null;
+      if (myChats.length > 0) {
+        const { data: theirChats } = await supabase
+          .from('chat_participants')
+          .select('chat_id')
+          .eq('user_id', statusUpdate.user_id)
+          .in('chat_id', myChats);
+        if (theirChats && theirChats.length > 0) {
+          // Verify it's a DM (not a group)
+          for (const tc of theirChats) {
+            const { count } = await supabase
+              .from('chat_participants')
+              .select('*', { count: 'exact', head: true })
+              .eq('chat_id', tc.chat_id);
+            if (count === 2) { dmChatId = tc.chat_id; break; }
+          }
+        }
+      }
+
+      // Create new DM if none exists
+      if (!dmChatId) {
+        const { data: newChat } = await supabase.from('chats').insert({ is_group: false }).select().single();
+        if (newChat) {
+          dmChatId = newChat.id;
+          await supabase.from('chat_participants').insert([
+            { chat_id: newChat.id, user_id: loggedInUser.id },
+            { chat_id: newChat.id, user_id: statusUpdate.user_id },
+          ]);
+        }
+      }
+
+      // 2. Send DM with story context
+      if (dmChatId) {
+        const messageContent = `[[STORY_REPLY:${currentStatus.media_url}]] ${replyText.trim()}`;
+        await supabase.from('messages').insert({
+          chat_id: dmChatId,
+          sender_id: loggedInUser.id,
+          content: messageContent,
+        });
+      }
+
+      // 3. Also save to story_replies for analytics
       await supabase.from('story_replies').insert({
         status_id: currentStatus.id,
         sender_id: loggedInUser.id,
         receiver_id: statusUpdate.user_id,
         message: replyText.trim(),
       });
+
       trackAction(currentStatus.id, 'reply');
-      toast({ title: 'Reply sent', description: `Your reply was sent to ${statusUpdate.name}` });
+      toast({ title: 'Reply sent as message', description: `Your reply was sent to ${statusUpdate.name}` });
       setReplyText('');
       setIsPaused(false);
     } catch {
