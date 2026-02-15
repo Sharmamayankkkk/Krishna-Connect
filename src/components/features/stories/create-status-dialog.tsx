@@ -450,12 +450,12 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent hideClose className="max-w-[100vw] sm:max-w-lg w-full h-[100dvh] sm:h-auto p-0 gap-0 overflow-hidden bg-black border-none rounded-none sm:rounded-2xl">
+      <DialogContent hideClose className="!flex !flex-col max-w-[100vw] sm:max-w-lg w-full h-[100dvh] sm:h-[90vh] p-0 gap-0 overflow-hidden bg-black border-none rounded-none sm:rounded-2xl">
         <DialogTitle className="sr-only">Create Story</DialogTitle>
         <DialogDescription className="sr-only">Create a new story to share with your followers</DialogDescription>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+        <div className="flex items-center justify-between px-4 py-2.5 shrink-0 border-b border-white/10">
           {mode !== 'select' ? (
             <Button variant="ghost" size="sm" className="text-white hover:bg-white/10" onClick={() => { setMode('select'); setFile(null); setPreview(null); setStickers([]); setDrawActions([]); setTextBlocks([]); setActiveTool('none'); }}>
               <ChevronLeft className="h-4 w-4 mr-1" /> Back
@@ -482,7 +482,7 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
         {/* Content */}
         <div
           ref={containerRef}
-          className="relative aspect-[9/16] max-h-[calc(100dvh-100px)] sm:max-h-[70vh] bg-neutral-950"
+          className="relative flex-1 min-h-0 bg-neutral-950"
           onMouseMove={handleContainerMouseMove}
           onMouseUp={handleContainerMouseUp}
         >
@@ -801,7 +801,7 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
         </div>
 
         {/* Bottom sharing panel */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-t border-white/10">
+        <div className="flex items-center justify-between px-4 py-2 shrink-0 border-t border-white/10" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
           {mode !== 'select' ? (
             <>
               <div className="flex items-center gap-2">

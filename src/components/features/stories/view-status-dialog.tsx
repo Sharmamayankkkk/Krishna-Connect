@@ -496,7 +496,7 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         hideClose
-        className="max-w-[100vw] max-h-[100dvh] sm:max-w-md w-full h-[100dvh] sm:h-auto sm:aspect-[9/16] sm:max-h-[90vh] bg-black border-none p-0 overflow-hidden flex flex-col data-[state=open]:!animate-none data-[state=closed]:!animate-none rounded-none sm:rounded-2xl"
+        className="!flex !flex-col max-w-[100vw] sm:max-w-md w-full h-[100dvh] sm:h-[90vh] bg-black border-none p-0 gap-0 overflow-hidden data-[state=open]:!animate-none data-[state=closed]:!animate-none rounded-none sm:rounded-2xl"
         style={{ transform: touchDeltaY > 0 ? `translateY(${touchDeltaY}px) scale(${1 - touchDeltaY / 1000})` : undefined, opacity: touchDeltaY > 0 ? 1 - touchDeltaY / 400 : 1, transition: touchDeltaY === 0 ? 'transform 0.2s, opacity 0.2s' : 'none' }}
       >
         <DialogTitle className="sr-only">Story from {statusUpdate.name}</DialogTitle>
@@ -570,7 +570,7 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
 
         {/* Story content */}
         <div
-          className="relative flex-1 flex items-center justify-center"
+          className="relative flex-1 min-h-0 flex items-center justify-center"
           onDoubleClick={handleDoubleClick}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
