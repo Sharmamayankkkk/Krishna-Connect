@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Heart, MessageCircle, Share2, Music2, Play, Pause, Volume2, VolumeX, ChevronUp, ChevronDown, Upload, Film, Lightbulb, CheckCircle } from 'lucide-react'
+import { Heart, MessageCircle, Share2, Bookmark, Music2, Play, Pause, Volume2, VolumeX, ChevronUp, ChevronDown, Upload, Film, Lightbulb, CheckCircle, Send } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -9,6 +9,9 @@ import { useAppContext } from '@/providers/app-provider'
 import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { SidebarTrigger } from '@/components/ui/sidebar'
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { Input } from '@/components/ui/input'
+import { formatDistanceToNow } from 'date-fns'
 import Link from 'next/link'
 import Image from 'next/image'
 import { GoogleAd } from '@/components/ads/google-ad'
@@ -31,6 +34,17 @@ type LeelaVideo = {
   author_avatar: string | null
   author_verified: string
   is_liked: boolean
+  is_bookmarked: boolean
+}
+
+type LeelaComment = {
+  id: string
+  content: string
+  created_at: string
+  user_id: string
+  user_name: string
+  user_username: string
+  user_avatar: string | null
 }
 
 function formatCount(n: number): string {
@@ -43,10 +57,16 @@ function VideoPlayer({
   video,
   isActive,
   onLike,
+  onComment,
+  onShare,
+  onBookmark,
 }: {
   video: LeelaVideo
   isActive: boolean
   onLike: (id: string) => void
+  onComment: (id: string) => void
+  onShare: (video: LeelaVideo) => void
+  onBookmark: (id: string) => void
 }) {
   const videoRef = React.useRef<HTMLVideoElement>(null)
   const [isPlaying, setIsPlaying] = React.useState(false)
@@ -185,14 +205,21 @@ function VideoPlayer({
           <span className="text-white text-xs font-semibold drop-shadow-lg">{formatCount(video.like_count)}</span>
         </button>
 
-        <button className="flex flex-col items-center gap-1" onClick={e => e.stopPropagation()}>
+        <button onClick={(e) => { e.stopPropagation(); onComment(video.id); }} className="flex flex-col items-center gap-1">
           <div className="p-2 text-white">
             <MessageCircle className="h-7 w-7 drop-shadow-lg" />
           </div>
           <span className="text-white text-xs font-semibold drop-shadow-lg">{formatCount(video.comment_count)}</span>
         </button>
 
-        <button className="flex flex-col items-center gap-1" onClick={e => e.stopPropagation()}>
+        <button onClick={(e) => { e.stopPropagation(); onBookmark(video.id); }} className="flex flex-col items-center gap-1">
+          <div className={cn("p-2", video.is_bookmarked ? "text-yellow-400" : "text-white")}>
+            <Bookmark className="h-7 w-7 drop-shadow-lg" fill={video.is_bookmarked ? "currentColor" : "none"} />
+          </div>
+          <span className="text-white text-xs font-semibold drop-shadow-lg">{video.is_bookmarked ? 'Saved' : 'Save'}</span>
+        </button>
+
+        <button onClick={(e) => { e.stopPropagation(); onShare(video); }} className="flex flex-col items-center gap-1">
           <div className="p-2 text-white">
             <Share2 className="h-7 w-7 drop-shadow-lg" />
           </div>
@@ -321,6 +348,85 @@ export default function LeelaPage() {
     } else {
       await supabase.from('leela_likes').insert({ user_id: loggedInUser.id, video_id: videoId })
     }
+  }
+
+  // Bookmark handler
+  const handleBookmark = async (videoId: string) => {
+    if (!loggedInUser) {
+      toast({ title: 'Log in to save videos' })
+      return
+    }
+    const video = videos.find(v => v.id === videoId)
+    setVideos(prev => prev.map(v => v.id !== videoId ? v : { ...v, is_bookmarked: !v.is_bookmarked }))
+
+    if (video?.is_bookmarked) {
+      await supabase.from('leela_bookmarks').delete().match({ user_id: loggedInUser.id, video_id: videoId })
+      toast({ title: 'Removed from saved' })
+    } else {
+      await supabase.from('leela_bookmarks').insert({ user_id: loggedInUser.id, video_id: videoId })
+      toast({ title: 'Saved to collection' })
+    }
+  }
+
+  // Share handler
+  const handleShare = async (video: LeelaVideo) => {
+    const url = `${window.location.origin}/leela?v=${video.id}`
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: video.caption || 'Check out this Leela', url })
+      } catch {
+        // User cancelled share
+      }
+    } else {
+      await navigator.clipboard.writeText(url)
+      toast({ title: 'Link copied to clipboard' })
+    }
+  }
+
+  // Comments
+  const [commentSheetOpen, setCommentSheetOpen] = React.useState(false)
+  const [commentVideoId, setCommentVideoId] = React.useState<string | null>(null)
+  const [comments, setComments] = React.useState<LeelaComment[]>([])
+  const [commentText, setCommentText] = React.useState('')
+  const [loadingComments, setLoadingComments] = React.useState(false)
+  const [postingComment, setPostingComment] = React.useState(false)
+
+  const openComments = async (videoId: string) => {
+    setCommentVideoId(videoId)
+    setCommentSheetOpen(true)
+    setLoadingComments(true)
+    const { data } = await supabase
+      .from('leela_comments')
+      .select('id, content, created_at, user_id, profiles:user_id(name, username, avatar_url)')
+      .eq('video_id', videoId)
+      .order('created_at', { ascending: false })
+      .limit(50)
+    setComments((data || []).map((c: any) => ({
+      id: c.id,
+      content: c.content,
+      created_at: c.created_at,
+      user_id: c.user_id,
+      user_name: c.profiles?.name || 'User',
+      user_username: c.profiles?.username || '',
+      user_avatar: c.profiles?.avatar_url || null,
+    })))
+    setLoadingComments(false)
+  }
+
+  const postComment = async () => {
+    if (!commentText.trim() || !commentVideoId || !loggedInUser) return
+    setPostingComment(true)
+    const { error } = await supabase.from('leela_comments').insert({
+      video_id: commentVideoId,
+      user_id: loggedInUser.id,
+      content: commentText.trim(),
+    })
+    if (!error) {
+      setCommentText('')
+      setVideos(prev => prev.map(v => v.id !== commentVideoId ? v : { ...v, comment_count: v.comment_count + 1 }))
+      await openComments(commentVideoId)
+    }
+    setPostingComment(false)
   }
 
   // Upload handler
@@ -467,6 +573,9 @@ export default function LeelaPage() {
                 video={video}
                 isActive={index === currentIndex}
                 onLike={handleLike}
+                onComment={openComments}
+                onShare={handleShare}
+                onBookmark={handleBookmark}
               />
             </div>
           )
@@ -483,6 +592,67 @@ export default function LeelaPage() {
           </div>
         )}
       </div>
+
+      {/* Comment Sheet */}
+      <Sheet open={commentSheetOpen} onOpenChange={setCommentSheetOpen}>
+        <SheetContent side="bottom" className="h-[70vh] rounded-t-2xl p-0 flex flex-col">
+          <SheetHeader className="p-4 pb-2 border-b shrink-0">
+            <SheetTitle className="text-center text-base">Comments</SheetTitle>
+          </SheetHeader>
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
+            {loadingComments ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent" />
+              </div>
+            ) : comments.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <MessageCircle className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                <p className="text-sm">No comments yet. Be the first!</p>
+              </div>
+            ) : (
+              comments.map(c => (
+                <div key={c.id} className="flex gap-3">
+                  <Link href={`/profile/${c.user_username}`}>
+                    <Avatar className="h-8 w-8 shrink-0">
+                      <AvatarImage src={c.user_avatar || undefined} />
+                      <AvatarFallback className="text-xs">{c.user_name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                  </Link>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline gap-2">
+                      <Link href={`/profile/${c.user_username}`} className="text-sm font-semibold hover:underline">
+                        {c.user_username}
+                      </Link>
+                      <span className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}
+                      </span>
+                    </div>
+                    <p className="text-sm mt-0.5">{c.content}</p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          <div className="p-3 border-t shrink-0 flex gap-2">
+            <Input
+              placeholder="Add a comment..."
+              value={commentText}
+              onChange={e => setCommentText(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && postComment()}
+              className="flex-1 rounded-full text-sm"
+              disabled={postingComment}
+            />
+            <Button
+              size="icon"
+              className="rounded-full shrink-0"
+              onClick={postComment}
+              disabled={!commentText.trim() || postingComment}
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }

@@ -33,7 +33,8 @@ import {
     Pin,
     Crown,
     X as XIcon,
-    Check
+    Check,
+    ShieldOff,
 } from 'lucide-react';
 import {
     Dialog,
@@ -313,7 +314,7 @@ export default function GetVerifiedPage() {
                     {[
                         { icon: <CheckCircle2 className="h-6 w-6" />, title: 'Verified Badge', desc: 'Blue tick on all posts & profile', color: 'from-blue-500 to-blue-600' },
                         { icon: <Sparkles className="h-6 w-6" />, title: 'Official Emojis', desc: 'Exclusive emojis & stickers', color: 'from-amber-500 to-orange-500' },
-                        { icon: <Edit3 className="h-6 w-6" />, title: 'Long-Form Posts', desc: 'No character limit', color: 'from-green-500 to-emerald-600' },
+                        { icon: <ShieldOff className="h-6 w-6" />, title: 'Ad-Free Experience', desc: 'No ads anywhere on the platform', color: 'from-teal-500 to-green-600' },
                         { icon: <Pin className="h-6 w-6" />, title: 'Unlimited Pins', desc: 'Pin unlimited posts to profile', color: 'from-purple-500 to-violet-600' },
                         { icon: <TrendingUp className="h-6 w-6" />, title: 'Promote Posts', desc: '3 boosted posts/month (yearly)', color: 'from-rose-500 to-pink-600' },
                         { icon: <Crown className="h-6 w-6" />, title: 'Create Challenges', desc: 'Only verified users can create', color: 'from-yellow-500 to-amber-600' },
@@ -351,7 +352,7 @@ export default function GetVerifiedPage() {
                                 {[
                                     { feature: 'Verified Badge', free: false, verified: true },
                                     { feature: 'Official Emojis & Stickers', free: false, verified: true },
-                                    { feature: 'Post Character Limit', free: '280', verified: '∞' },
+                                    { feature: 'Ad-Free Experience', free: false, verified: true },
                                     { feature: 'Pin Posts to Profile', free: '3', verified: '∞' },
                                     { feature: 'Create Challenges', free: false, verified: true },
                                     { feature: 'Create Events', free: false, verified: true },
@@ -850,7 +851,7 @@ function AlreadyVerifiedState({ request }: { request: VerificationRequest | null
                         {/* Active Benefits */}
                         <div className="bg-muted/30 p-4 rounded-xl border text-left space-y-2">
                             <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider mb-2">Active Benefits</p>
-                            {['Verified Badge', 'Official Emojis & Stickers', 'Unlimited Post Length', 'Create Challenges', 'Priority Support'].map(b => (
+                            {['Verified Badge', 'Official Emojis & Stickers', 'Ad-Free Experience', 'Create Challenges', 'Priority Support'].map(b => (
                                 <div key={b} className="flex items-center gap-2 text-sm">
                                     <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
                                     <span>{b}</span>
