@@ -36,6 +36,7 @@ export function ActiveCallScreen() {
 
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
+  const remoteAudioRef = useRef<HTMLAudioElement>(null)
   const [callDuration, setCallDuration] = useState(0)
   const [isMinimized, setIsMinimized] = useState(false)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
@@ -49,12 +50,15 @@ export function ActiveCallScreen() {
     }
   }, [localStream])
 
-  // Attach remote stream to video element
+  // Attach remote stream to video/audio element
   useEffect(() => {
     if (remoteVideoRef.current && remoteStream) {
       remoteVideoRef.current.srcObject = remoteStream
       // iOS Safari compatibility
       remoteVideoRef.current.setAttribute("webkit-playsinline", "true")
+    }
+    if (remoteAudioRef.current && remoteStream) {
+      remoteAudioRef.current.srcObject = remoteStream
     }
   }, [remoteStream])
 
@@ -201,6 +205,7 @@ export function ActiveCallScreen() {
       ) : (
         /* Voice call - show avatar centered */
         <div className="flex-1 flex items-center justify-center">
+          <audio ref={remoteAudioRef} autoPlay />
           <div className="text-center space-y-6">
             <Avatar className="h-40 w-40 mx-auto ring-4 ring-white/10">
               <AvatarImage src={getAvatarUrl(remoteUser.avatar_url)} alt={remoteUser.name} />
