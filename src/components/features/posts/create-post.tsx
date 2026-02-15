@@ -48,7 +48,8 @@ import {
     ListOrdered,
     Minus,
     CheckCircle2,
-    HelpCircle
+    HelpCircle,
+    Film
 } from 'lucide-react';
 import { CollaborativePostDialog, type Collaborator } from './dialogs/collaborative-post-dialog';
 import { useAppContext } from '@/providers/app-provider';
@@ -117,6 +118,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
 
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const videoInputRef = React.useRef<HTMLInputElement>(null);
+    const leelaInputRef = React.useRef<HTMLInputElement>(null);
     const textareaRef = React.useRef<HTMLTextAreaElement>(null);
     const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -322,6 +324,50 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
 
         if (videoInputRef.current) {
             videoInputRef.current.value = '';
+        }
+    };
+
+    // Leela (short video) upload
+    const [isUploadingLeela, setIsUploadingLeela] = React.useState(false);
+
+    const handleLeelaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !loggedInUser) return;
+
+        if (!file.type.startsWith('video/')) {
+            toast({ title: 'Only video files are allowed', variant: 'destructive' });
+            return;
+        }
+
+        if (file.size > 100 * 1024 * 1024) {
+            toast({ title: 'Video must be under 100MB', variant: 'destructive' });
+            return;
+        }
+
+        setIsUploadingLeela(true);
+        try {
+            const leelaSupabase = createClient();
+            const ext = file.name.split('.').pop() || 'mp4';
+            const filePath = `leela/${loggedInUser.id}/${Date.now()}.${ext}`;
+            const { error: uploadError } = await leelaSupabase.storage.from('leela').upload(filePath, file);
+            if (uploadError) throw uploadError;
+
+            const { data: urlData } = leelaSupabase.storage.from('leela').getPublicUrl(filePath);
+
+            const { error: insertError } = await leelaSupabase.from('leela_videos').insert({
+                user_id: loggedInUser.id,
+                video_url: urlData.publicUrl,
+                caption: null,
+            });
+
+            if (insertError) throw insertError;
+
+            toast({ title: 'Leela uploaded successfully!' });
+        } catch (err: any) {
+            toast({ title: 'Upload failed', description: err.message, variant: 'destructive' });
+        } finally {
+            setIsUploadingLeela(false);
+            if (leelaInputRef.current) leelaInputRef.current.value = '';
         }
     };
 
@@ -974,6 +1020,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                         <div className="flex items-center justify-between pt-3 mt-2">
                             <input type="file" ref={fileInputRef} className="hidden" multiple accept="image/*" onChange={handleImageUpload} disabled={isPosting || isPollMode} />
                             <input type="file" ref={videoInputRef} className="hidden" multiple accept="video/*" onChange={handleVideoUpload} disabled={isPosting || isPollMode} />
+                            <input type="file" ref={leelaInputRef} className="hidden" accept="video/*" onChange={handleLeelaUpload} disabled={isPosting || isUploadingLeela} />
 
                             <div className="flex items-center gap-1 -ml-2">
                                 {/* Primary Actions */}
@@ -1091,6 +1138,9 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                         </DropdownMenuItem>
                                         <DropdownMenuItem onClick={() => setIsScheduleMode(true)} disabled={isPosting}>
                                             <Clock className="mr-2 h-4 w-4" /> Schedule
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => leelaInputRef.current?.click()} disabled={isPosting || isUploadingLeela}>
+                                            <Film className="mr-2 h-4 w-4" /> {isUploadingLeela ? 'Uploading Leela...' : 'Leela (Short Video)'}
                                         </DropdownMenuItem>
 
                                         {/* Mobile Only Options */}

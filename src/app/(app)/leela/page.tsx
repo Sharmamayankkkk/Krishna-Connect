@@ -571,14 +571,6 @@ export default function LeelaPage() {
         <h1 className="text-lg font-bold text-white drop-shadow-lg">Leela</h1>
         <div className="ml-auto flex items-center gap-2">
           <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading}
-            className="p-1.5 rounded-full bg-white/10 backdrop-blur-sm text-white disabled:opacity-30"
-            aria-label="Upload Leela"
-          >
-            <Upload className="h-4 w-4" />
-          </button>
-          <button
             onClick={() => navigate('up')}
             disabled={currentIndex === 0}
             className="p-1.5 rounded-full bg-white/10 backdrop-blur-sm text-white disabled:opacity-30"
@@ -596,6 +588,21 @@ export default function LeelaPage() {
           </button>
         </div>
       </header>
+
+      {/* Upload Leela FAB */}
+      <button
+        onClick={() => fileInputRef.current?.click()}
+        disabled={isUploading}
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-5 py-3 rounded-full bg-white/15 backdrop-blur-md text-white font-semibold shadow-lg hover:bg-white/25 transition-all disabled:opacity-40"
+        aria-label="Upload Leela"
+      >
+        {isUploading ? (
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+        ) : (
+          <Upload className="h-5 w-5" />
+        )}
+        <span className="text-sm">{isUploading ? 'Uploading...' : 'Upload Leela'}</span>
+      </button>
 
       {/* Video container */}
       <div
