@@ -966,7 +966,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
     // Story reply message (e.g., "[[STORY_REPLY:url]] reply text")
     const StoryReplyMessage = ({ content, message }: { content: string; message: Message }) => {
         const isMyMessage = message.user_id === loggedInUser.id;
-        const match = content.match(/\[\[STORY_REPLY:(.*?)\]\]\s*(.*)/s);
+        const match = content.match(/\[\[STORY_REPLY:(.*?)\]\]\s*([\s\S]*)/);
         const mediaUrl = match?.[1] || '';
         const replyText = match?.[2] || content;
         const isVideoStory = mediaUrl.includes('.mp4') || mediaUrl.includes('.webm') || mediaUrl.includes('.mov');
