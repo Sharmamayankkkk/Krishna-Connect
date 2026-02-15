@@ -445,6 +445,10 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
 
   // --- Swipe gestures ---
   const handleTouchStart = (e: React.TouchEvent) => {
+    // Don't capture touches in the header (top 72px) or bottom bar (bottom 64px) areas
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const touchY = e.touches[0].clientY - rect.top;
+    if (touchY < 72 || touchY > rect.height - 64) return;
     setTouchStartY(e.touches[0].clientY);
     setTouchStartX(e.touches[0].clientX);
     setTouchDeltaY(0);
@@ -503,7 +507,7 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
         <DialogDescription className="sr-only">Viewing story. Swipe down to close.</DialogDescription>
 
         {/* Top gradient + progress + header */}
-        <div className="absolute top-0 left-0 right-0 p-2 sm:p-3 z-20 bg-gradient-to-b from-black/60 via-black/30 to-transparent">
+        <div className="absolute top-0 left-0 right-0 p-2 sm:p-3 z-30 bg-gradient-to-b from-black/60 via-black/30 to-transparent">
           {/* Progress bars */}
           <div className="flex items-center gap-0.5 mb-2 sm:mb-3">
             {statusUpdate.statuses.map((_, index) => (
@@ -576,9 +580,9 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          {/* Pause on hold (desktop) */}
+          {/* Pause on hold (desktop) — avoid covering top header and bottom bar */}
           <div
-            className="absolute inset-0 z-10 hidden sm:block"
+            className="absolute left-0 right-0 top-[72px] bottom-[64px] z-10 hidden sm:block"
             onMouseDown={() => setIsPaused(true)}
             onMouseUp={() => setIsPaused(false)}
           />
@@ -622,9 +626,9 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
             </div>
           )}
 
-          {/* Navigation: tap left/right areas */}
-          <button onClick={(e) => { e.stopPropagation(); goToPrevStory(); }} className="absolute left-0 top-0 bottom-0 w-1/3 z-20" aria-label="Previous story" />
-          <button onClick={(e) => { e.stopPropagation(); goToNextStory(); }} className="absolute right-0 top-0 bottom-0 w-1/3 z-20" aria-label="Next story" />
+          {/* Navigation: tap left/right areas — avoid covering top header (72px) and bottom bar (64px) */}
+          <button onClick={(e) => { e.stopPropagation(); goToPrevStory(); }} className="absolute left-0 top-[72px] bottom-[64px] w-1/3 z-20" aria-label="Previous story" />
+          <button onClick={(e) => { e.stopPropagation(); goToNextStory(); }} className="absolute right-0 top-[72px] bottom-[64px] w-1/3 z-20" aria-label="Next story" />
 
           {/* User navigation arrows (desktop) */}
           {currentUserIndex !== null && currentUserIndex > 0 && (
