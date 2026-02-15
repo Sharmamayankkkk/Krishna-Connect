@@ -206,7 +206,7 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
   const [likeCount, setLikeCount] = useState(0);
   const [replyText, setReplyText] = useState('');
   const [isSendingReply, setIsSendingReply] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const [showLikeAnimation, setShowLikeAnimation] = useState(false);
   const [showEmojiAnimation, setShowEmojiAnimation] = useState<string | null>(null);
   const [stickers, setStickers] = useState<any[]>([]);
@@ -533,19 +533,27 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
               </div>
             </div>
 
-            <div className="flex items-center gap-0 shrink-0">
+            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
               {isVideo && (
-                <button onClick={toggleMute} className="text-white p-1.5 sm:p-2 hover:bg-white/10 rounded-full transition-colors">
-                  {isMuted ? <VolumeX className="h-4 w-4 sm:h-5 sm:w-5" /> : <Volume2 className="h-4 w-4 sm:h-5 sm:w-5" />}
+                <button
+                  onClick={toggleMute}
+                  className="text-white p-2 sm:p-2.5 bg-black/30 backdrop-blur-sm hover:bg-black/50 rounded-full transition-all active:scale-90"
+                  aria-label={isMuted ? 'Unmute' : 'Mute'}
+                >
+                  {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
                 </button>
               )}
-              <button onClick={handlePausePlay} className="text-white p-1.5 sm:p-2 hover:bg-white/10 rounded-full transition-colors">
-                {isPaused ? <Play className="h-4 w-4 sm:h-5 sm:w-5" /> : <Pause className="h-4 w-4 sm:h-5 sm:w-5" />}
+              <button
+                onClick={handlePausePlay}
+                className="text-white p-2 sm:p-2.5 bg-black/30 backdrop-blur-sm hover:bg-black/50 rounded-full transition-all active:scale-90"
+                aria-label={isPaused ? 'Play' : 'Pause'}
+              >
+                {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
               </button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="text-white p-1.5 sm:p-2 hover:bg-white/10 rounded-full transition-colors">
-                    <MoreHorizontal className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <button className="text-white p-2 sm:p-2.5 bg-black/30 backdrop-blur-sm hover:bg-black/50 rounded-full transition-all active:scale-90" aria-label="More options">
+                    <MoreHorizontal className="h-4 w-4" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="min-w-[160px] z-[100]">
@@ -565,8 +573,12 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
-              <button onClick={() => onOpenChange(false)} className="text-white p-1.5 sm:p-2 hover:bg-white/10 rounded-full transition-colors">
-                <X className="h-4 w-4 sm:h-5 sm:w-5" />
+              <button
+                onClick={() => onOpenChange(false)}
+                className="text-white p-2 sm:p-2.5 bg-black/30 backdrop-blur-sm hover:bg-black/50 rounded-full transition-all active:scale-90"
+                aria-label="Close"
+              >
+                <X className="h-4 w-4" />
               </button>
             </div>
           </div>
@@ -589,7 +601,26 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
 
           {/* Media */}
           {isVideo ? (
-            <video ref={videoRef} src={currentStatus.media_url} className="w-full h-full object-contain" autoPlay playsInline muted={isMuted} loop />
+            <video
+              ref={videoRef}
+              src={currentStatus.media_url}
+              className="w-full h-full object-contain"
+              autoPlay
+              playsInline
+              loop
+              onPlay={(e) => {
+                // Try to unmute on play — browsers may block unmuted autoplay
+                const vid = e.currentTarget;
+                if (!isMuted) {
+                  vid.muted = false;
+                  vid.play().catch(() => {
+                    vid.muted = true;
+                    setIsMuted(true);
+                    vid.play().catch(() => {});
+                  });
+                }
+              }}
+            />
           ) : (
             currentStatus.media_url && (
               <Image src={currentStatus.media_url} alt={`Story from ${statusUpdate.name}`} fill className="object-contain" priority />
