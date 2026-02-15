@@ -75,14 +75,16 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
 
   useEffect(() => { scheduleHideControls(); }, [isPlaying, scheduleHideControls]);
 
+  const safePlay = () => { videoRef.current?.play().catch(() => {}); };
+
   const togglePlay = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!videoRef.current) return;
     if (isEnded) {
       videoRef.current.currentTime = 0;
-      videoRef.current.play().catch(() => {});
+      safePlay();
     } else if (videoRef.current.paused) {
-      videoRef.current.play().catch(() => {});
+      safePlay();
     } else {
       videoRef.current.pause();
     }
@@ -167,8 +169,8 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
         >
           <div className="absolute h-full bg-white rounded-full transition-[width] duration-100" style={{ width: `${progress}%` }} />
           <div
-            className="absolute top-1/2 -translate-y-1/2 h-3 w-3 bg-white rounded-full shadow-md opacity-0 group-hover/progress:opacity-100 transition-opacity"
-            style={{ left: `${progress}%`, transform: `translate(-50%, -50%)` }}
+            className="absolute top-1/2 h-3 w-3 bg-white rounded-full shadow-md opacity-0 group-hover/progress:opacity-100 transition-opacity"
+            style={{ left: `${progress}%`, transform: 'translate(-50%, -50%)' }}
           />
         </div>
 
