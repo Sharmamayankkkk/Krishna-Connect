@@ -16,6 +16,7 @@ export async function POST(request: Request) {
     const file = formData.get('file') as File;
     const caption = formData.get('caption') as string;
     const mediaType = formData.get('mediaType') as string || 'image';
+    const visibility = formData.get('visibility') as string || 'public';
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
@@ -38,6 +39,7 @@ export async function POST(request: Request) {
             media_url: urlData.publicUrl,
             media_type: mediaType,
             caption: caption,
+            visibility: visibility,
         })
         .select()
         .single();
