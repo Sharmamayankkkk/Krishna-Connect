@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Heart, MessageCircle, Share2, Bookmark, Music2, Play, Pause, Volume2, VolumeX, ChevronUp, ChevronDown, Upload, Film, Lightbulb, CheckCircle, Send } from 'lucide-react'
+import { Heart, MessageCircle, Share2, Bookmark, Music2, Play, Pause, Volume2, VolumeX, ChevronUp, ChevronDown, Upload, Film, Lightbulb, CheckCircle, Send, Trash2, MoreVertical } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -60,6 +60,8 @@ function VideoPlayer({
   onComment,
   onShare,
   onBookmark,
+  onDelete,
+  isOwner,
 }: {
   video: LeelaVideo
   isActive: boolean
@@ -67,6 +69,8 @@ function VideoPlayer({
   onComment: (id: string) => void
   onShare: (video: LeelaVideo) => void
   onBookmark: (id: string) => void
+  onDelete?: (id: string) => void
+  isOwner?: boolean
 }) {
   const videoRef = React.useRef<HTMLVideoElement>(null)
   const [isPlaying, setIsPlaying] = React.useState(false)
@@ -226,6 +230,15 @@ function VideoPlayer({
           <span className="text-white text-xs font-semibold drop-shadow-lg">{formatCount(video.share_count)}</span>
         </button>
 
+        {isOwner && onDelete && (
+          <button onClick={(e) => { e.stopPropagation(); onDelete(video.id); }} className="flex flex-col items-center gap-1">
+            <div className="p-2 text-white/80 hover:text-red-400 transition-colors">
+              <Trash2 className="h-6 w-6 drop-shadow-lg" />
+            </div>
+            <span className="text-white/80 text-[10px] font-semibold drop-shadow-lg">Delete</span>
+          </button>
+        )}
+
         <Link href={`/profile/${video.author_username}`} onClick={e => e.stopPropagation()}>
           <div className="w-10 h-10 rounded-full border-2 border-white overflow-hidden animate-spin" style={{ animationDuration: '6s' }}>
             <Avatar className="h-full w-full">
@@ -382,6 +395,39 @@ export default function LeelaPage() {
     } else {
       await navigator.clipboard.writeText(url)
       toast({ title: 'Link copied to clipboard' })
+    }
+  }
+
+  // Delete handler
+  const handleDelete = async (videoId: string) => {
+    if (!loggedInUser) return
+    const video = videos.find(v => v.id === videoId)
+    if (!video || video.author_id !== loggedInUser.id) {
+      toast({ title: 'You can only delete your own videos', variant: 'destructive' })
+      return
+    }
+
+    // Optimistically remove from UI
+    setVideos(prev => prev.filter(v => v.id !== videoId))
+    if (currentIndex >= videos.length - 1) {
+      setCurrentIndex(prev => Math.max(0, prev - 1))
+    }
+
+    // Delete from storage if URL contains our bucket path
+    if (video.video_url.includes('/leela/')) {
+      const pathMatch = video.video_url.match(/\/leela\/(.+)$/)
+      if (pathMatch) {
+        await supabase.storage.from('leela').remove([pathMatch[1]])
+      }
+    }
+
+    // Delete from database (cascade will handle likes/comments/bookmarks)
+    const { error } = await supabase.from('leela_videos').delete().eq('id', videoId)
+    if (error) {
+      toast({ title: 'Failed to delete', description: error.message, variant: 'destructive' })
+      fetchVideos() // Reload on error
+    } else {
+      toast({ title: 'Leela deleted' })
     }
   }
 
@@ -582,6 +628,8 @@ export default function LeelaPage() {
                 onComment={openComments}
                 onShare={handleShare}
                 onBookmark={handleBookmark}
+                onDelete={handleDelete}
+                isOwner={loggedInUser?.id === video.author_id}
               />
             </div>
           )

@@ -22,7 +22,8 @@ import {
   Loader2,
   Share2,
   Pin,
-  Play
+  Play,
+  Trash2
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { PostCard } from "@/components/features/posts/post-card";
@@ -83,6 +84,7 @@ export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], f
   const [isBannerViewerOpen, setIsBannerViewerOpen] = useState(false);
   const [isMessageLoading, setIsMessageLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("posts");
+  const [displayedLeelaVideos, setDisplayedLeelaVideos] = useState(leelaVideos);
 
   const canViewConnections = !profile.is_private || profile.is_following || (currentUser?.id === profile.id);
   const canMessage = !profile.is_private || profile.is_following;
@@ -185,6 +187,32 @@ export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], f
   const isOwnProfile = currentUser?.id === profile.id;
   const displayName = profile.name || profile.full_name || profile.username;
   const joinDate = profile.created_at ? format(new Date(profile.created_at), 'MMMM yyyy') : null;
+
+  const handleDeleteLeela = async (videoId: string) => {
+    if (!currentUser || currentUser.id !== profile.id) return;
+    const video = displayedLeelaVideos.find(v => v.id === videoId);
+    if (!video) return;
+
+    // Optimistically remove from UI
+    setDisplayedLeelaVideos(prev => prev.filter(v => v.id !== videoId));
+
+    // Delete from storage
+    if (video.video_url.includes('/leela/')) {
+      const pathMatch = video.video_url.match(/\/leela\/(.+)$/);
+      if (pathMatch) {
+        await supabase.storage.from('leela').remove([pathMatch[1]]);
+      }
+    }
+
+    // Delete from database
+    const { error } = await supabase.from('leela_videos').delete().eq('id', videoId);
+    if (error) {
+      toast({ title: 'Failed to delete', description: error.message, variant: 'destructive' });
+      setDisplayedLeelaVideos(leelaVideos); // Restore on error
+    } else {
+      toast({ title: 'Leela deleted' });
+    }
+  };
 
   // State for posts to allow local mutations (likes, deletes)
   const [localPosts, setLocalPosts] = useState<PostType[]>(posts);
@@ -574,46 +602,56 @@ export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], f
             </TabsContent>
 
             <TabsContent value="leela" className="mt-0">
-              {leelaVideos.length > 0 ? (
+              {displayedLeelaVideos.length > 0 ? (
                 <div className="grid grid-cols-3 gap-0.5 sm:gap-1">
-                  {leelaVideos.map((video) => (
-                    <Link
-                      key={video.id}
-                      href={`/leela?v=${video.id}`}
-                      className="relative aspect-[9/16] bg-muted overflow-hidden group"
-                    >
-                      {video.thumbnail_url ? (
-                        <Image
-                          src={video.thumbnail_url}
-                          alt={video.caption || 'Leela video'}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 33vw, 200px"
-                        />
-                      ) : (
-                        <video
-                          src={video.video_url}
-                          className="absolute inset-0 w-full h-full object-cover"
-                          muted
-                          preload="metadata"
-                        />
+                  {displayedLeelaVideos.map((video) => (
+                    <div key={video.id} className="relative aspect-[9/16] bg-muted overflow-hidden group">
+                      <Link
+                        href={`/leela?v=${video.id}`}
+                        className="absolute inset-0"
+                      >
+                        {video.thumbnail_url ? (
+                          <Image
+                            src={video.thumbnail_url}
+                            alt={video.caption || 'Leela video'}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 33vw, 200px"
+                          />
+                        ) : (
+                          <video
+                            src={video.video_url}
+                            className="absolute inset-0 w-full h-full object-cover"
+                            muted
+                            preload="metadata"
+                          />
+                        )}
+                        {/* Hover overlay with stats */}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 text-white text-sm font-semibold">
+                          <span className="flex items-center gap-1">
+                            <Play className="h-4 w-4 fill-white" />
+                            {video.view_count >= 1000 ? `${(video.view_count / 1000).toFixed(1)}K` : video.view_count}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            ♥ {video.like_count}
+                          </span>
+                        </div>
+                        {/* Play icon */}
+                        <div className="absolute bottom-1.5 left-1.5 flex items-center gap-1 text-white text-xs">
+                          <Play className="h-3 w-3 fill-white" />
+                          <span>{video.view_count >= 1000 ? `${(video.view_count / 1000).toFixed(1)}K` : video.view_count}</span>
+                        </div>
+                      </Link>
+                      {isOwnProfile && (
+                        <button
+                          onClick={() => handleDeleteLeela(video.id)}
+                          className="absolute top-1.5 right-1.5 z-10 p-1.5 rounded-full bg-black/50 text-white/80 hover:text-red-400 hover:bg-black/70 transition-colors opacity-0 group-hover:opacity-100"
+                          aria-label="Delete Leela"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
                       )}
-                      {/* Hover overlay with stats */}
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 text-white text-sm font-semibold">
-                        <span className="flex items-center gap-1">
-                          <Play className="h-4 w-4 fill-white" />
-                          {video.view_count >= 1000 ? `${(video.view_count / 1000).toFixed(1)}K` : video.view_count}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          ♥ {video.like_count}
-                        </span>
-                      </div>
-                      {/* Play icon */}
-                      <div className="absolute bottom-1.5 left-1.5 flex items-center gap-1 text-white text-xs">
-                        <Play className="h-3 w-3 fill-white" />
-                        <span>{video.view_count >= 1000 ? `${(video.view_count / 1000).toFixed(1)}K` : video.view_count}</span>
-                      </div>
-                    </Link>
+                    </div>
                   ))}
                 </div>
               ) : (
