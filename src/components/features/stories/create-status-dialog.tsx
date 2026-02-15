@@ -626,13 +626,13 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
               {activeTool === 'draw' && (
                 <div className="absolute top-14 left-0 right-0 flex items-center justify-center z-40 px-2 sm:px-4">
                   <div className="flex items-center gap-1 sm:gap-1.5 bg-black/60 backdrop-blur-md rounded-full px-2 sm:px-3 py-1.5 max-w-full overflow-x-auto scrollbar-hide">
-                    {TEXT_COLORS.slice(0, 6).map(c => (
+                    {TEXT_COLORS.slice(0, 8).map(c => (
                       <button key={c} onClick={() => { setDrawColor(c); setIsEraser(false); }} className="w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 transition-transform shrink-0" style={{ backgroundColor: c, borderColor: drawColor === c && !isEraser ? 'white' : 'transparent', transform: drawColor === c && !isEraser ? 'scale(1.3)' : 'scale(1)' }} />
                     ))}
                     <div className="w-px h-4 sm:h-5 bg-white/20 mx-0.5 sm:mx-1 shrink-0" />
                     {BRUSH_SIZES.map((_, i) => (
                       <button key={i} onClick={() => setBrushSize(i)} className={`rounded-full border-2 transition-all shrink-0 ${brushSize === i ? 'border-white' : 'border-white/30'}`}>
-                        <Circle className="text-white" style={{ width: 8 + i * 5, height: 8 + i * 5 }} fill={brushSize === i ? 'white' : 'transparent'} />
+                        <Circle className="text-white" style={{ width: 8 + i * 6, height: 8 + i * 6 }} fill={brushSize === i ? 'white' : 'transparent'} />
                       </button>
                     ))}
                     <div className="w-px h-4 sm:h-5 bg-white/20 mx-0.5 sm:mx-1 shrink-0" />
