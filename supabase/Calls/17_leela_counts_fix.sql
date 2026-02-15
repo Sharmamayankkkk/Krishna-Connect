@@ -69,7 +69,11 @@ UPDATE public.leela_videos v SET
 -- ============================================================
 -- 3. Updated get_leela_feed with is_bookmarked support
 -- ============================================================
-CREATE OR REPLACE FUNCTION public.get_leela_feed(
+
+-- Must drop first because the return type is changing (adding is_bookmarked column)
+DROP FUNCTION IF EXISTS public.get_leela_feed(INTEGER, INTEGER);
+
+CREATE FUNCTION public.get_leela_feed(
   p_limit INTEGER DEFAULT 10,
   p_offset INTEGER DEFAULT 0
 )
