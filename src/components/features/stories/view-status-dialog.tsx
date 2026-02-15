@@ -237,7 +237,7 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
       status_id: statusId,
       viewer_id: loggedInUser.id,
       action_type: actionType,
-    }).then(() => {});
+    });
   }, [loggedInUser, isMyStatus, supabase]);
 
   const markAsViewed = useCallback(async (statusId: number) => {
@@ -478,7 +478,14 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
     } else if (sticker.sticker_type === 'hashtag' && sticker.data?.tag) {
       window.open(`/hashtag/${sticker.data.tag}`, '_blank');
     } else if (sticker.sticker_type === 'link' && sticker.data?.url) {
-      window.open(sticker.data.url, '_blank', 'noopener');
+      try {
+        const url = new URL(sticker.data.url);
+        if (url.protocol === 'https:' || url.protocol === 'http:') {
+          window.open(url.href, '_blank', 'noopener,noreferrer');
+        }
+      } catch {
+        // Invalid URL, ignore
+      }
     }
     if (currentStatus) trackAction(currentStatus.id, 'sticker_tap');
   };

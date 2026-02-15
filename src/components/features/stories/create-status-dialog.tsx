@@ -577,7 +577,12 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
                         autoFocus
                         value={block.text}
                         onChange={(e) => updateTextBlock(block.id, { text: e.target.value })}
-                        onBlur={() => { if (!block.text.trim()) { setTextBlocks(prev => prev.filter(b => b.id !== block.id)); } setEditingBlock(null); }}
+                        onBlur={() => {
+                          if (!block.text.trim()) {
+                            setTextBlocks(prev => prev.filter(b => b.id !== block.id));
+                          }
+                          setEditingBlock(null);
+                        }}
                         onKeyDown={(e) => { if (e.key === 'Enter') setEditingBlock(null); }}
                         className="bg-transparent border-none outline-none text-white text-xl font-bold text-center min-w-[100px]"
                         style={{ color: block.color }}
@@ -694,7 +699,9 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
                           if (e.key === 'Enter' && stickerInput.trim()) {
                             if (stickerPanel === 'mention') addSticker('mention', { username: stickerInput.replace('@', '') });
                             else if (stickerPanel === 'hashtag') addSticker('hashtag', { tag: stickerInput.replace('#', '') });
-                            else if (stickerPanel === 'link') addSticker('link', { url: stickerInput, label: new URL(stickerInput).hostname || 'Link' });
+                            else if (stickerPanel === 'link') {
+                              try { addSticker('link', { url: stickerInput, label: new URL(stickerInput).hostname || 'Link' }); } catch { addSticker('link', { url: stickerInput, label: 'Link' }); }
+                            }
                             else if (stickerPanel === 'countdown') addSticker('countdown', { label: stickerInput });
                           }
                         }}
