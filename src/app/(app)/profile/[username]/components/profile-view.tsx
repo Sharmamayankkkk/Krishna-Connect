@@ -51,16 +51,28 @@ import {
 import { VerificationBadge } from "@/components/shared/verification-badge";
 import { GoogleAd } from '@/components/ads/google-ad';
 
+interface LeelaVideo {
+  id: string;
+  video_url: string;
+  thumbnail_url: string | null;
+  caption: string | null;
+  view_count: number;
+  like_count: number;
+  comment_count: number;
+  created_at: string;
+}
+
 interface ProfileViewProps {
   profile: Profile;
   posts: PostType[];
   repostedPosts: PostType[];
+  leelaVideos?: LeelaVideo[];
   followers: any[];
   following: any[];
   currentUser: any;
 }
 
-export function ProfileView({ profile, posts, repostedPosts, followers, following, currentUser }: ProfileViewProps) {
+export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], followers, following, currentUser }: ProfileViewProps) {
   const router = useRouter();
   const supabase = createClient();
   const { toast } = useToast();
@@ -562,21 +574,70 @@ export function ProfileView({ profile, posts, repostedPosts, followers, followin
             </TabsContent>
 
             <TabsContent value="leela" className="mt-0">
-              <div className="py-12 text-center space-y-3">
-                <div className="flex justify-center">
-                  <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
-                    <Play className="h-8 w-8 text-muted-foreground" />
-                  </div>
+              {leelaVideos.length > 0 ? (
+                <div className="grid grid-cols-3 gap-0.5 sm:gap-1">
+                  {leelaVideos.map((video) => (
+                    <Link
+                      key={video.id}
+                      href={`/leela?v=${video.id}`}
+                      className="relative aspect-[9/16] bg-muted overflow-hidden group"
+                    >
+                      {video.thumbnail_url ? (
+                        <Image
+                          src={video.thumbnail_url}
+                          alt={video.caption || 'Leela video'}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 33vw, 200px"
+                        />
+                      ) : (
+                        <video
+                          src={video.video_url}
+                          className="absolute inset-0 w-full h-full object-cover"
+                          muted
+                          preload="metadata"
+                        />
+                      )}
+                      {/* Hover overlay with stats */}
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 text-white text-sm font-semibold">
+                        <span className="flex items-center gap-1">
+                          <Play className="h-4 w-4 fill-white" />
+                          {video.view_count >= 1000 ? `${(video.view_count / 1000).toFixed(1)}K` : video.view_count}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          ♥ {video.like_count}
+                        </span>
+                      </div>
+                      {/* Play icon */}
+                      <div className="absolute bottom-1.5 left-1.5 flex items-center gap-1 text-white text-xs">
+                        <Play className="h-3 w-3 fill-white" />
+                        <span>{video.view_count >= 1000 ? `${(video.view_count / 1000).toFixed(1)}K` : video.view_count}</span>
+                      </div>
+                    </Link>
+                  ))}
                 </div>
-                <p className="text-lg font-semibold">
-                  {isOwnProfile ? "Your Leela videos" : `@${profile.username}'s Leela videos`}
-                </p>
-                <p className="text-muted-foreground text-sm">
-                  {isOwnProfile
-                    ? "Short-form videos you share will appear here."
-                    : "Short-form videos will appear here."}
-                </p>
-              </div>
+              ) : (
+                <div className="py-12 text-center space-y-3">
+                  <div className="flex justify-center">
+                    <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
+                      <Play className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                  </div>
+                  <p className="text-lg font-semibold">
+                    {isOwnProfile ? "Your Leela videos" : `@${profile.username}'s Leela videos`}
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    {isOwnProfile
+                      ? "Short-form videos you share will appear here."
+                      : "Short-form videos will appear here."}
+                  </p>
+                  {isOwnProfile && (
+                    <Button asChild variant="outline" size="sm" className="mt-2">
+                      <Link href="/leela">Create your first Leela</Link>
+                    </Button>
+                  )}
+                </div>
+              )}
             </TabsContent>
           </Tabs>
 

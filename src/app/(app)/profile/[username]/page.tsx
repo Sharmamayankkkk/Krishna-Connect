@@ -319,11 +319,28 @@ export default async function ProfilePage(props: ProfilePageProps) {
 
   // We skip followers/following for now as tabs are "Coming Soon"
 
+  // Fetch Leela videos for this user
+  let leelaVideos: any[] = [];
+  try {
+    const { data: leelaData } = await supabase
+      .rpc('get_user_leela_videos', {
+        p_user_id: profile.id,
+        p_limit: 30,
+        p_offset: 0
+      });
+    if (leelaData) {
+      leelaVideos = leelaData;
+    }
+  } catch (e) {
+    console.error("Error fetching leela videos:", e);
+  }
+
   return (
     <ProfileView
       profile={profile}
       posts={posts}
       repostedPosts={repostedPosts}
+      leelaVideos={leelaVideos}
       followers={followers}
       following={following}
       currentUser={user}
