@@ -1,8 +1,6 @@
 "use client";
 
 import * as React from 'react';
-import Link from 'next/link';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sparkles, ArrowUp } from 'lucide-react';
 import { useAppContext } from '@/providers/app-provider';
 import { PostType } from '@/lib/types';
@@ -15,6 +13,7 @@ import { createClient } from '@/lib/supabase/client';
 import { FeedList } from '@/components/features/posts/feed-list';
 import { StoriesBar } from '@/components/features/stories/stories-bar';
 import { transformPost } from '@/lib/post-utils';
+import { GoogleAd } from '@/components/ads/google-ad';
 
 const SCROLL_THRESHOLD = 500;
 
@@ -176,21 +175,16 @@ export default function FeedPage() {
                             <Sparkles className="h-5 w-5 text-primary" />
                             <h1 className="text-xl font-bold">For You</h1>
                         </div>
-                        <div className="ml-auto">
-                            {loggedInUser && (
-                                <Link href={`/profile/${loggedInUser.username}`}>
-                                    <Avatar className="h-8 w-8 transition-transform hover:scale-110">
-                                        <AvatarImage src={loggedInUser.avatar_url || '/placeholder-user.jpg'} />
-                                        <AvatarFallback>U</AvatarFallback>
-                                    </Avatar>
-                                </Link>
-                            )}
-                        </div>
                     </div>
                 </header>
 
                 {/* Stories Bar */}
                 <StoriesBar />
+
+                {/* Between Stories Ad */}
+                <div className="max-w-2xl mx-auto px-4">
+                    <GoogleAd slot="2513515369" />
+                </div>
 
                 {/* Main Content */}
                 <div className="flex-1 container max-w-2xl mx-auto p-0 md:p-4">

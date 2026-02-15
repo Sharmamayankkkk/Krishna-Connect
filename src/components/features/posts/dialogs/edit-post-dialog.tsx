@@ -216,13 +216,13 @@ export function EditPostDialog({ post, open, onOpenChange, onPostUpdated }: Edit
                     const filePath = `post-media/${loggedInUser.id}/${fileName}`;
 
                     const { error: uploadError } = await supabase.storage
-                        .from('media')
+                        .from('post_media')
                         .upload(filePath, media.file);
 
                     if (uploadError) throw uploadError;
 
                     const { data: { publicUrl } } = supabase.storage
-                        .from('media')
+                        .from('post_media')
                         .getPublicUrl(filePath);
 
                     updatedMedia.push({
@@ -239,13 +239,13 @@ export function EditPostDialog({ post, open, onOpenChange, onPostUpdated }: Edit
                     const filePath = `post-media/${loggedInUser.id}/${fileName}`;
 
                     const { error: uploadError } = await supabase.storage
-                        .from('media')
+                        .from('post_media')
                         .upload(filePath, blob);
 
                     if (uploadError) throw uploadError;
 
                     const { data: { publicUrl } } = supabase.storage
-                        .from('media')
+                        .from('post_media')
                         .getPublicUrl(filePath);
 
                     updatedMedia.push({

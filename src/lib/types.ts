@@ -182,6 +182,53 @@ export type ThemeSettings = {
   wallpaperBrightness: number;
 };
 
+// ============================================================================
+// CALL TYPES
+// ============================================================================
+
+export type CallType = 'voice' | 'video';
+
+export type CallStatus = 'ringing' | 'busy' | 'answered' | 'ended' | 'missed' | 'declined' | 'failed';
+
+export type CallSignalType = 'offer' | 'answer' | 'ice-candidate' | 'renegotiate' | 'hangup' | 'busy' | 'decline';
+
+export type CallRecord = {
+  id: string;
+  caller_id: string;
+  callee_id: string;
+  call_type: CallType;
+  status: CallStatus;
+  started_at: string | null;
+  ended_at: string | null;
+  duration_seconds: number;
+  created_at: string;
+  updated_at: string;
+  // Joined profile data (from get_call_history RPC)
+  caller_name?: string;
+  caller_username?: string;
+  caller_avatar?: string;
+  callee_name?: string;
+  callee_username?: string;
+  callee_avatar?: string;
+};
+
+export type CallSignal = {
+  id: number;
+  call_id: string;
+  sender_id: string;
+  receiver_id: string;
+  signal_type: CallSignalType;
+  payload: Record<string, unknown>;
+  created_at: string;
+};
+
+export type ActiveCall = {
+  callRecord: CallRecord;
+  isOutgoing: boolean;
+  remoteUser: User;
+  callType: CallType;
+};
+
 export type RSVPStatus = 'going' | 'interested' | 'not_going';
 
 export type EventRSVP = {
@@ -284,6 +331,8 @@ export type PollType = {
   totalVotes: number;
   endsAt: string;
   allowMultipleChoices: boolean;
+  isQuiz?: boolean;
+  correctAnswerId?: string;
 };
 
 export type CollaborationRequest = {
@@ -394,19 +443,22 @@ export const generateId = (prefix: 'post' | 'comment' | 'reply' | 'poll' | 'noti
   return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 };
 
-export const createEmptyPoll = (question: string, options: string[], endsInHours: number = 24): PollType => {
+export const createEmptyPoll = (question: string, options: string[], endsInHours: number = 24, isQuiz: boolean = false, correctAnswerIndex: number = -1): PollType => {
+  const pollOptions = options.map((text, index) => ({
+    id: `opt_${Date.now()}_${index}`,
+    text,
+    votes: 0,
+    votedBy: []
+  }));
   return {
     id: generateId('poll'),
     question,
-    options: options.map((text, index) => ({
-      id: `opt_${Date.now()}_${index}`,
-      text,
-      votes: 0,
-      votedBy: []
-    })),
+    options: pollOptions,
     totalVotes: 0,
     endsAt: new Date(Date.now() + 1000 * 60 * 60 * endsInHours).toISOString(),
-    allowMultipleChoices: false
+    allowMultipleChoices: false,
+    isQuiz,
+    correctAnswerId: isQuiz && correctAnswerIndex >= 0 && correctAnswerIndex < pollOptions.length ? pollOptions[correctAnswerIndex].id : undefined,
   };
 };
 

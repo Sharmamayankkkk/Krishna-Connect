@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Palette, Lock, Shield, ChevronRight } from "lucide-react"
+import { Palette, Lock, Shield, ChevronRight, TrendingUp } from "lucide-react"
 
 interface SettingsSidebarProps extends React.HTMLAttributes<HTMLElement> { }
 
@@ -23,6 +23,11 @@ const items = [
         title: "Security",
         href: "/settings/security",
         icon: Shield,
+    },
+    {
+        title: "Promotions",
+        href: "/settings/promotions",
+        icon: TrendingUp,
     },
 ]
 

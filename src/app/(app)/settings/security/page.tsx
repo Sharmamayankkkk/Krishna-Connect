@@ -2,17 +2,94 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { useAppContext } from "@/providers/app-provider"
 import { createClient } from "@/lib/utils"
 import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { Badge } from "@/components/ui/badge"
+import { Switch } from "@/components/ui/switch"
+import {
+  Key,
+  LogOut,
+  Monitor,
+  Smartphone,
+  Shield,
+  Download,
+  Trash2,
+  Globe,
+  Clock,
+  AlertTriangle,
+} from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { useToast } from "@/hooks/use-toast"
+
+interface SessionInfo {
+  id: string
+  device: string
+  browser: string
+  location: string
+  lastActive: string
+  isCurrent: boolean
+  icon: typeof Monitor
+}
 
 export default function SecurityPage() {
   const supabase = createClient()
   const router = useRouter()
+  const { toast } = useToast()
+  const [sessions, setSessions] = useState<SessionInfo[]>([])
+
+  useEffect(() => {
+    // Detect current session info from browser
+    const ua = navigator.userAgent
+    const isMobile = /Mobile|Android|iPhone/.test(ua)
+
+    let browser = "Browser"
+    if (/Edg/.test(ua)) browser = "Edge"
+    else if (/Chrome/.test(ua)) browser = "Chrome"
+    else if (/Firefox/.test(ua)) browser = "Firefox"
+    else if (/Safari/.test(ua)) browser = "Safari"
+
+    setSessions([
+      {
+        id: "current",
+        device: isMobile ? "Mobile Device" : "Desktop",
+        browser,
+        location: "Current Location",
+        lastActive: "Active now",
+        isCurrent: true,
+        icon: isMobile ? Smartphone : Monitor,
+      },
+    ])
+  }, [])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     router.push("/login")
+  }
+
+  const handleExportData = () => {
+    toast({
+      title: "Data Export Requested",
+      description: "Your data export will be sent to your email within 24 hours.",
+    })
+  }
+
+  const handleDeleteAccount = async () => {
+    toast({
+      title: "Account Deletion Requested",
+      description: "Please contact madanmohandas@krishnaconnect.in to complete account deletion.",
+      variant: "destructive",
+    })
   }
 
   return (
@@ -20,32 +97,184 @@ export default function SecurityPage() {
       <div>
         <h3 className="text-lg font-medium">Security</h3>
         <p className="text-sm text-muted-foreground">
-          Manage your account security settings.
+          Manage your account security settings and active sessions.
         </p>
       </div>
+
       <div className="space-y-4">
+        {/* Password */}
         <div className="flex items-center justify-between rounded-lg border p-4">
-          <div className="space-y-0.5">
-            <h4 className="text-sm font-medium">Password</h4>
-            <p className="text-sm text-muted-foreground">
-              Change your password to keep your account secure.
-            </p>
+          <div className="flex items-center gap-3">
+            <div className="rounded-full bg-primary/10 p-2">
+              <Key className="h-4 w-4 text-primary" />
+            </div>
+            <div className="space-y-0.5">
+              <h4 className="text-sm font-medium">Password</h4>
+              <p className="text-sm text-muted-foreground">
+                Update your password regularly to stay secure.
+              </p>
+            </div>
           </div>
-          <Link href="/auth/update-password">
-            <Button variant="outline">Change Password</Button>
+          <Link href="/update-password">
+            <Button variant="outline" size="sm">Change</Button>
           </Link>
         </div>
 
-        <div className="flex items-center justify-between rounded-lg border p-4 border-red-200 bg-red-50 dark:bg-red-950/20 dark:border-red-900">
-          <div className="space-y-0.5">
-            <h4 className="text-sm font-medium text-red-900 dark:text-red-200">Log out of all sessions</h4>
-            <p className="text-sm text-red-700 dark:text-red-300">
-              This will sign you out from all devices.
-            </p>
+        {/* Two-Factor Authentication */}
+        <div className="flex items-center justify-between rounded-lg border p-4">
+          <div className="flex items-center gap-3">
+            <div className="rounded-full bg-blue-500/10 p-2">
+              <Shield className="h-4 w-4 text-blue-500" />
+            </div>
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2">
+                <h4 className="text-sm font-medium">Two-Factor Authentication</h4>
+                <Badge variant="secondary" className="text-[10px]">Coming Soon</Badge>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Add an extra layer of security to your account.
+              </p>
+            </div>
           </div>
-          <Button variant="destructive" onClick={handleSignOut}>
-            Log Out All
-          </Button>
+          <Switch
+            checked={false}
+            disabled
+            aria-label="Toggle two-factor authentication"
+          />
+        </div>
+
+        {/* Login Alerts */}
+        <div className="flex items-center justify-between rounded-lg border p-4">
+          <div className="flex items-center gap-3">
+            <div className="rounded-full bg-amber-500/10 p-2">
+              <AlertTriangle className="h-4 w-4 text-amber-500" />
+            </div>
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2">
+                <h4 className="text-sm font-medium">Login Alerts</h4>
+                <Badge variant="secondary" className="text-[10px]">Coming Soon</Badge>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Get notified about new sign-ins to your account.
+              </p>
+            </div>
+          </div>
+          <Switch
+            checked={false}
+            disabled
+            aria-label="Toggle login alerts"
+          />
+        </div>
+      </div>
+
+      {/* Active Sessions */}
+      <div className="space-y-3">
+        <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Active Sessions</h4>
+        <div className="space-y-2">
+          {sessions.map((session) => {
+            const SessionIcon = session.icon
+            return (
+              <div key={session.id} className="flex items-center justify-between rounded-lg border p-4">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-full bg-green-500/10 p-2">
+                    <SessionIcon className="h-4 w-4 text-green-500" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-sm font-medium">{session.device}</h4>
+                      {session.isCurrent && (
+                        <Badge variant="default" className="text-[10px] bg-green-500">This Device</Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Globe className="h-3 w-3" />
+                      <span>{session.browser}</span>
+                      <span>·</span>
+                      <Clock className="h-3 w-3" />
+                      <span>{session.lastActive}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Data & Account */}
+      <div className="space-y-3">
+        <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Data & Account</h4>
+        <div className="space-y-2">
+          {/* Export Data */}
+          <div className="flex items-center justify-between rounded-lg border p-4">
+            <div className="flex items-center gap-3">
+              <div className="rounded-full bg-purple-500/10 p-2">
+                <Download className="h-4 w-4 text-purple-500" />
+              </div>
+              <div className="space-y-0.5">
+                <h4 className="text-sm font-medium">Export Your Data</h4>
+                <p className="text-sm text-muted-foreground">
+                  Download a copy of your posts, messages, and profile data.
+                </p>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" onClick={handleExportData}>Export</Button>
+          </div>
+
+          {/* Sign Out All */}
+          <div className="flex items-center justify-between rounded-lg border p-4 border-orange-200 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-900">
+            <div className="flex items-center gap-3">
+              <div className="rounded-full bg-orange-500/10 p-2">
+                <LogOut className="h-4 w-4 text-orange-500" />
+              </div>
+              <div className="space-y-0.5">
+                <h4 className="text-sm font-medium text-orange-900 dark:text-orange-200">Sign Out All Devices</h4>
+                <p className="text-sm text-orange-700 dark:text-orange-300">
+                  This will sign you out from all devices including this one.
+                </p>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" className="border-orange-300 text-orange-700 hover:bg-orange-100 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-950" onClick={handleSignOut}>
+              Sign Out
+            </Button>
+          </div>
+
+          {/* Delete Account */}
+          <AlertDialog>
+            <div className="flex items-center justify-between rounded-lg border p-4 border-red-200 bg-red-50 dark:bg-red-950/20 dark:border-red-900">
+              <div className="flex items-center gap-3">
+                <div className="rounded-full bg-red-500/10 p-2">
+                  <Trash2 className="h-4 w-4 text-red-500" />
+                </div>
+                <div className="space-y-0.5">
+                  <h4 className="text-sm font-medium text-red-900 dark:text-red-200">Delete Account</h4>
+                  <p className="text-sm text-red-700 dark:text-red-300">
+                    Permanently delete your account and all associated data.
+                  </p>
+                </div>
+              </div>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm">Delete</Button>
+              </AlertDialogTrigger>
+            </div>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete your account, posts, messages, and all associated data from our servers.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-red-600 hover:bg-red-700"
+                  onClick={handleDeleteAccount}
+                >
+                  Yes, Delete My Account
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
     </div>

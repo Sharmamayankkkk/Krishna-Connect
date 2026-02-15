@@ -21,7 +21,9 @@ import {
   Ban,
   Loader2,
   Share2,
-  Pin
+  Pin,
+  Play,
+  Trash2
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { PostCard } from "@/components/features/posts/post-card";
@@ -48,16 +50,30 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { VerificationBadge } from "@/components/shared/verification-badge";
+import { GoogleAd } from '@/components/ads/google-ad';
+
+interface LeelaVideo {
+  id: string;
+  video_url: string;
+  thumbnail_url: string | null;
+  caption: string | null;
+  view_count: number;
+  like_count: number;
+  comment_count: number;
+  created_at: string;
+}
 
 interface ProfileViewProps {
   profile: Profile;
   posts: PostType[];
+  repostedPosts: PostType[];
+  leelaVideos?: LeelaVideo[];
   followers: any[];
   following: any[];
   currentUser: any;
 }
 
-export function ProfileView({ profile, posts, followers, following, currentUser }: ProfileViewProps) {
+export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], followers, following, currentUser }: ProfileViewProps) {
   const router = useRouter();
   const supabase = createClient();
   const { toast } = useToast();
@@ -68,6 +84,7 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
   const [isBannerViewerOpen, setIsBannerViewerOpen] = useState(false);
   const [isMessageLoading, setIsMessageLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("posts");
+  const [displayedLeelaVideos, setDisplayedLeelaVideos] = useState(leelaVideos);
 
   const canViewConnections = !profile.is_private || profile.is_following || (currentUser?.id === profile.id);
   const canMessage = !profile.is_private || profile.is_following;
@@ -75,7 +92,6 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
   const handleMessage = async () => {
     if (!currentUser) return;
     setIsMessageLoading(true);
-    console.log("Debug HandleMessage:", { targetId: profile.id, userId: currentUser.id });
     try {
       // Check for existing DM
       const { data: chatId, error } = await supabase.rpc('get_dm_chat_id', {
@@ -155,11 +171,6 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
     return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/attachments/${url}`;
   };
 
-  const handlePostClick = (post: PostType) => {
-    setSelectedPost(post);
-    setIsPostDialogOpen(true);
-  };
-
   // Convert Profile to User format for PostDetailDialog
   const profileUser = {
     id: profile.id,
@@ -176,6 +187,32 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
   const isOwnProfile = currentUser?.id === profile.id;
   const displayName = profile.name || profile.full_name || profile.username;
   const joinDate = profile.created_at ? format(new Date(profile.created_at), 'MMMM yyyy') : null;
+
+  const handleDeleteLeela = async (videoId: string) => {
+    if (!currentUser || currentUser.id !== profile.id) return;
+    const video = displayedLeelaVideos.find(v => v.id === videoId);
+    if (!video) return;
+
+    // Optimistically remove from UI
+    setDisplayedLeelaVideos(prev => prev.filter(v => v.id !== videoId));
+
+    // Delete from storage
+    if (video.video_url.includes('/leela/')) {
+      const pathMatch = video.video_url.match(/\/leela\/(.+)$/);
+      if (pathMatch) {
+        await supabase.storage.from('leela').remove([pathMatch[1]]);
+      }
+    }
+
+    // Delete from database
+    const { error } = await supabase.from('leela_videos').delete().eq('id', videoId);
+    if (error) {
+      toast({ title: 'Failed to delete', description: error.message, variant: 'destructive' });
+      setDisplayedLeelaVideos(leelaVideos); // Restore on error
+    } else {
+      toast({ title: 'Leela deleted' });
+    }
+  };
 
   // State for posts to allow local mutations (likes, deletes)
   const [localPosts, setLocalPosts] = useState<PostType[]>(posts);
@@ -218,7 +255,6 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
   // Filter posts based on local state
   const userPosts = localPosts.filter(p => !(p as any).is_reply && !(p as any).parent_id);
   const userReplies = localPosts.filter(p => (p as any).is_reply || (p as any).parent_id);
-  const mediaPosts = localPosts.filter(p => p.media && p.media.length > 0);
   const pinnedPosts = userPosts.filter(p => (p as any).isPinned || (p as any).pinned_at);
   const unpinnedPosts = userPosts.filter(p => !(p as any).isPinned && !(p as any).pinned_at);
 
@@ -520,11 +556,11 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
               <TabsTrigger value="replies" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 Replies
               </TabsTrigger>
-              <TabsTrigger value="media" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
-                Media
+              <TabsTrigger value="reposts" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
+                Reposts
               </TabsTrigger>
-              <TabsTrigger value="likes" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
-                Likes
+              <TabsTrigger value="leela" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
+                Leela
               </TabsTrigger>
             </TabsList>
 
@@ -553,45 +589,100 @@ export function ProfileView({ profile, posts, followers, following, currentUser 
               />
             </TabsContent>
 
-            <TabsContent value="media" className="mt-0">
-              {mediaPosts.length === 0 ? (
-                <div className="py-12 text-center">
-                  <p className="text-xl font-bold mb-1">No media yet</p>
-                  <p className="text-muted-foreground">Photos and videos will appear here.</p>
+            <TabsContent value="reposts" className="mt-0">
+              <FeedList
+                posts={repostedPosts}
+                isLoading={false}
+                onPostUpdated={updatePost}
+                onPostDeleted={handleDeletePost}
+                onQuotePost={() => { }}
+                onPromote={() => { }}
+                emptyMessage={`When ${isOwnProfile ? 'you repost' : `@${profile.username} reposts`}, it will show up here.`}
+              />
+            </TabsContent>
+
+            <TabsContent value="leela" className="mt-0">
+              {displayedLeelaVideos.length > 0 ? (
+                <div className="grid grid-cols-3 gap-0.5 sm:gap-1">
+                  {displayedLeelaVideos.map((video) => (
+                    <div key={video.id} className="relative aspect-[9/16] bg-muted overflow-hidden group">
+                      <Link
+                        href={`/leela?v=${video.id}`}
+                        className="absolute inset-0"
+                      >
+                        {video.thumbnail_url ? (
+                          <Image
+                            src={video.thumbnail_url}
+                            alt={video.caption || 'Leela video'}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 33vw, 200px"
+                          />
+                        ) : (
+                          <video
+                            src={video.video_url}
+                            className="absolute inset-0 w-full h-full object-cover"
+                            muted
+                            preload="metadata"
+                          />
+                        )}
+                        {/* Hover overlay with stats */}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 text-white text-sm font-semibold">
+                          <span className="flex items-center gap-1">
+                            <Play className="h-4 w-4 fill-white" />
+                            {video.view_count >= 1000 ? `${(video.view_count / 1000).toFixed(1)}K` : video.view_count}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            ♥ {video.like_count}
+                          </span>
+                        </div>
+                        {/* Play icon */}
+                        <div className="absolute bottom-1.5 left-1.5 flex items-center gap-1 text-white text-xs">
+                          <Play className="h-3 w-3 fill-white" />
+                          <span>{video.view_count >= 1000 ? `${(video.view_count / 1000).toFixed(1)}K` : video.view_count}</span>
+                        </div>
+                      </Link>
+                      {isOwnProfile && (
+                        <button
+                          onClick={() => handleDeleteLeela(video.id)}
+                          className="absolute top-1.5 right-1.5 z-10 p-1.5 rounded-full bg-black/50 text-white/80 hover:text-red-400 hover:bg-black/70 transition-colors opacity-0 group-hover:opacity-100"
+                          aria-label="Delete Leela"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-3 gap-0.5">
-                  {mediaPosts.map((post) => {
-                    // Support both new structure (media array) and old structure (media_urls) just in case
-                    const mediaItem = post.media?.[0];
-                    const mediaUrl = mediaItem?.url || (post as any).image_url;
-
-                    return mediaUrl ? (
-                      <button
-                        key={post.id}
-                        onClick={() => handlePostClick(post)}
-                        className="aspect-square relative overflow-hidden bg-muted hover:opacity-90 transition-opacity"
-                      >
-                        <Image
-                          src={mediaUrl}
-                          alt="Media"
-                          fill
-                          className="object-cover"
-                        />
-                      </button>
-                    ) : null;
-                  })}
+                <div className="py-12 text-center space-y-3">
+                  <div className="flex justify-center">
+                    <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
+                      <Play className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                  </div>
+                  <p className="text-lg font-semibold">
+                    {isOwnProfile ? "Your Leela videos" : `@${profile.username}'s Leela videos`}
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    {isOwnProfile
+                      ? "Short-form videos you share will appear here."
+                      : "Short-form videos will appear here."}
+                  </p>
+                  {isOwnProfile && (
+                    <Button asChild variant="outline" size="sm" className="mt-2">
+                      <Link href="/leela">Create your first Leela</Link>
+                    </Button>
+                  )}
                 </div>
               )}
             </TabsContent>
-
-            <TabsContent value="likes" className="mt-0">
-              <div className="py-12 text-center">
-                <p className="text-xl font-bold mb-1">Coming Soon</p>
-                <p className="text-muted-foreground">Liked posts will appear here.</p>
-              </div>
-            </TabsContent>
           </Tabs>
+
+          {/* Profile Sidebar Ad */}
+          <div className="mt-6">
+            <GoogleAd slot="8691086496" />
+          </div>
         </>
       )}
     </div>

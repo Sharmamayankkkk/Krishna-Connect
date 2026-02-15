@@ -87,12 +87,12 @@ BEGIN
         c.created_at,
         COUNT(bci.post_id)::BIGINT as post_count,
         (
-            SELECT (p.media->0->>'url')::TEXT
+            SELECT (p.media_urls->0->>'url')::TEXT
             FROM public.bookmark_collection_items bci2
             JOIN public.posts p ON p.id = bci2.post_id
             WHERE bci2.collection_id = c.id
-            AND p.media IS NOT NULL
-            AND jsonb_array_length(p.media) > 0
+            AND p.media_urls IS NOT NULL
+            AND jsonb_array_length(p.media_urls) > 0
             ORDER BY bci2.added_at DESC
             LIMIT 1
         ) as last_post_cover
@@ -196,7 +196,7 @@ DECLARE
 BEGIN
     RETURN QUERY
     SELECT 
-        p.id, p.content, p.created_at, p.media, p.poll, p.quote_of_id, p.user_id,
+        p.id, p.content, p.created_at, COALESCE(p.media_urls, '[]'::jsonb), p.poll, p.quote_of_id, p.user_id,
         author.name, author.username, author.avatar_url, COALESCE(author.verified, FALSE),
         COALESCE(COUNT(DISTINCT pl.id), 0),
         COALESCE(COUNT(DISTINCT c.id), 0),

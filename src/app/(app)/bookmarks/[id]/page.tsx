@@ -1,6 +1,6 @@
 'use client';
 
-import * as React from 'react';
+import React, { use } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
@@ -17,20 +17,25 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useDeleteCollection, useRemoveFromCollection } from '../hooks/useCollections';
 
+function isVideoUrl(url: string): boolean {
+    if (!url || typeof url !== 'string') return false;
+    const videoExts = ['.mp4', '.webm', '.ogg', '.mov', '.avi'];
+    return videoExts.some(ext => url.toLowerCase().includes(ext));
+}
+
 function useCollectionPosts(collectionId: string) {
     const supabase = createClient();
     return useQuery({
         queryKey: ['collection-posts', collectionId],
         queryFn: async () => {
             const { data, error } = await supabase.rpc('get_collection_posts', {
-                p_collection_id: collectionId,
-                p_limit: 50 // Fetch more for now, implement infinite scroll later if needed
+                p_collection_id: parseInt(collectionId, 10),
+                p_limit: 50
             });
             if (error) throw error;
             return data;
         }
     });
-
 }
 
 // Transform RPC data to PostType (Simplified version of usePosts transform)
@@ -42,10 +47,17 @@ const transformPostData = (post: any): PostType => {
             name: post.author_name,
             username: post.author_username,
             avatar: post.author_avatar || '/user_Avatar/male.png',
-            verified: post.author_verified
+            verified: post.author_verified || 'none'
         },
         content: post.content,
-        media: post.media || [],
+        media: Array.isArray(post.media)
+            ? post.media.map((m: any) => ({
+                url: typeof m === 'string' ? m : m.url,
+                type: typeof m === 'string'
+                    ? (isVideoUrl(m) ? 'video' : 'image')
+                    : (m.type || 'image')
+            }))
+            : [],
         poll: post.poll,
         createdAt: post.created_at,
         stats: {
@@ -53,7 +65,7 @@ const transformPostData = (post: any): PostType => {
             reshares: 0,
             reposts: post.reposts_count,
             likes: post.likes_count,
-            views: 0, // Not returned by this RPC yet
+            views: 0,
             bookmarks: post.bookmarks_count || 0
         },
         comments: [],
@@ -65,9 +77,9 @@ const transformPostData = (post: any): PostType => {
     };
 };
 
-export default function CollectionDetailsPage({ params }: { params: { id: string } }) {
+export default function CollectionDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
-    const collectionId = params.id;
+    const { id: collectionId } = use(params);
 
     // Fetch collection info (we could pass this via state, but catching it fresh is safer)
     // We can reuse useCollections and find it, or add a get_collection RPC. 

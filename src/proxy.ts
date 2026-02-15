@@ -3,6 +3,20 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 
 export async function proxy(request: NextRequest) {
+  const { searchParams, pathname } = request.nextUrl
+
+  // 0. Handle Supabase auth code redirects (password reset, OAuth)
+  const code = searchParams.get("code")
+  if (code && pathname !== "/auth/callback") {
+    const url = request.nextUrl.clone()
+    url.pathname = "/auth/callback"
+    url.searchParams.set("code", code)
+    if (pathname !== "/") {
+      url.searchParams.set("next", pathname)
+    }
+    return NextResponse.redirect(url)
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -11,7 +25,6 @@ export async function proxy(request: NextRequest) {
 
   // 1. Check Maintenance Mode
   const isMaintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true';
-  const { pathname } = request.nextUrl
 
   if (isMaintenanceMode && pathname !== '/maintenance') {
     // Allow static assets/api if needed (already mostly covered by matcher, but safe to add)
@@ -81,6 +94,7 @@ export async function proxy(request: NextRequest) {
     '/sitemap.xml',
     '/contact-us',
     '/developers',
+    '/faq',
     '/maintenance'
   ];
 

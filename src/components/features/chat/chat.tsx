@@ -26,7 +26,7 @@ import { useAppContext } from '@/providers/app-provider';
 import EmojiPicker, { EmojiClickData, SkinTones } from 'emoji-picker-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { VoiceNotePlayer } from '../media/voice-note-player';
-import { format, isSameDay, isToday, isYesterday } from 'date-fns';
+import { format, formatDistanceToNow, isSameDay, isToday, isYesterday } from 'date-fns';
 import { RequestDmDialog } from '../../dialogs/request-dm-dialog';
 import { Badge } from '@/components/ui/badge';
 import { ForwardMessageDialog } from './dialogs/forward-message-dialog';
@@ -37,6 +37,7 @@ import { ImageViewerDialog } from '../media/image-viewer';
 import { MessageInfoDialog } from './dialogs/message-info-dialog';
 import { ChatInput } from './chat-input';
 import { TranslateDialog } from '../../dialogs/translate-dialog';
+import { useCallContext } from '@/providers/call-provider';
 
 interface ChatProps {
     chat: Chat;
@@ -61,6 +62,8 @@ const formatBytes = (bytes: number, decimals = 2) => {
 
 const DELETED_MESSAGE_MARKER = '[[MSG_DELETED]]';
 const SYSTEM_MESSAGE_PREFIX = '[[SYS:';
+const CALL_MESSAGE_PREFIX = '[[CALL:';
+const STORY_REPLY_PREFIX = '[[STORY_REPLY:';
 
 const Spoiler = ({ content }: { content: string }) => {
     const [revealed, setRevealed] = useState(false);
@@ -131,6 +134,8 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
         blockedUsers,
         forwardMessage,
     } = useAppContext();
+
+    const { startCall } = useCallContext();
 
     // These are "state" variables. They hold data that can change and cause the component to re-render.
     // `useState` is a fundamental React hook for managing component state.
@@ -896,11 +901,121 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
         );
     }
 
+    // Call history message (e.g., "[[CALL:video|ended|125|caller_id]]")
+    const CallMessage = ({ content, message }: { content: string; message: Message }) => {
+        const callData = content.replace(CALL_MESSAGE_PREFIX, '').replace(']]', '');
+        const [callType, callStatus, durationStr] = callData.split('|');
+        const duration = parseInt(durationStr) || 0;
+        const isMyCall = message.user_id === loggedInUser.id;
+        const isMissed = callStatus === 'missed' || callStatus === 'declined';
+        const isVideo = callType === 'video';
+
+        const formatDuration = (s: number) => {
+            if (s < 60) return `${s}s`;
+            const m = Math.floor(s / 60);
+            const remaining = s % 60;
+            return remaining > 0 ? `${m}m ${remaining}s` : `${m}m`;
+        };
+
+        return (
+            <div className="flex items-center justify-center my-3">
+                <div className={cn(
+                    "flex items-center gap-3 px-4 py-2.5 rounded-xl border",
+                    isMissed ? "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900/30" : "bg-muted/50 border-border"
+                )}>
+                    <div className={cn(
+                        "h-8 w-8 rounded-full flex items-center justify-center",
+                        isMissed ? "bg-red-100 dark:bg-red-900/30" : "bg-green-100 dark:bg-green-900/30"
+                    )}>
+                        {isVideo ? (
+                            <Video className={cn("h-4 w-4", isMissed ? "text-red-500" : "text-green-600")} />
+                        ) : (
+                            <Phone className={cn("h-4 w-4", isMissed ? "text-red-500" : "text-green-600")} />
+                        )}
+                    </div>
+                    <div className="flex flex-col">
+                        <span className={cn("text-sm font-medium", isMissed && "text-red-600 dark:text-red-400")}>
+                            {isMissed
+                                ? `Missed ${isVideo ? 'Video' : 'Voice'} Call`
+                                : `${isVideo ? 'Video' : 'Voice'} Call`}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                            {isMissed
+                                ? (isMyCall ? 'No answer' : 'Tap to call back')
+                                : formatDuration(duration)}
+                        </span>
+                    </div>
+                    {isMissed && !isMyCall && startCall && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="ml-2 h-7 text-xs text-primary"
+                            onClick={() => {
+                                const otherUser = chat.participants?.find(p => p.user_id !== loggedInUser.id);
+                                if (otherUser) startCall(otherUser.user_id, isVideo ? 'video' : 'voice');
+                            }}
+                        >
+                            Call Back
+                        </Button>
+                    )}
+                </div>
+            </div>
+        );
+    };
+
+    // Story reply message (e.g., "[[STORY_REPLY:url]] reply text")
+    const StoryReplyMessage = ({ content, message }: { content: string; message: Message }) => {
+        const isMyMessage = message.user_id === loggedInUser.id;
+        const match = content.match(/\[\[STORY_REPLY:(.*?)\]\]\s*([\s\S]*)/);
+        const mediaUrl = match?.[1] || '';
+        const replyText = match?.[2] || content;
+        const isVideoStory = mediaUrl.includes('.mp4') || mediaUrl.includes('.webm') || mediaUrl.includes('.mov');
+        return (
+            <div className={cn("flex items-end gap-2 group/message", isMyMessage ? "justify-end" : "justify-start")}>
+                {!isMyMessage && <div className="w-8 shrink-0" />}
+                <div className={cn("relative max-w-[85%] sm:max-w-md rounded-xl overflow-hidden", isMyMessage ? "bg-primary text-primary-foreground" : "bg-muted")}>
+                    <div className="px-3 pt-2 pb-1">
+                        <p className="text-[10px] uppercase tracking-wide opacity-60 font-medium">
+                            {isMyMessage ? 'Replied to story' : 'Replied to your story'}
+                        </p>
+                    </div>
+                    {mediaUrl && (
+                        <div className="mx-3 mb-1 h-16 w-16 rounded-lg overflow-hidden bg-black/20 relative">
+                            {isVideoStory ? (
+                                <video src={mediaUrl} className="w-full h-full object-cover" muted playsInline />
+                            ) : (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={mediaUrl} alt="Story" className="w-full h-full object-cover" />
+                            )}
+                        </div>
+                    )}
+                    <div className="px-3 pb-2">
+                        <p className="text-sm">{replyText}</p>
+                        <p className={cn("text-[10px] mt-1", isMyMessage ? "text-primary-foreground/60" : "text-muted-foreground")}>
+                            {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+                        </p>
+                    </div>
+                </div>
+                {isMyMessage && <div className="w-8 shrink-0" />}
+            </div>
+        );
+    };
+
     // This is the component for a single message bubble.
     const MessageBubble = ({ message }: { message: Message }) => {
         // Handle system messages (e.g., "User pinned a message").
         if (message.content && message.content.startsWith(SYSTEM_MESSAGE_PREFIX)) {
             return <SystemMessage content={message.content} />;
+        }
+
+        // Handle call history messages
+        if (message.content && message.content.startsWith(CALL_MESSAGE_PREFIX)) {
+            return <CallMessage content={message.content} message={message} />;
+        }
+
+        // Handle story reply messages
+        if (message.content && message.content.startsWith(STORY_REPLY_PREFIX)) {
+            return <StoryReplyMessage content={message.content} message={message} />;
         }
 
         // Handle deleted messages.
@@ -1189,8 +1304,8 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                             </Tooltip>
                         </TooltipProvider>
                     )}
-                    <Button variant="ghost" size="icon" onClick={() => toast({ title: "Coming Soon", description: "Voice calls will be available soon." })}><Phone className="h-5 w-5" /></Button>
-                    <Button variant="ghost" size="icon" onClick={() => toast({ title: "Coming Soon", description: "Video calls will be available soon." })}><Video className="h-5 w-5" /></Button>
+                    <Button variant="ghost" size="icon" onClick={() => { if (chatPartner) startCall(chatPartner.id, 'voice') }} disabled={!chatPartner}><Phone className="h-5 w-5" /></Button>
+                    <Button variant="ghost" size="icon" onClick={() => { if (chatPartner) startCall(chatPartner.id, 'video') }} disabled={!chatPartner}><Video className="h-5 w-5" /></Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon">

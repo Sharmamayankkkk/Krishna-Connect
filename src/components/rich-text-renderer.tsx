@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
 interface RichTextRendererProps {
@@ -10,9 +11,31 @@ interface RichTextRendererProps {
     onHareKrishnaClick?: () => void;
 }
 
-// Process inline formatting (bold, italic, hashtags, mentions, URLs, Sacred Phrases)
-function processInlineFormatting(text: string, onHareKrishnaClick?: () => void, keyPrefix: string = ''): React.ReactNode[] {
-    const regex = /(\*\*([^*]+)\*\*)|(\*([^*]+)\*)|(#\w+)|(@\w+)|(https?:\/\/[^\s]+)|((?:Hare|HARE|hare)\s+(?:Krishna|KRISHNA|krishna|Kṛṣṇa|Rama|RAMA|Ram)|(?:Hari\s+Bol|Haribol)|(?:Radhe\s+Radhe|Radhe|Radha)|(?:(?:Jai|Jaya)\s+(?:Srila\s+Prabhupada|Śrīla\s+Prabhupāda|HG\s+Gauranga\s+Sundar\s+Das\s+Gurudev|His\s+Grace\s+Gauranga\s+Sundar\s+Das\s+Gurudev|Gauranga\s+Sundar|Jagannath|Baladev|Subhadra|Nrsimhadeva))|(?:Bhagwatam|Srimad|Bhagvad\s+(?:Gite|Geeta|Gita))|(?:Nitai\s+Gaur(?:anga)?|Gauranga|Nityananda|Chaitanya|Mahaprabhu|Pancha\s+Tattva|Gadadhar|Srivas|Advaita)|(?:Vrindavan|Mayapur|Goloka|Navadvipa|Jagannath\s+Puri|Dwaraka)|(?:Prabhupada|Gurudev|Maharaj|Acharya|Thakur|Srila)|(?:Dandavat|Pranam)|(?:Prasadam|Maha\s+Prasadam)|(?:Ekadasi|Ekadashi|Radhaashtmi|Radha\s+ashtmi)|(?:Kirtan|Sankirtan|Bhajan|Harinaam|Hari\s+naam)|(?:Bhakti|Seva)|(?:Vaisnava|Vaishnava)|(?:Govinda|Gopal|Madhav|Keshava|Damodar|Shyam|Murari|Vasudeva|Sundar)|(?:Tulsi|Tulasi|Ganga|Yamuna))/gi;
+// Custom emoji cache - fetched once and shared
+let customEmojiCache: Map<string, string> | null = null;
+let customEmojiFetchPromise: Promise<Map<string, string>> | null = null;
+
+function fetchCustomEmojis(): Promise<Map<string, string>> {
+    if (customEmojiCache) return Promise.resolve(customEmojiCache);
+    if (customEmojiFetchPromise) return customEmojiFetchPromise;
+    customEmojiFetchPromise = fetch('/api/assets')
+        .then(res => res.json())
+        .then(data => {
+            const map = new Map<string, string>();
+            (data.emojis || []).forEach((url: string) => {
+                const name = url.split('/').pop()?.split('.')[0] || '';
+                if (name) map.set(name, url);
+            });
+            customEmojiCache = map;
+            return map;
+        })
+        .catch(() => new Map<string, string>());
+    return customEmojiFetchPromise;
+}
+
+// Process inline formatting (bold, italic, hashtags, mentions, URLs, custom emojis, Sacred Phrases)
+function processInlineFormatting(text: string, onHareKrishnaClick?: () => void, keyPrefix: string = '', emojiMap?: Map<string, string>): React.ReactNode[] {
+    const regex = /(\*\*([^*]+)\*\*)|(\*([^*]+)\*)|(#\w+)|(@\w+)|(https?:\/\/[^\s]+)|(:[a-zA-Z0-9_]+:)|((?:Hare|HARE|hare)\s+(?:Krishna|KRISHNA|krishna|Kṛṣṇa|Rama|RAMA|Ram)|(?:Hari\s+Bol|Haribol)|(?:Radhe\s+Radhe|Radhe|Radha)|(?:(?:Jai|Jaya)\s+(?:Srila\s+Prabhupada|Śrīla\s+Prabhupāda|HG\s+Gauranga\s+Sundar\s+Das\s+Gurudev|His\s+Grace\s+Gauranga\s+Sundar\s+Das\s+Gurudev|Gauranga\s+Sundar|Jagannath|Baladev|Subhadra|Nrsimhadeva))|(?:Bhagwatam|Srimad|Bhagvad\s+(?:Gite|Geeta|Gita))|(?:Nitai\s+Gaur(?:anga)?|Gauranga|Nityananda|Chaitanya|Mahaprabhu|Pancha\s+Tattva|Gadadhar|Srivas|Advaita)|(?:Vrindavan|Mayapur|Goloka|Navadvipa|Jagannath\s+Puri|Dwaraka)|(?:Prabhupada|Gurudev|Maharaj|Acharya|Thakur|Srila)|(?:Dandavat|Pranam)|(?:Prasadam|Maha\s+Prasadam)|(?:Ekadasi|Ekadashi|Radhaashtmi|Radha\s+ashtmi)|(?:Kirtan|Sankirtan|Bhajan|Harinaam|Hari\s+naam)|(?:Bhakti|Seva)|(?:Vaisnava|Vaishnava)|(?:Govinda|Gopal|Madhav|Keshava|Damodar|Shyam|Murari|Vasudeva|Sundar)|(?:Tulsi|Tulasi|Ganga|Yamuna))/gi;
 
     const elements: React.ReactNode[] = [];
     let lastIndex = 0;
@@ -55,6 +78,18 @@ function processInlineFormatting(text: string, onHareKrishnaClick?: () => void, 
                 </a>
             );
         } else if (match[8]) {
+            // Custom emoji (:emojiName:)
+            const emojiName = match[8].slice(1, -1); // Remove colons
+            const emojiUrl = emojiMap?.get(emojiName);
+            if (emojiUrl) {
+                elements.push(
+                    <Image key={key} src={emojiUrl} alt={emojiName} width={24} height={24} className="inline-block align-text-bottom mx-0.5" unoptimized />
+                );
+            } else {
+                // If not found in custom emojis, render as plain text
+                elements.push(match[8]);
+            }
+        } else if (match[9]) {
             // Sacred Phrases
             elements.push(
                 <span
@@ -68,7 +103,7 @@ function processInlineFormatting(text: string, onHareKrishnaClick?: () => void, 
                         color: 'transparent'
                     }}
                 >
-                    {match[8]}
+                    {match[9]}
                 </span>
             );
         }
@@ -83,6 +118,18 @@ function processInlineFormatting(text: string, onHareKrishnaClick?: () => void, 
 }
 
 export function RichTextRenderer({ content, className, onHareKrishnaClick }: RichTextRendererProps) {
+    const [emojiMap, setEmojiMap] = React.useState<Map<string, string>>(customEmojiCache || new Map());
+
+    // Fetch custom emojis once
+    React.useEffect(() => {
+        // Only fetch if content contains potential custom emoji syntax (:word:)
+        if (content && /:[a-zA-Z0-9_]+:/.test(content)) {
+            fetchCustomEmojis().then(map => {
+                if (map.size > 0) setEmojiMap(map);
+            });
+        }
+    }, [content]);
+
     if (!content) return null;
 
     const lines = content.split('\n');
@@ -105,7 +152,7 @@ export function RichTextRenderer({ content, className, onHareKrishnaClick }: Ric
         if (headingMatch) {
             elements.push(
                 <h2 key={key} className="text-lg font-bold mt-2 mb-1">
-                    {processInlineFormatting(headingMatch[1], onHareKrishnaClick, key)}
+                    {processInlineFormatting(headingMatch[1], onHareKrishnaClick, key, emojiMap)}
                 </h2>
             );
             lineIndex++;
@@ -119,7 +166,7 @@ export function RichTextRenderer({ content, className, onHareKrishnaClick }: Ric
                 const itemText = lines[lineIndex].replace(/^-\s+/, '');
                 listItems.push(
                     <li key={`${key}-item-${listItems.length}`} className="ml-1">
-                        {processInlineFormatting(itemText, onHareKrishnaClick, `${key}-${listItems.length}`)}
+                        {processInlineFormatting(itemText, onHareKrishnaClick, `${key}-${listItems.length}`, emojiMap)}
                     </li>
                 );
                 lineIndex++;
@@ -139,7 +186,7 @@ export function RichTextRenderer({ content, className, onHareKrishnaClick }: Ric
                 const itemText = lines[lineIndex].replace(/^\d+\.\s+/, '');
                 listItems.push(
                     <li key={`${key}-item-${listItems.length}`} className="ml-1">
-                        {processInlineFormatting(itemText, onHareKrishnaClick, `${key}-${listItems.length}`)}
+                        {processInlineFormatting(itemText, onHareKrishnaClick, `${key}-${listItems.length}`, emojiMap)}
                     </li>
                 );
                 lineIndex++;
@@ -156,7 +203,7 @@ export function RichTextRenderer({ content, className, onHareKrishnaClick }: Ric
         if (line.trim()) {
             elements.push(
                 <React.Fragment key={key}>
-                    {processInlineFormatting(line, onHareKrishnaClick, key)}
+                    {processInlineFormatting(line, onHareKrishnaClick, key, emojiMap)}
                     {lineIndex < lines.length - 1 && '\n'}
                 </React.Fragment>
             );

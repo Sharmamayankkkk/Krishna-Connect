@@ -1,4 +1,10 @@
+import { Metadata } from 'next';
 import { Wrench } from 'lucide-react';
+
+export const metadata: Metadata = {
+    title: "Maintenance",
+    description: "Krishna Connect is currently under maintenance. We'll be back soon.",
+};
 
 export default function MaintenancePage() {
     return (

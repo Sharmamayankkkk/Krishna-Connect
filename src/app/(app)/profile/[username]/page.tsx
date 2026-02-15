@@ -238,6 +238,7 @@ export default async function ProfilePage(props: ProfilePageProps) {
 
   // Fetch the data for the tabs
   let posts: any[] = [];
+  let repostedPosts: any[] = [];
   let followers: any[] = [];
   let following: any[] = [];
 
@@ -285,27 +286,61 @@ export default async function ProfilePage(props: ProfilePageProps) {
 
       posts = data.map((post: any) => transformPost({
         ...post,
-        // Ensure likes/reposts counts are handled if they come as arrays/objects from RPC
-        // The transformPost handles dbPost.likes as array, but our RPC might return differently?
-        // Our RPC returns standard joined tables, so transformPost should handle it.
-        // We just need to make sure `user_likes` is present for `isLiked` check internally in transformPost?
-        // transformPost checks `dbPost.user_likes` (array of objects with user_id) or `dbPost.likes` (array of objects).
-
-        // In our query: `user_likes:post_likes!post_id(user_id)` -> array of objects {user_id}.
-        // This matches what transformPost implementation expects:
-        // const likedByUsers ... (Array.isArray(dbPost.user_likes) ? dbPost.user_likes : []).map((like: any) => like.user_id);
       }));
     }
   } catch (e) {
     console.error("Error fetching profile posts:", e);
   }
 
+  // Fetch reposted posts
+  try {
+    const { data: repostData } = await supabase
+      .from('post_reposts')
+      .select('post_id')
+      .eq('user_id', profile.id)
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (repostData && repostData.length > 0) {
+      const repostIds = repostData.map((r: any) => r.post_id);
+      const { data: repostPostsData } = await supabase
+        .from('posts')
+        .select(POST_SELECT_QUERY)
+        .in('id', repostIds);
+
+      if (repostPostsData) {
+        const { transformPost } = await import("@/lib/post-utils");
+        repostedPosts = repostPostsData.map((post: any) => transformPost(post));
+      }
+    }
+  } catch (e) {
+    console.error("Error fetching reposted posts:", e);
+  }
+
   // We skip followers/following for now as tabs are "Coming Soon"
+
+  // Fetch Leela videos for this user
+  let leelaVideos: any[] = [];
+  try {
+    const { data: leelaData } = await supabase
+      .rpc('get_user_leela_videos', {
+        p_user_id: profile.id,
+        p_limit: 30,
+        p_offset: 0
+      });
+    if (leelaData) {
+      leelaVideos = leelaData;
+    }
+  } catch (e) {
+    console.error("Error fetching leela videos:", e);
+  }
 
   return (
     <ProfileView
       profile={profile}
       posts={posts}
+      repostedPosts={repostedPosts}
+      leelaVideos={leelaVideos}
       followers={followers}
       following={following}
       currentUser={user}

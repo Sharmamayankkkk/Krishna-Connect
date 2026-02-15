@@ -46,7 +46,9 @@ import {
     Heading2,
     List,
     ListOrdered,
-    Minus
+    Minus,
+    CheckCircle2,
+    HelpCircle
 } from 'lucide-react';
 import { CollaborativePostDialog, type Collaborator } from './dialogs/collaborative-post-dialog';
 import { useAppContext } from '@/providers/app-provider';
@@ -82,6 +84,8 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     const [pollOptions, setPollOptions] = React.useState<string[]>(['', '']);
     const [pollDuration, setPollDuration] = React.useState(24);
     const [allowMultipleChoices, setAllowMultipleChoices] = React.useState(false);
+    const [isQuizMode, setIsQuizMode] = React.useState(false);
+    const [correctAnswerIndex, setCorrectAnswerIndex] = React.useState(-1);
 
     // Emoji picker state
     const [showEmojiPicker, setShowEmojiPicker] = React.useState(false);
@@ -120,7 +124,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     const remainingChars = MAX_CHARACTERS - characterCount;
     const characterPercentage = (characterCount / MAX_CHARACTERS) * 100;
     // Verified users have no character limit - they're premium!
-    const isVerified = loggedInUser?.is_verified ?? false;
+    const isVerified = loggedInUser?.is_verified === 'verified' || loggedInUser?.is_verified === 'kcs';
     const isOverLimit = !isVerified && characterCount > MAX_CHARACTERS;
     const canPost = (content.trim().length > 0 || mediaPreviews.length > 0 || isPollMode) && !isOverLimit;
 
@@ -165,6 +169,10 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             if (pollOptions.some(opt => opt.length > 100)) {
                 newErrors.push('Poll options must be 100 characters or less');
             }
+
+            if (isQuizMode && correctAnswerIndex < 0) {
+                newErrors.push('Quiz must have a correct answer selected');
+            }
         }
 
         if (!content.trim() && mediaPreviews.length === 0 && !isPollMode) {
@@ -203,6 +211,39 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
         }
         setShowEmojiPicker(false);
     };
+
+    // Custom emoji handler (inserts :emojiName: syntax)
+    const handleCustomEmojiClick = (emojiUrl: string) => {
+        const name = emojiUrl.split('/').pop()?.split('.')[0] || 'emoji';
+        const emojiSyntax = `:${name}:`;
+        const textarea = textareaRef.current;
+        if (textarea) {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const newContent = content.substring(0, start) + emojiSyntax + content.substring(end);
+            setContent(newContent);
+            setTimeout(() => {
+                textarea.selectionStart = textarea.selectionEnd = start + emojiSyntax.length;
+                textarea.focus();
+            }, 0);
+        } else {
+            setContent(prev => prev + emojiSyntax);
+        }
+        setShowEmojiPicker(false);
+    };
+
+    // Fetch custom emojis and stickers
+    const [customEmojiList, setCustomEmojiList] = React.useState<string[]>([]);
+    const [stickerList, setStickerList] = React.useState<string[]>([]);
+    React.useEffect(() => {
+        fetch('/api/assets')
+            .then(res => res.json())
+            .then(data => {
+                setCustomEmojiList(data.emojis || []);
+                setStickerList(data.stickers || []);
+            })
+            .catch(() => {});
+    }, []);
 
     // Image upload
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -348,6 +389,8 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     const removePollOption = (index: number) => {
         if (pollOptions.length > 2) {
             setPollOptions(pollOptions.filter((_, i) => i !== index));
+            if (correctAnswerIndex === index) setCorrectAnswerIndex(-1);
+            else if (correctAnswerIndex > index) setCorrectAnswerIndex(correctAnswerIndex - 1);
         }
     };
 
@@ -362,6 +405,8 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             setIsPollMode(false);
             setPollQuestion('');
             setPollOptions(['', '']);
+            setIsQuizMode(false);
+            setCorrectAnswerIndex(-1);
         } else {
             if (mediaPreviews.length > 0) {
                 toast({
@@ -455,7 +500,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             let poll: PollType | undefined;
             if (isPollMode && pollQuestion.trim()) {
                 const validOptions = pollOptions.filter(opt => opt.trim());
-                poll = createEmptyPoll(pollQuestion, validOptions, pollDuration);
+                poll = createEmptyPoll(pollQuestion, validOptions, pollDuration, isQuizMode, correctAnswerIndex);
             }
 
             // Insert into DB
@@ -519,6 +564,8 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             setIsPollMode(false);
             setPollQuestion('');
             setPollOptions(['', '']);
+            setIsQuizMode(false);
+            setCorrectAnswerIndex(-1);
             setErrors([]);
 
             toast({
@@ -829,29 +876,58 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                         <div className="mt-4 border rounded-xl p-4 space-y-4 bg-background/50 animate-in fade-in slide-in-from-top-2">
                             <div className="flex justify-between items-center">
                                 <h3 className="font-medium flex items-center gap-2 text-primary">
-                                    <BarChart3 className="h-4 w-4" />
-                                    Create Poll
+                                    {isQuizMode ? <HelpCircle className="h-4 w-4" /> : <BarChart3 className="h-4 w-4" />}
+                                    {isQuizMode ? 'Create Quiz' : 'Create Poll'}
                                 </h3>
-                                <Button variant="ghost" size="icon" onClick={togglePollMode} className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive">
-                                    <X className="h-4 w-4" />
-                                </Button>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => { setIsQuizMode(!isQuizMode); setCorrectAnswerIndex(-1); }}
+                                        className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${isQuizMode ? 'bg-green-500/10 border-green-500/30 text-green-600' : 'border-border text-muted-foreground hover:text-foreground'}`}
+                                    >
+                                        {isQuizMode ? <><CheckCircle2 className="h-3 w-3 inline mr-0.5" /> Quiz Mode</> : 'Quiz Mode'}
+                                    </button>
+                                    <Button variant="ghost" size="icon" onClick={togglePollMode} className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive">
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </div>
 
                             <Input
-                                placeholder="Ask a question..."
+                                placeholder={isQuizMode ? "Ask a quiz question..." : "Ask a question..."}
                                 value={pollQuestion}
                                 onChange={(e) => setPollQuestion(e.target.value)}
                                 className="text-lg font-medium border-x-0 border-t-0 border-b-2 rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary bg-transparent"
                             />
 
+                            {isQuizMode && (
+                                <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                                    <CheckCircle2 className="h-3 w-3 text-green-500" />
+                                    Click the circle next to an option to mark it as the correct answer
+                                </p>
+                            )}
+
                             <div className="space-y-3">
                                 {pollOptions.map((option, index) => (
                                     <div key={index} className="flex items-center gap-2">
+                                        {isQuizMode && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setCorrectAnswerIndex(index)}
+                                                className={`flex-shrink-0 h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                                                    correctAnswerIndex === index
+                                                        ? 'border-green-500 bg-green-500 text-white'
+                                                        : 'border-muted-foreground/30 hover:border-green-500/50'
+                                                }`}
+                                                title={correctAnswerIndex === index ? 'Correct answer' : 'Mark as correct answer'}
+                                            >
+                                                {correctAnswerIndex === index && <CheckCircle2 className="h-3.5 w-3.5" />}
+                                            </button>
+                                        )}
                                         <Input
                                             placeholder={`Option ${index + 1}`}
                                             value={option}
                                             onChange={(e) => updatePollOption(index, e.target.value)}
-                                            className="flex-1"
+                                            className={`flex-1 ${isQuizMode && correctAnswerIndex === index ? 'border-green-500/30 bg-green-500/5' : ''}`}
                                         />
                                         {pollOptions.length > 2 && (
                                             <Button variant="ghost" size="icon" onClick={() => removePollOption(index)} className="text-muted-foreground hover:text-destructive">
@@ -917,7 +993,57 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                         <div className="absolute top-10 left-0 z-50 animate-in fade-in zoom-in-95 duration-200">
                                             <div className="fixed inset-0 z-40" onClick={() => setShowEmojiPicker(false)} />
                                             <div className="relative z-50 shadow-2xl rounded-xl overflow-hidden border bg-background">
-                                                <EmojiPicker onEmojiClick={handleEmojiClick} width={320} height={400} theme={Theme.AUTO} />
+                                                <Tabs defaultValue="emojis" className="w-[320px]">
+                                                    <TabsList className="w-full rounded-none bg-muted/50 h-9">
+                                                        {customEmojiList.length > 0 && isVerified && (
+                                                            <TabsTrigger value="official" className="flex-1 text-xs gap-1">Official <Sparkles className="h-3 w-3" /></TabsTrigger>
+                                                        )}
+                                                        <TabsTrigger value="emojis" className="flex-1 text-xs">Emojis</TabsTrigger>
+                                                        {stickerList.length > 0 && (
+                                                            <TabsTrigger value="stickers" className="flex-1 text-xs">Stickers</TabsTrigger>
+                                                        )}
+                                                    </TabsList>
+                                                    {customEmojiList.length > 0 && isVerified && (
+                                                        <TabsContent value="official" className="mt-0">
+                                                            <div className="grid grid-cols-6 gap-2 p-3 max-h-[300px] overflow-y-auto">
+                                                                {customEmojiList.map((url, i) => (
+                                                                    <button
+                                                                        key={i}
+                                                                        onClick={() => handleCustomEmojiClick(url)}
+                                                                        className="h-12 w-12 rounded-lg hover:bg-muted/80 flex items-center justify-center transition-colors p-1"
+                                                                    >
+                                                                        <Image src={url} alt="emoji" width={36} height={36} className="object-contain" unoptimized />
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        </TabsContent>
+                                                    )}
+                                                    <TabsContent value="emojis" className="mt-0">
+                                                        <EmojiPicker onEmojiClick={handleEmojiClick} width={320} height={350} theme={Theme.AUTO} />
+                                                    </TabsContent>
+                                                    {stickerList.length > 0 && (
+                                                        <TabsContent value="stickers" className="mt-0">
+                                                            <div className="grid grid-cols-4 gap-2 p-3 max-h-[300px] overflow-y-auto">
+                                                                {stickerList.map((url, i) => (
+                                                                    <button
+                                                                        key={i}
+                                                                        onClick={() => handleCustomEmojiClick(url)}
+                                                                        className="rounded-lg hover:bg-muted/80 flex items-center justify-center transition-colors p-1"
+                                                                    >
+                                                                        <Image src={url} alt="sticker" width={64} height={64} className="object-contain" unoptimized />
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        </TabsContent>
+                                                    )}
+                                                    {!isVerified && customEmojiList.length > 0 && (
+                                                        <div className="px-3 py-2 bg-muted/30 border-t text-center">
+                                                            <p className="text-xs text-muted-foreground">
+                                                                <Sparkles className="h-3 w-3 inline mr-1" /><a href="/get-verified" className="text-primary hover:underline font-medium">Get Verified</a> to unlock Official Emojis
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                </Tabs>
                                             </div>
                                         </div>
                                     )}

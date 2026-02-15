@@ -1,27 +1,25 @@
 'use client';
 
 import { useEffect } from 'react';
-
-// This component is designed to display a Google Ad.
-// It should be placed wherever you want an ad to appear.
+import { useAppContext } from '@/providers/app-provider';
 
 export const GoogleAd = ({ slot, client }: { slot: string, client?: string }) => {
+    const { loggedInUser } = useAppContext();
+
+    // No ads for verified or KCS users
+    const isVerified = loggedInUser?.is_verified === 'verified' || loggedInUser?.is_verified === 'kcs';
 
     useEffect(() => {
-        // In React 18's Strict Mode (used in Next.js development),
-        // this effect may run twice. The AdSense script is designed to handle this
-        // by throwing an error if you try to push to an already-filled slot.
-        // We can safely ignore this specific error in development.
+        if (isVerified) return;
         try {
             ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
         } catch (e) {
-            // The error is expected in dev strict mode, so we can console.warn or ignore it.
-            // console.warn("AdSense error (expected in dev):", e);
+            // Expected in dev strict mode
         }
-    }, [slot]); // Add `slot` as a dependency
+    }, [slot, isVerified]);
 
-    // This is the ad unit markup.
-    // Make sure your ad unit is set to be responsive.
+    if (isVerified) return null;
+
     return (
         <div className="w-full text-center my-4">
             <ins

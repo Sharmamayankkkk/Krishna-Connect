@@ -40,7 +40,7 @@ export function LiveStreamingView({ streamDetails }: LiveStreamingViewProps) {
           {/* Mock chat messages */}
           <div className="text-sm"><b>Radha:</b> Hare Krishna! So beautiful.</div>
           <div className="text-sm"><b>Gopal:</b> All glories to Srila Prabhupada!</div>
-          <div className="text-sm"><b>Krishna Das:</b> 🙏🙏🙏</div>
+          <div className="text-sm"><b>Krishna Das:</b> Jay Sri Krishna!</div>
         </div>
         <div className="p-4 border-t border-border">
           <div className="relative">

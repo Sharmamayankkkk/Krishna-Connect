@@ -604,13 +604,17 @@ export default function Feed() {
                             {/* Footer / Links */}
                             <div className="text-xs text-muted-foreground px-4">
                                 <div className="flex flex-wrap gap-2">
-                                    <Link href="/about" className="hover:underline">About</Link>
+                                    <Link href="/privacy-policy" className="hover:underline">Privacy</Link>
                                     <span>·</span>
-                                    <Link href="/privacy" className="hover:underline">Privacy</Link>
+                                    <Link href="/terms-and-conditions" className="hover:underline">Terms</Link>
                                     <span>·</span>
-                                    <Link href="/terms" className="hover:underline">Terms</Link>
+                                    <Link href="/contact-us" className="hover:underline">Contact</Link>
                                     <span>·</span>
-                                    <span>© 2024 Krishna Connect</span>
+                                    <Link href="/faq" className="hover:underline">FAQ</Link>
+                                    <span>·</span>
+                                    <Link href="/developers" className="hover:underline">Developers</Link>
+                                    <span>·</span>
+                                    <span>© 2026 Krishna Connect</span>
                                 </div>
                             </div>
                         </div>

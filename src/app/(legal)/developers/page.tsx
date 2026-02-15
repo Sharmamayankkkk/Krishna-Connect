@@ -1,43 +1,12 @@
 import { Metadata } from "next";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Our Team | Krishna Connect",
-  description: "Meet the developers and the inspiration behind Krishna Connect.",
+  description: "Meet the inspiration behind Krishna Connect.",
 };
 
-// Helper component for team cards
-const TeamMemberCard = ({ name, role, imageSrc, initial }: { name: string; role?: string; imageSrc?: string; initial?: string }) => (
-  <div className="bg-card p-6 rounded-xl border border-border/50 shadow-sm flex flex-col items-center text-center hover:shadow-md transition-all duration-300 hover:border-primary/20 group">
-    <div className="w-24 h-24 relative mb-4 rounded-full overflow-hidden bg-muted border-2 border-background ring-2 ring-muted group-hover:ring-primary/20 transition-all">
-      {imageSrc ? (
-        <Image
-          src={imageSrc}
-          alt={name}
-          fill
-          className="object-cover"
-        />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center text-muted-foreground/30 text-2xl font-bold bg-muted">
-          {initial || name.charAt(0)}
-        </div>
-      )}
-    </div>
-    <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">{name}</h3>
-    {role && <p className="text-sm text-muted-foreground font-medium">{role}</p>}
-  </div>
-);
-
 const DevelopersPage = () => {
-  // Developer Data
-  const developers = [
-    { name: "Mayank Sharma", role: "Frontend & Backend" },
-    { name: "Bhavya Shingari", role: "UI/UX Designer" },
-    { name: "Himani Vaishnav", role: "Contributor" },
-    { name: "Omkar Joshi", role: "Contributor" },
-  ];
-
   return (
     <div className="container mx-auto px-4 py-12 max-w-6xl">
       {/* Header */}
@@ -85,27 +54,6 @@ const DevelopersPage = () => {
             <p className="text-blue-500 font-medium mt-2">Founder (KCS)</p>
           </div>
 
-        </div>
-      </section>
-
-      {/* Developer Team Section */}
-      <section>
-        <div className="flex items-center justify-center gap-4 mb-10">
-          <div className="h-px bg-border flex-1 max-w-[100px]" />
-          <h2 className="text-2xl font-bold text-center text-foreground">
-            Development Team
-          </h2>
-          <div className="h-px bg-border flex-1 max-w-[100px]" />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {developers.map((dev, index) => (
-            <TeamMemberCard
-              key={index}
-              name={dev.name}
-              role={dev.role}
-            />
-          ))}
         </div>
       </section>
 

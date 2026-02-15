@@ -190,13 +190,13 @@ export default function BookmarksPage() {
     return (
         <div className="flex h-full flex-col">
             {/* Header */}
-            <header className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+            <header className="sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
                 <div className="flex items-center justify-between p-4">
-                    <div className='flex items-center gap-4'>
+                    <div className='flex items-center gap-3'>
                         <SidebarTrigger className="md:hidden" />
+                        <Bookmark className="h-5 w-5 text-primary" />
                         <div>
                             <h1 className="text-xl font-bold">Bookmarks</h1>
-                            <p className="text-sm text-muted-foreground">Your saved posts and collections</p>
                         </div>
                     </div>
 

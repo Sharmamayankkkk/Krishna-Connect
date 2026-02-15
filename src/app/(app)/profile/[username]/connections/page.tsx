@@ -1,7 +1,13 @@
+import { Metadata } from 'next';
 import { createClient } from '@/lib/utils';
 import { ConnectionsView } from './components/connections-view';
 import { notFound, redirect } from 'next/navigation';
 import { Lock } from 'lucide-react';
+
+export const metadata: Metadata = {
+    title: "Connections",
+    description: "View followers and following on Krishna Connect.",
+};
 
 export const dynamic = 'force-dynamic';
 

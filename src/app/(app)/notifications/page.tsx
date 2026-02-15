@@ -19,66 +19,74 @@ import {
     Settings,
     Bell,
     BellOff,
-    Users
+    Users,
+    Image as ImageIcon,
+    Video,
+    FileText,
+    ChevronDown,
+    Sparkles
 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, isToday, isYesterday, isThisWeek } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { NotificationType } from '@/lib/types';
 import { PushNotificationManager } from '@/components/layout/push-notification-manager';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 
 type NotificationFilter = 'all' | 'mentions' | 'likes' | 'comments' | 'follows';
 
-// Notification type icon mapping
-const getNotificationIcon = (type: NotificationType['type']) => {
-    switch (type) {
-        case 'like':
-            return <Heart className="h-5 w-5 text-red-500 fill-red-500" />;
-        case 'comment':
-            return <MessageCircle className="h-5 w-5 text-blue-500" />;
-        case 'repost':
-        case 'quote':
-            return <Repeat2 className="h-5 w-5 text-green-500" />;
-        case 'follow':
-            return <UserPlus className="h-5 w-5 text-purple-500" />;
-        case 'mention':
-            return <AtSign className="h-5 w-5 text-orange-500" />;
-        case 'poll_vote':
-            return <BarChart3 className="h-5 w-5 text-cyan-500" />;
-        case 'collaboration_request':
-            return <Users className="h-5 w-5 text-indigo-500" />;
-        default:
-            return <Bell className="h-5 w-5 text-gray-500" />;
-    }
+// Icon with colored background bubble
+const NotificationIconBubble = ({ type }: { type: NotificationType['type'] }) => {
+    const config: Record<string, { icon: React.ReactNode; bg: string }> = {
+        like: { icon: <Heart className="h-3.5 w-3.5 text-white fill-white" />, bg: 'bg-gradient-to-br from-red-400 to-pink-500' },
+        comment: { icon: <MessageCircle className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-blue-400 to-blue-600' },
+        repost: { icon: <Repeat2 className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-emerald-400 to-green-600' },
+        quote: { icon: <Repeat2 className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-teal-400 to-cyan-600' },
+        follow: { icon: <UserPlus className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-purple-400 to-violet-600' },
+        mention: { icon: <AtSign className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-orange-400 to-amber-600' },
+        poll_vote: { icon: <BarChart3 className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-cyan-400 to-sky-600' },
+        collaboration_request: { icon: <Users className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-indigo-400 to-indigo-600' },
+    };
+    const iconConfig = config[type] || { icon: <Bell className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-gray-400 to-gray-600' };
+    return (
+        <div className={cn("absolute -bottom-1 -right-1 h-6 w-6 rounded-full flex items-center justify-center ring-2 ring-background", iconConfig.bg)} aria-hidden="true">
+            {iconConfig.icon}
+        </div>
+    );
 };
 
-// Notification action text
-const getNotificationText = (notification: NotificationType) => {
-    const userName = notification.fromUser.name;
-
-    switch (notification.type) {
-        case 'like':
-            return `${userName} liked your post`;
-        case 'comment':
-            return `${userName} commented on your post`;
-        case 'repost':
-            return `${userName} reposted your post`;
-        case 'quote':
-            return `${userName} quoted your post`;
-        case 'follow':
-            return `${userName} started following you`;
-        case 'mention':
-            return `${userName} mentioned you`;
-        case 'poll_vote':
-            return `${userName} voted on your poll`;
-        case 'collaboration_request':
-            return `${userName} invited you to collaborate on a post`;
-        default:
-            return 'New notification';
-    }
+// Action text for notification
+const getActionText = (type: NotificationType['type']) => {
+    const map: Record<string, string> = {
+        like: 'liked your post',
+        comment: 'commented on your post',
+        repost: 'reposted your post',
+        quote: 'quoted your post',
+        follow: 'started following you',
+        mention: 'mentioned you',
+        poll_vote: 'voted on your poll',
+        collaboration_request: 'invited you to collaborate',
+    };
+    return map[type] || 'sent you a notification';
 };
 
-// Individual Notification Item Component
+// Media type icon
+const MediaTypeIcon = ({ type }: { type: string }) => {
+    if (type === 'image') return <ImageIcon className="h-3 w-3" />;
+    if (type === 'video') return <Video className="h-3 w-3" />;
+    return <FileText className="h-3 w-3" />;
+};
+
+// Time grouping
+function getTimeGroup(dateStr: string): string {
+    const date = new Date(dateStr);
+    if (isToday(date)) return 'Today';
+    if (isYesterday(date)) return 'Yesterday';
+    if (isThisWeek(date)) return 'This Week';
+    return 'Earlier';
+}
+
+// Individual Notification Item
 const NotificationItem = React.memo(({
     notification,
     onMarkAsRead,
@@ -92,158 +100,103 @@ const NotificationItem = React.memo(({
     onAccept: (id: string) => void;
     onDecline: (id: string) => void;
 }) => {
-    const notificationText = getNotificationText(notification);
-    const icon = getNotificationIcon(notification.type);
+    const actionText = getActionText(notification.type);
 
     return (
         <div
             className={cn(
-                "flex gap-2 sm:gap-3 py-3 px-2 sm:px-4 border-b transition-colors hover:bg-muted/50 relative group",
-                !notification.read && "bg-primary/5"
+                "flex gap-3 py-3 px-3 sm:px-5 transition-all duration-200 hover:bg-muted/40 relative group rounded-lg mx-2 my-0.5",
+                !notification.read && "bg-primary/[0.04] hover:bg-primary/[0.07]"
             )}
         >
-            {/* Unread indicator */}
+            {/* Unread dot */}
             {!notification.read && (
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" aria-hidden="true" />
+                <div className="absolute left-0.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-primary" aria-hidden="true" />
             )}
 
-            {/* User Avatar */}
-            <Link href={`/profile/${notification.fromUser.username}`} className="flex-shrink-0">
-                <Avatar className="h-9 w-9 sm:h-10 sm:w-10">
-                    <AvatarImage
-                        src={notification.fromUser.avatar}
-                        alt={`${notification.fromUser.name}'s avatar`}
-                        loading="lazy"
-                    />
-                    <AvatarFallback>{notification.fromUser.name.charAt(0)}</AvatarFallback>
+            {/* Avatar with icon overlay */}
+            <Link href={`/profile/${notification.fromUser.username}`} className="flex-shrink-0 relative">
+                <Avatar className="h-11 w-11 sm:h-12 sm:w-12 ring-2 ring-background shadow-sm">
+                    <AvatarImage src={notification.fromUser.avatar} alt={notification.fromUser.name} loading="lazy" />
+                    <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold">
+                        {notification.fromUser.name.charAt(0)}
+                    </AvatarFallback>
                 </Avatar>
+                <NotificationIconBubble type={notification.type} />
             </Link>
 
-            {/* Notification Content */}
-            <div className="flex-1 min-w-0 space-y-1">
-                <div className="flex items-start gap-1.5 sm:gap-2">
-                    {/* Icon */}
-                    <div className="flex-shrink-0 mt-0.5" aria-hidden="true">
-                        {icon}
-                    </div>
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+                <p className="text-sm leading-relaxed">
+                    <Link href={`/profile/${notification.fromUser.username}`} className="font-semibold hover:underline">
+                        {notification.fromUser.name}
+                    </Link>
+                    <span className="text-muted-foreground ml-1">{actionText}</span>
+                    <span className="text-xs text-muted-foreground/70 ml-2">
+                        {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                    </span>
+                </p>
 
-                    {/* Text */}
-                    <div className="flex-1 min-w-0">
-                        <p className="text-sm sm:text-base break-words">
-                            <Link
-                                href={`/profile/${notification.fromUser.username}`}
-                                className="font-semibold hover:underline"
-                            >
-                                {notification.fromUser.name}
-                            </Link>
-                            <span className="text-muted-foreground ml-1">
-                                {notificationText.replace(notification.fromUser.name, '').trim()}
-                            </span>
-                        </p>
-
-                        {/* Additional text (for post snippets, etc.) */}
-                        {notification.text && (
-                            <p className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-2 p-2 border rounded-md bg-muted/50 break-words">
-                                {notification.text}
-                            </p>
-                        )}
-
-                        {/* Timestamp */}
-                        <p className="text-xs text-muted-foreground mt-1">
-                            {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
-                        </p>
-                    </div>
-                </div>
-
-                {/* Collaboration actions */}
-                {notification.type === 'collaboration_request' && (
-                    <div className="flex flex-wrap items-center gap-2 pt-2">
-                        {notification.status === 'pending' ? (
-                            <>
-                                <Button
-                                    size="sm"
-                                    onClick={() => onAccept(notification.id)}
-                                    aria-label="Accept collaboration request"
-                                >
-                                    Accept
-                                </Button>
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => onDecline(notification.id)}
-                                    aria-label="Decline collaboration request"
-                                >
-                                    Decline
-                                </Button>
-                            </>
-                        ) : notification.status === 'accepted' ? (
-                            <p className="text-xs sm:text-sm font-semibold text-green-600">You have accepted this collaboration.</p>
-                        ) : (
-                            <p className="text-xs sm:text-sm font-semibold text-red-600">You have declined this collaboration.</p>
-                        )}
-                        {/* Link to post */}
-                    </div>
-                )}
-
-                {/* Post Preview logic */}
+                {/* Post preview */}
                 {notification.postId && (notification.postContent || notification.postMediaType) && (
-                    <Link href={`/profile/${notification.postAuthorUsername || notification.fromUser.username}/post/${notification.postId}`} className="block mt-2">
-                        <div className="border rounded-md p-3 bg-muted/30 text-xs sm:text-sm hover:bg-muted/60 transition-colors">
-                            {/* Small indicator of what this is */}
-                            <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
-                                {notification.type === 'collaboration_request' && (
-                                    <span className="font-medium text-xs uppercase tracking-wider">Collaboration Request</span>
-                                )}
-                            </div>
-
-                            {/* Preview Content */}
+                    <Link
+                        href={`/profile/${notification.postAuthorUsername || notification.fromUser.username}/post/${notification.postId}`}
+                        className="block mt-1.5"
+                    >
+                        <div className="border rounded-lg px-3 py-2 bg-muted/30 hover:bg-muted/50 transition-colors text-xs sm:text-sm">
                             {notification.postContent && (
-                                <p className="line-clamp-2 italic text-muted-foreground">"{notification.postContent}"</p>
+                                <p className="line-clamp-2 text-muted-foreground italic">
+                                    &ldquo;{notification.postContent}&rdquo;
+                                </p>
                             )}
                             {notification.postMediaType && !notification.postContent && (
-                                <p className="italic text-muted-foreground flex items-center gap-1">
-                                    <span className="capitalize">{notification.postMediaType}</span> attachment
+                                <p className="text-muted-foreground flex items-center gap-1.5">
+                                    <MediaTypeIcon type={notification.postMediaType} />
+                                    <span className="capitalize">{notification.postMediaType}</span> post
                                 </p>
                             )}
                         </div>
                     </Link>
                 )}
 
-                {/* Standard action buttons (always visible for better discoverability) */}
-                <div className="flex flex-wrap items-center gap-2 pt-1">
+                {/* Collaboration actions */}
+                {notification.type === 'collaboration_request' && (
+                    <div className="flex items-center gap-2 mt-2">
+                        {notification.status === 'pending' ? (
+                            <>
+                                <Button size="sm" className="h-7 text-xs rounded-full px-4" onClick={() => onAccept(notification.id)}>
+                                    Accept
+                                </Button>
+                                <Button size="sm" variant="outline" className="h-7 text-xs rounded-full px-4" onClick={() => onDecline(notification.id)}>
+                                    Decline
+                                </Button>
+                            </>
+                        ) : notification.status === 'accepted' ? (
+                            <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-green-200">Accepted</Badge>
+                        ) : (
+                            <Badge variant="secondary" className="bg-red-500/10 text-red-600 border-red-200">Declined</Badge>
+                        )}
+                    </div>
+                )}
+
+                {/* Action buttons - show on hover on desktop, always on mobile */}
+                <div className="flex items-center gap-1 mt-1.5 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                     {!notification.read && (
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => onMarkAsRead(notification.id)}
-                            className="h-7 text-xs"
-                            aria-label="Mark notification as read"
-                        >
-                            <CheckCheck className="h-3 w-3 mr-1" aria-hidden="true" />
-                            Mark as read
+                        <Button variant="ghost" size="sm" onClick={() => onMarkAsRead(notification.id)} className="h-6 text-[11px] px-2 rounded-full text-muted-foreground hover:text-foreground">
+                            <CheckCheck className="h-3 w-3 mr-1" />
+                            Read
                         </Button>
                     )}
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onDelete(notification.id)}
-                        className="h-7 text-xs text-red-500 hover:text-red-600 hover:bg-red-500/10"
-                        aria-label="Delete notification"
-                    >
-                        <Trash2 className="h-3 w-3 mr-1" aria-hidden="true" />
-                        Delete
+                    <Button variant="ghost" size="sm" onClick={() => onDelete(notification.id)} className="h-6 text-[11px] px-2 rounded-full text-muted-foreground hover:text-red-500 hover:bg-red-500/10">
+                        <Trash2 className="h-3 w-3 mr-1" />
+                        Remove
                     </Button>
                 </div>
             </div>
 
-            {/* Quick action (if applicable) */}
+            {/* Follow back CTA */}
             {notification.type === 'follow' && (
-                <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-shrink-0 text-xs sm:text-sm"
-                    aria-label={`Follow ${notification.fromUser.name} back`}
-                >
+                <Button variant="default" size="sm" className="flex-shrink-0 h-8 text-xs rounded-full px-4 self-center shadow-sm">
                     <span className="hidden sm:inline">Follow Back</span>
                     <span className="sm:hidden">Follow</span>
                 </Button>
@@ -254,66 +207,62 @@ const NotificationItem = React.memo(({
 
 NotificationItem.displayName = 'NotificationItem';
 
-// Notification Skeleton Loader
+// Skeleton Loader
 function NotificationSkeleton() {
     return (
-        <div className="flex gap-2 sm:gap-3 py-3 px-2 sm:px-4 border-b">
-            <Skeleton className="h-9 w-9 sm:h-10 sm:w-10 rounded-full flex-shrink-0" />
+        <div className="flex gap-3 py-3 px-3 sm:px-5 mx-2 my-0.5">
+            <Skeleton className="h-11 w-11 sm:h-12 sm:w-12 rounded-full flex-shrink-0" />
             <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-3 w-1/2" />
+                <Skeleton className="h-4 w-4/5" />
+                <Skeleton className="h-3 w-2/5" />
             </div>
         </div>
     );
 }
 
-// Empty State Component
-function EmptyState({ filter }: { filter: NotificationFilter }) {
-    const getMessage = () => {
-        switch (filter) {
-            case 'mentions':
-                return {
-                    icon: <AtSign className="h-12 w-12 text-muted-foreground/50" />,
-                    title: "No mentions yet",
-                    description: "When someone mentions you, you'll see it here"
-                };
-            case 'likes':
-                return {
-                    icon: <Heart className="h-12 w-12 text-muted-foreground/50" />,
-                    title: "No likes yet",
-                    description: "When someone likes your posts, you'll see it here"
-                };
-            case 'comments':
-                return {
-                    icon: <MessageCircle className="h-12 w-12 text-muted-foreground/50" />,
-                    title: "No comments yet",
-                    description: "When someone comments on your posts, you'll see it here"
-                };
-            case 'follows':
-                return {
-                    icon: <UserPlus className="h-12 w-12 text-muted-foreground/50" />,
-                    title: "No new followers",
-                    description: "When someone follows you, you'll see it here"
-                };
-            default:
-                return {
-                    icon: <Bell className="h-12 w-12 text-muted-foreground/50" />,
-                    title: "No notifications",
-                    description: "When you get notifications, they'll show up here"
-                };
-        }
-    };
-
-    const { icon, title, description } = getMessage();
-
+// Time section header
+function TimeSectionHeader({ label }: { label: string }) {
     return (
-        <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-            <div className="mb-4">{icon}</div>
-            <h3 className="text-lg font-semibold mb-2">{title}</h3>
-            <p className="text-sm text-muted-foreground max-w-sm">{description}</p>
+        <div className="sticky top-0 z-10 px-5 py-2 bg-background/90 backdrop-blur-sm">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
         </div>
     );
 }
+
+// Empty state with gradient icon
+function EmptyState({ filter }: { filter: NotificationFilter }) {
+    const configs: Record<string, { icon: React.ReactNode; bg: string; title: string; desc: string }> = {
+        mentions: { icon: <AtSign className="h-8 w-8 text-white" />, bg: 'from-orange-400 to-amber-500', title: 'No mentions yet', desc: "When someone tags you, you'll see it here" },
+        likes: { icon: <Heart className="h-8 w-8 text-white" />, bg: 'from-red-400 to-pink-500', title: 'No likes yet', desc: "When someone likes your posts, you'll see it here" },
+        comments: { icon: <MessageCircle className="h-8 w-8 text-white" />, bg: 'from-blue-400 to-blue-600', title: 'No comments yet', desc: "When someone comments, you'll see it here" },
+        follows: { icon: <UserPlus className="h-8 w-8 text-white" />, bg: 'from-purple-400 to-violet-600', title: 'No new followers', desc: "When someone follows you, you'll see it here" },
+        all: { icon: <Sparkles className="h-8 w-8 text-white" />, bg: 'from-primary/80 to-primary', title: "You're all caught up!", desc: "When you get notifications, they'll show up here" },
+    };
+    const emptyConfig = configs[filter] || configs.all;
+
+    return (
+        <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+            <div className={cn("h-16 w-16 rounded-2xl bg-gradient-to-br flex items-center justify-center mb-5 shadow-lg", emptyConfig.bg)}>
+                {emptyConfig.icon}
+            </div>
+            <h3 className="text-lg font-bold mb-1.5">{emptyConfig.title}</h3>
+            <p className="text-sm text-muted-foreground max-w-xs">{emptyConfig.desc}</p>
+        </div>
+    );
+}
+
+// Map database notification types to UI types
+const mapNotificationType = (dbType: string): NotificationType['type'] => {
+    const typeMap: Record<string, NotificationType['type']> = {
+        'new_like': 'like',
+        'new_comment': 'comment',
+        'new_repost': 'repost',
+        'follow_request': 'follow',
+        'new_follower': 'follow',
+        'collaboration_request': 'collaboration_request'
+    };
+    return typeMap[dbType] || 'follow';
+};
 
 // Main Notifications Page Component
 export default function NotificationsPage() {
@@ -324,6 +273,9 @@ export default function NotificationsPage() {
     const [filter, setFilter] = React.useState<NotificationFilter>('all');
     const [isLoading, setIsLoading] = React.useState(true);
     const [showSettings, setShowSettings] = React.useState(false);
+    const [hasMore, setHasMore] = React.useState(true);
+    const [isLoadingMore, setIsLoadingMore] = React.useState(false);
+    const PAGE_SIZE = 30;
 
     // Fetch notifications from database
     React.useEffect(() => {
@@ -332,7 +284,7 @@ export default function NotificationsPage() {
             const supabase = (await import('@/lib/supabase/client')).createClient();
 
             const { data, error } = await supabase.rpc('get_user_notifications', {
-                p_limit: 100,
+                p_limit: PAGE_SIZE,
                 p_offset: 0
             });
 
@@ -348,7 +300,6 @@ export default function NotificationsPage() {
             }
 
             if (data) {
-                console.log('Fetched notifications:', data.length);
                 // Transform database notifications to UI format
                 let transformedNotifications: NotificationType[] = data.map((n: any) => ({
                     id: n.id.toString(),
@@ -396,6 +347,7 @@ export default function NotificationsPage() {
                 }
 
                 setNotifications(transformedNotifications);
+                setHasMore(transformedNotifications.length >= PAGE_SIZE);
             }
             setIsLoading(false);
         };
@@ -410,7 +362,6 @@ export default function NotificationsPage() {
             const { data: { user } } = await supabase.auth.getUser();
 
             if (!user) {
-                console.log('No user found for realtime subscription');
                 return null;
             }
 
@@ -421,8 +372,7 @@ export default function NotificationsPage() {
                     schema: 'public',
                     table: 'notifications',
                     filter: `user_id=eq.${user.id}`
-                }, (payload) => {
-                    console.log('Notification change detected:', payload);
+                }, () => {
                     // Refresh notifications when any change occurs
                     fetchNotifications();
                 })
@@ -443,19 +393,6 @@ export default function NotificationsPage() {
             }
         };
     }, [toast]);
-
-    // Helper function to map database notification types to UI types
-    const mapNotificationType = (dbType: string): NotificationType['type'] => {
-        const typeMap: Record<string, NotificationType['type']> = {
-            'new_like': 'like',
-            'new_comment': 'comment',
-            'new_repost': 'repost',
-            'follow_request': 'follow',
-            'new_follower': 'follow',
-            'collaboration_request': 'collaboration_request'
-        };
-        return typeMap[dbType] || 'follow'; // Default fallback
-    };
 
     // Filter notifications
     const filteredNotifications = React.useMemo(() => {
@@ -486,6 +423,68 @@ export default function NotificationsPage() {
         notifications.filter(n => !n.read).length,
         [notifications]
     );
+
+    // Filter count per category for badges
+    const filterCounts = React.useMemo(() => ({
+        mentions: notifications.filter(n => n.type === 'mention' && !n.read).length,
+        likes: notifications.filter(n => n.type === 'like' && !n.read).length,
+        comments: notifications.filter(n => n.type === 'comment' && !n.read).length,
+        follows: notifications.filter(n => n.type === 'follow' && !n.read).length,
+    }), [notifications]);
+
+    // Group filtered notifications by time
+    const groupedNotifications = React.useMemo(() => {
+        const groups: { label: string; items: NotificationType[] }[] = [];
+        const groupMap = new Map<string, NotificationType[]>();
+
+        for (const n of filteredNotifications) {
+            const group = getTimeGroup(n.createdAt);
+            if (!groupMap.has(group)) groupMap.set(group, []);
+            groupMap.get(group)!.push(n);
+        }
+
+        const order = ['Today', 'Yesterday', 'This Week', 'Earlier'];
+        for (const label of order) {
+            const items = groupMap.get(label);
+            if (items && items.length > 0) groups.push({ label, items });
+        }
+        return groups;
+    }, [filteredNotifications]);
+
+    // Load more handler
+    const handleLoadMore = React.useCallback(async () => {
+        setIsLoadingMore(true);
+        const supabase = (await import('@/lib/supabase/client')).createClient();
+        const { data, error } = await supabase.rpc('get_user_notifications', {
+            p_limit: PAGE_SIZE,
+            p_offset: notifications.length
+        });
+
+        if (!error && data) {
+            const newNotifs: NotificationType[] = data.map((n: any) => ({
+                id: n.id.toString(),
+                type: mapNotificationType(n.type),
+                fromUser: {
+                    id: n.actor_id,
+                    name: n.actor_name || 'Unknown User',
+                    username: n.actor_username || 'unknown',
+                    avatar: n.actor_avatar_url || '/placeholder-user.jpg',
+                    verified: n.actor_verified || false
+                },
+                postId: n.entity_id?.toString(),
+                commentId: undefined,
+                text: undefined,
+                createdAt: n.created_at,
+                read: n.is_read,
+                postContent: n.post_content,
+                postMediaType: n.post_media_type as any,
+                postAuthorUsername: n.post_author_username
+            }));
+            setNotifications(prev => [...prev, ...newNotifs]);
+            setHasMore(newNotifs.length >= PAGE_SIZE);
+        }
+        setIsLoadingMore(false);
+    }, [notifications.length]);
 
     // Memoized handlers for better performance
     const handleMarkAsRead = React.useCallback(async (id: string) => {
@@ -528,7 +527,7 @@ export default function NotificationsPage() {
         }
 
         toast({
-            title: "✓ All marked as read",
+            title: "All marked as read",
         });
     }, [toast]);
 
@@ -548,7 +547,7 @@ export default function NotificationsPage() {
         }
 
         toast({
-            title: "✗ Notification deleted",
+            title: "Notification deleted",
             variant: 'destructive'
         });
     }, [toast]);
@@ -585,7 +584,7 @@ export default function NotificationsPage() {
             });
         } else {
             toast({
-                title: "✓ Collaboration accepted!",
+                title: "Collaboration accepted",
                 description: "You are now a collaborator on the post."
             });
             // Mark notification as read
@@ -625,7 +624,7 @@ export default function NotificationsPage() {
             });
         } else {
             toast({
-                title: "✗ Collaboration declined.",
+                title: "Collaboration declined",
                 variant: 'destructive'
             });
             // Mark notification as read
@@ -652,132 +651,91 @@ export default function NotificationsPage() {
         }
 
         toast({
-            title: "✓ All notifications cleared",
+            title: "All notifications cleared",
             description: "Your notification inbox is now empty"
         });
     }, [toast]);
 
+    const filterTabClassName = "rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-sm px-3 sm:px-4 py-3 font-medium whitespace-nowrap gap-1.5";
+
     return (
         <div className="flex flex-col min-h-screen w-full bg-background">
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b">
-                <div className="flex items-center justify-between py-4 px-4 sm:px-6">
+            <div className="sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+                <div className="flex items-center justify-between py-3 px-4 sm:px-6">
                     <div className="flex items-center gap-3 min-w-0">
-                        <Bell className="h-6 w-6 text-primary" />
-                        <h1 className="text-2xl font-bold">Notifications</h1>
+                        <SidebarTrigger className="md:hidden" />
+                        <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary/80 to-primary flex items-center justify-center">
+                            <Bell className="h-4 w-4 text-primary-foreground" />
+                        </div>
+                        <h1 className="text-lg font-bold">Notifications</h1>
                         {unreadCount > 0 && (
-                            <Badge variant="default" className="rounded-full px-2 py-0.5">
+                            <Badge variant="default" className="rounded-full px-2 py-0 text-[11px] h-5 min-w-[20px] flex items-center justify-center">
                                 {unreadCount}
                             </Badge>
                         )}
                     </div>
-
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-1 flex-shrink-0">
                         {unreadCount > 0 && !isLoading && (
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={handleMarkAllAsRead}
-                                className="hidden md:flex items-center gap-2 hover:bg-primary/10"
-                                aria-label="Mark all notifications as read"
-                            >
-                                <CheckCheck className="h-4 w-4" aria-hidden="true" />
-                                <span className="text-sm font-medium">Mark all read</span>
+                            <Button variant="ghost" size="sm" onClick={handleMarkAllAsRead} className="h-8 text-xs hover:bg-primary/10 rounded-full px-3">
+                                <CheckCheck className="h-3.5 w-3.5 mr-1.5" />
+                                <span className="hidden sm:inline">Mark all read</span>
+                                <span className="sm:hidden">Read all</span>
                             </Button>
                         )}
-                        {unreadCount > 0 && !isLoading && (
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={handleMarkAllAsRead}
-                                className="md:hidden hover:bg-primary/10"
-                                aria-label="Mark all notifications as read"
-                            >
-                                <CheckCheck className="h-5 w-5" aria-hidden="true" />
-                            </Button>
-                        )}
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setShowSettings(!showSettings)}
-                            className="hover:bg-muted"
-                            aria-label={showSettings ? "Hide settings" : "Show settings"}
-                            aria-expanded={showSettings}
-                        >
-                            <Settings className="h-5 w-5" aria-hidden="true" />
+                        <Button variant="ghost" size="icon" onClick={() => setShowSettings(!showSettings)} className="h-8 w-8 hover:bg-muted rounded-full" aria-expanded={showSettings}>
+                            <Settings className="h-4 w-4" />
                         </Button>
                     </div>
                 </div>
 
-                {/* Filter Tabs */}
+                {/* Filter Tabs with unread counts */}
                 <Tabs value={filter} onValueChange={(v) => setFilter(v as NotificationFilter)} className="w-full">
                     <TabsList className="w-full justify-start rounded-none border-b-0 bg-transparent h-auto p-0 overflow-x-auto flex-nowrap">
-                        <TabsTrigger
-                            value="all"
-                            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-sm px-4 py-3 font-medium whitespace-nowrap"
-                        >
-                            All
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="mentions"
-                            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-sm px-4 py-3 font-medium whitespace-nowrap"
-                        >
-                            <AtSign className="h-4 w-4 mr-2" aria-hidden="true" />
+                        <TabsTrigger value="all" className={filterTabClassName}>All</TabsTrigger>
+                        <TabsTrigger value="mentions" className={filterTabClassName}>
+                            <AtSign className="h-3.5 w-3.5" />
                             Mentions
+                            {filterCounts.mentions > 0 && <Badge variant="secondary" className="h-4 px-1 text-[10px] rounded-full ml-0.5">{filterCounts.mentions}</Badge>}
                         </TabsTrigger>
-                        <TabsTrigger
-                            value="likes"
-                            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-sm px-4 py-3 font-medium whitespace-nowrap"
-                        >
-                            <Heart className="h-4 w-4 mr-2" aria-hidden="true" />
+                        <TabsTrigger value="likes" className={filterTabClassName}>
+                            <Heart className="h-3.5 w-3.5" />
                             Likes
+                            {filterCounts.likes > 0 && <Badge variant="secondary" className="h-4 px-1 text-[10px] rounded-full ml-0.5">{filterCounts.likes}</Badge>}
                         </TabsTrigger>
-                        <TabsTrigger
-                            value="comments"
-                            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-sm px-4 py-3 font-medium whitespace-nowrap"
-                        >
-                            <MessageCircle className="h-4 w-4 mr-2" aria-hidden="true" />
+                        <TabsTrigger value="comments" className={filterTabClassName}>
+                            <MessageCircle className="h-3.5 w-3.5" />
                             Comments
+                            {filterCounts.comments > 0 && <Badge variant="secondary" className="h-4 px-1 text-[10px] rounded-full ml-0.5">{filterCounts.comments}</Badge>}
                         </TabsTrigger>
-                        <TabsTrigger
-                            value="follows"
-                            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-sm px-4 py-3 font-medium whitespace-nowrap"
-                        >
-                            <UserPlus className="h-4 w-4 mr-2" aria-hidden="true" />
+                        <TabsTrigger value="follows" className={filterTabClassName}>
+                            <UserPlus className="h-3.5 w-3.5" />
                             Follows
+                            {filterCounts.follows > 0 && <Badge variant="secondary" className="h-4 px-1 text-[10px] rounded-full ml-0.5">{filterCounts.follows}</Badge>}
                         </TabsTrigger>
                     </TabsList>
                 </Tabs>
 
-                {/* Settings Panel (expandable) */}
+                {/* Settings Panel */}
                 {showSettings && (
-                    <div className="border-t py-3 px-4 sm:px-6 bg-muted/30 space-y-3">
-                        <div className="flex items-center justify-between gap-2">
-                            {/* Push Notification Manager */}
-                            <div className="flex items-center gap-2 min-w-0">
-                                <Bell className="h-4 w-4 flex-shrink-0 text-muted-foreground" aria-hidden="true" />
-                                <span className="text-sm font-medium">Push notifications</span>
+                    <div className="border-t py-3 px-4 sm:px-6 bg-muted/20 space-y-2.5">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Bell className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-sm">Push notifications</span>
                             </div>
                             <PushNotificationManager />
                         </div>
-                        <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2 min-w-0">
-                                <BellOff className="h-4 w-4 flex-shrink-0 text-muted-foreground" aria-hidden="true" />
-                                <span className="text-sm font-medium">Pause all notifications</span>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <BellOff className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-sm">Pause notifications</span>
                             </div>
-                            <Button variant="outline" size="sm" aria-label="Pause all notifications">
-                                Pause
-                            </Button>
+                            <Button variant="outline" size="sm" className="h-7 text-xs rounded-full">Pause</Button>
                         </div>
                         {notifications.length > 0 && (
-                            <Button
-                                variant="destructive"
-                                size="sm"
-                                className="w-full"
-                                onClick={handleClearAll}
-                                aria-label="Clear all notifications permanently"
-                            >
-                                <Trash2 className="h-4 w-4 mr-2" aria-hidden="true" />
+                            <Button variant="destructive" size="sm" className="w-full h-8 text-xs rounded-lg" onClick={handleClearAll}>
+                                <Trash2 className="h-3.5 w-3.5 mr-1.5" />
                                 Clear all notifications
                             </Button>
                         )}
@@ -788,39 +746,49 @@ export default function NotificationsPage() {
             {/* Notifications List */}
             <div className="flex-grow overflow-y-auto">
                 {isLoading ? (
-                    // Loading state
-                    <>
-                        <NotificationSkeleton />
-                        <NotificationSkeleton />
-                        <NotificationSkeleton />
-                        <NotificationSkeleton />
-                    </>
+                    <div className="py-2">
+                        {Array.from({ length: 6 }).map((_, i) => <NotificationSkeleton key={i} />)}
+                    </div>
                 ) : filteredNotifications.length === 0 ? (
-                    // Empty state
                     <EmptyState filter={filter} />
                 ) : (
-                    // Notifications list
                     <div role="feed" aria-label="Notifications">
-                        {filteredNotifications.map(notification => (
-                            <NotificationItem
-                                key={notification.id}
-                                notification={notification}
-                                onMarkAsRead={handleMarkAsRead}
-                                onDelete={handleDelete}
-                                onAccept={handleAcceptCollaboration}
-                                onDecline={handleDeclineCollaboration}
-                            />
+                        {groupedNotifications.map(group => (
+                            <div key={group.label}>
+                                <TimeSectionHeader label={group.label} />
+                                {group.items.map(notification => (
+                                    <NotificationItem
+                                        key={notification.id}
+                                        notification={notification}
+                                        onMarkAsRead={handleMarkAsRead}
+                                        onDelete={handleDelete}
+                                        onAccept={handleAcceptCollaboration}
+                                        onDecline={handleDeclineCollaboration}
+                                    />
+                                ))}
+                            </div>
                         ))}
 
-                        {/* Load more button (for pagination) */}
-                        {filteredNotifications.length >= 20 && (
-                            <div className="py-3 px-3 sm:px-4 text-center border-b">
+                        {/* Load more */}
+                        {hasMore && (
+                            <div className="py-4 px-4 text-center">
                                 <Button
                                     variant="outline"
-                                    className="w-full"
-                                    aria-label="Load more notifications"
+                                    className="rounded-full px-6"
+                                    onClick={handleLoadMore}
+                                    disabled={isLoadingMore}
                                 >
-                                    Load more notifications
+                                    {isLoadingMore ? (
+                                        <span className="flex items-center gap-2">
+                                            <span className="h-3.5 w-3.5 border-2 border-current border-r-transparent rounded-full animate-spin" />
+                                            Loading...
+                                        </span>
+                                    ) : (
+                                        <span className="flex items-center gap-1.5">
+                                            <ChevronDown className="h-3.5 w-3.5" />
+                                            Load more
+                                        </span>
+                                    )}
                                 </Button>
                             </div>
                         )}

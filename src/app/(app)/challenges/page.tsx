@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Flame, Check, Plus } from 'lucide-react';
+import { Flame, Check, Trophy } from 'lucide-react';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 
 interface Challenge {
     id: number;
@@ -74,37 +75,50 @@ export default function ChallengesPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-4xl py-8">
-        <div className="text-center mb-10">
-            <h1 className="text-4xl font-bold tracking-tight">Community Challenges</h1>
-            <p className="text-lg text-muted-foreground mt-2">Join our community in fun and inspiring challenges!</p>
-        </div>
+    <div className="flex flex-col h-full">
+        <header className="sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+            <div className="flex items-center gap-4 p-4">
+                <SidebarTrigger className="md:hidden" />
+                <div className="flex items-center gap-2">
+                    <Trophy className="h-5 w-5 text-primary" />
+                    <h1 className="text-xl font-bold">Challenges</h1>
+                </div>
+            </div>
+        </header>
+
+        <div className="flex-1 overflow-auto p-4 md:p-6 max-w-4xl mx-auto w-full">
 
         {loading ? (
-            <div className="text-center">Loading challenges...</div>
+            <div className="text-center py-12">Loading challenges...</div>
         ) : (
             <>
                 {/* Active Challenges */}
                 <div>
-                    <h2 className="text-2xl font-bold mb-4 flex items-center"><Flame className="mr-2 text-primary"/> Active Challenges</h2>
+                    <h2 className="text-lg font-bold mb-4 flex items-center"><Flame className="mr-2 text-primary"/> Active Challenges</h2>
                     <div className="space-y-4">
                         {activeChallenges.map(challenge => (
                             <ChallengeCard key={challenge.id} challenge={challenge} onToggleJoin={toggleJoinChallenge} />
                         ))}
+                        {activeChallenges.length === 0 && (
+                            <p className="text-muted-foreground text-sm py-4">No active challenges right now.</p>
+                        )}
                     </div>
                 </div>
 
                 {/* Completed Challenges */}
-                <div className="mt-12">
-                    <h2 className="text-2xl font-bold mb-4"><Check className="mr-2"/> Completed Challenges</h2>
-                    <div className="space-y-4">
-                         {completedChallenges.map(challenge => (
-                            <ChallengeCard key={challenge.id} challenge={challenge} onToggleJoin={toggleJoinChallenge} />
-                        ))}
+                {completedChallenges.length > 0 && (
+                    <div className="mt-12">
+                        <h2 className="text-lg font-bold mb-4 flex items-center"><Check className="mr-2 text-green-500"/> Completed Challenges</h2>
+                        <div className="space-y-4">
+                             {completedChallenges.map(challenge => (
+                                <ChallengeCard key={challenge.id} challenge={challenge} onToggleJoin={toggleJoinChallenge} />
+                            ))}
+                        </div>
                     </div>
-                </div>
+                )}
             </>
         )}
+        </div>
     </div>
   );
 }

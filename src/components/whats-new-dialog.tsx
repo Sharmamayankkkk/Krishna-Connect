@@ -3,10 +3,9 @@
 import * as React from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Sparkles, MessageCircle, Heart } from 'lucide-react';
-import { RichTextRenderer } from './rich-text-renderer';
+import { Sparkles, Phone, Bookmark, Compass, MessageCircle, Video, LayoutGrid } from 'lucide-react';
 
-const CURRENT_VERSION = 'update-v2-spiritual-words';
+const CURRENT_VERSION = 'update-v2.0-calls-bookmarks-explore';
 
 export function WhatsNewDialog() {
     const [isOpen, setIsOpen] = React.useState(false);
@@ -31,46 +30,82 @@ export function WhatsNewDialog() {
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-xl">
                         <Sparkles className="h-5 w-5 text-yellow-500" />
-                        Hare Krishna! What's New?
+                        Hare Krishna! What's New in v2.0?
                     </DialogTitle>
                     <DialogDescription>
-                        We've added some spiritual enhancements to improve your experience.
+                        A major update with calling, bookmarks, and a redesigned experience.
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="space-y-4 py-4">
+                <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
                     <div className="flex items-start gap-4">
-                        <div className="mt-1 bg-blue-100 p-2 rounded-full">
-                            <Heart className="h-5 w-5 text-blue-600" />
+                        <div className="mt-1 bg-green-100 dark:bg-green-900/30 p-2 rounded-full shrink-0">
+                            <Phone className="h-5 w-5 text-green-600 dark:text-green-400" />
                         </div>
                         <div className="space-y-1">
-                            <h4 className="font-semibold">Expanded Sacred Vocabulary</h4>
+                            <h4 className="font-semibold">Voice & Video Calls</h4>
                             <p className="text-sm text-muted-foreground">
-                                We have significantly expanded our spiritual vocabulary. Words such as <RichTextRenderer content="Radhe Radhe" className="inline" /> and many more now appear with exalted spiritual highlighting.
+                                Call any devotee with WebRTC-powered voice and video calls. Includes screen sharing, mute controls, and call history.
                             </p>
                         </div>
                     </div>
 
                     <div className="flex items-start gap-4">
-                        <div className="mt-1 bg-green-100 p-2 rounded-full">
-                            <MessageCircle className="h-5 w-5 text-green-600" />
+                        <div className="mt-1 bg-amber-100 dark:bg-amber-900/30 p-2 rounded-full shrink-0">
+                            <Bookmark className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                         </div>
                         <div className="space-y-1">
-                            <h4 className="font-semibold">Reply to Comments</h4>
+                            <h4 className="font-semibold">Bookmark Collections</h4>
                             <p className="text-sm text-muted-foreground">
-                                You can now reply directly to specific comments to keep conversations organized.
+                                Save posts to organized collections. Create custom collections, move bookmarks between them, and find saved content easily.
                             </p>
                         </div>
                     </div>
 
                     <div className="flex items-start gap-4">
-                        <div className="mt-1 bg-purple-100 p-2 rounded-full">
-                            <Sparkles className="h-5 w-5 text-purple-600" />
+                        <div className="mt-1 bg-purple-100 dark:bg-purple-900/30 p-2 rounded-full shrink-0">
+                            <Compass className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                         </div>
                         <div className="space-y-1">
-                            <h4 className="font-semibold">New Layout & Design</h4>
+                            <h4 className="font-semibold">Redesigned Explore Page</h4>
                             <p className="text-sm text-muted-foreground">
-                                Enjoy a spacious 3-column layout on desktop and a more polished experience on mobile.
+                                Instagram-style media grid with image and video thumbnails, category filters, trending hashtag pills, and suggested devotees.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-start gap-4">
+                        <div className="mt-1 bg-blue-100 dark:bg-blue-900/30 p-2 rounded-full shrink-0">
+                            <MessageCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div className="space-y-1">
+                            <h4 className="font-semibold">Enhanced Chat Experience</h4>
+                            <p className="text-sm text-muted-foreground">
+                                Redesigned chat page with quick access contacts, message previews, timestamps, and unread indicators.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-start gap-4">
+                        <div className="mt-1 bg-rose-100 dark:bg-rose-900/30 p-2 rounded-full shrink-0">
+                            <Video className="h-5 w-5 text-rose-600 dark:text-rose-400" />
+                        </div>
+                        <div className="space-y-1">
+                            <h4 className="font-semibold">Improved Post Detail View</h4>
+                            <p className="text-sm text-muted-foreground">
+                                Twitter-style threaded comments with engagement stats, quoted posts as threads, and a polished reply experience.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-start gap-4">
+                        <div className="mt-1 bg-indigo-100 dark:bg-indigo-900/30 p-2 rounded-full shrink-0">
+                            <LayoutGrid className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                        </div>
+                        <div className="space-y-1">
+                            <h4 className="font-semibold">Profile Reposts Tab</h4>
+                            <p className="text-sm text-muted-foreground">
+                                See all posts a user has reposted in a dedicated tab on their profile page.
                             </p>
                         </div>
                     </div>
@@ -78,7 +113,7 @@ export function WhatsNewDialog() {
 
                 <DialogFooter>
                     <Button onClick={handleClose} className="w-full bg-primary hover:bg-primary/90">
-                        Jay Sri Krishna!
+                        Jay Sri Krishna
                     </Button>
                 </DialogFooter>
             </DialogContent>

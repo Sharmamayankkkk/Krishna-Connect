@@ -67,6 +67,10 @@
   /* The problematic universal selector has been removed. */
   body {
     @apply bg-background text-foreground overflow-x-hidden;
+    /* iOS Safari: prevent text size adjustment on orientation change */
+    -webkit-text-size-adjust: 100%;
+    /* Remove tap highlight on mobile Safari/Chrome */
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
@@ -99,6 +103,12 @@
     mask-image: linear-gradient(to right, black 85%, transparent 100%);
     -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
   }
+
+  /* Cross-browser backdrop-blur fallback utility */
+  .backdrop-blur-compat {
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
 }
 
 /* Accessibility: Respect user's motion preferences */
@@ -116,12 +126,24 @@
 /* Smooth theme transitions */
 html {
   transition: background-color 0.2s ease, color 0.2s ease;
+  /* iOS Safari: prevent overscroll bounce showing white background */
+  overscroll-behavior: none;
 }
 
 /* Better focus visibility for keyboard users */
 :focus-visible {
   outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;
+}
+
+/* iOS Safari: safe area inset support for notched devices */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .mb-safe {
+    margin-bottom: env(safe-area-inset-bottom);
+  }
 }
 
 /* Custom Scrollbar Styles */
@@ -165,4 +187,10 @@ html {
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
   border-width: 1px;
+}
+
+/* Shimmer animation for skeleton loaders */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
