@@ -450,7 +450,7 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-lg p-0 gap-0 overflow-hidden bg-black border-none sm:rounded-2xl">
+      <DialogContent hideClose className="max-w-[100vw] sm:max-w-lg w-full h-[100dvh] sm:h-auto p-0 gap-0 overflow-hidden bg-black border-none rounded-none sm:rounded-2xl">
         <DialogTitle className="sr-only">Create Story</DialogTitle>
         <DialogDescription className="sr-only">Create a new story to share with your followers</DialogDescription>
 
@@ -482,7 +482,7 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
         {/* Content */}
         <div
           ref={containerRef}
-          className="relative aspect-[9/16] max-h-[70vh] bg-neutral-950"
+          className="relative aspect-[9/16] max-h-[calc(100dvh-100px)] sm:max-h-[70vh] bg-neutral-950"
           onMouseMove={handleContainerMouseMove}
           onMouseUp={handleContainerMouseUp}
         >
@@ -601,49 +601,49 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
               </div>
 
               {/* Side tools */}
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-40">
+              <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 flex flex-col gap-1.5 sm:gap-2 z-40">
                 <button
                   onClick={() => setActiveTool(activeTool === 'sticker' ? 'none' : 'sticker')}
-                  className={`w-10 h-10 rounded-full backdrop-blur-sm flex items-center justify-center text-white border transition-colors ${activeTool === 'sticker' ? 'bg-primary border-primary' : 'bg-black/40 border-white/10 hover:bg-white/10'}`}
+                  className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full backdrop-blur-sm flex items-center justify-center text-white border transition-colors ${activeTool === 'sticker' ? 'bg-primary border-primary' : 'bg-black/40 border-white/10 hover:bg-white/10'}`}
                 >
-                  <StickerIcon className="h-4 w-4" />
+                  <StickerIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </button>
                 <button
                   onClick={() => { setActiveTool(activeTool === 'draw' ? 'none' : 'draw'); setIsEraser(false); }}
-                  className={`w-10 h-10 rounded-full backdrop-blur-sm flex items-center justify-center text-white border transition-colors ${activeTool === 'draw' ? 'bg-primary border-primary' : 'bg-black/40 border-white/10 hover:bg-white/10'}`}
+                  className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full backdrop-blur-sm flex items-center justify-center text-white border transition-colors ${activeTool === 'draw' ? 'bg-primary border-primary' : 'bg-black/40 border-white/10 hover:bg-white/10'}`}
                 >
-                  <Pencil className="h-4 w-4" />
+                  <Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </button>
                 <button
                   onClick={addTextBlock}
-                  className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white border border-white/10 hover:bg-white/10 transition-colors"
+                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white border border-white/10 hover:bg-white/10 transition-colors"
                 >
-                  <Type className="h-4 w-4" />
+                  <Type className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </button>
               </div>
 
               {/* Drawing toolbar */}
               {activeTool === 'draw' && (
-                <div className="absolute top-14 left-0 right-0 flex items-center justify-center gap-2 z-40 px-4">
-                  <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md rounded-full px-3 py-1.5">
-                    {TEXT_COLORS.slice(0, 8).map(c => (
-                      <button key={c} onClick={() => { setDrawColor(c); setIsEraser(false); }} className="w-5 h-5 rounded-full border-2 transition-transform" style={{ backgroundColor: c, borderColor: drawColor === c && !isEraser ? 'white' : 'transparent', transform: drawColor === c && !isEraser ? 'scale(1.3)' : 'scale(1)' }} />
+                <div className="absolute top-14 left-0 right-0 flex items-center justify-center z-40 px-2 sm:px-4">
+                  <div className="flex items-center gap-1 sm:gap-1.5 bg-black/60 backdrop-blur-md rounded-full px-2 sm:px-3 py-1.5 max-w-full overflow-x-auto scrollbar-hide">
+                    {TEXT_COLORS.slice(0, 6).map(c => (
+                      <button key={c} onClick={() => { setDrawColor(c); setIsEraser(false); }} className="w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 transition-transform shrink-0" style={{ backgroundColor: c, borderColor: drawColor === c && !isEraser ? 'white' : 'transparent', transform: drawColor === c && !isEraser ? 'scale(1.3)' : 'scale(1)' }} />
                     ))}
-                    <div className="w-px h-5 bg-white/20 mx-1" />
+                    <div className="w-px h-4 sm:h-5 bg-white/20 mx-0.5 sm:mx-1 shrink-0" />
                     {BRUSH_SIZES.map((_, i) => (
-                      <button key={i} onClick={() => setBrushSize(i)} className={`rounded-full border-2 transition-all ${brushSize === i ? 'border-white' : 'border-white/30'}`}>
-                        <Circle className="text-white" style={{ width: 8 + i * 6, height: 8 + i * 6 }} fill={brushSize === i ? 'white' : 'transparent'} />
+                      <button key={i} onClick={() => setBrushSize(i)} className={`rounded-full border-2 transition-all shrink-0 ${brushSize === i ? 'border-white' : 'border-white/30'}`}>
+                        <Circle className="text-white" style={{ width: 8 + i * 5, height: 8 + i * 5 }} fill={brushSize === i ? 'white' : 'transparent'} />
                       </button>
                     ))}
-                    <div className="w-px h-5 bg-white/20 mx-1" />
-                    <button onClick={() => setIsEraser(!isEraser)} className={`p-1 rounded ${isEraser ? 'bg-white/20' : ''}`}>
-                      <Eraser className="h-4 w-4 text-white" />
+                    <div className="w-px h-4 sm:h-5 bg-white/20 mx-0.5 sm:mx-1 shrink-0" />
+                    <button onClick={() => setIsEraser(!isEraser)} className={`p-1 rounded shrink-0 ${isEraser ? 'bg-white/20' : ''}`}>
+                      <Eraser className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
                     </button>
-                    <button onClick={undoDraw} disabled={drawActions.length === 0} className="p-1 disabled:opacity-30">
-                      <Undo2 className="h-4 w-4 text-white" />
+                    <button onClick={undoDraw} disabled={drawActions.length === 0} className="p-1 disabled:opacity-30 shrink-0">
+                      <Undo2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
                     </button>
-                    <button onClick={redoDraw} disabled={redoStack.length === 0} className="p-1 disabled:opacity-30">
-                      <Redo2 className="h-4 w-4 text-white" />
+                    <button onClick={redoDraw} disabled={redoStack.length === 0} className="p-1 disabled:opacity-30 shrink-0">
+                      <Redo2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
                     </button>
                   </div>
                 </div>
@@ -651,29 +651,29 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
 
               {/* Sticker panel */}
               {activeTool === 'sticker' && !stickerPanel && (
-                <div className="absolute bottom-20 left-4 right-4 z-40">
-                  <div className="bg-black/80 backdrop-blur-xl rounded-2xl p-4 border border-white/10">
+                  <div className="absolute bottom-20 left-2 right-2 sm:left-4 sm:right-4 z-40">
+                  <div className="bg-black/80 backdrop-blur-xl rounded-2xl p-3 sm:p-4 border border-white/10 max-h-[40vh] overflow-y-auto">
                     <p className="text-white/60 text-xs text-center mb-3">Add to your story</p>
-                    <div className="grid grid-cols-5 gap-3">
-                      <button onClick={() => setStickerPanel('mention')} className="flex flex-col items-center gap-1.5">
-                        <div className="w-11 h-11 rounded-full bg-blue-500/20 flex items-center justify-center"><AtSign className="h-5 w-5 text-blue-400" /></div>
-                        <span className="text-white/70 text-[10px]">Mention</span>
+                    <div className="grid grid-cols-5 gap-2 sm:gap-3">
+                      <button onClick={() => setStickerPanel('mention')} className="flex flex-col items-center gap-1 sm:gap-1.5">
+                        <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-blue-500/20 flex items-center justify-center"><AtSign className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" /></div>
+                        <span className="text-white/70 text-[9px] sm:text-[10px]">Mention</span>
                       </button>
-                      <button onClick={() => setStickerPanel('hashtag')} className="flex flex-col items-center gap-1.5">
-                        <div className="w-11 h-11 rounded-full bg-purple-500/20 flex items-center justify-center"><Hash className="h-5 w-5 text-purple-400" /></div>
-                        <span className="text-white/70 text-[10px]">Hashtag</span>
+                      <button onClick={() => setStickerPanel('hashtag')} className="flex flex-col items-center gap-1 sm:gap-1.5">
+                        <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-purple-500/20 flex items-center justify-center"><Hash className="h-4 w-4 sm:h-5 sm:w-5 text-purple-400" /></div>
+                        <span className="text-white/70 text-[9px] sm:text-[10px]">Hashtag</span>
                       </button>
-                      <button onClick={() => addSticker('time', {})} className="flex flex-col items-center gap-1.5">
-                        <div className="w-11 h-11 rounded-full bg-amber-500/20 flex items-center justify-center"><Clock className="h-5 w-5 text-amber-400" /></div>
-                        <span className="text-white/70 text-[10px]">Time</span>
+                      <button onClick={() => addSticker('time', {})} className="flex flex-col items-center gap-1 sm:gap-1.5">
+                        <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-amber-500/20 flex items-center justify-center"><Clock className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400" /></div>
+                        <span className="text-white/70 text-[9px] sm:text-[10px]">Time</span>
                       </button>
-                      <button onClick={() => setStickerPanel('link')} className="flex flex-col items-center gap-1.5">
-                        <div className="w-11 h-11 rounded-full bg-green-500/20 flex items-center justify-center"><Link2 className="h-5 w-5 text-green-400" /></div>
-                        <span className="text-white/70 text-[10px]">Link</span>
+                      <button onClick={() => setStickerPanel('link')} className="flex flex-col items-center gap-1 sm:gap-1.5">
+                        <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-green-500/20 flex items-center justify-center"><Link2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-400" /></div>
+                        <span className="text-white/70 text-[9px] sm:text-[10px]">Link</span>
                       </button>
-                      <button onClick={() => setStickerPanel('countdown')} className="flex flex-col items-center gap-1.5">
-                        <div className="w-11 h-11 rounded-full bg-pink-500/20 flex items-center justify-center"><Timer className="h-5 w-5 text-pink-400" /></div>
-                        <span className="text-white/70 text-[10px]">Countdown</span>
+                      <button onClick={() => setStickerPanel('countdown')} className="flex flex-col items-center gap-1 sm:gap-1.5">
+                        <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-pink-500/20 flex items-center justify-center"><Timer className="h-4 w-4 sm:h-5 sm:w-5 text-pink-400" /></div>
+                        <span className="text-white/70 text-[9px] sm:text-[10px]">Countdown</span>
                       </button>
                     </div>
                   </div>
@@ -682,8 +682,8 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
 
               {/* Sticker input panels */}
               {stickerPanel && (
-                <div className="absolute bottom-20 left-4 right-4 z-40">
-                  <div className="bg-black/80 backdrop-blur-xl rounded-2xl p-4 border border-white/10">
+                <div className="absolute bottom-20 left-2 right-2 sm:left-4 sm:right-4 z-40">
+                  <div className="bg-black/80 backdrop-blur-xl rounded-2xl p-3 sm:p-4 border border-white/10">
                     <div className="flex items-center justify-between mb-3">
                       <button onClick={() => setStickerPanel(null)} className="text-white/60 text-sm"><ChevronLeft className="h-4 w-4 inline" /> Back</button>
                       <span className="text-white text-sm font-semibold capitalize">{stickerPanel}</span>
@@ -749,12 +749,12 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
 
               {/* Text block editing toolbar */}
               {editingBlock && (
-                <div className="absolute top-14 left-0 right-0 flex items-center justify-center gap-2 z-40 px-4">
-                  <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md rounded-full px-3 py-1.5">
+                <div className="absolute top-14 left-0 right-0 flex items-center justify-center z-40 px-2 sm:px-4">
+                  <div className="flex items-center gap-1 sm:gap-1.5 bg-black/60 backdrop-blur-md rounded-full px-2 sm:px-3 py-1.5 max-w-full overflow-x-auto scrollbar-hide">
                     {FONT_LABELS.map((label, i) => (
-                      <button key={label} onClick={() => { setBlockFont(i); updateTextBlock(editingBlock, { font: i }); }} className={`px-2 py-0.5 rounded text-xs text-white ${blockFont === i ? 'bg-white/20' : ''}`} style={{ fontFamily: FONTS[i] }}>{label}</button>
+                      <button key={label} onClick={() => { setBlockFont(i); updateTextBlock(editingBlock, { font: i }); }} className={`px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs text-white shrink-0 ${blockFont === i ? 'bg-white/20' : ''}`} style={{ fontFamily: FONTS[i] }}>{label}</button>
                     ))}
-                    <div className="w-px h-4 bg-white/20" />
+                    <div className="w-px h-4 bg-white/20 shrink-0" />
                     <button onClick={() => { const a = blockAlign === 'left' ? 'center' : blockAlign === 'center' ? 'right' : 'left'; setBlockAlign(a); updateTextBlock(editingBlock, { align: a }); }}>
                       {blockAlign === 'left' ? <AlignLeft className="h-4 w-4 text-white" /> : blockAlign === 'center' ? <AlignCenter className="h-4 w-4 text-white" /> : <AlignRight className="h-4 w-4 text-white" />}
                     </button>
@@ -783,14 +783,14 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
                 autoFocus
               />
 
-              <div className="absolute bottom-4 left-0 right-0 px-4">
-                <div className="flex items-center gap-2 justify-center mb-3">
-                  <Palette className="h-4 w-4 text-white/60" />
+              <div className="absolute bottom-4 left-0 right-0 px-3 sm:px-4">
+                <div className="flex items-center gap-1.5 sm:gap-2 justify-center mb-3 overflow-x-auto scrollbar-hide">
+                  <Palette className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white/60 shrink-0" />
                   {TEXT_COLORS.map((color) => (
-                    <button key={color} onClick={() => setTextColor(color)} className="w-6 h-6 rounded-full border-2 transition-transform hover:scale-110" style={{ backgroundColor: color, borderColor: textColor === color ? 'white' : 'rgba(255,255,255,0.3)', transform: textColor === color ? 'scale(1.2)' : 'scale(1)' }} />
+                    <button key={color} onClick={() => setTextColor(color)} className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 transition-transform hover:scale-110 shrink-0" style={{ backgroundColor: color, borderColor: textColor === color ? 'white' : 'rgba(255,255,255,0.3)', transform: textColor === color ? 'scale(1.2)' : 'scale(1)' }} />
                   ))}
                 </div>
-                <div className="flex gap-2 justify-center flex-wrap">
+                <div className="flex gap-1.5 sm:gap-2 justify-center flex-wrap">
                   {BG_GRADIENTS.map((grad) => (
                     <button key={grad} onClick={() => setBgGradient(grad)} className={`w-8 h-8 rounded-lg bg-gradient-to-br ${grad} border-2 transition-transform hover:scale-110 ${bgGradient === grad ? 'border-white scale-110' : 'border-white/30'}`} />
                   ))}

@@ -495,16 +495,17 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-[100vw] max-h-[100vh] sm:max-w-md w-full h-full sm:h-auto sm:aspect-[9/16] sm:max-h-[90vh] bg-black border-none p-0 overflow-hidden flex flex-col data-[state=open]:!animate-none data-[state=closed]:!animate-none rounded-none sm:rounded-2xl"
+        hideClose
+        className="max-w-[100vw] max-h-[100dvh] sm:max-w-md w-full h-[100dvh] sm:h-auto sm:aspect-[9/16] sm:max-h-[90vh] bg-black border-none p-0 overflow-hidden flex flex-col data-[state=open]:!animate-none data-[state=closed]:!animate-none rounded-none sm:rounded-2xl"
         style={{ transform: touchDeltaY > 0 ? `translateY(${touchDeltaY}px) scale(${1 - touchDeltaY / 1000})` : undefined, opacity: touchDeltaY > 0 ? 1 - touchDeltaY / 400 : 1, transition: touchDeltaY === 0 ? 'transform 0.2s, opacity 0.2s' : 'none' }}
       >
         <DialogTitle className="sr-only">Story from {statusUpdate.name}</DialogTitle>
         <DialogDescription className="sr-only">Viewing story. Swipe down to close.</DialogDescription>
 
         {/* Top gradient + progress + header */}
-        <div className="absolute top-0 left-0 right-0 p-3 z-20 bg-gradient-to-b from-black/60 via-black/30 to-transparent">
+        <div className="absolute top-0 left-0 right-0 p-2 sm:p-3 z-20 bg-gradient-to-b from-black/60 via-black/30 to-transparent">
           {/* Progress bars */}
-          <div className="flex items-center gap-0.5 mb-3">
+          <div className="flex items-center gap-0.5 mb-2 sm:mb-3">
             {statusUpdate.statuses.map((_, index) => (
               <div key={index} className="flex-1 h-[2px] rounded-full overflow-hidden bg-white/25">
                 <div className="h-full bg-white rounded-full" style={{ width: `${index < currentStoryIndex ? 100 : index === currentStoryIndex ? Math.min(progress, 100) : 0}%`, transition: index === currentStoryIndex ? 'width 100ms linear' : 'none' }} />
@@ -514,33 +515,33 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
 
           {/* User info + actions */}
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <Avatar className={`h-8 w-8 ring-2 ${isCloseFriend ? 'ring-green-500' : 'ring-white/20'}`}>
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <Avatar className={`h-7 w-7 sm:h-8 sm:w-8 ring-2 shrink-0 ${isCloseFriend ? 'ring-green-500' : 'ring-white/20'}`}>
                 <AvatarImage src={statusUpdate.avatar_url} />
-                <AvatarFallback className="text-xs">{statusUpdate.name?.charAt(0) || '?'}</AvatarFallback>
+                <AvatarFallback className="text-[10px] sm:text-xs">{statusUpdate.name?.charAt(0) || '?'}</AvatarFallback>
               </Avatar>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <p className="font-semibold text-white text-sm truncate">{statusUpdate.name}</p>
-                  {isCloseFriend && <span className="text-[10px] bg-green-500 text-white px-1.5 py-0.5 rounded-full font-medium">Close Friend</span>}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1 sm:gap-1.5">
+                  <p className="font-semibold text-white text-xs sm:text-sm truncate">{statusUpdate.name}</p>
+                  {isCloseFriend && <span className="text-[8px] sm:text-[10px] bg-green-500 text-white px-1 sm:px-1.5 py-0.5 rounded-full font-medium shrink-0">Close Friend</span>}
                 </div>
-                <p className="text-[10px] text-white/60">{formatDistanceToNow(new Date(currentStatus.created_at), { addSuffix: true })}</p>
+                <p className="text-[9px] sm:text-[10px] text-white/60">{formatDistanceToNow(new Date(currentStatus.created_at), { addSuffix: true })}</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-0.5">
+            <div className="flex items-center gap-0 shrink-0">
               {isVideo && (
-                <button onClick={toggleMute} className="text-white p-2 hover:bg-white/10 rounded-full transition-colors">
-                  {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+                <button onClick={toggleMute} className="text-white p-1.5 sm:p-2 hover:bg-white/10 rounded-full transition-colors">
+                  {isMuted ? <VolumeX className="h-4 w-4 sm:h-5 sm:w-5" /> : <Volume2 className="h-4 w-4 sm:h-5 sm:w-5" />}
                 </button>
               )}
-              <button onClick={handlePausePlay} className="text-white p-2 hover:bg-white/10 rounded-full transition-colors">
-                {isPaused ? <Play className="h-5 w-5" /> : <Pause className="h-5 w-5" />}
+              <button onClick={handlePausePlay} className="text-white p-1.5 sm:p-2 hover:bg-white/10 rounded-full transition-colors">
+                {isPaused ? <Play className="h-4 w-4 sm:h-5 sm:w-5" /> : <Pause className="h-4 w-4 sm:h-5 sm:w-5" />}
               </button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="text-white p-2 hover:bg-white/10 rounded-full transition-colors">
-                    <MoreHorizontal className="h-5 w-5" />
+                  <button className="text-white p-1.5 sm:p-2 hover:bg-white/10 rounded-full transition-colors">
+                    <MoreHorizontal className="h-4 w-4 sm:h-5 sm:w-5" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="min-w-[160px]">
@@ -560,8 +561,8 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
-              <button onClick={() => onOpenChange(false)} className="text-white p-2 hover:bg-white/10 rounded-full transition-colors">
-                <X className="h-5 w-5" />
+              <button onClick={() => onOpenChange(false)} className="text-white p-1.5 sm:p-2 hover:bg-white/10 rounded-full transition-colors">
+                <X className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
             </div>
           </div>
@@ -646,7 +647,7 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
         </div>
 
         {/* Bottom bar */}
-        <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/80 to-transparent px-3 py-3 pt-8">
+        <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/80 to-transparent px-2 sm:px-3 py-2 sm:py-3 pt-8" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
           {isMyStatus ? (
             /* Owner: viewers + analytics + likes */
             <div className="flex items-center justify-between">
@@ -665,12 +666,12 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
             /* Viewer: quick emojis + reply + like */
             <div className="space-y-2">
               {/* Quick emoji reactions */}
-              <div className="flex items-center justify-center gap-3">
+              <div className="flex items-center justify-center gap-2 sm:gap-3">
                 {QUICK_EMOJIS.map(emoji => (
                   <button
                     key={emoji}
                     onClick={() => handleQuickReaction(emoji)}
-                    className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 hover:scale-110 transition-all text-lg"
+                    className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 hover:scale-110 transition-all text-base sm:text-lg"
                     aria-label={`React with ${emoji}`}
                   >
                     {emoji}
@@ -678,7 +679,7 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
                 ))}
               </div>
               {/* Reply input */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 <input
                   ref={replyInputRef}
                   type="text"
@@ -688,15 +689,15 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
                   onFocus={() => setIsPaused(true)}
                   onBlur={() => { if (!replyText && !isSendingReply) setIsPaused(false); }}
                   onKeyDown={(e) => { if (e.key === 'Enter') handleSendReply(); }}
-                  className="flex-1 px-4 py-2.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm placeholder:text-white/40 outline-none focus:border-white/40 transition-colors"
+                  className="flex-1 min-w-0 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs sm:text-sm placeholder:text-white/40 outline-none focus:border-white/40 transition-colors"
                 />
                 {replyText.trim() ? (
-                  <button onClick={handleSendReply} disabled={isSendingReply} className="p-2.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
-                    <Send className="h-4 w-4" />
+                  <button onClick={handleSendReply} disabled={isSendingReply} className="p-2 sm:p-2.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shrink-0">
+                    <Send className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   </button>
                 ) : (
-                  <button onClick={handleLike} className="p-2.5 rounded-full hover:bg-white/10 transition-colors">
-                    <Heart className={`h-5 w-5 transition-all ${isLiked ? 'fill-red-500 text-red-500 scale-110' : 'text-white'}`} />
+                  <button onClick={handleLike} className="p-2 sm:p-2.5 rounded-full hover:bg-white/10 transition-colors shrink-0">
+                    <Heart className={`h-4 w-4 sm:h-5 sm:w-5 transition-all ${isLiked ? 'fill-red-500 text-red-500 scale-110' : 'text-white'}`} />
                   </button>
                 )}
               </div>
