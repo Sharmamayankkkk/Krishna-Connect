@@ -317,12 +317,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         // Create peer connection and SDP offer
         // Note: createPeerConnection stores the connection internally in the hook
         webrtc.createPeerConnection(
-          (candidate) => sendSignal(callRecord.id, userId, "ice-candidate", candidate.toJSON()),
-          async () => {
-            // Handle renegotiation
-            const offer = await webrtc.createOffer()
-            await sendSignal(callRecord.id, userId, "renegotiate", offer as unknown as Record<string, unknown>)
-          }
+          (candidate) => sendSignal(callRecord.id, userId, "ice-candidate", candidate.toJSON())
         )
 
         const offer = await webrtc.createOffer()
@@ -405,11 +400,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
       // Create peer connection
       // Note: createPeerConnection stores the connection internally in the hook
       webrtc.createPeerConnection(
-        (candidate) => sendSignal(callRecord.id, remoteUser.id, "ice-candidate", candidate.toJSON()),
-        async () => {
-          const offer = await webrtc.createOffer()
-          await sendSignal(callRecord.id, remoteUser.id, "renegotiate", offer as unknown as Record<string, unknown>)
-        }
+        (candidate) => sendSignal(callRecord.id, remoteUser.id, "ice-candidate", candidate.toJSON())
       )
 
       // Get and process the pending offer from signals
