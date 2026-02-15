@@ -67,18 +67,18 @@ Example: `a1b2c3d4/550e8400-e29b-41d4-a716-446655440000.mp4`
 
 ---
 
-### Summary of All Required Storage Buckets
+### All Storage Buckets
 
-| Bucket Name | Public | Max Size | MIME Types | Purpose |
-|------------|--------|----------|------------|---------|
-| `leela` | Yes | 50 MB | video/mp4, video/webm, video/quicktime, video/ogg | Short-form videos (Leela) |
-| `avatars` | Yes | 5 MB | image/jpeg, image/png, image/webp, image/gif | User profile pictures |
-| `posts` | Yes | 50 MB | image/*, video/* | Post media (images and videos) |
-| `statuses` | Yes | 50 MB | image/*, video/* | Story/Status media |
-| `chat` | Yes | 25 MB | image/*, video/*, application/pdf, audio/* | Chat attachments |
-| `challenges` | Yes | 10 MB | image/*, video/* | Challenge proof submissions |
+These are the **4 buckets** used by Krishna Connect:
 
-> **Note:** If any of the above buckets do not already exist, create them following the same steps as the Leela bucket above, adjusting the size limit and MIME types accordingly.
+| Bucket Name | Public | Purpose | Used By |
+|------------|--------|---------|---------|
+| `leela` | Yes | Short-form videos (Leela) | `leela/page.tsx` — upload & playback |
+| `post_media` | Yes | Post images and videos | `create-post.tsx`, `edit-post-dialog.tsx` — post media uploads |
+| `story` | Yes | Story/Status media (images & videos) | `api/status/route.ts` — story creation & deletion |
+| `attachments` | Yes | User avatars, chat files, event images, group images | `chat-input.tsx`, `create-event-dialog.tsx`, `edit-group-dialog.tsx`, user profile avatars |
+
+> **Note:** All 4 buckets should already exist on your Supabase project. If `leela` is missing, follow the setup steps above to create it.
 
 ---
 

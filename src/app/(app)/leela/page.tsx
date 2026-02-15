@@ -344,10 +344,10 @@ export default function LeelaPage() {
     try {
       const ext = file.name.split('.').pop() || 'mp4'
       const filePath = `leela/${loggedInUser.id}/${Date.now()}.${ext}`
-      const { error: uploadError } = await supabase.storage.from('media').upload(filePath, file)
+      const { error: uploadError } = await supabase.storage.from('leela').upload(filePath, file)
       if (uploadError) throw uploadError
 
-      const { data: urlData } = supabase.storage.from('media').getPublicUrl(filePath)
+      const { data: urlData } = supabase.storage.from('leela').getPublicUrl(filePath)
 
       const { error: insertError } = await supabase.from('leela_videos').insert({
         user_id: loggedInUser.id,
