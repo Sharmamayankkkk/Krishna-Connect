@@ -15,14 +15,13 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const caption = formData.get('caption') as string;
+    const mediaType = formData.get('mediaType') as string || 'image';
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
-    
-    // File upload to the 'story' bucket
+
     const fileExt = file.name.split('.').pop();
-    // The path includes the user's ID as a folder, matching the storage policy
     const filePath = `${user.id}/${uuidv4()}.${fileExt}`;
 
     const { error: uploadError } = await supabase.storage.from('story').upload(filePath, file);
@@ -32,20 +31,18 @@ export async function POST(request: Request) {
 
     const { data: urlData } = supabase.storage.from('story').getPublicUrl(filePath);
 
-    // DB insert
     const { data: statusData, error: insertError } = await supabase
         .from('statuses')
         .insert({
             user_id: user.id,
             media_url: urlData.publicUrl,
-            media_type: 'image', // For now, only support images
+            media_type: mediaType,
             caption: caption,
         })
         .select()
         .single();
-    
+
     if (insertError) {
-        // If the DB insert fails, try to delete the uploaded file
         await supabase.storage.from('story').remove([filePath]);
         throw insertError;
     }

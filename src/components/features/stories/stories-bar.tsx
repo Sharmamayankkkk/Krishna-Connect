@@ -14,7 +14,7 @@ type StatusUpdate = {
     name: string;
     username: string;
     avatar_url: string;
-    statuses: { id: number; media_url: string; created_at: string; caption?: string | null }[];
+    statuses: { id: number; media_url: string; media_type?: string; created_at: string; caption?: string | null }[];
     is_all_viewed: boolean;
 };
 
@@ -62,6 +62,7 @@ export function StoriesBar() {
             grouped[userId].statuses.push({
                 id: status.id,
                 media_url: status.media_url,
+                media_type: status.media_type || 'image',
                 created_at: status.created_at,
                 caption: status.caption,
             });
@@ -135,12 +136,17 @@ export function StoriesBar() {
                                     <AvatarFallback>{loggedInUser.name?.charAt(0) || 'Y'}</AvatarFallback>
                                 </Avatar>
                             </div>
-                            {!myStatus && (
-                                <div className="absolute bottom-0 right-0 w-5 h-5 bg-primary text-primary-foreground rounded-full flex items-center justify-center border-2 border-background shadow-sm transition-transform group-hover:scale-110">
-                                    <Plus className="w-3 h-3" />
-                                </div>
-                            )}
+                            <div className="absolute bottom-0 right-0 w-5 h-5 bg-primary text-primary-foreground rounded-full flex items-center justify-center border-2 border-background shadow-sm transition-transform group-hover:scale-110">
+                                <Plus className="w-3 h-3" />
+                            </div>
                         </button>
+                        {myStatus && (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); setIsCreateOpen(true); }}
+                                className="sr-only"
+                                aria-label="Add new story"
+                            />
+                        )}
                         <span className="text-xs font-medium text-muted-foreground truncate max-w-[70px] group-hover:text-foreground transition-colors">
                             Your story
                         </span>

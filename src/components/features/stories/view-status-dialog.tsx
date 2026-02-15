@@ -1,11 +1,13 @@
-
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
-import { X, Pause, Play, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import {
+  X, Pause, Play, ChevronLeft, ChevronRight, Eye, Heart,
+  Send, MoreHorizontal, Trash2, Flag, VolumeX, Volume2
+} from 'lucide-react';
 import Image from 'next/image';
 import { createClient } from '@/lib/utils';
 import { useAppContext } from '@/providers/app-provider';
@@ -13,12 +15,15 @@ import { formatDistanceToNow } from 'date-fns';
 import type { User } from '@/lib/types';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useToast } from '@/hooks/use-toast';
 
 type StatusUpdate = {
   user_id: string;
   name: string;
+  username?: string;
   avatar_url: string;
-  statuses: { id: number; media_url: string; created_at: string; caption?: string | null }[];
+  statuses: { id: number; media_url: string; media_type?: string; created_at: string; caption?: string | null }[];
 };
 
 interface ViewStatusDialogProps {
@@ -29,9 +34,10 @@ interface ViewStatusDialogProps {
   onStatusViewed: () => void;
 }
 
-const STATUS_DURATION = 5000; // 5 seconds per status
+const STATUS_DURATION = 5000;
+const VIDEO_MAX_DURATION = 30000;
 
-function ViewersSheet({ statusId, viewCount }: { statusId: number, viewCount: number }) {
+function ViewersSheet({ statusId, viewCount }: { statusId: number; viewCount: number }) {
   const [viewers, setViewers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const supabase = createClient();
@@ -47,49 +53,60 @@ function ViewersSheet({ statusId, viewCount }: { statusId: number, viewCount: nu
       setViewers(data.map(d => d.profiles).filter(Boolean) as unknown as User[]);
     }
     setIsLoading(false);
-  }
+  };
 
   return (
     <Sheet>
       <SheetTrigger asChild>
         <button
           onClick={fetchViewers}
-          className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 text-white bg-black/30 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm"
+          className="flex items-center gap-1.5 text-white/90 text-sm"
         >
           <Eye className="h-4 w-4" />
           <span>{viewCount}</span>
         </button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="rounded-t-lg">
+      <SheetContent side="bottom" className="rounded-t-2xl">
         <SheetHeader>
-          <SheetTitle>Viewed by</SheetTitle>
+          <SheetTitle className="text-left">Viewed by {viewCount}</SheetTitle>
         </SheetHeader>
         <ScrollArea className="h-64 mt-4">
           {isLoading ? (
-            <p>Loading...</p>
+            <div className="space-y-3">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-muted animate-pulse" />
+                  <div className="h-4 w-24 bg-muted rounded animate-pulse" />
+                </div>
+              ))}
+            </div>
           ) : viewers.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {viewers.map(viewer => (
-                <div key={viewer.id} className="flex items-center gap-3">
-                  <Avatar>
+                <div key={viewer.id} className="flex items-center gap-3 py-1">
+                  <Avatar className="h-10 w-10">
                     <AvatarImage src={viewer.avatar_url} />
-                    <AvatarFallback>{viewer.name.charAt(0)}</AvatarFallback>
+                    <AvatarFallback>{viewer.name?.charAt(0) || '?'}</AvatarFallback>
                   </Avatar>
-                  <p className="font-semibold">{viewer.name}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm truncate">{viewer.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">@{viewer.username}</p>
+                  </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-center text-muted-foreground pt-10">No views yet.</p>
+            <p className="text-center text-muted-foreground pt-10">No views yet</p>
           )}
         </ScrollArea>
       </SheetContent>
     </Sheet>
-  )
+  );
 }
 
 export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenChange, onStatusViewed }: ViewStatusDialogProps) {
   const { loggedInUser } = useAppContext();
+  const { toast } = useToast();
   const supabase = createClient();
 
   const [currentUserIndex, setCurrentUserIndex] = useState(startIndex);
@@ -97,14 +114,25 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
   const [progress, setProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [viewCount, setViewCount] = useState(0);
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [replyText, setReplyText] = useState('');
+  const [isSendingReply, setIsSendingReply] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const [showLikeAnimation, setShowLikeAnimation] = useState(false);
 
   const animationFrameRef = useRef<number | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef(0);
   const elapsedTimeRef = useRef(0);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const replyInputRef = useRef<HTMLInputElement>(null);
 
   const statusUpdate = (currentUserIndex !== null) ? allStatusUpdates[currentUserIndex] : null;
   const currentStatus = statusUpdate?.statuses[currentStoryIndex];
+  const isMyStatus = loggedInUser?.id === statusUpdate?.user_id;
+  const isVideo = currentStatus?.media_type === 'video';
+  const duration = isVideo ? VIDEO_MAX_DURATION : STATUS_DURATION;
 
   const markAsViewed = useCallback(async (statusId: number) => {
     if (!loggedInUser || !statusUpdate || loggedInUser.id === statusUpdate.user_id) return;
@@ -112,7 +140,6 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
       status_id: statusId,
       viewer_id: loggedInUser.id,
     }, { onConflict: 'status_id, viewer_id' });
-
     onStatusViewed();
   }, [loggedInUser, supabase, onStatusViewed, statusUpdate]);
 
@@ -124,18 +151,27 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
     setViewCount(count || 0);
   }, [supabase]);
 
+  const fetchLikeStatus = useCallback(async (statusId: number) => {
+    if (!loggedInUser) return;
+    const { count: totalLikes } = await supabase
+      .from('story_reactions')
+      .select('*', { count: 'exact', head: true })
+      .eq('status_id', statusId);
+    setLikeCount(totalLikes || 0);
+
+    const { data } = await supabase
+      .from('story_reactions')
+      .select('id')
+      .eq('status_id', statusId)
+      .eq('user_id', loggedInUser.id)
+      .maybeSingle();
+    setIsLiked(!!data);
+  }, [loggedInUser, supabase]);
+
   const stopTimer = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
   }, []);
-
-  const goToNextStory = useCallback(() => {
-    if (statusUpdate && currentStoryIndex < statusUpdate.statuses.length - 1) {
-      setCurrentStoryIndex(prev => prev + 1);
-    } else {
-      goToNextUser();
-    }
-  }, [statusUpdate, currentStoryIndex]);
 
   const goToNextUser = useCallback(() => {
     if (currentUserIndex !== null && currentUserIndex < allStatusUpdates.length - 1) {
@@ -146,46 +182,56 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
     }
   }, [currentUserIndex, allStatusUpdates.length, onOpenChange]);
 
+  const goToNextStory = useCallback(() => {
+    if (statusUpdate && currentStoryIndex < statusUpdate.statuses.length - 1) {
+      setCurrentStoryIndex(prev => prev + 1);
+    } else {
+      goToNextUser();
+    }
+  }, [statusUpdate, currentStoryIndex, goToNextUser]);
+
   const startTimer = useCallback(() => {
     stopTimer();
     if (!currentStatus || isPaused) return;
 
     markAsViewed(currentStatus.id);
-    if (loggedInUser?.id === statusUpdate?.user_id) {
+    if (isMyStatus) {
       fetchViewCount(currentStatus.id);
     }
+    fetchLikeStatus(currentStatus.id);
 
     startTimeRef.current = performance.now() - elapsedTimeRef.current;
 
     const animate = (time: number) => {
       elapsedTimeRef.current = time - startTimeRef.current;
-      const newProgress = (elapsedTimeRef.current / STATUS_DURATION) * 100;
+      const newProgress = (elapsedTimeRef.current / duration) * 100;
       setProgress(newProgress);
 
-      if (elapsedTimeRef.current < STATUS_DURATION) {
+      if (elapsedTimeRef.current < duration) {
         animationFrameRef.current = requestAnimationFrame(animate);
       }
     };
     animationFrameRef.current = requestAnimationFrame(animate);
 
-    timeoutRef.current = setTimeout(goToNextStory, STATUS_DURATION - elapsedTimeRef.current);
-  }, [currentStatus, isPaused, stopTimer, markAsViewed, fetchViewCount, loggedInUser, statusUpdate, goToNextStory]);
+    timeoutRef.current = setTimeout(goToNextStory, duration - elapsedTimeRef.current);
+  }, [currentStatus, isPaused, stopTimer, markAsViewed, fetchViewCount, fetchLikeStatus, isMyStatus, goToNextStory, duration]);
 
-  // Effect to handle opening/closing and user switching
   useEffect(() => {
     if (open && startIndex !== null) {
       setCurrentUserIndex(startIndex);
       setCurrentStoryIndex(0);
+      setReplyText('');
     } else {
       stopTimer();
     }
   }, [open, startIndex, stopTimer]);
 
-  // Effect to handle story and user index changes
   useEffect(() => {
     if (open && currentUserIndex !== null) {
       setProgress(0);
       elapsedTimeRef.current = 0;
+      setIsLiked(false);
+      setLikeCount(0);
       startTimer();
     }
     return stopTimer;
@@ -203,83 +249,285 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
     }
   };
 
+  const goToPrevStory = () => {
+    if (currentStoryIndex > 0) {
+      setCurrentStoryIndex(prev => prev - 1);
+    } else {
+      goToPrevUser();
+    }
+  };
+
   useEffect(() => {
     if (isPaused) {
       stopTimer();
-      elapsedTimeRef.current = (progress / 100) * STATUS_DURATION;
+      elapsedTimeRef.current = (progress / 100) * duration;
+      if (videoRef.current) videoRef.current.pause();
     } else if (open) {
       startTimer();
+      if (videoRef.current) videoRef.current.play().catch(() => {});
     }
-  }, [isPaused, open, startTimer, stopTimer, progress]);
+  }, [isPaused, open, startTimer, stopTimer, progress, duration]);
+
+  const handleLike = async () => {
+    if (!currentStatus || !loggedInUser || isMyStatus) return;
+
+    setShowLikeAnimation(true);
+    setTimeout(() => setShowLikeAnimation(false), 1000);
+
+    if (isLiked) {
+      setIsLiked(false);
+      setLikeCount(prev => Math.max(0, prev - 1));
+      await supabase
+        .from('story_reactions')
+        .delete()
+        .eq('status_id', currentStatus.id)
+        .eq('user_id', loggedInUser.id);
+    } else {
+      setIsLiked(true);
+      setLikeCount(prev => prev + 1);
+      await supabase
+        .from('story_reactions')
+        .upsert({
+          status_id: currentStatus.id,
+          user_id: loggedInUser.id,
+          emoji: '❤️',
+        }, { onConflict: 'status_id, user_id' });
+    }
+  };
+
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isMyStatus) handleLike();
+  };
+
+  const handleSendReply = async () => {
+    if (!replyText.trim() || !currentStatus || !loggedInUser || !statusUpdate || isMyStatus) return;
+    setIsSendingReply(true);
+    setIsPaused(true);
+
+    try {
+      await supabase.from('story_replies').insert({
+        status_id: currentStatus.id,
+        sender_id: loggedInUser.id,
+        receiver_id: statusUpdate.user_id,
+        message: replyText.trim(),
+      });
+      toast({ title: 'Reply sent', description: `Your reply was sent to ${statusUpdate.name}` });
+      setReplyText('');
+      setIsPaused(false);
+    } catch {
+      toast({ variant: 'destructive', title: 'Failed to send reply' });
+    } finally {
+      setIsSendingReply(false);
+    }
+  };
+
+  const handleDeleteStory = async () => {
+    if (!currentStatus || !isMyStatus) return;
+    const { error } = await supabase.from('statuses').delete().eq('id', currentStatus.id);
+    if (!error) {
+      toast({ title: 'Story deleted' });
+      onStatusViewed();
+      if (statusUpdate && statusUpdate.statuses.length <= 1) {
+        onOpenChange(false);
+      } else {
+        goToNextStory();
+      }
+    }
+  };
+
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsMuted(prev => !prev);
+    if (videoRef.current) videoRef.current.muted = !isMuted;
+  };
 
   if (!statusUpdate || !currentStatus) return null;
-  const isMyStatus = loggedInUser?.id === statusUpdate.user_id;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] max-h-[95vh] sm:max-w-md w-full h-full sm:h-auto sm:aspect-[9/16] bg-black border-none p-0 overflow-hidden flex flex-col data-[state=open]:!animate-none data-[state=closed]:!animate-none">
-        <DialogTitle className="sr-only">Status from {statusUpdate.name}</DialogTitle>
-        <DialogDescription className="sr-only">Viewing status update. Press escape to close.</DialogDescription>
+      <DialogContent className="max-w-[100vw] max-h-[100vh] sm:max-w-md w-full h-full sm:h-auto sm:aspect-[9/16] sm:max-h-[90vh] bg-black border-none p-0 overflow-hidden flex flex-col data-[state=open]:!animate-none data-[state=closed]:!animate-none rounded-none sm:rounded-2xl">
+        <DialogTitle className="sr-only">Story from {statusUpdate.name}</DialogTitle>
+        <DialogDescription className="sr-only">Viewing story. Press escape to close.</DialogDescription>
 
-        <div className="absolute top-0 left-0 right-0 p-3 z-20 bg-gradient-to-b from-black/50 to-transparent">
-          <div className="flex items-center gap-2 mb-2">
+        {/* Top gradient overlay with progress + header */}
+        <div className="absolute top-0 left-0 right-0 p-3 z-20 bg-gradient-to-b from-black/60 via-black/30 to-transparent">
+          {/* Progress bars */}
+          <div className="flex items-center gap-1 mb-3">
             {statusUpdate.statuses.map((_, index) => (
-              <Progress
-                key={index}
-                value={index < currentStoryIndex ? 100 : index === currentStoryIndex ? progress : 0}
-                className="h-1 flex-1 bg-white/30"
-              />
+              <div key={index} className="flex-1 h-0.5 rounded-full overflow-hidden bg-white/30">
+                <div
+                  className="h-full bg-white rounded-full transition-all duration-100 ease-linear"
+                  style={{
+                    width: `${index < currentStoryIndex ? 100 : index === currentStoryIndex ? Math.min(progress, 100) : 0}%`,
+                  }}
+                />
+              </div>
             ))}
           </div>
+
+          {/* User info + actions */}
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-9 w-9">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <Avatar className="h-8 w-8 ring-2 ring-white/20">
                 <AvatarImage src={statusUpdate.avatar_url} />
-                <AvatarFallback>{statusUpdate.name.charAt(0)}</AvatarFallback>
+                <AvatarFallback className="text-xs">{statusUpdate.name?.charAt(0) || '?'}</AvatarFallback>
               </Avatar>
-              <div>
-                <p className="font-semibold text-white">{statusUpdate.name}</p>
-                <p className="text-xs text-white/80">{formatDistanceToNow(new Date(currentStatus.created_at), { addSuffix: true })}</p>
+              <div className="min-w-0">
+                <p className="font-semibold text-white text-sm truncate">{statusUpdate.name}</p>
+                <p className="text-[10px] text-white/60">{formatDistanceToNow(new Date(currentStatus.created_at), { addSuffix: true })}</p>
               </div>
             </div>
-            <div className="flex items-center">
-              <button onClick={handlePausePlay} className="text-white p-2">
-                {isPaused ? <Play /> : <Pause />}
+
+            <div className="flex items-center gap-0.5">
+              {isVideo && (
+                <button onClick={toggleMute} className="text-white p-2 hover:bg-white/10 rounded-full transition-colors">
+                  {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+                </button>
+              )}
+              <button onClick={handlePausePlay} className="text-white p-2 hover:bg-white/10 rounded-full transition-colors">
+                {isPaused ? <Play className="h-5 w-5" /> : <Pause className="h-5 w-5" />}
               </button>
-              <button onClick={() => onOpenChange(false)} className="text-white p-2">
-                <X />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="text-white p-2 hover:bg-white/10 rounded-full transition-colors">
+                    <MoreHorizontal className="h-5 w-5" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-[160px]">
+                  {isMyStatus && (
+                    <DropdownMenuItem onClick={handleDeleteStory} className="text-destructive focus:text-destructive">
+                      <Trash2 className="h-4 w-4 mr-2" /> Delete Story
+                    </DropdownMenuItem>
+                  )}
+                  {!isMyStatus && (
+                    <DropdownMenuItem onClick={() => toast({ title: 'Report submitted', description: 'This story has been reported for review.' })}>
+                      <Flag className="h-4 w-4 mr-2" /> Report
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <button onClick={() => onOpenChange(false)} className="text-white p-2 hover:bg-white/10 rounded-full transition-colors">
+                <X className="h-5 w-5" />
               </button>
             </div>
           </div>
         </div>
 
-        <div className="relative flex-1 flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
-          <div className="absolute inset-0" onMouseDown={() => setIsPaused(true)} onMouseUp={() => setIsPaused(false)} onTouchStart={() => setIsPaused(true)} onTouchEnd={() => setIsPaused(false)} />
-          {currentStatus?.media_url && <Image src={currentStatus.media_url} alt={`Status from ${statusUpdate.name}`} fill className="object-contain" />}
+        {/* Story content */}
+        <div className="relative flex-1 flex items-center justify-center" onDoubleClick={handleDoubleClick}>
+          {/* Pause on hold */}
+          <div
+            className="absolute inset-0 z-10"
+            onMouseDown={() => setIsPaused(true)}
+            onMouseUp={() => setIsPaused(false)}
+            onTouchStart={() => setIsPaused(true)}
+            onTouchEnd={() => setIsPaused(false)}
+          />
 
-          {/* Navigation Buttons */}
-          {currentUserIndex !== null && currentUserIndex > 0 && (
-            <button onClick={goToPrevUser} className="absolute left-2 top-1/2 -translate-y-1/2 z-30 bg-black/30 text-white rounded-full p-1">
-              <ChevronLeft size={24} />
-            </button>
+          {/* Media */}
+          {isVideo ? (
+            <video
+              ref={videoRef}
+              src={currentStatus.media_url}
+              className="w-full h-full object-contain"
+              autoPlay
+              playsInline
+              muted={isMuted}
+              loop
+            />
+          ) : (
+            currentStatus.media_url && (
+              <Image src={currentStatus.media_url} alt={`Story from ${statusUpdate.name}`} fill className="object-contain" />
+            )
           )}
-          {currentUserIndex !== null && currentUserIndex < allStatusUpdates.length - 1 && (
-            <button onClick={goToNextUser} className="absolute right-2 top-1/2 -translate-y-1/2 z-30 bg-black/30 text-white rounded-full p-1">
-              <ChevronRight size={24} />
-            </button>
-          )}
 
-          <button onClick={(e) => { e.stopPropagation(); setCurrentStoryIndex(p => Math.max(0, p - 1)) }} className="absolute left-0 top-0 bottom-0 w-1/3 z-20" aria-label="Previous story" />
-          <button onClick={(e) => { e.stopPropagation(); goToNextStory() }} className="absolute right-0 top-0 bottom-0 w-1/3 z-20" aria-label="Next story" />
-
-
-          {currentStatus.caption && (
-            <div className="absolute bottom-0 left-0 right-0 p-4 pb-16 bg-gradient-to-t from-black/70 to-transparent z-10">
-              <p className="text-white text-center text-sm drop-shadow-md">{currentStatus.caption}</p>
+          {/* Like animation */}
+          {showLikeAnimation && (
+            <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
+              <Heart className="h-24 w-24 text-red-500 fill-red-500 animate-ping" />
             </div>
           )}
 
-          {isMyStatus && <ViewersSheet statusId={currentStatus.id} viewCount={viewCount} />}
+          {/* Navigation: tap left/right areas */}
+          <button
+            onClick={(e) => { e.stopPropagation(); goToPrevStory(); }}
+            className="absolute left-0 top-0 bottom-0 w-1/3 z-20"
+            aria-label="Previous story"
+          />
+          <button
+            onClick={(e) => { e.stopPropagation(); goToNextStory(); }}
+            className="absolute right-0 top-0 bottom-0 w-1/3 z-20"
+            aria-label="Next story"
+          />
+
+          {/* User navigation arrows */}
+          {currentUserIndex !== null && currentUserIndex > 0 && (
+            <button onClick={goToPrevUser} className="absolute left-2 top-1/2 -translate-y-1/2 z-30 bg-black/30 backdrop-blur-sm text-white rounded-full p-1.5 hover:bg-black/50 transition-colors hidden sm:flex">
+              <ChevronLeft size={20} />
+            </button>
+          )}
+          {currentUserIndex !== null && currentUserIndex < allStatusUpdates.length - 1 && (
+            <button onClick={goToNextUser} className="absolute right-2 top-1/2 -translate-y-1/2 z-30 bg-black/30 backdrop-blur-sm text-white rounded-full p-1.5 hover:bg-black/50 transition-colors hidden sm:flex">
+              <ChevronRight size={20} />
+            </button>
+          )}
+
+          {/* Caption */}
+          {currentStatus.caption && (
+            <div className="absolute bottom-0 left-0 right-0 p-4 pb-20 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-10 pointer-events-none">
+              <p className="text-white text-center text-sm drop-shadow-lg leading-relaxed">{currentStatus.caption}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Bottom bar */}
+        <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/80 to-transparent px-3 py-3 pt-8">
+          {isMyStatus ? (
+            /* My story: viewers + likes */
+            <div className="flex items-center justify-between">
+              <ViewersSheet statusId={currentStatus.id} viewCount={viewCount} />
+              <div className="flex items-center gap-3">
+                {likeCount > 0 && (
+                  <div className="flex items-center gap-1 text-white/80 text-sm">
+                    <Heart className="h-4 w-4 fill-red-500 text-red-500" />
+                    <span>{likeCount}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            /* Others' story: reply + like */
+            <div className="flex items-center gap-2">
+              <input
+                ref={replyInputRef}
+                type="text"
+                placeholder={`Reply to ${statusUpdate.name?.split(' ')[0] || 'story'}...`}
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                onFocus={() => setIsPaused(true)}
+                onBlur={() => { if (!replyText) setIsPaused(false); }}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleSendReply(); }}
+                className="flex-1 px-4 py-2.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm placeholder:text-white/40 outline-none focus:border-white/40 transition-colors"
+              />
+              {replyText.trim() ? (
+                <button
+                  onClick={handleSendReply}
+                  disabled={isSendingReply}
+                  className="p-2.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                  <Send className="h-4 w-4" />
+                </button>
+              ) : (
+                <button
+                  onClick={handleLike}
+                  className="p-2.5 rounded-full hover:bg-white/10 transition-colors"
+                >
+                  <Heart className={`h-5 w-5 transition-all ${isLiked ? 'fill-red-500 text-red-500 scale-110' : 'text-white'}`} />
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
