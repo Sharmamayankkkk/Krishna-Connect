@@ -403,15 +403,19 @@ export default function LeelaPage() {
       .eq('video_id', videoId)
       .order('created_at', { ascending: false })
       .limit(50)
-    setComments((data || []).map((c: { id: string; content: string; created_at: string; user_id: string; profiles: { name: string; username: string; avatar_url: string | null } | null }) => ({
-      id: c.id,
-      content: c.content,
-      created_at: c.created_at,
-      user_id: c.user_id,
-      user_name: c.profiles?.name || 'User',
-      user_username: c.profiles?.username || '',
-      user_avatar: c.profiles?.avatar_url || null,
-    })))
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    setComments((data || []).map((c: any) => {
+      const profile = Array.isArray(c.profiles) ? c.profiles[0] : c.profiles
+      return {
+        id: c.id,
+        content: c.content,
+        created_at: c.created_at,
+        user_id: c.user_id,
+        user_name: profile?.name || 'User',
+        user_username: profile?.username || '',
+        user_avatar: profile?.avatar_url || null,
+      }
+    }))
     setLoadingComments(false)
   }
 
