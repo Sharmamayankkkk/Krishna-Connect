@@ -36,7 +36,7 @@ export function UploadLeelaFab() {
 
     setIsUploading(true)
     try {
-      const ext = file.name.split('.').pop() || 'mp4'
+      const ext = file.name.includes('.') ? file.name.substring(file.name.lastIndexOf('.') + 1) : 'mp4'
       const filePath = `leela/${loggedInUser.id}/${Date.now()}.${ext}`
       const { error: uploadError } = await supabase.storage.from('leela').upload(filePath, file)
       if (uploadError) throw uploadError

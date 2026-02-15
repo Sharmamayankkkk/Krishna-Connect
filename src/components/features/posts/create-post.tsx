@@ -347,7 +347,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
         setIsUploadingLeela(true);
         try {
             const leelaSupabase = createClient();
-            const ext = file.name.split('.').pop() || 'mp4';
+            const ext = file.name.includes('.') ? file.name.substring(file.name.lastIndexOf('.') + 1) : 'mp4';
             const filePath = `leela/${loggedInUser.id}/${Date.now()}.${ext}`;
             const { error: uploadError } = await leelaSupabase.storage.from('leela').upload(filePath, file);
             if (uploadError) throw uploadError;
