@@ -26,7 +26,7 @@ import { useAppContext } from '@/providers/app-provider';
 import EmojiPicker, { EmojiClickData, SkinTones } from 'emoji-picker-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { VoiceNotePlayer } from '../media/voice-note-player';
-import { format, isSameDay, isToday, isYesterday } from 'date-fns';
+import { format, formatDistanceToNow, isSameDay, isToday, isYesterday } from 'date-fns';
 import { RequestDmDialog } from '../../dialogs/request-dm-dialog';
 import { Badge } from '@/components/ui/badge';
 import { ForwardMessageDialog } from './dialogs/forward-message-dialog';
