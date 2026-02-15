@@ -84,68 +84,41 @@ These are the **4 buckets** used by Krishna Connect:
 
 ## 2. Google AdSense Ad Units
 
-### Existing Ad Units
+**AdSense Client ID:** `ca-pub-4172622079471868`
 
-| # | Unit Name | Type | Placement |
-|---|-----------|------|-----------|
-| 1 | Profile Not Found | Display | Shown on 404 profile pages |
-| 2 | Mid-Post Ad | In-feed | Inserted between posts in the feed |
+### All Ad Units
 
-### New Ad Units to Create
+| # | Unit Name | Slot ID | Type | Placement | File |
+|---|-----------|---------|------|-----------|------|
+| 1 | Profile Not Found | `6010040695` | Display | Shown on 404 profile pages | `profile/[username]/page.tsx` |
+| 2 | Mid-Post Ad | `6096829313` | In-feed | Between posts in feed (every 5th) | `google-in-feed-ad.tsx` |
+| 3 | Profile Sidebar | `8691086496` | Display | Below tabs on profile page | `profile-view.tsx` |
+| 4 | Between Stories | `2513515369` | Display | After stories bar on feed | `feed/page.tsx` |
+| 5 | Explore In-Feed | `6261188688` | In-feed (fluid) | Before explore grid | `explore/page.tsx` |
+| 6 | Leela Between Videos | `2321943672` | Display | Overlay every 3rd video | `leela/page.tsx` |
+| 7 | Post Detail | `2052584005` | Display | After comments on post detail | `post-view.tsx` |
+| 8 | Events Page | `1561629410` | Display | After event listings | `events/page.tsx` |
 
-Create the following ad units in your **Google AdSense Dashboard** → **Ads** → **By ad unit**:
+### Pages WITHOUT Ads (by design)
 
-| # | Recommended Unit Name | Ad Type | Size / Format | Placement Description |
-|---|----------------------|---------|---------------|----------------------|
-| 3 | **Profile Sidebar** | Display (Responsive) | Responsive | Right sidebar on user profile pages (desktop only) |
-| 4 | **Between Stories** | Display (Responsive) | 300×250 or Responsive | Inserted between every 5th story in the Stories bar viewer |
-| 5 | **Explore Grid** | In-feed (Native) | In-feed | Inserted as a tile in the Explore page grid (every 8th position) |
-| 6 | **Chat List** | Display (Responsive) | 320×100 (Mobile Banner) | Bottom of the chat list page |
-| 7 | **Leela Between Videos** | Display (Responsive) | Responsive (Vertical) | Shown between Leela (short-form) videos every 5th swipe |
-| 8 | **Post Detail Sidebar** | Display (Responsive) | 300×250 | Sidebar on the post detail `/post/[id]` page (desktop) |
-| 9 | **Notification Page** | Display (Responsive) | 320×100 (Mobile Banner) | Bottom of notification page or between notification groups |
-| 10 | **Bookmark Page** | Display (Responsive) | 320×100 | Bottom of the bookmarks page |
-| 11 | **Events Page** | Display (Responsive) | Responsive | Between event listings |
-| 12 | **Challenges Page** | In-feed (Native) | In-feed | Between challenge cards in the challenges page |
-
-### Steps to Create Each Ad Unit
-
-1. Go to [Google AdSense](https://www.google.com/adsense/) → Sign in
-2. Navigate to **Ads** → **By ad unit** → **Create new ad unit**
-3. For each unit above:
-   - Select the **Ad Type** (Display or In-feed)
-   - Enter the **Unit Name** exactly as listed for easy identification
-   - Choose the **Size/Format** as recommended
-   - Click **Create**
-   - Copy the **Ad Unit ID** (e.g., `ca-pub-XXXXXXX/YYYYYYYYYY`)
-4. Store the Ad Unit IDs — they will be configured as environment variables or in the ad components
+- `/chat` — Chat list and conversations (disruptive to messaging UX)
+- `/notifications` — Notification page
+- `/bookmarks` — Bookmark collections
+- `/challenges` — Challenges page
+- Legal pages (Privacy, Terms, FAQ, Contact)
+- Auth pages (Login, Signup, Forgot Password)
+- Story creator and active call screens
 
 ### Ad Placement Guidelines
 
 - **Verified/KCS users** should see fewer or no ads (premium benefit)
-- **Do not** place ads inside the Story creator or active call screens
-- **Do not** place ads on legal pages (Privacy Policy, Terms, FAQ, Contact)
-- **Do not** place ads on the login/signup pages
 - Space ads at least 3-5 content items apart to avoid ad fatigue
 - Use responsive ad units wherever possible for cross-device compatibility
+- All ad units are implemented using the reusable `GoogleAd` component from `@/components/ads/google-ad`
 
-### Environment Variables for Ad Units
-
-Once the ad units are created, the unit IDs can be configured in your `.env.local`:
+### Environment Variables
 
 ```env
 # Google AdSense
-NEXT_PUBLIC_ADSENSE_CLIENT_ID=ca-pub-3940256099942544
-
-# Ad Unit IDs
-NEXT_PUBLIC_AD_PROFILE_SIDEBAR=<unit-id>
-NEXT_PUBLIC_AD_BETWEEN_STORIES=<unit-id>
-NEXT_PUBLIC_AD_EXPLORE_GRID=<unit-id>
-NEXT_PUBLIC_AD_CHAT_LIST=<unit-id>
-NEXT_PUBLIC_AD_LEELA_BETWEEN=<unit-id>
-NEXT_PUBLIC_AD_POST_DETAIL=<unit-id>
-NEXT_PUBLIC_AD_NOTIFICATION=<unit-id>
-NEXT_PUBLIC_AD_BOOKMARK=<unit-id>
-NEXT_PUBLIC_AD_EVENTS=<unit-id>
-NEXT_PUBLIC_AD_CHALLENGES=<unit-id>
+NEXT_PUBLIC_ADSENSE_CLIENT_ID=ca-pub-4172622079471868
 ```

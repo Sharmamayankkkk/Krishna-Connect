@@ -29,6 +29,7 @@ import {
     Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { GoogleAd } from '@/components/ads/google-ad';
 
 const POST_QUERY = `
     id,
@@ -532,6 +533,9 @@ export default function PostView() {
                                     </div>
                                 )}
                             </div>
+
+                            {/* Post Detail Ad */}
+                            <GoogleAd slot="2052584005" />
                         </>
                     )}
                 </main>

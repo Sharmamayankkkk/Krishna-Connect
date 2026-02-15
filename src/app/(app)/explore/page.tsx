@@ -17,6 +17,7 @@ import { generateExploreContent, ExploreContentItem } from './explore-algorithm'
 import { PostType } from '@/lib/types';
 import { extractVideoThumbnail } from '@/lib/video-thumbnail';
 import { cn } from '@/lib/utils';
+import { GoogleAd } from '@/components/ads/google-ad';
 
 function getGridSpan(index: number): { col: string; row: string } {
     const patternIndex = index % 12;
@@ -462,6 +463,11 @@ export default function ExplorePage() {
                             />
                         </section>
                     )}
+
+                    {/* Explore Ad */}
+                    <div className="px-3 sm:px-4 py-2">
+                        <GoogleAd slot="6261188688" />
+                    </div>
 
                     {/* Instagram-style Grid */}
                     <section className="p-[1px] sm:p-0.5">

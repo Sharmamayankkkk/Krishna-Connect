@@ -49,6 +49,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { VerificationBadge } from "@/components/shared/verification-badge";
+import { GoogleAd } from '@/components/ads/google-ad';
 
 interface ProfileViewProps {
   profile: Profile;
@@ -578,6 +579,11 @@ export function ProfileView({ profile, posts, repostedPosts, followers, followin
               </div>
             </TabsContent>
           </Tabs>
+
+          {/* Profile Sidebar Ad */}
+          <div className="mt-6">
+            <GoogleAd slot="8691086496" />
+          </div>
         </>
       )}
     </div>

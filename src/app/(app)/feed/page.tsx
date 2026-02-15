@@ -13,6 +13,7 @@ import { createClient } from '@/lib/supabase/client';
 import { FeedList } from '@/components/features/posts/feed-list';
 import { StoriesBar } from '@/components/features/stories/stories-bar';
 import { transformPost } from '@/lib/post-utils';
+import { GoogleAd } from '@/components/ads/google-ad';
 
 const SCROLL_THRESHOLD = 500;
 
@@ -179,6 +180,11 @@ export default function FeedPage() {
 
                 {/* Stories Bar */}
                 <StoriesBar />
+
+                {/* Between Stories Ad */}
+                <div className="max-w-2xl mx-auto px-4">
+                    <GoogleAd slot="2513515369" />
+                </div>
 
                 {/* Main Content */}
                 <div className="flex-1 container max-w-2xl mx-auto p-0 md:p-4">

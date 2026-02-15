@@ -14,6 +14,7 @@ import type { Event } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import Link from 'next/link';
+import { GoogleAd } from '@/components/ads/google-ad';
 
 function EventsPageLoader() {
   return (
@@ -152,6 +153,9 @@ export default function EventsPage() {
                                 <p className="text-sm text-muted-foreground">No past events to show.</p>
                             )}
                         </section>
+
+                        {/* Events Page Ad */}
+                        <GoogleAd slot="1561629410" />
                     </div>
                 )}
             </main>

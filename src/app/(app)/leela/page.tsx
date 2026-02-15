@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import Link from 'next/link'
 import Image from 'next/image'
+import { GoogleAd } from '@/components/ads/google-ad'
 
 type LeelaVideo = {
   id: string
@@ -474,6 +475,13 @@ export default function LeelaPage() {
         <div className="absolute top-4 right-16 md:right-4 z-20 bg-black/30 backdrop-blur-sm rounded-full px-2.5 py-1">
           <span className="text-white text-xs font-medium">{currentIndex + 1}/{videos.length}</span>
         </div>
+
+        {/* Ad banner every 3rd video */}
+        {currentIndex > 0 && currentIndex % 3 === 0 && (
+          <div className="absolute bottom-20 left-4 right-4 z-30">
+            <GoogleAd slot="2321943672" />
+          </div>
+        )}
       </div>
     </div>
   )
