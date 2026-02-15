@@ -7,7 +7,7 @@ export const GoogleAd = ({ slot, client }: { slot: string, client?: string }) =>
     const { loggedInUser } = useAppContext();
 
     // No ads for verified or KCS users
-    const isVerified = loggedInUser?.verified === 'verified' || loggedInUser?.verified === 'kcs';
+    const isVerified = loggedInUser?.is_verified === 'verified' || loggedInUser?.is_verified === 'kcs';
 
     useEffect(() => {
         if (isVerified) return;

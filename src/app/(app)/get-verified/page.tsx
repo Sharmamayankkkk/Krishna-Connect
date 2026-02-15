@@ -236,7 +236,7 @@ export default function GetVerifiedPage() {
 
     // Already verified
     // We wait for existingRequest to be loaded if possible, but fallback if not found after loading
-    const isVerified = (loggedInUser as any).verified === 'verified' || (loggedInUser as any).verified === 'kcs' || (loggedInUser as any).verified === true;
+    const isVerified = loggedInUser.is_verified === 'verified' || loggedInUser.is_verified === 'kcs';
     if (isVerified) {
         return <AlreadyVerifiedState request={existingRequest} />;
     }
