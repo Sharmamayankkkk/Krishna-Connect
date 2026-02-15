@@ -195,7 +195,9 @@ export type CallSignalType = 'offer' | 'answer' | 'ice-candidate' | 'renegotiate
 export type CallRecord = {
   id: string;
   caller_id: string;
-  callee_id: string;
+  callee_id?: string; // made optional for group calls
+  chat_id?: number; // for group calls
+  is_group: boolean;
   call_type: CallType;
   status: CallStatus;
   started_at: string | null;

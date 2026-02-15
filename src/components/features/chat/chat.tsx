@@ -135,7 +135,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
         forwardMessage,
     } = useAppContext();
 
-    const { startCall } = useCallContext();
+    const { startCall, startGroupCall, joinCall } = useCallContext();
 
     // These are "state" variables. They hold data that can change and cause the component to re-render.
     // `useState` is a fundamental React hook for managing component state.
@@ -901,14 +901,21 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
         );
     }
 
-    // Call history message (e.g., "[[CALL:video|ended|125|caller_id]]")
+    // Call history message (e.g., "[[CALL:video|ended|125|caller_id|call_id]]")
     const CallMessage = ({ content, message }: { content: string; message: Message }) => {
         const callData = content.replace(CALL_MESSAGE_PREFIX, '').replace(']]', '');
-        const [callType, callStatus, durationStr] = callData.split('|');
+        const [callType, callStatus, durationStr, callerId, callId] = callData.split('|');
         const duration = parseInt(durationStr) || 0;
         const isMyCall = message.user_id === loggedInUser.id;
         const isMissed = callStatus === 'missed' || callStatus === 'declined';
         const isVideo = callType === 'video';
+
+        // Group calls are "started" or "ended". If started, showing "Join" button.
+        // We can infer it's a group call if callId is present and (maybe) callerId is different?
+        // Actually, CallProvider always inserts callId now.
+        // Let's assume if status is 'started', it's an active group call that can be joined.
+        const isGroupCall = callStatus === 'started';
+        const canJoin = isGroupCall;
 
         const formatDuration = (s: number) => {
             if (s < 60) return `${s}s`;
@@ -937,12 +944,14 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                         <span className={cn("text-sm font-medium", isMissed && "text-red-600 dark:text-red-400")}>
                             {isMissed
                                 ? `Missed ${isVideo ? 'Video' : 'Voice'} Call`
-                                : `${isVideo ? 'Video' : 'Voice'} Call`}
+                                : isGroupCall ? `Group ${isVideo ? 'Video' : 'Voice'} Call`
+                                    : `${isVideo ? 'Video' : 'Voice'} Call`}
                         </span>
                         <span className="text-xs text-muted-foreground">
                             {isMissed
                                 ? (isMyCall ? 'No answer' : 'Tap to call back')
-                                : formatDuration(duration)}
+                                : isGroupCall ? 'Tap to join'
+                                    : formatDuration(duration)}
                         </span>
                     </div>
                     {isMissed && !isMyCall && startCall && (
@@ -956,6 +965,16 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                             }}
                         >
                             Call Back
+                        </Button>
+                    )}
+                    {canJoin && joinCall && callId && (
+                        <Button
+                            variant="default"
+                            size="sm"
+                            className="ml-2 h-7 text-xs"
+                            onClick={() => joinCall(callId)}
+                        >
+                            Join
                         </Button>
                     )}
                 </div>
@@ -1304,8 +1323,34 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                             </Tooltip>
                         </TooltipProvider>
                     )}
-                    <Button variant="ghost" size="icon" onClick={() => { if (chatPartner) startCall(chatPartner.id, 'voice') }} disabled={!chatPartner}><Phone className="h-5 w-5" /></Button>
-                    <Button variant="ghost" size="icon" onClick={() => { if (chatPartner) startCall(chatPartner.id, 'video') }} disabled={!chatPartner}><Video className="h-5 w-5" /></Button>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                            if (isGroup) {
+                                startGroupCall(chat.id.toString(), 'voice'); // Ensure chat.id is string if expected
+                            } else if (chatPartner) {
+                                startCall(chatPartner.id, 'voice');
+                            }
+                        }}
+                        disabled={!isGroup && !chatPartner}
+                    >
+                        <Phone className="h-5 w-5" />
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                            if (isGroup) {
+                                startGroupCall(chat.id.toString(), 'video');
+                            } else if (chatPartner) {
+                                startCall(chatPartner.id, 'video');
+                            }
+                        }}
+                        disabled={!isGroup && !chatPartner}
+                    >
+                        <Video className="h-5 w-5" />
+                    </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon">

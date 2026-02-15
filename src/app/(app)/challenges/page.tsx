@@ -521,20 +521,30 @@ export default function ChallengesPage() {
                 </DialogContent>
             </Dialog>
 
-            {/* View Challenge Details Dialog (New) */}
             <Dialog open={!!viewChallenge} onOpenChange={(open) => !open && setViewChallenge(null)}>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0">
-                    <ScrollArea className="flex-1 max-h-full">
+                <DialogContent className="max-w-3xl h-[90vh] md:max-h-[85vh] p-0 flex flex-col gap-0 overflow-hidden">
+                    <ScrollArea className="flex-1 w-full bg-background/50">
                         {/* Cover Image Header */}
-                        <div className="relative h-48 w-full bg-muted">
+                        <div className="relative w-full aspect-video bg-black/5 flex items-center justify-center overflow-hidden">
                             {viewChallenge?.cover_image ? (
-                                <img src={viewChallenge.cover_image} alt={viewChallenge.title} className="w-full h-full object-cover" />
+                                <>
+                                    {/* Blurred Background */}
+                                    <div
+                                        className="absolute inset-0 bg-cover bg-center opacity-30 blur-xl"
+                                        style={{ backgroundImage: `url(${viewChallenge.cover_image})` }}
+                                    />
+                                    <img
+                                        src={viewChallenge.cover_image}
+                                        alt={viewChallenge.title}
+                                        className="relative w-full h-full object-contain z-10"
+                                    />
+                                </>
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10">
                                     <Trophy className="h-16 w-16 text-primary/20" />
                                 </div>
                             )}
-                            <Button size="icon" variant="secondary" className="absolute top-2 right-2 rounded-full h-8 w-8 bg-background/80 hover:bg-background" onClick={() => setViewChallenge(null)}>
+                            <Button size="icon" variant="secondary" className="absolute top-2 right-2 rounded-full h-8 w-8 bg-background/80 hover:bg-background z-20" onClick={() => setViewChallenge(null)}>
                                 <X className="h-4 w-4" />
                             </Button>
                         </div>
@@ -579,10 +589,13 @@ export default function ChallengesPage() {
                                     <p className="text-sm">{viewChallenge.prize_description}</p>
                                 </div>
                             )}
+
+                            {/* Extra bottom padding for scrolling past footer */}
+                            <div className="h-20 md:h-0" />
                         </div>
                     </ScrollArea>
 
-                    <div className="p-4 border-t bg-background flex gap-2 justify-end sticky bottom-0 z-10">
+                    <div className="p-4 border-t bg-background flex gap-2 justify-end sticky bottom-0 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
                         {/* Footer Actions - Duplicate logic from card but expanded */}
                         {viewChallenge && userId === viewChallenge.created_by ? (
                             <>

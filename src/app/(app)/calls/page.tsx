@@ -103,7 +103,7 @@ function getCallStatusText(call: CallRecord, userId: string): string {
 
 export default function CallsPage() {
   const { loggedInUser, isReady } = useAppContext()
-  const { startCall } = useCallContext()
+  const { startCall, startGroupCall } = useCallContext()
   const [calls, setCalls] = useState<CallRecord[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -201,13 +201,13 @@ export default function CallsPage() {
               >
                 <Avatar className="h-12 w-12 flex-shrink-0">
                   <AvatarImage src={getAvatarUrl(otherAvatar || undefined)} alt={otherName || ""} />
-                  <AvatarFallback>{otherName?.charAt(0) || "?"}</AvatarFallback>
+                  <AvatarFallback>{call.is_group ? "G" : (otherName?.charAt(0) || "?")}</AvatarFallback>
                 </Avatar>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <p className={`font-medium truncate ${isMissed ? "text-red-500" : ""}`}>
-                      {otherName || "Unknown"}
+                      {call.is_group ? "Group Call" : (otherName || "Unknown")}
                     </p>
                     <Badge variant="outline" className="text-xs px-1.5 py-0">
                       {call.call_type === "video" ? (
@@ -231,8 +231,15 @@ export default function CallsPage() {
                   variant="ghost"
                   size="icon"
                   className="flex-shrink-0"
-                  onClick={() => startCall(otherUserId, call.call_type)}
-                  aria-label={`Call ${otherName}`}
+                  onClick={() => {
+                    if (call.is_group && call.chat_id && startGroupCall) {
+                      startGroupCall(call.chat_id.toString(), call.call_type);
+                    } else if (otherUserId && startCall) {
+                      startCall(otherUserId, call.call_type);
+                    }
+                  }}
+                  aria-label={`Call ${otherName || "Group"}`}
+                  disabled={call.is_group ? !startGroupCall : !otherUserId}
                 >
                   {call.call_type === "video" ? (
                     <Video className="h-5 w-5 text-primary" />

@@ -3,21 +3,20 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 
 // Free STUN servers for NAT traversal
-// Multiple servers for cross-browser compatibility (Safari, Firefox, Edge)
 const ICE_SERVERS: RTCConfiguration = {
   iceServers: [
     { urls: "stun:stun.l.google.com:19302" },
     { urls: "stun:stun1.l.google.com:19302" },
     { urls: "stun:stun2.l.google.com:19302" },
   ],
-  // bundlePolicy improves connectivity in Firefox/Safari
   bundlePolicy: "max-bundle",
   iceCandidatePoolSize: 1,
 }
 
 export type WebRTCState = {
   localStream: MediaStream | null
-  remoteStream: MediaStream | null
+  remoteStream: MediaStream | null // Deprecated: Use remoteStreams for reliability
+  remoteStreams: Map<string, MediaStream> // Keyed by userId
   isAudioMuted: boolean
   isVideoOff: boolean
   isScreenSharing: boolean
@@ -25,27 +24,27 @@ export type WebRTCState = {
 }
 
 export function useWebRTC() {
-  const peerConnectionRef = useRef<RTCPeerConnection | null>(null)
+  const peerConnectionsRef = useRef<Map<string, RTCPeerConnection>>(new Map())
+  const remoteStreamsRef = useRef<Map<string, MediaStream>>(new Map())
   const localStreamRef = useRef<MediaStream | null>(null)
   const screenStreamRef = useRef<MediaStream | null>(null)
-  const remoteStreamRef = useRef<MediaStream>(new MediaStream())
-  const pendingCandidatesRef = useRef<RTCIceCandidateInit[]>([]) // 1️⃣ Add ICE Candidate Queue
+  const pendingCandidatesRef = useRef<Map<string, RTCIceCandidateInit[]>>(new Map())
 
   const [state, setState] = useState<WebRTCState>({
     localStream: null,
     remoteStream: null,
+    remoteStreams: new Map(),
     isAudioMuted: false,
     isVideoOff: false,
     isScreenSharing: false,
     connectionState: "new",
   })
 
-  // Cleanup function
+  // Cleanup function (closes all connections)
   const cleanup = useCallback(() => {
-    if (peerConnectionRef.current) {
-      peerConnectionRef.current.close()
-      peerConnectionRef.current = null
-    }
+    peerConnectionsRef.current.forEach((pc) => pc.close())
+    peerConnectionsRef.current.clear()
+
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach((track) => track.stop())
       localStreamRef.current = null
@@ -54,11 +53,13 @@ export function useWebRTC() {
       screenStreamRef.current.getTracks().forEach((track) => track.stop())
       screenStreamRef.current = null
     }
-    remoteStreamRef.current = new MediaStream()
-    pendingCandidatesRef.current = [] // Clear pending candidates
+    remoteStreamsRef.current.clear()
+    pendingCandidatesRef.current.clear()
+
     setState({
       localStream: null,
       remoteStream: null,
+      remoteStreams: new Map(),
       isAudioMuted: false,
       isVideoOff: false,
       isScreenSharing: false,
@@ -69,9 +70,8 @@ export function useWebRTC() {
   // Initialize local media stream
   const initializeMedia = useCallback(async (video: boolean) => {
     try {
-      // Check for getUserMedia support (Safari may use webkit prefix)
       if (!navigator.mediaDevices?.getUserMedia) {
-        throw new Error("Your browser does not support media devices. Please use a modern browser.")
+        throw new Error("Browser does not support media devices.")
       }
       const constraints: MediaStreamConstraints = {
         audio: {
@@ -97,17 +97,18 @@ export function useWebRTC() {
     }
   }, [])
 
-  // Create peer connection
+  // Create peer connection for a specific user
   const createPeerConnection = useCallback(
-    (onIceCandidate: (candidate: RTCIceCandidate) => void) => {
-      // 5️⃣ Prevent Multiple PeerConnections
-      if (peerConnectionRef.current) {
-        peerConnectionRef.current.close()
-        peerConnectionRef.current = null
+    (userId: string, onIceCandidate: (candidate: RTCIceCandidate) => void) => {
+      // Close existing connection if any
+      if (peerConnectionsRef.current.has(userId)) {
+        peerConnectionsRef.current.get(userId)?.close()
+        peerConnectionsRef.current.delete(userId)
       }
 
       const pc = new RTCPeerConnection(ICE_SERVERS)
-      peerConnectionRef.current = pc
+      peerConnectionsRef.current.set(userId, pc)
+      pendingCandidatesRef.current.set(userId, [])
 
       // Handle ICE candidates
       pc.onicecandidate = (event) => {
@@ -118,22 +119,34 @@ export function useWebRTC() {
 
       // Handle remote stream tracks
       pc.ontrack = (event) => {
+        const stream = remoteStreamsRef.current.get(userId) || new MediaStream()
         event.streams[0]?.getTracks().forEach((track) => {
-          remoteStreamRef.current.addTrack(track)
+          stream.addTrack(track)
         })
-        setState((prev) => ({ ...prev, remoteStream: remoteStreamRef.current }))
+        remoteStreamsRef.current.set(userId, stream)
+
+        // Update state
+        setState((prev) => {
+          const newMap = new Map(remoteStreamsRef.current)
+          return {
+            ...prev,
+            remoteStreams: newMap,
+            remoteStream: newMap.values().next().value || null // Backward compatibility
+          }
+        })
       }
 
       // Monitor connection state
       pc.onconnectionstatechange = () => {
-        setState((prev) => ({
-          ...prev,
-          connectionState: pc.connectionState,
-        }))
+        console.log(`Connection state for ${userId}: ${pc.connectionState}`)
+        // Update global state if needed, primarily for debugging single P2P
+        if (peerConnectionsRef.current.size === 1) {
+          setState((prev) => ({
+            ...prev,
+            connectionState: pc.connectionState
+          }))
+        }
       }
-
-      // 6️⃣ REMOVE Automatic Renegotiation
-      // onnegotiationneeded removed to prevent uncontrolled renegotiation
 
       // Add local tracks to the connection
       if (localStreamRef.current) {
@@ -147,14 +160,32 @@ export function useWebRTC() {
     []
   )
 
-  // Create SDP offer
-  const createOffer = useCallback(async () => {
-    const pc = peerConnectionRef.current
-    if (!pc) throw new Error("No peer connection")
+  const removePeer = useCallback((userId: string) => {
+    const pc = peerConnectionsRef.current.get(userId)
+    if (pc) {
+      pc.close()
+      peerConnectionsRef.current.delete(userId)
+    }
+    remoteStreamsRef.current.delete(userId)
+    pendingCandidatesRef.current.delete(userId)
 
-    // 3️⃣ Prevent Offer Creation When Not Stable
+    setState((prev) => {
+      const newMap = new Map(remoteStreamsRef.current)
+      return {
+        ...prev,
+        remoteStreams: newMap,
+        remoteStream: newMap.values().next().value || null
+      }
+    })
+  }, [])
+
+  // Create SDP offer for a specific user
+  const createOffer = useCallback(async (userId: string) => {
+    const pc = peerConnectionsRef.current.get(userId)
+    if (!pc) throw new Error(`No peer connection found for ${userId}`)
+
     if (pc.signalingState !== "stable") {
-      console.warn("Skipping offer creation — signaling not stable:", pc.signalingState)
+      console.warn(`Skipping offer creation for ${userId} — signaling not stable:`, pc.signalingState)
       return null
     }
 
@@ -163,63 +194,65 @@ export function useWebRTC() {
     return offer
   }, [])
 
-  // Create SDP answer
-  const createAnswer = useCallback(async () => {
-    const pc = peerConnectionRef.current
-    if (!pc) throw new Error("No peer connection")
+  // Create SDP answer for a specific user
+  const createAnswer = useCallback(async (userId: string) => {
+    const pc = peerConnectionsRef.current.get(userId)
+    if (!pc) throw new Error(`No peer connection found for ${userId}`)
+
     if (pc.signalingState !== "have-remote-offer") {
-      console.warn("Skipping answer creation — signaling state is not have-remote-offer:", pc.signalingState);
+      console.warn(`Skipping answer creation for ${userId} — signaling state:`, pc.signalingState);
       return null;
     }
+
     const answer = await pc.createAnswer()
     await pc.setLocalDescription(answer)
     return answer
   }, [])
 
-  // Set remote description (offer or answer)
-  // Note: Pass plain object instead of new RTCSessionDescription() for Safari/Firefox compat
-  const setRemoteDescription = useCallback(async (description: RTCSessionDescriptionInit) => {
-    const pc = peerConnectionRef.current
-    if (!pc) throw new Error("No peer connection")
+  // Set remote description for a specific user
+  const setRemoteDescription = useCallback(async (userId: string, description: RTCSessionDescriptionInit) => {
+    const pc = peerConnectionsRef.current.get(userId)
+    if (!pc) throw new Error(`No peer connection found for ${userId}`)
 
-    // 4️⃣ Prevent Duplicate Remote Answer Setting
     if (
       description.type === "answer" &&
       pc.signalingState === "stable"
     ) {
-      console.warn("Skipping remote answer — already stable")
+      console.warn(`Skipping remote answer for ${userId} — already stable`)
       return
     }
 
     await pc.setRemoteDescription(description)
 
-    // 2️⃣ Flush ICE Queue After Setting Remote Description
-    for (const candidate of pendingCandidatesRef.current) {
+    // Flush ICE Queue for this user
+    const pending = pendingCandidatesRef.current.get(userId) || []
+    for (const candidate of pending) {
       try {
         await pc.addIceCandidate(candidate)
       } catch (err) {
-        console.error("Error adding queued ICE candidate:", err)
+        console.error(`Error adding queued ICE candidate for ${userId}:`, err)
       }
     }
-    pendingCandidatesRef.current = []
+    pendingCandidatesRef.current.set(userId, [])
   }, [])
 
-  // Add ICE candidate from remote peer
-  // Note: Pass plain object instead of new RTCIceCandidate() for Safari/Firefox compat
-  const addIceCandidate = useCallback(async (candidate: RTCIceCandidateInit) => {
-    const pc = peerConnectionRef.current
+  // Add ICE candidate for a specific user
+  const addIceCandidate = useCallback(async (userId: string, candidate: RTCIceCandidateInit) => {
+    const pc = peerConnectionsRef.current.get(userId)
     if (!pc) return
 
-    // 1️⃣ Add ICE Candidate Queue (Queue if remote description not set)
+    // Queue if remote description not set
     if (!pc.remoteDescription) {
-      pendingCandidatesRef.current.push(candidate)
+      const pending = pendingCandidatesRef.current.get(userId) || []
+      pending.push(candidate)
+      pendingCandidatesRef.current.set(userId, pending)
       return
     }
 
     try {
       await pc.addIceCandidate(candidate)
     } catch (error) {
-      console.error("Error adding ICE candidate:", error)
+      console.error(`Error adding ICE candidate for ${userId}:`, error)
     }
   }, [])
 
@@ -245,30 +278,29 @@ export function useWebRTC() {
     }
   }, [])
 
-  // Toggle screen sharing
+  // Toggle screen sharing (replaces video track for ALL peers)
   const toggleScreenShare = useCallback(async () => {
-    const pc = peerConnectionRef.current
-    if (!pc) return
+    // Logic needs to iterate over all peer connections and replace senders
+    const connections = Array.from(peerConnectionsRef.current.values())
 
     if (state.isScreenSharing && screenStreamRef.current) {
-      // Stop screen share and revert to camera
+      // Stop screen share
       screenStreamRef.current.getTracks().forEach((track) => track.stop())
       screenStreamRef.current = null
 
       const videoTrack = localStreamRef.current?.getVideoTracks()[0]
       if (videoTrack) {
-        const sender = pc.getSenders().find((s) => s.track?.kind === "video")
-        if (sender) {
-          await sender.replaceTrack(videoTrack)
+        for (const pc of connections) {
+          const sender = pc.getSenders().find((s) => s.track?.kind === "video")
+          if (sender) await sender.replaceTrack(videoTrack)
         }
       }
       setState((prev) => ({ ...prev, isScreenSharing: false }))
     } else {
       // Start screen share
       try {
-        // Check for getDisplayMedia support — not available on older Safari/Firefox mobile
         if (!navigator.mediaDevices?.getDisplayMedia) {
-          throw new Error("Screen sharing is not supported in this browser.")
+          throw new Error("Screen sharing not supported.")
         }
         const screenStream = await navigator.mediaDevices.getDisplayMedia({
           video: true,
@@ -277,16 +309,19 @@ export function useWebRTC() {
         screenStreamRef.current = screenStream
 
         const screenTrack = screenStream.getVideoTracks()[0]
-        const sender = pc.getSenders().find((s) => s.track?.kind === "video")
-        if (sender) {
-          await sender.replaceTrack(screenTrack)
+
+        for (const pc of connections) {
+          const sender = pc.getSenders().find((s) => s.track?.kind === "video")
+          if (sender) await sender.replaceTrack(screenTrack)
         }
 
-        // Listen for when user stops screen share via browser UI
         screenTrack.onended = () => {
           const camTrack = localStreamRef.current?.getVideoTracks()[0]
-          if (camTrack && sender) {
-            sender.replaceTrack(camTrack)
+          if (camTrack) {
+            for (const pc of Array.from(peerConnectionsRef.current.values())) {
+              const sender = pc.getSenders().find((s) => s.track?.kind === "video")
+              if (sender) sender.replaceTrack(camTrack)
+            }
           }
           screenStreamRef.current = null
           setState((prev) => ({ ...prev, isScreenSharing: false }))
@@ -299,7 +334,8 @@ export function useWebRTC() {
     }
   }, [state.isScreenSharing])
 
-  // Cleanup on unmount
+  // No automatic renegotiation handler needed as per previous fix
+
   useEffect(() => {
     return () => {
       cleanup()
@@ -310,6 +346,7 @@ export function useWebRTC() {
     state,
     initializeMedia,
     createPeerConnection,
+    removePeer,
     createOffer,
     createAnswer,
     setRemoteDescription,
