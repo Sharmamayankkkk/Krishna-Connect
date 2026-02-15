@@ -32,6 +32,9 @@ const BG_GRADIENTS = [
   'from-pink-500 to-rose-400',
 ];
 
+const MAX_VIDEO_SIZE_MB = 50;
+const MAX_VIDEO_SIZE_BYTES = MAX_VIDEO_SIZE_MB * 1024 * 1024;
+
 type StoryMode = 'select' | 'photo' | 'video' | 'text';
 
 export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: CreateStatusDialogProps) {
@@ -53,8 +56,8 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
     if (!selectedFile) return;
 
     const isVideo = selectedFile.type.startsWith('video/');
-    if (isVideo && selectedFile.size > 50 * 1024 * 1024) {
-      toast({ variant: 'destructive', title: 'File too large', description: 'Video must be under 50MB' });
+    if (isVideo && selectedFile.size > MAX_VIDEO_SIZE_BYTES) {
+      toast({ variant: 'destructive', title: 'File too large', description: `Video must be under ${MAX_VIDEO_SIZE_MB}MB` });
       return;
     }
 
@@ -90,7 +93,7 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
         canvas.width = 1080;
         canvas.height = 1920;
         const ctx = canvas.getContext('2d');
-        if (!ctx) throw new Error('Canvas not supported');
+        if (!ctx) throw new Error('Canvas rendering is not supported in your browser');
 
         const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
         const gradClass = bgGradient;
@@ -282,7 +285,7 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
                 {mode === 'photo' ? (
                   <Image src={preview} alt="Story preview" fill className="object-contain" />
                 ) : (
-                  <video src={preview} className="w-full h-full object-contain" autoPlay muted loop playsInline />
+                  <video src={preview} className="w-full h-full object-contain" autoPlay muted loop playsInline aria-label="Story preview video" />
                 )}
               </div>
 

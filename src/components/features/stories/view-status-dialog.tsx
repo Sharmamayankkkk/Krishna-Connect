@@ -264,7 +264,7 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
       if (videoRef.current) videoRef.current.pause();
     } else if (open) {
       startTimer();
-      if (videoRef.current) videoRef.current.play().catch(() => {});
+      if (videoRef.current) videoRef.current.play().catch((err) => console.error('Video playback error:', err));
     }
   }, [isPaused, open, startTimer, stopTimer, progress, duration]);
 
@@ -338,8 +338,9 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
 
   const toggleMute = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsMuted(prev => !prev);
-    if (videoRef.current) videoRef.current.muted = !isMuted;
+    const newMuted = !isMuted;
+    setIsMuted(newMuted);
+    if (videoRef.current) videoRef.current.muted = newMuted;
   };
 
   if (!statusUpdate || !currentStatus) return null;
@@ -506,7 +507,7 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
                 onFocus={() => setIsPaused(true)}
-                onBlur={() => { if (!replyText) setIsPaused(false); }}
+                onBlur={() => { if (!replyText && !isSendingReply) setIsPaused(false); }}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleSendReply(); }}
                 className="flex-1 px-4 py-2.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm placeholder:text-white/40 outline-none focus:border-white/40 transition-colors"
               />
