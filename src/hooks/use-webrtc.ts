@@ -29,6 +29,7 @@ export function useWebRTC() {
   const localStreamRef = useRef<MediaStream | null>(null)
   const screenStreamRef = useRef<MediaStream | null>(null)
   const remoteStreamRef = useRef<MediaStream>(new MediaStream())
+  const pendingCandidatesRef = useRef<RTCIceCandidateInit[]>([]) // 1️⃣ Add ICE Candidate Queue
 
   const [state, setState] = useState<WebRTCState>({
     localStream: null,
@@ -54,6 +55,7 @@ export function useWebRTC() {
       screenStreamRef.current = null
     }
     remoteStreamRef.current = new MediaStream()
+    pendingCandidatesRef.current = [] // Clear pending candidates
     setState({
       localStream: null,
       remoteStream: null,
@@ -79,10 +81,10 @@ export function useWebRTC() {
         },
         video: video
           ? {
-              facingMode: "user",
-              width: { ideal: 1280, max: 1920 },
-              height: { ideal: 720, max: 1080 },
-            }
+            facingMode: "user",
+            width: { ideal: 1280, max: 1920 },
+            height: { ideal: 720, max: 1080 },
+          }
           : false,
       }
       const stream = await navigator.mediaDevices.getUserMedia(constraints)
@@ -97,7 +99,13 @@ export function useWebRTC() {
 
   // Create peer connection
   const createPeerConnection = useCallback(
-    (onIceCandidate: (candidate: RTCIceCandidate) => void, onNegotiationNeeded?: () => void) => {
+    (onIceCandidate: (candidate: RTCIceCandidate) => void) => {
+      // 5️⃣ Prevent Multiple PeerConnections
+      if (peerConnectionRef.current) {
+        peerConnectionRef.current.close()
+        peerConnectionRef.current = null
+      }
+
       const pc = new RTCPeerConnection(ICE_SERVERS)
       peerConnectionRef.current = pc
 
@@ -124,10 +132,8 @@ export function useWebRTC() {
         }))
       }
 
-      // Handle renegotiation (e.g., when screen share starts)
-      if (onNegotiationNeeded) {
-        pc.onnegotiationneeded = onNegotiationNeeded
-      }
+      // 6️⃣ REMOVE Automatic Renegotiation
+      // onnegotiationneeded removed to prevent uncontrolled renegotiation
 
       // Add local tracks to the connection
       if (localStreamRef.current) {
@@ -145,6 +151,13 @@ export function useWebRTC() {
   const createOffer = useCallback(async () => {
     const pc = peerConnectionRef.current
     if (!pc) throw new Error("No peer connection")
+
+    // 3️⃣ Prevent Offer Creation When Not Stable
+    if (pc.signalingState !== "stable") {
+      console.warn("Skipping offer creation — signaling not stable:", pc.signalingState)
+      return null
+    }
+
     const offer = await pc.createOffer()
     await pc.setLocalDescription(offer)
     return offer
@@ -154,6 +167,10 @@ export function useWebRTC() {
   const createAnswer = useCallback(async () => {
     const pc = peerConnectionRef.current
     if (!pc) throw new Error("No peer connection")
+    if (pc.signalingState !== "have-remote-offer") {
+      console.warn("Skipping answer creation — signaling state is not have-remote-offer:", pc.signalingState);
+      return null;
+    }
     const answer = await pc.createAnswer()
     await pc.setLocalDescription(answer)
     return answer
@@ -164,7 +181,27 @@ export function useWebRTC() {
   const setRemoteDescription = useCallback(async (description: RTCSessionDescriptionInit) => {
     const pc = peerConnectionRef.current
     if (!pc) throw new Error("No peer connection")
+
+    // 4️⃣ Prevent Duplicate Remote Answer Setting
+    if (
+      description.type === "answer" &&
+      pc.signalingState === "stable"
+    ) {
+      console.warn("Skipping remote answer — already stable")
+      return
+    }
+
     await pc.setRemoteDescription(description)
+
+    // 2️⃣ Flush ICE Queue After Setting Remote Description
+    for (const candidate of pendingCandidatesRef.current) {
+      try {
+        await pc.addIceCandidate(candidate)
+      } catch (err) {
+        console.error("Error adding queued ICE candidate:", err)
+      }
+    }
+    pendingCandidatesRef.current = []
   }, [])
 
   // Add ICE candidate from remote peer
@@ -172,6 +209,13 @@ export function useWebRTC() {
   const addIceCandidate = useCallback(async (candidate: RTCIceCandidateInit) => {
     const pc = peerConnectionRef.current
     if (!pc) return
+
+    // 1️⃣ Add ICE Candidate Queue (Queue if remote description not set)
+    if (!pc.remoteDescription) {
+      pendingCandidatesRef.current.push(candidate)
+      return
+    }
+
     try {
       await pc.addIceCandidate(candidate)
     } catch (error) {
