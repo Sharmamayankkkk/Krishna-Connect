@@ -374,8 +374,10 @@ export default function LeelaPage() {
     if (navigator.share) {
       try {
         await navigator.share({ title: video.caption || 'Check out this Leela', url })
-      } catch {
-        // User cancelled share
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name !== 'AbortError') {
+          console.error('Share failed:', err.message)
+        }
       }
     } else {
       await navigator.clipboard.writeText(url)
@@ -401,7 +403,7 @@ export default function LeelaPage() {
       .eq('video_id', videoId)
       .order('created_at', { ascending: false })
       .limit(50)
-    setComments((data || []).map((c: any) => ({
+    setComments((data || []).map((c: { id: string; content: string; created_at: string; user_id: string; profiles: { name: string; username: string; avatar_url: string | null } | null }) => ({
       id: c.id,
       content: c.content,
       created_at: c.created_at,
@@ -638,7 +640,7 @@ export default function LeelaPage() {
               placeholder="Add a comment..."
               value={commentText}
               onChange={e => setCommentText(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && postComment()}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); postComment(); } }}
               className="flex-1 rounded-full text-sm"
               disabled={postingComment}
             />
