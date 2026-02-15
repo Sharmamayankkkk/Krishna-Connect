@@ -51,6 +51,7 @@ import {
 } from "@/components/ui/tooltip";
 import { VerificationBadge } from "@/components/shared/verification-badge";
 import { GoogleAd } from '@/components/ads/google-ad';
+import { UploadLeelaFab } from '@/components/features/leela/upload-leela-fab';
 
 interface LeelaVideo {
   id: string;
@@ -685,6 +686,9 @@ export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], f
           </div>
         </>
       )}
+
+      {/* Upload Leela FAB - shown on own profile */}
+      {isOwnProfile && <UploadLeelaFab />}
     </div>
   );
 }

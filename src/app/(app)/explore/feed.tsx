@@ -25,6 +25,7 @@ import {
 import { createClient } from '@/lib/supabase/client';
 import { GlobalSearchBar } from "@/components/global-search-bar"
 import { StoriesBar } from '@/components/features/stories/stories-bar';
+import { UploadLeelaFab } from '@/components/features/leela/upload-leela-fab';
 
 // Custom Hooks
 import { useInfiniteScroll, useFeedFiltering, type FeedFilter } from './hooks';
@@ -622,12 +623,15 @@ export default function Feed() {
                     </div>
                 </div>
 
+                {/* Upload Leela FAB */}
+                <UploadLeelaFab />
+
                 {/* Scroll to Top Button */}
                 {showScrollTop && (
                     <Button
                         variant="secondary"
                         size="icon"
-                        className="fixed bottom-20 right-4 rounded-full shadow-lg z-50 md:bottom-8"
+                        className="fixed bottom-36 right-4 rounded-full shadow-lg z-50 md:bottom-24"
                         onClick={scrollToTop}
                         aria-label="Scroll to top"
                     >
