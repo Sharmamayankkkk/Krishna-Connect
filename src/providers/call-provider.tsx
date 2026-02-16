@@ -165,6 +165,11 @@ export function CallProvider({ children }: { children: ReactNode }) {
     [loggedInUser]
   )
 
+  const activeCallRef = useRef<ActiveCall | null>(null)
+  useEffect(() => {
+    activeCallRef.current = activeCall
+  }, [activeCall])
+
   // Handle incoming signals
   const handleSignal = useCallback(
     async (signal: CallSignal) => {
@@ -172,11 +177,12 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
       const payload = signal.payload as Record<string, unknown>
       const senderId = signal.sender_id
+      const currentActiveCall = activeCallRef.current
 
       switch (signal.signal_type) {
         case "offer": {
           // Received an SDP offer - set remote description and create answer
-          if (!activeCall) return
+          if (!currentActiveCall) return
 
           // Ensure PC exists for this peer
           webrtc.createPeerConnection(senderId, (candidate) =>
@@ -200,7 +206,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         }
         case "hangup": {
           // Remote peer hung up
-          if (activeCall?.callRecord.is_group) {
+          if (currentActiveCall?.callRecord.is_group) {
             webrtc.removePeer(senderId)
             toast({ title: "User Left", description: "A participant left the call." })
           } else {
@@ -231,7 +237,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         }
       }
     },
-    [loggedInUser, webrtc, activeCall, sendSignal, cleanupCall, toast]
+    [loggedInUser, webrtc, sendSignal, cleanupCall, toast]
   )
 
   // Subscribe to signals for a call
@@ -289,18 +295,9 @@ export function CallProvider({ children }: { children: ReactNode }) {
           (payload) => {
             const newParticipantUserId = payload.new.user_id;
             if (newParticipantUserId !== loggedInUser.id && payload.new.status === 'joined') {
-              // New user joined group call -> initiate connection
-              // In Mesh, everyone connects to everyone. 
-              // Simplest: Every existing participant initiates to the new joiner.
-              // OR the joiner initiates to everyone.
-              // Let's have EXISTING participants initiate to the NEW joiner to avoid race conditions.
-
-              webrtc.createPeerConnection(newParticipantUserId, (candidate) =>
-                sendSignal(callId, newParticipantUserId, "ice-candidate", candidate.toJSON())
-              )
-              webrtc.createOffer(newParticipantUserId).then((offer) => {
-                sendSignal(callId, newParticipantUserId, "offer", offer as unknown as Record<string, unknown>)
-              })
+              // New user joined group call -> DO NOT INITIATE
+              // STRATEGY CHANGE: "Joiner Initiates"
+              // We just wait for the Joiner to send us an Offer.
               toast({ title: "User Joined", description: "A new participant joined the call." })
             }
           }
@@ -519,18 +516,17 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
         if (participants) {
           for (const p of participants) {
-            // Create PC for each existing participant
-            // IMPORTANT: In Mesh, usually logic is simpler if joiner initiates OR existing initiates.
-            // We set existing participants to initiate to NEW joiners in subscribeToParticipants.
-            // So here, DO NOT initiate. Wait for offers from them?
-            // Actually, if we rely on existing participants (who are online) to initiate, that's safer.
-            // Because joiner might not know who is actually online vs just in DB.
+            // STRATEGY CHANGE: Joiner initiates connection to existing participants
+            const targetUserId = p.user_id
 
-            // Wait for offers from them (since they get the INSERT event).
-            // BUT, if they joined before us, they are already there.
-            // Let's rely on the INSERT event we just triggered (step 1 above).
-            // Existing participants will see US join, and initiate connection TO US.
-            // So we just need to be ready to accept offers (which handleSignal does).
+            webrtc.createPeerConnection(targetUserId, (candidate) =>
+              sendSignal(callRecord.id, targetUserId, "ice-candidate", candidate.toJSON())
+            )
+
+            const offer = await webrtc.createOffer(targetUserId)
+            if (offer) {
+              await sendSignal(callRecord.id, targetUserId, "offer", offer as unknown as Record<string, unknown>)
+            }
           }
         }
 

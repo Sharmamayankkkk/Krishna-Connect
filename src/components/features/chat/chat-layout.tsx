@@ -59,7 +59,7 @@ export function ChatLayout({ chats, children }: ChatLayoutProps) {
         </SidebarFooter>
       </Sidebar>
 
-      <main className={`flex-1 overflow-y-auto md:pb-0 ${isMobileNavHidden ? '' : 'pb-16'}`}>
+      <main className={`flex-1 md:pb-0 ${isMobileNavHidden ? 'overflow-hidden' : 'overflow-y-auto pb-16'}`}>
         {children}
       </main>
 
