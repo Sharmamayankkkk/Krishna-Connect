@@ -220,6 +220,35 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
     // We create a Supabase client instance to interact with our database.
     const supabase = createClient();
 
+    // Listen for real-time message updates (e.g., edited messages, call status changes)
+    useEffect(() => {
+        const channel = supabase.channel(`chat-messages-updates-${chat.id}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'messages',
+                    filter: `chat_id=eq.${chat.id}`
+                },
+                (payload) => {
+                    const updatedMessage = payload.new as Message;
+                    setMessages((currentMessages) =>
+                        currentMessages.map((msg) =>
+                            msg.id === updatedMessage.id
+                                ? { ...msg, ...updatedMessage, profiles: msg.profiles } // Keep the profile data
+                                : msg
+                        )
+                    );
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [chat.id, supabase, setMessages]);
+
     // `useMemo` is a performance optimization hook. It calculates a value and "memoizes" (remembers) it.
     // The value is only recalculated if one of the dependencies (the array at the end) changes.
     // This prevents expensive calculations on every single render.

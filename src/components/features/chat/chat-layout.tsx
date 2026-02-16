@@ -17,6 +17,8 @@ import { ChatList } from "./chat-list"
 import { MainNav } from "../../layout/main-nav"
 import { MobileBottomNav } from "../../layout/mobile-bottom-nav"
 
+import { usePathname } from "next/navigation"
+
 interface ChatLayoutProps {
   chats: Chat[],
   children: React.ReactNode
@@ -25,6 +27,12 @@ interface ChatLayoutProps {
 // This is the main layout component for the entire chat application.
 // It creates the two-column structure with the sidebar on the left and the main content on the right.
 export function ChatLayout({ chats, children }: ChatLayoutProps) {
+  const pathname = usePathname()
+
+  // Logic to match MobileBottomNav visibility
+  // If nav is hidden, we shouldn't have padding
+  const isMobileNavHidden = /^(\/chat\/\d+|\/leela)$/.test(pathname)
+
   return (
     <>
       {/* This is the sidebar component from our UI library. */}
@@ -50,7 +58,10 @@ export function ChatLayout({ chats, children }: ChatLayoutProps) {
           <UserMenu />
         </SidebarFooter>
       </Sidebar>
-      <main className="flex-1 overflow-y-auto pb-16 md:pb-0">{children}</main>
+
+      <main className={`flex-1 overflow-y-auto md:pb-0 ${isMobileNavHidden ? '' : 'pb-16'}`}>
+        {children}
+      </main>
 
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav />
