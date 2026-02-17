@@ -194,7 +194,11 @@ export function AlreadyVerifiedView({ request }: AlreadyVerifiedStateProps) {
                             </div>
                             <p className="text-xs text-muted-foreground mb-4">Refreshes next month</p>
 
-                            <Button className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg shadow-blue-500/20" variant="default">
+                            <Button
+                                className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg shadow-blue-500/20"
+                                variant="default"
+                                onClick={() => router.push('/settings/promotions')}
+                            >
                                 <Sparkles className="mr-2 h-4 w-4" />
                                 Boost a Post
                             </Button>
