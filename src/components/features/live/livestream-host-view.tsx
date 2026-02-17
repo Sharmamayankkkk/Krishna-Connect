@@ -30,14 +30,21 @@ export function LivestreamHostView({ livestreamId, callId }: LivestreamHostViewP
         const initCall = async () => {
             try {
                 const streamCall = client.call('livestream', callId)
+
+                // Join the call first
                 await streamCall.join()
+
+                // Request camera and microphone permissions
+                await streamCall.camera.enable()
+                await streamCall.microphone.enable()
+
                 setCall(streamCall)
             } catch (error) {
                 console.error('Failed to join call:', error)
                 toast({
                     variant: 'destructive',
                     title: 'Failed to Join',
-                    description: 'Could not connect to the livestream',
+                    description: error instanceof Error ? error.message : 'Could not connect to the livestream',
                 })
             } finally {
                 setIsLoading(false)
