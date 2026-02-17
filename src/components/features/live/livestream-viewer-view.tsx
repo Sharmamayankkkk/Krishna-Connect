@@ -98,6 +98,9 @@ function LivestreamPlayer({ call, title, hostName }: { call: any; title: string;
     // Get the host (first participant, usually the broadcaster)
     const hostParticipant = participants.find(p => !p.isLocalParticipant)
 
+    // Check if host is screen sharing
+    const isScreenSharing = hostParticipant?.publishedTracks.includes('screenShare')
+
     return (
         <div className="flex-1 flex flex-col items-center justify-center bg-gray-900/50 relative">
             <div className="aspect-video bg-black w-full flex items-center justify-center relative">
@@ -109,6 +112,13 @@ function LivestreamPlayer({ call, title, hostName }: { call: any; title: string;
                 ) : (
                     <div className="text-muted-foreground">
                         {isLive ? 'Loading stream...' : 'Stream is in backstage mode'}
+                    </div>
+                )}
+
+                {/* Screen Share Indicator */}
+                {isScreenSharing && (
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-blue-600 px-3 py-1.5 rounded-md">
+                        <span className="text-sm font-semibold text-white">Screen Sharing</span>
                     </div>
                 )}
             </div>

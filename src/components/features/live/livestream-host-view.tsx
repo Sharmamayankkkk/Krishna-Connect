@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Video, VideoOff, Mic, MicOff, Radio, StopCircle, Users, Loader2, MessageCircle, X, Send, UserPlus, MonitorUp } from 'lucide-react'
+import { Video, VideoOff, Mic, MicOff, Radio, StopCircle, Users, Loader2, MessageCircle, X, Send, UserPlus, MonitorUp, Share2 } from 'lucide-react'
 import { InviteGuestDialog } from './invite-guest-dialog'
+import { ShareLivestreamDialog } from './share-livestream-dialog'
 import { createClient } from '@/lib/utils'
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
@@ -123,6 +124,7 @@ function LivestreamHostControls({ call, livestreamId }: { call: any; livestreamI
     // Guest collaboration state
     const [guests, setGuests] = useState<any[]>([])
     const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false)
+    const [isShareDialogOpen, setIsShareDialogOpen] = useState(false)
 
     // Subscribe to guests
     useEffect(() => {
@@ -459,8 +461,18 @@ function LivestreamHostControls({ call, livestreamId }: { call: any; livestreamI
                                 )}
                             </div>
 
-                            {/* Right: Invite & End */}
+                            {/* Right: Share, Invite & End */}
                             <div className="flex items-center gap-2">
+                                <Button
+                                    size="lg"
+                                    variant="outline"
+                                    onClick={() => setIsShareDialogOpen(true)}
+                                    className="hidden md:flex h-12"
+                                >
+                                    <Share2 className="h-5 w-5 mr-2" />
+                                    Share
+                                </Button>
+
                                 {guests.length < 3 && (
                                     <Button
                                         size="lg"
@@ -566,6 +578,14 @@ function LivestreamHostControls({ call, livestreamId }: { call: any; livestreamI
                 onOpenChange={setIsInviteDialogOpen}
                 livestreamId={livestreamId}
                 currentGuests={guests.map(g => g.user_id)}
+            />
+
+            {/* Share Livestream Dialog */}
+            <ShareLivestreamDialog
+                open={isShareDialogOpen}
+                onOpenChange={setIsShareDialogOpen}
+                livestreamId={livestreamId}
+                title={call?.state?.custom?.title || 'My Livestream'}
             />
         </div>
     )
