@@ -2,6 +2,7 @@
 
 import { AppProvider } from './app-provider'
 import { CallProvider } from './call-provider'
+import { StreamVideoProvider } from './stream-video-provider'
 import { Toaster } from '@/components/ui/toaster'
 import { QueryProvider } from './query-provider'
 import { LoginModalProvider } from './login-modal-provider'
@@ -13,13 +14,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <QueryProvider>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
         <AppProvider>
-          <CallProvider>
-            <LoginModalProvider>
-              {children}
-              <CallOverlay />
-              <Toaster />
-            </LoginModalProvider>
-          </CallProvider>
+          <StreamVideoProvider>
+            <CallProvider>
+              <LoginModalProvider>
+                {children}
+                <CallOverlay />
+                <Toaster />
+              </LoginModalProvider>
+            </CallProvider>
+          </StreamVideoProvider>
         </AppProvider>
       </ThemeProvider>
     </QueryProvider>

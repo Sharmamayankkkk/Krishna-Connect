@@ -3,7 +3,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { MessageSquare, Calendar, Compass, Bell, Trophy, Sparkles } from 'lucide-react'
+import { MessageSquare, Calendar, Compass, Bell, Trophy, Sparkles, Radio } from 'lucide-react'
 import {
   SidebarMenu,
   SidebarMenuItem,
@@ -15,6 +15,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useAuthGuard } from '@/hooks/use-auth-guard'
 import { useAppContext } from '@/providers/app-provider'
 import Image from 'next/image'
+import { GoLiveButton } from '@/components/features/live/go-live-button'
 
 export function MainNav() {
   const pathname = usePathname()
@@ -69,6 +70,12 @@ export function MainNav() {
       mobileHidden: true, // In bottom nav
     },
     {
+      href: '/live',
+      label: 'Live',
+      icon: Radio,
+      isActive: pathname.startsWith('/live'),
+    },
+    {
       href: '/leela',
       label: 'Leela',
       icon: null, // Custom image icon
@@ -107,6 +114,12 @@ export function MainNav() {
       label: 'Get Verified',
       icon: Sparkles,
       isActive: pathname.startsWith('/get-verified'),
+    },
+    {
+      type: 'button', // Special type for Go Live button
+      label: 'Go Live',
+      icon: null,
+      customComponent: 'GoLiveButton',
     }
   ]
 
@@ -128,38 +141,43 @@ export function MainNav() {
   return (
     <nav>
       <SidebarMenu>
-        {menuItems.map((item) => (
-          <SidebarMenuItem key={item.href} className={item.mobileHidden ? 'hidden md:block' : ''}>
-            <SidebarMenuButton
-              asChild
-              isActive={item.isActive}
-              className="w-full justify-start text-sm font-medium h-11"
-            >
-              <Link
-                href={item.href}
-                className="flex items-center"
-                onClick={(e) => handleLinkClick(e, item.href)}
+        {menuItems.map((item, index) => (
+          <SidebarMenuItem key={item.href || `button-${index}`} className={item.mobileHidden ? 'hidden md:block' : ''}>
+            {item.type === 'button' && item.customComponent === 'GoLiveButton' ? (
+              <div className="px-2 py-1">
+                <GoLiveButton />
+              </div>
+            ) : (
+              <SidebarMenuButton
+                asChild
+                isActive={item.isActive}
+                className="w-full justify-start text-sm font-medium h-11"
               >
-                {item.customIcon ? (
-                  <Image
-                    src={item.customIcon}
-                    alt={item.label}
-                    width={20}
-                    height={20}
-                    className="mr-3"
-                  />
-                ) : item.icon ? (
-                  <item.icon className="h-5 w-5 mr-3" />
-                ) : null}
-                <span>{item.label}</span>
-                {item.href === '/notifications' && unreadCount > 0 && (
-                  <Badge className="ml-auto">{unreadCount}</Badge>
-                )}
-              </Link>
-            </SidebarMenuButton>
+                <Link
+                  href={item.href!}
+                  className="flex items-center"
+                  onClick={(e) => handleLinkClick(e, item.href!)}
+                >
+                  {item.customIcon ? (
+                    <Image
+                      src={item.customIcon}
+                      alt={item.label}
+                      width={20}
+                      height={20}
+                      className="mr-3"
+                    />
+                  ) : item.icon ? (
+                    <item.icon className="h-5 w-5 mr-3" />
+                  ) : null}
+                  <span>{item.label}</span>
+                  {item.href === '/notifications' && unreadCount > 0 && (
+                    <Badge className="ml-auto">{unreadCount}</Badge>
+                  )}
+                </Link>
+              </SidebarMenuButton>
+            )}
           </SidebarMenuItem>
-        )
-        )}
+        ))}
       </SidebarMenu>
     </nav>
   )

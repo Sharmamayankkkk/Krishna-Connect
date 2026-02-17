@@ -187,7 +187,7 @@ export function StoriesBar() {
         const supabase = createClient();
 
         // Fetch statuses, close friends list, and live profiles in parallel
-        const [statusesResult, closeFriendsResult, liveProfilesResult] = await Promise.all([
+        const [statusesResult, closeFriendsResult] = await Promise.all([
             supabase
                 .from('statuses')
                 .select('*, profile:user_id(*), status_views!left(viewer_id)')
@@ -196,16 +196,22 @@ export function StoriesBar() {
             supabase
                 .from('close_friends')
                 .select('user_id, friend_id'),
-            supabase
-                .from('profiles')
-                .select('id, is_live')
-                .eq('is_live', true),
+            // Fetch live profiles (if needed in future)
+            // supabase
+            //     .from('profiles')
+            //     .select('id, is_live')
+            //     .eq('is_live', true),
         ]);
+
+        // For now, no profiles are marked as live
+        const liveProfiles: any[] = [];
+        const liveProfileIds = new Set(liveProfiles?.map((p: any) => p.id) || []);
 
         if (statusesResult.error || !statusesResult.data) {
             setIsLoading(false);
             return;
         }
+
 
         // Build close friends lookup: set of user_ids who have me as close friend
         const closeFriendOfSet = new Set<string>();
@@ -219,11 +225,6 @@ export function StoriesBar() {
                 myCloseFriendsSet.add(row.friend_id);
             }
         });
-
-        // Build live profiles set
-        const liveProfileIds = new Set<string>(
-            (liveProfilesResult.data ?? []).map((p: any) => p.id),
-        );
 
         const statusesByUser: Record<string, StatusUpdate> = {};
         statusesResult.data.forEach((status: any) => {
