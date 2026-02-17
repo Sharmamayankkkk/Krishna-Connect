@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useStreamVideo } from '@/providers/stream-video-provider'
-import { useCallStateHooks, ParticipantView } from '@stream-io/video-react-sdk'
-import { Radio, Users, Send, Loader2 } from 'lucide-react'
+import { useCallStateHooks, ParticipantView, StreamCall } from '@stream-io/video-react-sdk'
+import { Radio, Users, Send, Loader2, MessageCircle, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast'
 import { createClient } from '@/lib/supabase/client'
 import { useAppContext } from '@/providers/app-provider'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { cn } from '@/lib/utils'
 
 interface LivestreamViewerViewProps {
     livestreamId: string
@@ -78,10 +79,12 @@ export function LivestreamViewerView({ livestreamId, callId, hostName, title }: 
     }
 
     return (
-        <div className="flex flex-col lg:flex-row h-screen bg-black text-white">
-            <LivestreamPlayer call={call} title={title} hostName={hostName} />
-            <LivestreamChat livestreamId={livestreamId} />
-        </div>
+        <StreamCall call={call}>
+            <div className="flex flex-col lg:flex-row h-screen bg-black text-white">
+                <LivestreamPlayer call={call} title={title} hostName={hostName} />
+                <LivestreamChat livestreamId={livestreamId} />
+            </div>
+        </StreamCall>
     )
 }
 
@@ -149,6 +152,7 @@ function LivestreamChat({ livestreamId }: { livestreamId: string }) {
     const [messages, setMessages] = useState<ChatMessage[]>([])
     const [newMessage, setNewMessage] = useState('')
     const [isSending, setIsSending] = useState(false)
+    const [isChatOpen, setIsChatOpen] = useState(false)
 
     // Fetch and subscribe to chat messages
     useEffect(() => {
@@ -248,57 +252,97 @@ function LivestreamChat({ livestreamId }: { livestreamId: string }) {
     }
 
     return (
-        <div className="w-full lg:w-96 bg-background text-foreground flex flex-col border-l">
-            {/* Chat Header */}
-            <div className="p-4 border-b">
-                <h2 className="font-semibold">Live Chat</h2>
-                <p className="text-xs text-muted-foreground">{messages.length} messages</p>
-            </div>
-
-            {/* Messages */}
-            <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-                <div className="space-y-3">
-                    {messages.map((msg) => (
-                        <div key={msg.id} className="flex items-start gap-2">
-                            <Avatar className="h-6 w-6">
-                                <AvatarImage src={msg.user.avatar_url || '/user_Avatar/male.png'} />
-                                <AvatarFallback>{msg.user.name[0]}</AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-sm font-medium">{msg.user.username}</span>
-                                    <span className="text-xs text-muted-foreground">
-                                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                    </span>
-                                </div>
-                                <p className="text-sm break-words">{msg.message}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </ScrollArea>
-
-            {/* Message Input */}
-            <form onSubmit={handleSendMessage} className="p-4 border-t">
-                {loggedInUser ? (
-                    <div className="flex gap-2">
-                        <Input
-                            value={newMessage}
-                            onChange={(e) => setNewMessage(e.target.value)}
-                            placeholder="Send a message..."
-                            disabled={isSending}
-                            maxLength={500}
-                        />
-                        <Button type="submit" size="icon" disabled={isSending || !newMessage.trim()}>
-                            <Send className="h-4 w-4" />
-                        </Button>
-                    </div>
-                ) : (
-                    <p className="text-sm text-muted-foreground text-center">
-                        Log in to chat
-                    </p>
+        <>
+            {/* Mobile Chat Toggle Button */}
+            <button
+                onClick={() => setIsChatOpen(!isChatOpen)}
+                className="lg:hidden fixed bottom-4 right-4 z-40 bg-primary text-primary-foreground rounded-full p-4 shadow-lg"
+            >
+                <MessageCircle className="h-6 w-6" />
+                {messages.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {messages.length}
+                    </span>
                 )}
-            </form>
-        </div>
+            </button>
+
+            {/* Chat Panel */}
+            <div
+                className={cn(
+                    "lg:w-96 lg:border-l bg-background text-foreground flex flex-col",
+                    "fixed lg:relative bottom-0 left-0 right-0 z-50",
+                    "transition-transform duration-300",
+                    isChatOpen ? "translate-y-0" : "translate-y-full lg:translate-y-0",
+                    "h-[70vh] lg:h-full"
+                )}
+            >
+                {/* Chat Header */}
+                <div className="p-4 border-b flex items-center justify-between">
+                    <div>
+                        <h2 className="font-semibold">Live Chat</h2>
+                        <p className="text-xs text-muted-foreground">{messages.length} messages</p>
+                    </div>
+                    <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setIsChatOpen(false)}
+                        className="lg:hidden h-8 w-8 p-0"
+                    >
+                        <X className="h-4 w-4" />
+                    </Button>
+                </div>
+
+                {/* Messages */}
+                <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+                    <div className="space-y-3">
+                        {messages.map((msg) => (
+                            <div key={msg.id} className="flex items-start gap-2">
+                                <Avatar className="h-8 w-8 flex-shrink-0">
+                                    <AvatarImage src={msg.user.avatar_url || '/user_Avatar/male.png'} />
+                                    <AvatarFallback>{msg.user.name[0]}</AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-baseline gap-2">
+                                        <span className="text-sm font-medium truncate">{msg.user.username}</span>
+                                        <span className="text-xs text-muted-foreground">
+                                            {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </span>
+                                    </div>
+                                    <p className="text-sm break-words">{msg.message}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </ScrollArea>
+
+                {/* Message Input */}
+                <form onSubmit={handleSendMessage} className="p-4 border-t">
+                    {loggedInUser ? (
+                        <div className="flex gap-2">
+                            <Input
+                                value={newMessage}
+                                onChange={(e) => setNewMessage(e.target.value)}
+                                placeholder="Send a message..."
+                                disabled={isSending}
+                                maxLength={500}
+                                className="flex-1"
+                            />
+                            <Button
+                                type="submit"
+                                size="icon"
+                                disabled={isSending || !newMessage.trim()}
+                                className="h-10 w-10 flex-shrink-0"
+                            >
+                                <Send className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    ) : (
+                        <p className="text-sm text-muted-foreground text-center">
+                            Log in to chat
+                        </p>
+                    )}
+                </form>
+            </div>
+        </>
     )
 }
