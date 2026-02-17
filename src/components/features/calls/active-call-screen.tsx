@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react"
 import { useCallContext } from "@/providers/call-provider"
+import { useAppContext } from "@/providers/app-provider"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { CallControls } from "./call-controls"
 import { getAvatarUrl, cn } from "@/lib/utils"
@@ -42,6 +43,8 @@ function StreamVideo({ stream, isMirrored = false, className }: { stream: MediaS
 function RemoteParticipant({
   peerId,
   stream,
+  userName,
+  userAvatar,
   isVideoCall,
   isPinned,
   onPin,
@@ -49,33 +52,73 @@ function RemoteParticipant({
 }: {
   peerId: string;
   stream: MediaStream;
+  userName?: string;
+  userAvatar?: string | null;
   isVideoCall: boolean;
   isPinned?: boolean;
   onPin?: () => void;
   className?: string;
 }) {
   const audioRef = useRef<HTMLAudioElement>(null)
+  const [hasVideoTrack, setHasVideoTrack] = useState(false)
 
   useEffect(() => {
     if (audioRef.current && stream) {
       audioRef.current.srcObject = stream
     }
+
+    // Check if stream has active video track
+    const videoTracks = stream.getVideoTracks()
+    setHasVideoTrack(videoTracks.length > 0 && videoTracks[0].enabled)
+
+    // Listen for track changes
+    const handleTrackChange = () => {
+      const vTracks = stream.getVideoTracks()
+      setHasVideoTrack(vTracks.length > 0 && vTracks[0].enabled)
+    }
+
+    videoTracks.forEach(track => {
+      track.addEventListener('ended', handleTrackChange)
+      track.addEventListener('mute', handleTrackChange)
+      track.addEventListener('unmute', handleTrackChange)
+    })
+
+    return () => {
+      videoTracks.forEach(track => {
+        track.removeEventListener('ended', handleTrackChange)
+        track.removeEventListener('mute', handleTrackChange)
+        track.removeEventListener('unmute', handleTrackChange)
+      })
+    }
   }, [stream])
+
+  const displayName = userName || "Participant"
+  const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 
   return (
     <div className={cn("relative group w-full h-full bg-zinc-900 rounded-xl overflow-hidden border border-white/10 flex flex-col items-center justify-center transition-all", className)}>
-      {isVideoCall ? (
+      {isVideoCall && hasVideoTrack ? (
         <>
           <StreamVideo stream={stream} className="absolute inset-0 z-0" />
           <audio ref={audioRef} autoPlay />
         </>
       ) : (
-        <div className="flex flex-col items-center justify-center z-10 gap-2">
+        <div className="flex flex-col items-center justify-center z-10 gap-3">
           <audio ref={audioRef} autoPlay />
-          <Avatar className="h-24 w-24 ring-4 ring-white/10">
-            <AvatarFallback className="text-3xl">?</AvatarFallback>
+          <Avatar className="h-20 w-20 md:h-24 md:w-24 ring-4 ring-white/10">
+            <AvatarImage src={userAvatar ? getAvatarUrl(userAvatar) : undefined} alt={displayName} />
+            <AvatarFallback className="text-2xl md:text-3xl bg-gradient-to-br from-primary/80 to-purple-600/80 text-white">
+              {initials}
+            </AvatarFallback>
           </Avatar>
-          <p className="text-white/60 text-sm">Participant</p>
+          <p className="text-white/90 text-sm md:text-base font-medium">{displayName}</p>
+        </div>
+      )}
+
+      {/* Name Label Overlay (when video is on) */}
+      {isVideoCall && hasVideoTrack && (
+        <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/70 backdrop-blur-sm rounded-md z-20">
+          <p className="text-white text-xs md:text-sm font-medium">{displayName}</p>
         </div>
       )}
 
@@ -112,6 +155,8 @@ export function ActiveCallScreen() {
     endCall,
   } = useCallContext()
 
+  const { allUsers } = useAppContext()
+
   const [callDuration, setCallDuration] = useState(0)
   const [isMinimized, setIsMinimized] = useState(false)
 
@@ -120,6 +165,11 @@ export function ActiveCallScreen() {
   const [pinnedPeerId, setPinnedPeerId] = useState<string | null>(null);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Helper to get user info by ID
+  const getUserInfo = useCallback((userId: string) => {
+    return allUsers.find(u => u.id === userId)
+  }, [allUsers])
 
   // Call duration timer
   useEffect(() => {
@@ -233,6 +283,8 @@ export function ActiveCallScreen() {
               <RemoteParticipant
                 peerId={mainPeerId!}
                 stream={mainStream}
+                userName={getUserInfo(mainPeerId!)?.name}
+                userAvatar={getUserInfo(mainPeerId!)?.avatar_url}
                 isVideoCall={isVideoCall}
                 isPinned={true}
                 onPin={() => handlePin(mainPeerId!)}
@@ -264,6 +316,8 @@ export function ActiveCallScreen() {
                 <RemoteParticipant
                   peerId={peerId}
                   stream={stream}
+                  userName={getUserInfo(peerId)?.name}
+                  userAvatar={getUserInfo(peerId)?.avatar_url}
                   isVideoCall={isVideoCall}
                   isPinned={false}
                   // do not show pin button in filmstrip, clicking whole item pins it
@@ -293,6 +347,8 @@ export function ActiveCallScreen() {
             <RemoteParticipant
               peerId={peerId}
               stream={stream}
+              userName={getUserInfo(peerId)?.name}
+              userAvatar={getUserInfo(peerId)?.avatar_url}
               isVideoCall={isVideoCall}
               isPinned={pinnedPeerId === peerId}
               onPin={() => handlePin(peerId)}
