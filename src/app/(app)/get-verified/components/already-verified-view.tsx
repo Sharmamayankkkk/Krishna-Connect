@@ -107,8 +107,14 @@ export function AlreadyVerifiedView({ request }: AlreadyVerifiedStateProps) {
                             {/* Card Header */}
                             <div className="flex justify-between items-start">
                                 <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 relative bg-white/10 rounded-full flex items-center justify-center font-bold text-sm">
-                                        KC
+                                    <div className="h-10 w-10 relative flex items-center justify-center">
+                                        <Image
+                                            src="/logo/krishna_connect.png"
+                                            alt="KC Logo"
+                                            width={40}
+                                            height={40}
+                                            className="h-10 w-10 object-contain drop-shadow-md"
+                                        />
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-lg leading-tight">Krishna Connect</h3>

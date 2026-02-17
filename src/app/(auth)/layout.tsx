@@ -7,8 +7,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   const pathname = usePathname();
   const isLoginPage = pathname === '/login';
 
-  if (isLoginPage) {
-    // For login page, render without layout wrapper
+  if (isLoginPage || pathname === '/signup') {
+    // For login and signup pages, render without layout wrapper
     return <>{children}</>;
   }
 

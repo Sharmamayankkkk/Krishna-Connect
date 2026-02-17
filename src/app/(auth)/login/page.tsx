@@ -66,10 +66,17 @@ export default function LoginPage() {
 
       {/* Form Wrapper */}
       <div className="relative z-10 w-full lg:w-1/2 flex items-center justify-center p-2">
-        <Card className="w-full max-w-md border-0 shadow-none bg-transparent lg:bg-card lg:shadow-lg lg:border">
+        <Card className="w-full max-w-md border-0 shadow-none bg-black/20 backdrop-blur-sm lg:bg-card/95 lg:backdrop-blur-none lg:shadow-xl lg:border lg:border-white/10 transition-all duration-300">
           <CardHeader className="text-center space-y-4">
-            <div className="flex justify-center lg:hidden mb-2">
-              <Icons.logo className="h-16 w-16 text-primary" />
+            <div className="flex justify-center mb-4">
+              <Image
+                src="/logo/krishna_connect.png"
+                alt="Krishna Connect Logo"
+                width={100}
+                height={100}
+                className="h-24 w-auto drop-shadow-md"
+                priority
+              />
             </div>
           </CardHeader>
 
@@ -82,7 +89,7 @@ export default function LoginPage() {
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
-              
+
               {/* FIXED: Email Field with proper floating label */}
               <div className="relative">
                 <Input
@@ -92,15 +99,14 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="peer pt-6 pb-2"
+                  className="peer pt-6 pb-2 bg-background/50 border-input focus:border-primary transition-colors"
                 />
                 <Label
                   htmlFor="email"
-                  className={`absolute left-3 transition-all pointer-events-none ${
-                    email
-                      ? 'top-1 scale-75 text-sm text-primary'
-                      : 'top-1/2 -translate-y-1/2 scale-100 text-muted-foreground'
-                  }`}
+                  className={`absolute left-3 transition-all pointer-events-none ${email
+                    ? 'top-1 scale-75 text-sm text-primary'
+                    : 'top-1/2 -translate-y-1/2 scale-100 text-muted-foreground'
+                    }`}
                 >
                   Email
                 </Label>
@@ -115,15 +121,14 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="peer pr-10 pt-6 pb-2"
+                  className="peer pr-10 pt-6 pb-2 bg-background/50 border-input focus:border-primary transition-colors"
                 />
                 <Label
                   htmlFor="password"
-                  className={`absolute left-3 transition-all pointer-events-none ${
-                    password
-                      ? 'top-1 scale-75 text-sm text-primary'
-                      : 'top-1/2 -translate-y-1/2 scale-100 text-muted-foreground'
-                  }`}
+                  className={`absolute left-3 transition-all pointer-events-none ${password
+                    ? 'top-1 scale-75 text-sm text-primary'
+                    : 'top-1/2 -translate-y-1/2 scale-100 text-muted-foreground'
+                    }`}
                 >
                   Password
                 </Label>
@@ -143,47 +148,41 @@ export default function LoginPage() {
               <div className="flex justify-end -mt-2">
                 <Link
                   href="/forgot-password"
-                  className="text-sm text-gray-800 hover:underline"
+                  className="text-sm text-foreground/80 hover:text-primary hover:underline transition-colors"
                 >
                   Forgot password?
                 </Link>
               </div>
 
-              <Button type="submit" className="w-full" size="lg">
+              <Button type="submit" className="w-full font-semibold shadow-lg hover:shadow-primary/25 transition-all" size="lg">
                 Sign In
               </Button>
             </form>
 
             <div className="flex items-center my-6">
-              <span className="flex-1 border-t" />
-              <span className="mx-4 text-xs uppercase text-gray-500">
+              <span className="flex-1 border-t border-border" />
+              <span className="mx-4 text-xs uppercase text-muted-foreground font-medium">
                 Or continue with
               </span>
-              <span className="flex-1 border-t" />
+              <span className="flex-1 border-t border-border" />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <Button
                 variant="outline"
                 onClick={() => handleOAuthLogin('google')}
+                className="w-full bg-background/50 hover:bg-accent hover:text-accent-foreground transition-all"
               >
                 <Icons.google className="mr-2 h-4 w-4" />
                 Google
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => handleOAuthLogin('facebook')}
-              >
-                <Icons.facebook className="mr-2 h-4 w-4" />
-                Facebook
-              </Button>
             </div>
 
-            <div className="mt-6 text-center text-sm">
+            <div className="mt-6 text-center text-sm text-muted-foreground">
               Don&apos;t have an account?{' '}
               <Link
                 href="/signup"
-                className="font-medium text-blue-700 hover:underline"
+                className="font-medium text-primary hover:text-primary/80 hover:underline transition-colors"
               >
                 Sign up
               </Link>

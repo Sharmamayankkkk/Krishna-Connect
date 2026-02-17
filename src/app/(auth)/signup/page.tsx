@@ -119,22 +119,29 @@ export default function SignupPage() {
 
   return (
     <div
-      className="relative min-h-screen w-full flex flex-col lg:flex-row items-center justify-center bg-cover bg-center"
+      className="relative min-h-screen w-full flex flex-col lg:flex-row items-center justify-center bg-cover bg-center bg-fixed"
       style={{ backgroundImage: "url(/background/c2.png)" }}
     >
       <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/50 to-background/70 lg:bg-gradient-to-r lg:from-transparent lg:via-transparent lg:to-background/50" />
 
       {/* Form Wrapper */}
-      <div className="relative z-10 w-full lg:w-1/2 flex items-center justify-center p-2 my-8 lg:my-0">
-        <Card className="w-full max-w-md border-0 shadow-none bg-transparent lg:bg-card lg:shadow-lg lg:border">
-          <CardHeader className="text-center space-y-2">
-            <div className="flex justify-center lg:hidden mb-2">
-              <Icons.logo className="h-12 w-12 text-primary" />
+      <div className="relative z-10 w-full lg:w-1/2 flex items-center justify-center p-4 my-4 lg:my-0">
+        <Card className="w-full max-w-md border-0 shadow-none bg-black/20 backdrop-blur-sm lg:bg-card/95 lg:backdrop-blur-none lg:shadow-xl lg:border lg:border-white/10 transition-all duration-300 overflow-hidden">
+          <CardHeader className="text-center space-y-2 pb-2">
+            <div className="flex justify-center mb-4">
+              <Image
+                src="/logo/krishna_connect.png"
+                alt="Krishna Connect Logo"
+                width={80}
+                height={80}
+                className="h-20 w-auto drop-shadow-md"
+                priority
+              />
             </div>
-            <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
-            <CardDescription>Enter your details to join Krishna Connect</CardDescription>
+            <CardTitle className="text-2xl font-bold text-foreground">Create Account</CardTitle>
+            <CardDescription className="text-muted-foreground">Enter your details to join Krishna Connect</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <form onSubmit={handleSignup} className="space-y-4">
               {error && (
                 <Alert variant="destructive">
@@ -144,19 +151,19 @@ export default function SignupPage() {
                 </Alert>
               )}
               <div className="space-y-2">
-                <Label htmlFor="full-name">Full Name</Label>
-                <Input id="full-name" placeholder="John Doe" required value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} />
+                <Label htmlFor="full-name" className="text-foreground">Full Name</Label>
+                <Input id="full-name" placeholder="John Doe" required value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} className="bg-background/50 border-input focus:border-primary" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
-                <Input id="username" placeholder="johndoe" required value={username} onChange={(e) => setUsername(e.target.value)} disabled={isLoading} />
+                <Label htmlFor="username" className="text-foreground">Username</Label>
+                <Input id="username" placeholder="johndoe" required value={username} onChange={(e) => setUsername(e.target.value)} disabled={isLoading} className="bg-background/50 border-input focus:border-primary" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="krishna@connect.com" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} />
+                <Label htmlFor="email" className="text-foreground">Email</Label>
+                <Input id="email" type="email" placeholder="krishna@connect.com" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} className="bg-background/50 border-input focus:border-primary" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-foreground">Password</Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -165,13 +172,13 @@ export default function SignupPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={isLoading}
-                    className="pr-10"
+                    className="pr-10 bg-background/50 border-input focus:border-primary"
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground"
+                    className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     onClick={() => setShowPassword(prev => !prev)}
                     aria-label="Toggle password visibility"
                   >
@@ -180,20 +187,20 @@ export default function SignupPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Gender</Label>
+                <Label className="text-foreground">Gender</Label>
                 <RadioGroup value={gender} onValueChange={(value: 'male' | 'female') => setGender(value)} className="flex items-center space-x-4 pt-1" disabled={isLoading}>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="male" id="male" />
-                    <Label htmlFor="male" className="font-normal cursor-pointer">Prabhuji (Male)</Label>
+                    <RadioGroupItem value="male" id="male" className="border-primary text-primary" />
+                    <Label htmlFor="male" className="font-normal cursor-pointer text-foreground">Prabhuji (Male)</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="female" id="female" />
-                    <Label htmlFor="female" className="font-normal cursor-pointer">Mataji (Female)</Label>
+                    <RadioGroupItem value="female" id="female" className="border-primary text-primary" />
+                    <Label htmlFor="female" className="font-normal cursor-pointer text-foreground">Mataji (Female)</Label>
                   </div>
                 </RadioGroup>
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full font-semibold shadow-lg hover:shadow-primary/25 transition-all" disabled={isLoading}>
                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Create Account
               </Button>
@@ -201,33 +208,40 @@ export default function SignupPage() {
 
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
+                <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Or sign up with</span>
+                <span className="bg-card px-2 text-muted-foreground font-medium">Or sign up with</span>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <Button variant="outline" onClick={() => handleOAuthLogin('google')} disabled={isLoading}><Icons.google className="mr-2 h-4 w-4" />Google</Button>
-              <Button variant="outline" onClick={() => handleOAuthLogin('facebook')} disabled={isLoading}><Icons.facebook className="mr-2 h-4 w-4" />Facebook</Button>
+            <div className="grid grid-cols-1 gap-4">
+              <Button
+                variant="outline"
+                onClick={() => handleOAuthLogin('google')}
+                disabled={isLoading}
+                className="w-full bg-background/50 hover:bg-accent hover:text-accent-foreground transition-all"
+              >
+                <Icons.google className="mr-2 h-4 w-4" />
+                Google
+              </Button>
             </div>
 
-            <div className="mt-4 text-center text-sm">
+            <div className="mt-4 text-center text-sm text-muted-foreground">
               Already have an account?{' '}
-              <Link href="/login" className="font-bold text-primary hover:underline">
+              <Link href="/login" className="font-bold text-primary hover:text-primary/80 hover:underline transition-colors">
                 Login
               </Link>
             </div>
           </CardContent>
-          <CardFooter className="justify-center text-center text-xs text-muted-foreground">
+          <CardFooter className="justify-center text-center text-xs text-muted-foreground pb-6">
             <p>
               By creating an account, you agree to our{' '}
-              <Link href="/terms-and-conditions" className="underline hover:text-primary">
+              <Link href="/terms-and-conditions" className="underline hover:text-primary transition-colors">
                 Terms
               </Link>{' '}
               and{' '}
-              <Link href="/privacy-policy" className="underline hover:text-primary">
+              <Link href="/privacy-policy" className="underline hover:text-primary transition-colors">
                 Privacy Policy
               </Link>
               .
@@ -237,13 +251,13 @@ export default function SignupPage() {
       </div>
 
       {/* Image Wrapper */}
-      <div className="relative z-10 w-full lg:w-1/2 flex items-center justify-center mt-6 lg:mt-0 hidden lg:flex">
+      <div className="relative z-10 w-full lg:w-1/2 flex items-center justify-center mt-6 lg:mt-0 hidden lg:flex p-6">
         <Image
           src="/background/c1.png"
           alt="Krishna and gopas"
           width={800}
           height={600}
-          className="object-contain rounded-lg w-full max-w-lg"
+          className="object-contain rounded-lg w-full max-w-lg drop-shadow-2xl"
           priority
         />
       </div>
