@@ -80,7 +80,7 @@ export function LivestreamViewerView({ livestreamId, callId, hostName, title }: 
 
     return (
         <StreamCall call={call}>
-            <div className="flex flex-col lg:flex-row h-screen bg-black text-white">
+            <div className="flex flex-col lg:flex-row bg-black text-white min-h-[calc(100vh-4rem)] md:min-h-screen">
                 <LivestreamPlayer call={call} title={title} hostName={hostName} />
                 <LivestreamChat livestreamId={livestreamId} />
             </div>
@@ -131,7 +131,7 @@ function LivestreamPlayer({ call, title, hostName }: { call: any; title: string;
             {isLive && (
                 <div className="absolute top-4 right-4 flex items-center gap-2 bg-black/50 px-3 py-1.5 rounded-lg">
                     <Users className="h-4 w-4" />
-                    <span className="text-sm">{participantCount - 1}</span>
+                    <span className="text-sm">{Math.max(participantCount - 1, 0)}</span>
                 </div>
             )}
 

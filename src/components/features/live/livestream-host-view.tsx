@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Video, VideoOff, Mic, MicOff, Radio, StopCircle, Users, Loader2, MessageCircle, X, Send, UserPlus } from 'lucide-react'
+import { Video, VideoOff, Mic, MicOff, Radio, StopCircle, Users, Loader2, MessageCircle, X, Send, UserPlus, MonitorUp } from 'lucide-react'
 import { InviteGuestDialog } from './invite-guest-dialog'
 import { createClient } from '@/lib/utils'
 import { useToast } from '@/hooks/use-toast'
@@ -316,7 +316,7 @@ function LivestreamHostControls({ call, livestreamId }: { call: any; livestreamI
 
     // Simplified layout - single column on mobile, side-by-side on desktop
     return (
-        <div className="fixed inset-0 flex flex-col bg-black z-50">
+        <div className="flex flex-col bg-black min-h-[calc(100vh-4rem)] md:min-h-screen">
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
                 {/* Video Section */}
@@ -345,7 +345,7 @@ function LivestreamHostControls({ call, livestreamId }: { call: any; livestreamI
 
                             <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm shadow-lg">
                                 <Users className="w-4 h-4" />
-                                {participantCount}
+                                {participantCount > 0 ? participantCount : 0}
                             </div>
                         </div>
 
@@ -367,24 +367,62 @@ function LivestreamHostControls({ call, livestreamId }: { call: any; livestreamI
                     {/* Controls Bar - Fixed at bottom */}
                     <div className="bg-gray-900 border-t border-gray-800 p-4">
                         <div className="flex items-center justify-between gap-3 max-w-4xl mx-auto">
-                            {/* Left: Media Controls */}
+                            {/* Left: Camera & Mic Controls */}
                             <div className="flex items-center gap-2">
                                 <Button
                                     size="lg"
-                                    variant={isCamEnabled ? 'default' : 'destructive'}
                                     onClick={() => isCamEnabled ? camera.disable() : camera.enable()}
-                                    className="h-12 w-12 rounded-full"
+                                    className={cn(
+                                        "h-12 w-12 md:w-auto md:px-4",
+                                        isCamEnabled
+                                            ? "bg-white/20 hover:bg-white/30 text-white"
+                                            : "bg-red-600 hover:bg-red-700 text-white"
+                                    )}
                                 >
-                                    {isCamEnabled ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
+                                    {isCamEnabled ? (
+                                        <Video className="h-5 w-5" />
+                                    ) : (
+                                        <VideoOff className="h-5 w-5" />
+                                    )}
+                                    <span className="hidden md:inline md:ml-2">
+                                        {isCamEnabled ? 'Camera' : 'Camera Off'}
+                                    </span>
                                 </Button>
 
                                 <Button
                                     size="lg"
-                                    variant={isMicEnabled ? 'default' : 'destructive'}
                                     onClick={() => isMicEnabled ? microphone.disable() : microphone.enable()}
-                                    className="h-12 w-12 rounded-full"
+                                    className={cn(
+                                        "h-12 w-12 md:w-auto md:px-4",
+                                        isMicEnabled
+                                            ? "bg-white/20 hover:bg-white/30 text-white"
+                                            : "bg-red-600 hover:bg-red-700 text-white"
+                                    )}
                                 >
-                                    {isMicEnabled ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
+                                    {isMicEnabled ? (
+                                        <Mic className="h-5 w-5" />
+                                    ) : (
+                                        <MicOff className="h-5 w-5" />
+                                    )}
+                                    <span className="hidden md:inline md:ml-2">
+                                        {isMicEnabled ? 'Mic' : 'Mic Off'}
+                                    </span>
+                                </Button>
+
+                                <Button
+                                    size="lg"
+                                    onClick={() => call.screenShare.toggle()}
+                                    className={cn(
+                                        "h-12 w-12 md:w-auto md:px-4",
+                                        call.screenShare?.state?.status === 'enabled'
+                                            ? "bg-blue-600 hover:bg-blue-700 text-white"
+                                            : "bg-white/20 hover:bg-white/30 text-white border border-white/30"
+                                    )}
+                                >
+                                    <MonitorUp className="h-5 w-5" />
+                                    <span className="hidden md:inline md:ml-2">
+                                        {call.screenShare?.state?.status === 'enabled' ? 'Stop Share' : 'Share Screen'}
+                                    </span>
                                 </Button>
 
                                 {/* Chat Toggle (Mobile Only) */}
