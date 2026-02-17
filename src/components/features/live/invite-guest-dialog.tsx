@@ -58,6 +58,7 @@ export function InviteGuestDialog({ open, onOpenChange, livestreamId, currentGue
                 .from('notifications')
                 .insert({
                     user_id: userId,
+                    from_user_id: loggedInUser.id,
                     type: 'livestream_invite',
                     content: `${loggedInUser?.name || loggedInUser?.username} invited you to join their livestream`,
                     related_id: livestreamId,

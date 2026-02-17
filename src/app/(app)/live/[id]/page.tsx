@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { LivestreamHostView } from '@/components/features/live/livestream-host-view';
 import { LivestreamViewerView } from '@/components/features/live/livestream-viewer-view';
+import { StreamEnded } from '@/components/features/live/stream-ended';
 import { redirect } from 'next/navigation';
 
 export async function generateMetadata({
@@ -84,6 +85,18 @@ export default async function LiveStreamingPage({
 
   if (error || !livestream) {
     redirect('/');
+  }
+
+  // Check if stream has ended
+  if (livestream.status === 'ended') {
+    return (
+      <StreamEnded
+        title={livestream.title}
+        hostName={livestream.host.name || livestream.host.username}
+        hostAvatar={livestream.host.avatar_url}
+        endedAt={livestream.ended_at}
+      />
+    );
   }
 
   // Check if current user is the host

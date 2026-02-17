@@ -1,12 +1,12 @@
-'use client'
-
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAppContext } from '@/providers/app-provider'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Radio, Video } from 'lucide-react'
+import { Radio, Video, X } from 'lucide-react'
 import Link from 'next/link'
+import { useToast } from '@/hooks/use-toast'
+import { useRouter } from 'next/navigation'
 
 interface ActiveLivestream {
     id: string
@@ -18,7 +18,10 @@ interface ActiveLivestream {
 export function MyActiveLivestream() {
     const { loggedInUser } = useAppContext()
     const [livestream, setLivestream] = useState<ActiveLivestream | null>(null)
+    const [isEnding, setIsEnding] = useState(false)
     const supabase = createClient()
+    const { toast } = useToast()
+    const router = useRouter()
 
     useEffect(() => {
         if (!loggedInUser) return
@@ -41,6 +44,40 @@ export function MyActiveLivestream() {
         fetchActiveLivestream()
     }, [loggedInUser])
 
+    const handleEndStream = async () => {
+        if (!livestream) return
+
+        setIsEnding(true)
+        try {
+            const { error } = await supabase
+                .from('livestreams')
+                .update({
+                    status: 'ended',
+                    ended_at: new Date().toISOString()
+                })
+                .eq('id', livestream.id)
+
+            if (error) throw error
+
+            toast({
+                title: 'Stream Ended',
+                description: 'Your livestream has been ended successfully',
+            })
+
+            setLivestream(null)
+            router.refresh()
+        } catch (error) {
+            console.error('Failed to end stream:', error)
+            toast({
+                variant: 'destructive',
+                title: 'Failed to End Stream',
+                description: 'Could not end the livestream. Please try again.',
+            })
+        } finally {
+            setIsEnding(false)
+        }
+    }
+
     if (!livestream) return null
 
     return (
@@ -62,12 +99,23 @@ export function MyActiveLivestream() {
                             Status: <span className="capitalize">{livestream.status}</span>
                         </p>
                     </div>
-                    <Link href={`/live/${livestream.id}?host=true`}>
-                        <Button className="w-full">
-                            <Radio className="mr-2 h-4 w-4" />
-                            {livestream.status === 'backstage' ? 'Set Up & Go Live' : 'Manage Stream'}
+                    <div className="flex gap-2">
+                        <Link href={`/live/${livestream.id}?host=true`} className="flex-1">
+                            <Button className="w-full">
+                                <Radio className="mr-2 h-4 w-4" />
+                                {livestream.status === 'backstage' ? 'Set Up & Go Live' : 'Manage Stream'}
+                            </Button>
+                        </Link>
+                        <Button
+                            variant="destructive"
+                            onClick={handleEndStream}
+                            disabled={isEnding}
+                            className="flex-shrink-0"
+                        >
+                            <X className="mr-2 h-4 w-4" />
+                            {isEnding ? 'Ending...' : 'End Stream'}
                         </Button>
-                    </Link>
+                    </div>
                 </div>
             </CardContent>
         </Card>

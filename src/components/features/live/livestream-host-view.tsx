@@ -127,6 +127,7 @@ function LivestreamHostControls({ call, livestreamId }: { call: any; livestreamI
     const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false)
     const [isShareDialogOpen, setIsShareDialogOpen] = useState(false)
     const [isParticipantsModalOpen, setIsParticipantsModalOpen] = useState(false)
+    const [participantProfiles, setParticipantProfiles] = useState<any[]>([])
 
     // Subscribe to guests
     useEffect(() => {
@@ -167,6 +168,37 @@ function LivestreamHostControls({ call, livestreamId }: { call: any; livestreamI
             supabase.removeChannel(guestChannel)
         }
     }, [livestreamId, supabase])
+
+    // Fetch participant profiles when participants change
+    useEffect(() => {
+        const fetchParticipantProfiles = async () => {
+            if (!participants || participants.length === 0) {
+                setParticipantProfiles([])
+                return
+            }
+
+            // Get user IDs from Stream participants
+            const userIds = participants
+                .map(p => p.userId)
+                .filter(Boolean)
+
+            if (userIds.length === 0) {
+                setParticipantProfiles([])
+                return
+            }
+
+            const { data } = await supabase
+                .from('profiles')
+                .select('id, name, username, avatar_url')
+                .in('id', userIds)
+
+            if (data) {
+                setParticipantProfiles(data)
+            }
+        }
+
+        fetchParticipantProfiles()
+    }, [participants, supabase])
 
     // Subscribe to chat messages
     useEffect(() => {
@@ -600,7 +632,7 @@ function LivestreamHostControls({ call, livestreamId }: { call: any; livestreamI
             <ParticipantsModal
                 open={isParticipantsModalOpen}
                 onOpenChange={setIsParticipantsModalOpen}
-                participants={[]} // TODO: Fetch actual viewer list from database
+                participants={participantProfiles}
                 viewerCount={participantCount}
             />
         </div>
