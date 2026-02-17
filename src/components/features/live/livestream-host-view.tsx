@@ -279,9 +279,16 @@ function LivestreamHostControls({ call, livestreamId }: { call: any; livestreamI
     }
 
     const handleEndStream = async () => {
-        try {
-            await call.endCall()
+        // Confirm before ending
+        if (!confirm('Are you sure you want to end this livestream? This cannot be undone.')) {
+            return
+        }
 
+        try {
+            // Leave the call first
+            await call.leave()
+
+            // Update database
             await supabase
                 .from('livestreams')
                 .update({
@@ -290,15 +297,26 @@ function LivestreamHostControls({ call, livestreamId }: { call: any; livestreamI
                 })
                 .eq('id', livestreamId)
 
+            toast({
+                title: 'Stream Ended',
+                description: 'Your livestream has ended successfully',
+            })
+
+            // Redirect to discovery page
             router.push('/live')
         } catch (error) {
             console.error('Failed to end stream:', error)
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'Failed to end stream. Please try again.',
+            })
         }
     }
 
     // Simplified layout - single column on mobile, side-by-side on desktop
     return (
-        <div className="flex flex-col h-screen bg-black">
+        <div className="fixed inset-0 flex flex-col bg-black z-50">
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
                 {/* Video Section */}
@@ -333,7 +351,7 @@ function LivestreamHostControls({ call, livestreamId }: { call: any; livestreamI
 
                         {/* Guest Thumbnails - Bottom (if any) */}
                         {participants.length > 0 && (
-                            <div className="absolute bottom-20 right-4 flex flex-col gap-2 z-10">
+                            <div className="absolute bottom-24 right-4 flex flex-col gap-2 z-10">
                                 {participants.slice(0, 3).map((participant) => (
                                     <div key={participant.sessionId} className="w-24 h-32 rounded-lg overflow-hidden border-2 border-white/20 shadow-lg">
                                         <ParticipantView
