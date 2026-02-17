@@ -38,6 +38,7 @@ import { MessageInfoDialog } from './dialogs/message-info-dialog';
 import { ChatInput } from './chat-input';
 import { TranslateDialog } from '../../dialogs/translate-dialog';
 import { useCallContext } from '@/providers/call-provider';
+import { useStreamCallContext } from '@/providers/stream-call-provider';
 
 interface ChatProps {
     chat: Chat;
@@ -136,6 +137,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
     } = useAppContext();
 
     const { startCall, startGroupCall, joinCall } = useCallContext();
+    const { startStreamCall, startGroupStreamCall } = useStreamCallContext();
 
     // These are "state" variables. They hold data that can change and cause the component to re-render.
     // `useState` is a fundamental React hook for managing component state.
@@ -1357,9 +1359,9 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                         size="icon"
                         onClick={() => {
                             if (isGroup) {
-                                startGroupCall(chat.id.toString(), 'voice'); // Ensure chat.id is string if expected
+                                startGroupStreamCall(chat.id.toString(), 'voice');
                             } else if (chatPartner) {
-                                startCall(chatPartner.id, 'voice');
+                                startStreamCall(chatPartner.id, 'voice');
                             }
                         }}
                         disabled={!isGroup && !chatPartner}
@@ -1371,9 +1373,9 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                         size="icon"
                         onClick={() => {
                             if (isGroup) {
-                                startGroupCall(chat.id.toString(), 'video');
+                                startGroupStreamCall(chat.id.toString(), 'video');
                             } else if (chatPartner) {
-                                startCall(chatPartner.id, 'video');
+                                startStreamCall(chatPartner.id, 'video');
                             }
                         }}
                         disabled={!isGroup && !chatPartner}
