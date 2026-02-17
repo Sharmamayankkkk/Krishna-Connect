@@ -40,6 +40,7 @@ export function InviteGuestDialog({ open, onOpenChange, livestreamId, currentGue
     })
 
     const handleInvite = async (userId: string) => {
+        if (!loggedInUser) return
         setInviting(userId)
         try {
             // Insert guest invitation
