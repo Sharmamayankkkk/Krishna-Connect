@@ -24,7 +24,8 @@ import {
     Video,
     FileText,
     ChevronDown,
-    Sparkles
+    Sparkles,
+    Radio
 } from 'lucide-react';
 import { formatDistanceToNow, isToday, isYesterday, isThisWeek } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -46,6 +47,7 @@ const NotificationIconBubble = ({ type }: { type: NotificationType['type'] }) =>
         mention: { icon: <AtSign className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-orange-400 to-amber-600' },
         poll_vote: { icon: <BarChart3 className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-cyan-400 to-sky-600' },
         collaboration_request: { icon: <Users className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-indigo-400 to-indigo-600' },
+        livestream_invite: { icon: <Radio className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-red-400 to-rose-600' },
     };
     const iconConfig = config[type] || { icon: <Bell className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-gray-400 to-gray-600' };
     return (
@@ -66,6 +68,7 @@ const getActionText = (type: NotificationType['type']) => {
         mention: 'mentioned you',
         poll_vote: 'voted on your poll',
         collaboration_request: 'invited you to collaborate',
+        livestream_invite: 'invited you to join their livestream',
     };
     return map[type] || 'sent you a notification';
 };
@@ -201,6 +204,16 @@ const NotificationItem = React.memo(({
                     <span className="sm:hidden">Follow</span>
                 </Button>
             )}
+
+            {/* Livestream invite CTA */}
+            {notification.type === 'livestream_invite' && notification.related_id && (
+                <Link href={`/live/${notification.related_id}`}>
+                    <Button variant="default" size="sm" className="flex-shrink-0 h-8 text-xs rounded-full px-4 self-center shadow-sm bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700">
+                        <Radio className="h-3 w-3 mr-1.5" />
+                        Join Live
+                    </Button>
+                </Link>
+            )}
         </div>
     );
 });
@@ -259,7 +272,8 @@ const mapNotificationType = (dbType: string): NotificationType['type'] => {
         'new_repost': 'repost',
         'follow_request': 'follow',
         'new_follower': 'follow',
-        'collaboration_request': 'collaboration_request'
+        'collaboration_request': 'collaboration_request',
+        'livestream_invite': 'livestream_invite'
     };
     return typeMap[dbType] || 'follow';
 };

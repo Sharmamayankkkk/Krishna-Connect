@@ -395,17 +395,24 @@ export type PostType = {
 
 export type NotificationType = {
   id: string;
-  type: 'like' | 'comment' | 'repost' | 'quote' | 'follow' | 'mention' | 'poll_vote' | 'collaboration_request';
-  fromUser: UserType;
+  type: 'like' | 'comment' | 'repost' | 'quote' | 'follow' | 'mention' | 'poll_vote' | 'collaboration_request' | 'livestream_invite';
+  fromUser: {
+    id: string;
+    name: string;
+    username: string;
+    avatar: string;
+    verified?: boolean;
+  };
   postId?: string;
   commentId?: string;
   text?: string;
   createdAt: string;
   read: boolean;
-  status?: 'pending' | 'accepted' | 'declined';
   postContent?: string;
-  postMediaType?: 'image' | 'video' | 'gif';
+  postMediaType?: 'image' | 'video' | 'poll';
   postAuthorUsername?: string;
+  status?: 'pending' | 'accepted' | 'declined';
+  related_id?: string; // For livestream invites and other related entities
 };
 
 export type UserRelationship = {

@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Video, VideoOff, Mic, MicOff, Radio, StopCircle, Users, Loader2, MessageCircle, X, Send, UserPlus, MonitorUp, Share2 } from 'lucide-react'
 import { InviteGuestDialog } from './invite-guest-dialog'
 import { ShareLivestreamDialog } from './share-livestream-dialog'
+import { ParticipantsModal } from './participants-modal'
 import { createClient } from '@/lib/utils'
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
@@ -125,6 +126,7 @@ function LivestreamHostControls({ call, livestreamId }: { call: any; livestreamI
     const [guests, setGuests] = useState<any[]>([])
     const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false)
     const [isShareDialogOpen, setIsShareDialogOpen] = useState(false)
+    const [isParticipantsModalOpen, setIsParticipantsModalOpen] = useState(false)
 
     // Subscribe to guests
     useEffect(() => {
@@ -345,23 +347,29 @@ function LivestreamHostControls({ call, livestreamId }: { call: any; livestreamI
                                 </div>
                             )}
 
-                            <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm shadow-lg">
+                            <button
+                                onClick={() => setIsParticipantsModalOpen(true)}
+                                className="flex items-center gap-1.5 bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm shadow-lg hover:bg-black/80 transition-colors cursor-pointer"
+                            >
                                 <Users className="w-4 h-4" />
                                 {participantCount > 0 ? participantCount : 0}
-                            </div>
+                            </button>
                         </div>
 
-                        {/* Guest Thumbnails - Bottom (if any) */}
-                        {participants.length > 0 && (
+                        {/* Only show INVITED GUESTS as video tiles, not regular viewers */}
+                        {guests.filter(g => g.status === 'joined').length > 0 && (
                             <div className="absolute bottom-24 right-4 flex flex-col gap-2 z-10">
-                                {participants.slice(0, 3).map((participant) => (
-                                    <div key={participant.sessionId} className="w-24 h-32 rounded-lg overflow-hidden border-2 border-white/20 shadow-lg">
-                                        <ParticipantView
-                                            participant={participant}
-                                            className="w-full h-full"
-                                        />
-                                    </div>
-                                ))}
+                                {participants
+                                    .filter(p => guests.some(g => g.status === 'joined'))
+                                    .slice(0, 3)
+                                    .map((participant) => (
+                                        <div key={participant.sessionId} className="w-24 h-32 rounded-lg overflow-hidden border-2 border-white/20 shadow-lg">
+                                            <ParticipantView
+                                                participant={participant}
+                                                className="w-full h-full"
+                                            />
+                                        </div>
+                                    ))}
                             </div>
                         )}
                     </div>
@@ -586,6 +594,14 @@ function LivestreamHostControls({ call, livestreamId }: { call: any; livestreamI
                 onOpenChange={setIsShareDialogOpen}
                 livestreamId={livestreamId}
                 title={call?.state?.custom?.title || 'My Livestream'}
+            />
+
+            {/* Participants Modal */}
+            <ParticipantsModal
+                open={isParticipantsModalOpen}
+                onOpenChange={setIsParticipantsModalOpen}
+                participants={[]} // TODO: Fetch actual viewer list from database
+                viewerCount={participantCount}
             />
         </div>
     )

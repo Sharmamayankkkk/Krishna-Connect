@@ -42,7 +42,8 @@ export function InviteGuestDialog({ open, onOpenChange, livestreamId, currentGue
     const handleInvite = async (userId: string) => {
         setInviting(userId)
         try {
-            const { error } = await supabase
+            // Insert guest invitation
+            const { error: guestError } = await supabase
                 .from('livestream_guests')
                 .insert({
                     livestream_id: livestreamId,
@@ -50,7 +51,23 @@ export function InviteGuestDialog({ open, onOpenChange, livestreamId, currentGue
                     status: 'invited'
                 })
 
-            if (error) throw error
+            if (guestError) throw guestError
+
+            // Create notification for the invited user
+            const { error: notificationError } = await supabase
+                .from('notifications')
+                .insert({
+                    user_id: userId,
+                    type: 'livestream_invite',
+                    content: `${loggedInUser?.name || loggedInUser?.username} invited you to join their livestream`,
+                    related_id: livestreamId,
+                    is_read: false
+                })
+
+            if (notificationError) {
+                console.error('Failed to create notification:', notificationError)
+                // Don't throw - invitation still succeeded
+            }
 
             toast({
                 title: 'Guest Invited',
