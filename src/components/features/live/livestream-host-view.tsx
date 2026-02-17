@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useStreamVideo } from '@/providers/stream-video-provider'
-import { useCallStateHooks, ParticipantView } from '@stream-io/video-react-sdk'
+import { useCallStateHooks, ParticipantView, StreamCall } from '@stream-io/video-react-sdk'
 import { Button } from '@/components/ui/button'
 import { Video, VideoOff, Mic, MicOff, Radio, StopCircle, Users, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/utils'
@@ -62,16 +62,18 @@ export function LivestreamHostView({ livestreamId, callId }: LivestreamHostViewP
 
     if (isLoading || !call) {
         return (
-            <div className="flex items-center justify-center h-screen">
-                <Loader2 className="h-8 w-8 animate-spin" />
+            <div className="flex items-center justify-center h-screen bg-black">
+                <Loader2 className="h-8 w-8 animate-spin text-white" />
             </div>
         )
     }
 
     return (
-        <div className="flex flex-col h-screen bg-black">
-            <LivestreamHostControls call={call} livestreamId={livestreamId} />
-        </div>
+        <StreamCall call={call}>
+            <div className="flex flex-col h-screen bg-black">
+                <LivestreamHostControls call={call} livestreamId={livestreamId} />
+            </div>
+        </StreamCall>
     )
 }
 
