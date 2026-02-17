@@ -20,7 +20,7 @@ import { useToast } from '@/hooks/use-toast'
 interface StreamCallScreenProps {
     callId: string
     callType: 'video' | 'voice'
-    onCallEnd: () => void
+    onCallEnd: (duration?: number) => void
     remoteUserName?: string
     remoteUserAvatar?: string
 }
@@ -109,7 +109,7 @@ function CallContent({
     setIsFullscreen
 }: {
     callType: 'video' | 'voice'
-    onCallEnd: () => void
+    onCallEnd: (duration?: number) => void
     remoteUserName?: string
     remoteUserAvatar?: string
     isFullscreen: boolean
@@ -148,7 +148,7 @@ function CallContent({
     }
 
     const handleEndCall = async () => {
-        onCallEnd()
+        onCallEnd(callDuration)
     }
 
     const toggleFullscreen = () => {

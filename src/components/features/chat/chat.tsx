@@ -4,7 +4,8 @@ import React, { useMemo, useState, useRef, useEffect, useCallback } from 'react'
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSwipeable } from 'react-swipeable';
-import { MoreVertical, Phone, Video, Check, CheckCheck, Pencil, Trash2, SmilePlus, X, FileIcon, Download, Copy, Star, Share2, Shield, Loader2, Pause, Play, Users, UserX, ShieldAlert, Pin, PinOff, Reply, Clock, CircleSlash, ArrowDown, AtSign, Info, Languages } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { MoreVertical, Phone, Video, Check, CheckCheck, Pencil, Trash2, SmilePlus, X, FileIcon, Download, Copy, Star, Share2, Shield, Loader2, Pause, Play, Users, UserX, ShieldAlert, Pin, PinOff, Reply, Clock, CircleSlash, ArrowDown, AtSign, Info, Languages, ArrowLeft } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -136,6 +137,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
     } = useAppContext();
 
     const { startCall, startGroupCall, joinCall } = useCallContext();
+    const router = useRouter();
 
     // These are "state" variables. They hold data that can change and cause the component to re-render.
     // `useState` is a fundamental React hook for managing component state.
@@ -1322,7 +1324,14 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
             <header className="flex items-center justify-between p-2 border-b gap-2 shrink-0">
                 <div className="flex items-center gap-2 min-w-0">
                     <div className="md:hidden">
-                        <SidebarTrigger />
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => router.push('/chat')}
+                            className="h-9 w-9"
+                        >
+                            <ArrowLeft className="h-5 w-5" />
+                        </Button>
                     </div>
                     <Link href={isGroup ? `/group/${chat.id}` : `/profile/${chatPartner?.username || ''}`} className="flex-shrink-0">
                         <Avatar className="h-10 w-10">
