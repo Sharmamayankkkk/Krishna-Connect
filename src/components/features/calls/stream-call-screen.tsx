@@ -221,14 +221,12 @@ function CallContent({
                                 <ParticipantView
                                     participant={localParticipant}
                                     className="w-full h-full"
-                                    muteAudio={true}
                                 />
                                 <div className="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
                                     You
                                 </div>
                             </div>
                         )}
-
 
                         {/* No participants yet */}
                         {!hasRemoteParticipants && (
