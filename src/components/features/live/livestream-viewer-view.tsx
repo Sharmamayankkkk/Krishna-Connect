@@ -99,7 +99,7 @@ function LivestreamPlayer({ call, title, hostName }: { call: any; title: string;
     const hostParticipant = participants.find(p => !p.isLocalParticipant)
 
     // Check if host is screen sharing
-    const isScreenSharing = hostParticipant?.publishedTracks.includes('screenShare')
+    const isScreenSharing = hostParticipant?.publishedTracks.includes('screenShareTrack' as any)
 
     return (
         <div className="flex-1 flex flex-col items-center justify-center bg-gray-900/50 relative">
