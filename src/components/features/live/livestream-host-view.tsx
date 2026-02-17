@@ -321,8 +321,8 @@ function LivestreamHostControls({ call, livestreamId }: { call: any; livestreamI
         }
 
         try {
-            // Leave the call first
-            await call.leave()
+            // End the call for everyone
+            await call.endCall()
 
             // Update database
             await supabase

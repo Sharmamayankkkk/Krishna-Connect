@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useStreamVideo } from '@/providers/stream-video-provider'
 import { useCallStateHooks, ParticipantView, StreamCall } from '@stream-io/video-react-sdk'
-import { Radio, Users, Send, Loader2, MessageCircle, X } from 'lucide-react'
+import { Radio, Users, Send, Loader2, MessageCircle, X, Home } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -12,6 +12,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useAppContext } from '@/providers/app-provider'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
+import { useRouter } from 'next/navigation'
 
 interface LivestreamViewerViewProps {
     livestreamId: string
@@ -36,6 +37,7 @@ interface ChatMessage {
 export function LivestreamViewerView({ livestreamId, callId, hostName, title }: LivestreamViewerViewProps) {
     const { client } = useStreamVideo()
     const { toast } = useToast()
+    const router = useRouter()
 
     const [call, setCall] = useState<any>(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -83,9 +85,24 @@ export function LivestreamViewerView({ livestreamId, callId, hostName, title }: 
             <div className="flex flex-col lg:flex-row bg-black text-white min-h-[calc(100vh-4rem)] md:min-h-screen">
                 <LivestreamPlayer call={call} title={title} hostName={hostName} />
                 <LivestreamChat livestreamId={livestreamId} />
+                <CallListener />
             </div>
         </StreamCall>
     )
+}
+
+function CallListener() {
+    const { useCallEndedAt } = useCallStateHooks()
+    const callEndedAt = useCallEndedAt()
+    const router = useRouter()
+
+    useEffect(() => {
+        if (callEndedAt) {
+            router.refresh() // Refresh to show StreamEnded component
+        }
+    }, [callEndedAt, router])
+
+    return null
 }
 
 function LivestreamPlayer({ call, title, hostName }: { call: any; title: string; hostName: string }) {
