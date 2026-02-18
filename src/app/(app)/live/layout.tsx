@@ -1,4 +1,6 @@
 import { Metadata } from "next";
+import { LivestreamInviteListener } from "@/components/features/live/livestream-invite-listener";
+
 
 export const metadata: Metadata = {
   title: "Live",
@@ -6,5 +8,10 @@ export const metadata: Metadata = {
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  return children;
+  return (
+    <>
+      <LivestreamInviteListener />
+      {children}
+    </>
+  );
 }

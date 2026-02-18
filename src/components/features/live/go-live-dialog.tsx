@@ -1,12 +1,12 @@
-"use client"
+'use client'
 
 import { useState } from 'react'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Radio, Loader2, Globe, Users, Sparkles } from 'lucide-react'
+import { Radio, Loader2, Globe, Users, Wand2, X } from 'lucide-react'
 import { useStreamVideo } from '@/providers/stream-video-provider'
 import { useAppContext } from '@/providers/app-provider'
 import { generateCallId, STREAM_CALL_TYPES } from '@/lib/stream-config'
@@ -31,78 +31,43 @@ export function GoLiveDialog({ open, onOpenChange }: GoLiveDialogProps) {
     const [description, setDescription] = useState('')
     const [privacy, setPrivacy] = useState<'public' | 'followers'>('public')
     const [isCreating, setIsCreating] = useState(false)
+    const [step, setStep] = useState<1 | 2>(1) // Step 1: Details, Step 2: (Optional) Pre-flight check
 
     const handleGoLive = async () => {
         if (!client || !loggedInUser) {
-            toast({
-                variant: 'destructive',
-                title: 'Error',
-                description: 'You must be logged in to go live',
-            })
+            toast({ variant: 'destructive', title: 'Error', description: 'Login required.' })
             return
         }
-
         if (!title.trim()) {
-            toast({
-                variant: 'destructive',
-                title: 'Error',
-                description: 'Please enter a title for your livestream',
-            })
+            toast({ variant: 'destructive', title: 'Required', description: 'Please enter a title.' })
             return
         }
 
         try {
             setIsCreating(true)
-
-            // Generate unique call ID for this livestream
             const callId = generateCallId('livestream')
-
-            // Create a livestream call in Stream
             const call = client.call(STREAM_CALL_TYPES.LIVESTREAM, callId)
 
-            // Create the call with backstage mode enabled
             await call.getOrCreate({
-                data: {
-                    custom: {
-                        title,
-                        description,
-                        privacy,
-                    },
-                },
+                data: { custom: { title, description, privacy } }
             })
 
-            // Save livestream to database
-            const { data: livestream, error } = await supabase
-                .from('livestreams')
-                .insert({
-                    stream_call_id: callId,
-                    host_id: loggedInUser.id,
-                    title,
-                    description,
-                    status: 'backstage',
-                })
-                .select()
-                .single()
+            const { error } = await supabase.from('livestreams').insert({
+                stream_call_id: callId,
+                host_id: loggedInUser.id,
+                title,
+                description,
+                status: 'backstage',
+            })
 
-            if (error) {
-                throw new Error(error.message)
-            }
+            if (error) throw error
 
-            // Navigate to the livestream host page
-            router.push(`/live/${livestream.id}?host=true`)
+            router.push(`/live/${callId}?host=true`) // Use callId as ID for simplicity or fetch proper ID
             onOpenChange(false)
-
-            toast({
-                title: 'Livestream Created!',
-                description: 'You can now set up your camera and go live.',
-            })
+            toast({ title: 'Studio Ready', description: 'Setting up your stream...' })
         } catch (error) {
-            console.error('Failed to create livestream:', error)
-            toast({
-                variant: 'destructive',
-                title: 'Failed to Create Livestream',
-                description: error instanceof Error ? error.message : 'An error occurred',
-            })
+            console.error(error)
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to create stream.' })
         } finally {
             setIsCreating(false)
         }
@@ -110,172 +75,112 @@ export function GoLiveDialog({ open, onOpenChange }: GoLiveDialogProps) {
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[550px] p-0 gap-0 overflow-hidden">
-                {/* Premium gradient header */}
-                <div className="relative bg-gradient-to-br from-red-600 via-pink-600 to-purple-600 p-6 text-white overflow-hidden">
-                    {/* Animated background pattern */}
-                    <div className="absolute inset-0 opacity-20">
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.2),transparent_70%)]" />
+            <DialogContent hideClose className="sm:max-w-[480px] p-0 border-none bg-background text-foreground overflow-hidden shadow-2xl">
+                {/* Header Graphic */}
+                <div className="relative h-32 bg-gradient-to-br from-red-600 via-pink-600 to-purple-800 p-6 flex flex-col justify-end">
+                    <div className="absolute top-4 right-4">
+                        <Button
+                            size="icon"
+                            variant="ghost"
+                            className="text-white/70 hover:text-white hover:bg-white/10 rounded-full h-8 w-8"
+                            onClick={() => onOpenChange(false)}
+                        >
+                            <X className="h-5 w-5" />
+                        </Button>
                     </div>
-
-                    <div className="relative">
-                        <DialogHeader>
-                            <DialogTitle className="flex items-center gap-3 text-white text-2xl">
-                                <div className="relative">
-                                    <div className="absolute inset-0 bg-white rounded-full blur-md opacity-50 animate-pulse" />
-                                    <Radio className="relative h-6 w-6" />
-                                </div>
-                                <span>Go Live</span>
-                                <span className="relative flex h-2 w-2">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
-                                </span>
-                            </DialogTitle>
-                            <DialogDescription className="text-white/90 text-base">
-                                Start a livestream and connect with your audience in real-time
-                            </DialogDescription>
-                        </DialogHeader>
+                    <div className="relative z-10">
+                        <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                            <Radio className="h-6 w-6 animate-pulse" />
+                            Go Live
+                        </h2>
+                        <p className="text-white/80 text-sm mt-1">Setup your stream details</p>
                     </div>
+                    {/* Decorative circles */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
+                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/20 rounded-full translate-y-1/2 -translate-x-1/4 blur-xl" />
                 </div>
 
-                {/* Form content */}
                 <div className="p-6 space-y-5">
                     <div className="space-y-2">
-                        <Label htmlFor="title" className="text-sm font-semibold flex items-center gap-2">
-                            <Sparkles className="h-4 w-4 text-red-500" />
-                            Stream Title *
+                        <Label htmlFor="title" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            Stream Title <span className="text-red-500">*</span>
                         </Label>
-                        <Input
-                            id="title"
-                            placeholder="e.g., Morning Kirtan Session"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            maxLength={100}
-                            className="h-11 text-base border-2 focus:border-red-500 transition-colors"
-                        />
-                        <p className="text-xs text-muted-foreground">{title.length}/100 characters</p>
+                        <div className="relative">
+                            <Input
+                                id="title"
+                                placeholder="What's on your mind?"
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                className="bg-muted border-transparent focus:border-red-500 focus:bg-background text-foreground placeholder:text-muted-foreground pl-10 h-12 text-base transition-all"
+                            />
+                            <Wand2 className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
+                        </div>
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="description" className="text-sm font-semibold">
-                            Description (Optional)
+                        <Label htmlFor="description" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            Description
                         </Label>
                         <Textarea
                             id="description"
-                            placeholder="Tell viewers what your stream is about..."
+                            placeholder="Tell your viewers more..."
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            rows={3}
-                            maxLength={500}
-                            className="resize-none border-2 focus:border-red-500 transition-colors"
+                            className="bg-muted border-transparent focus:border-red-500 focus:bg-background text-foreground placeholder:text-muted-foreground resize-none min-h-[80px]"
                         />
-                        <p className="text-xs text-muted-foreground">{description.length}/500 characters</p>
                     </div>
 
-                    <div className="space-y-3">
-                        <Label className="text-sm font-semibold">Privacy</Label>
+                    <div className="space-y-2">
+                        <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            Audience
+                        </Label>
                         <div className="grid grid-cols-2 gap-3">
                             <button
                                 type="button"
                                 onClick={() => setPrivacy('public')}
                                 className={cn(
-                                    "relative p-4 rounded-lg border-2 transition-all duration-200 text-left group",
+                                    "flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all",
                                     privacy === 'public'
-                                        ? "border-red-500 bg-red-50 dark:bg-red-950/20"
-                                        : "border-border hover:border-red-300 hover:bg-muted/50"
+                                        ? "border-red-500 bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400"
+                                        : "border-border bg-muted/50 text-muted-foreground hover:border-muted-foreground/50 hover:bg-muted"
                                 )}
                             >
-                                <div className="flex items-start gap-3">
-                                    <div className={cn(
-                                        "p-2 rounded-lg transition-colors",
-                                        privacy === 'public' ? "bg-red-500 text-white" : "bg-muted text-muted-foreground group-hover:bg-red-100 group-hover:text-red-500"
-                                    )}>
-                                        <Globe className="h-5 w-5" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="font-semibold text-sm mb-1">Public</p>
-                                        <p className="text-xs text-muted-foreground">Anyone can watch</p>
-                                    </div>
-                                </div>
-                                {privacy === 'public' && (
-                                    <div className="absolute top-2 right-2">
-                                        <div className="h-5 w-5 rounded-full bg-red-500 flex items-center justify-center">
-                                            <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                )}
+                                <Globe className="h-6 w-6 mb-2" />
+                                <span className="text-sm font-medium">Public</span>
                             </button>
-
                             <button
                                 type="button"
                                 onClick={() => setPrivacy('followers')}
                                 className={cn(
-                                    "relative p-4 rounded-lg border-2 transition-all duration-200 text-left group",
+                                    "flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all",
                                     privacy === 'followers'
-                                        ? "border-red-500 bg-red-50 dark:bg-red-950/20"
-                                        : "border-border hover:border-red-300 hover:bg-muted/50"
+                                        ? "border-red-500 bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400"
+                                        : "border-border bg-muted/50 text-muted-foreground hover:border-muted-foreground/50 hover:bg-muted"
                                 )}
                             >
-                                <div className="flex items-start gap-3">
-                                    <div className={cn(
-                                        "p-2 rounded-lg transition-colors",
-                                        privacy === 'followers' ? "bg-red-500 text-white" : "bg-muted text-muted-foreground group-hover:bg-red-100 group-hover:text-red-500"
-                                    )}>
-                                        <Users className="h-5 w-5" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="font-semibold text-sm mb-1">Followers</p>
-                                        <p className="text-xs text-muted-foreground">Only followers</p>
-                                    </div>
-                                </div>
-                                {privacy === 'followers' && (
-                                    <div className="absolute top-2 right-2">
-                                        <div className="h-5 w-5 rounded-full bg-red-500 flex items-center justify-center">
-                                            <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                )}
+                                <Users className="h-6 w-6 mb-2" />
+                                <span className="text-sm font-medium">Followers</span>
                             </button>
                         </div>
                     </div>
-                </div>
 
-                <DialogFooter className="p-6 pt-0 gap-3">
-                    <Button
-                        variant="outline"
-                        onClick={() => onOpenChange(false)}
-                        disabled={isCreating}
-                        className="flex-1"
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        onClick={handleGoLive}
-                        disabled={isCreating || !title.trim()}
-                        className="flex-1 relative bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group"
-                    >
-                        {/* Animated background */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-
-                        <span className="relative flex items-center gap-2">
+                    <div className="pt-4">
+                        <Button
+                            onClick={handleGoLive}
+                            disabled={isCreating || !title.trim()}
+                            className="w-full h-12 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold rounded-xl shadow-lg shadow-red-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                        >
                             {isCreating ? (
                                 <>
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                    Creating...
+                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                    Creating Studio...
                                 </>
                             ) : (
-                                <>
-                                    <Radio className="h-4 w-4" />
-                                    Create Livestream
-                                </>
+                                'Enter Studio'
                             )}
-                        </span>
-                    </Button>
-                </DialogFooter>
+                        </Button>
+                    </div>
+                </div>
             </DialogContent>
         </Dialog>
     )

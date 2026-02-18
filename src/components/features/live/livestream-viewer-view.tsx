@@ -1,37 +1,22 @@
-"use client"
+'use client'
 
 import { useEffect, useState, useRef } from 'react'
 import { useStreamVideo } from '@/providers/stream-video-provider'
 import { useCallStateHooks, ParticipantView, StreamCall } from '@stream-io/video-react-sdk'
-import { Radio, Users, Send, Loader2, MessageCircle, X, Home } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { useToast } from '@/hooks/use-toast'
-import { createClient } from '@/lib/supabase/client'
-import { useAppContext } from '@/providers/app-provider'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
+import { LiveLayout } from './live-layout'
+import { LiveChat } from './live-chat'
+import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Users, X, Heart, Share2, MoreVertical, Volume2, VolumeX, Loader2 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface LivestreamViewerViewProps {
     livestreamId: string
     callId: string
     hostName: string
     title: string
-}
-
-interface ChatMessage {
-    id: string
-    livestream_id: string
-    user_id: string
-    message: string
-    created_at: string
-    user: {
-        username: string
-        name: string
-        avatar_url: string | null
-    }
 }
 
 export function LivestreamViewerView({ livestreamId, callId, hostName, title }: LivestreamViewerViewProps) {
@@ -42,7 +27,6 @@ export function LivestreamViewerView({ livestreamId, callId, hostName, title }: 
     const [call, setCall] = useState<any>(null)
     const [isLoading, setIsLoading] = useState(true)
 
-    // Initialize call
     useEffect(() => {
         if (!client) return
 
@@ -66,27 +50,27 @@ export function LivestreamViewerView({ livestreamId, callId, hostName, title }: 
         initCall()
 
         return () => {
-            if (call) {
-                call.leave().catch(console.error)
-            }
+            if (call) call.leave().catch(console.error)
         }
     }, [client, callId])
 
     if (isLoading || !call) {
         return (
-            <div className="flex items-center justify-center h-screen bg-black">
-                <Loader2 className="h-8 w-8 animate-spin text-white" />
+            <div className="flex items-center justify-center h-[100dvh] bg-black text-white">
+                <Loader2 className="h-8 w-8 animate-spin" />
             </div>
         )
     }
 
     return (
         <StreamCall call={call}>
-            <div className="flex flex-col lg:flex-row bg-black text-white min-h-[calc(100vh-4rem)] md:min-h-screen">
-                <LivestreamPlayer call={call} title={title} hostName={hostName} />
-                <LivestreamChat livestreamId={livestreamId} />
-                <CallListener />
-            </div>
+            <LiveLayout>
+                <div className="relative w-full h-full">
+                    {/* Listen for end call event */}
+                    <CallListener />
+                    <LivestreamViewerContent call={call} hostName={hostName} title={title} livestreamId={livestreamId} />
+                </div>
+            </LiveLayout>
         </StreamCall>
     )
 }
@@ -97,279 +81,165 @@ function CallListener() {
     const router = useRouter()
 
     useEffect(() => {
-        if (callEndedAt) {
-            router.refresh() // Refresh to show StreamEnded component
-        }
+        if (callEndedAt) router.refresh()
     }, [callEndedAt, router])
 
     return null
 }
 
-function LivestreamPlayer({ call, title, hostName }: { call: any; title: string; hostName: string }) {
+function LivestreamViewerContent({ call, hostName, title, livestreamId }: { call: any, hostName: string, title: string, livestreamId: string }) {
     const { useParticipantCount, useIsCallLive, useParticipants } = useCallStateHooks()
 
     const participantCount = useParticipantCount()
     const isLive = useIsCallLive()
     const participants = useParticipants()
-
-    // Get the host (first participant, usually the broadcaster)
     const hostParticipant = participants.find(p => !p.isLocalParticipant)
 
-    // Check if host is screen sharing
-    const isScreenSharing = hostParticipant?.publishedTracks.includes('screenShareTrack' as any)
+    // Autoplay / Audio state
+    const [isMuted, setIsMuted] = useState(true)
+    const containerRef = useRef<HTMLDivElement>(null)
+
+    // Manual unmute handler
+    const toggleMute = () => setIsMuted(!isMuted)
+
+    // Handle Muting via DOM since ParticipantView doesn't expose a mute prop
+    useEffect(() => {
+        if (!containerRef.current) return
+
+        const mediaElements = containerRef.current.querySelectorAll('video, audio')
+        mediaElements.forEach((el: Element) => {
+            (el as HTMLMediaElement).muted = isMuted
+        })
+    }, [isMuted, hostParticipant])
 
     return (
-        <div className="flex-1 flex flex-col items-center justify-center bg-gray-900/50 relative">
-            <div className="aspect-video bg-black w-full flex items-center justify-center relative">
+        <div className="relative w-full h-full bg-black">
+            {/* 1. Full-Screen Video */}
+            <div className="absolute inset-0 z-0" ref={containerRef}>
                 {hostParticipant ? (
                     <ParticipantView
                         participant={hostParticipant}
-                        className="w-full h-full"
+                        trackType={hostParticipant.screenShareStream ? 'screenShareTrack' : 'videoTrack'}
+                        className="h-full w-full object-contain bg-black"
                     />
                 ) : (
-                    <div className="text-muted-foreground">
-                        {isLive ? 'Loading stream...' : 'Stream is in backstage mode'}
+                    <div className="h-full w-full flex items-center justify-center bg-gray-900">
+                        <div className="text-center space-y-4">
+                            <div className="relative mx-auto h-20 w-20">
+                                <span className="absolute inset-0 rounded-full border-2 border-white/20 animate-ping" />
+                                <Avatar className="h-20 w-20 border-2 border-white">
+                                    <AvatarFallback className="bg-gray-800 text-white text-xl">{hostName[0]}</AvatarFallback>
+                                </Avatar>
+                            </div>
+                            <p className="text-gray-400 text-sm font-medium animate-pulse">
+                                {isLive ? 'Connecting to stream...' : 'Waiting for host to go live...'}
+                            </p>
+                        </div>
                     </div>
                 )}
 
-                {/* Screen Share Indicator */}
-                {isScreenSharing && (
-                    <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-blue-600 px-3 py-1.5 rounded-md">
-                        <span className="text-sm font-semibold text-white">Screen Sharing</span>
-                    </div>
-                )}
+                {/* Gradient Overlays */}
+                <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/60 to-transparent pointer-events-none" />
+                <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black/90 to-transparent pointer-events-none" />
             </div>
 
-            {/* Live Badge */}
-            <div className="absolute top-4 left-4 p-4">
-                {isLive ? (
-                    <div className="flex items-center gap-2 bg-red-600 px-3 py-1.5 rounded-md">
-                        <Radio className="h-4 w-4 animate-pulse" />
-                        <span className="text-sm font-semibold">LIVE</span>
+            {/* 2. Top Bar */}
+            <div className="absolute top-0 left-0 right-0 z-20 p-4 pt-safe-top flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                    {/* Host Profile */}
+                    <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-2 py-1 rounded-full border border-white/10 pr-4">
+                        <Avatar className="h-8 w-8 ring-1 ring-white/20">
+                            <AvatarFallback className="text-[10px] bg-gradient-to-br from-red-500 to-pink-600 border-none">{hostName[0]}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col">
+                            <span className="text-[11px] font-bold leading-tight">{hostName}</span>
+                            <span className="text-[9px] text-gray-300 flex items-center gap-1">
+                                {isLive && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
+                                {isLive ? 'LIVE' : 'OFFLINE'}
+                            </span>
+                        </div>
+                        {/* Follow Button Placeholder */}
+                        <Button size="sm" variant="secondary" className="h-6 text-[10px] px-2 ml-1 rounded-full bg-white text-black hover:bg-gray-200">
+                            Follow
+                        </Button>
                     </div>
-                ) : (
-                    <div className="flex items-center gap-2 bg-yellow-600 px-3 py-1.5 rounded-md">
-                        <span className="text-sm font-semibold">BACKSTAGE</span>
-                    </div>
-                )}
-            </div>
-
-            {/* Viewer Count */}
-            {isLive && (
-                <div className="absolute top-4 right-4 flex items-center gap-2 bg-black/50 px-3 py-1.5 rounded-lg">
-                    <Users className="h-4 w-4" />
-                    <span className="text-sm">{Math.max(participantCount - 1, 0)}</span>
                 </div>
-            )}
 
-            {/* Stream Info */}
-            <div className="w-full p-4 bg-background text-foreground">
-                <h1 className="text-xl font-bold mb-1">{title}</h1>
-                <p className="text-sm text-muted-foreground">{hostName}</p>
-            </div>
-        </div>
-    )
-}
-
-function LivestreamChat({ livestreamId }: { livestreamId: string }) {
-    const { loggedInUser } = useAppContext()
-    const supabase = createClient()
-    const scrollRef = useRef<HTMLDivElement>(null)
-
-    const [messages, setMessages] = useState<ChatMessage[]>([])
-    const [newMessage, setNewMessage] = useState('')
-    const [isSending, setIsSending] = useState(false)
-    const [isChatOpen, setIsChatOpen] = useState(false)
-
-    // Fetch and subscribe to chat messages
-    useEffect(() => {
-        const fetchMessages = async () => {
-            const { data, error } = await supabase
-                .from('livestream_chat')
-                .select(`
-                    id,
-                    livestream_id,
-                    user_id,
-                    message,
-                    created_at,
-                    user:profiles!livestream_chat_user_id_fkey(
-                        username,
-                        name,
-                        avatar_url
-                    )
-                `)
-                .eq('livestream_id', livestreamId)
-                .order('created_at', { ascending: true })
-                .limit(100)
-
-            if (!error && data) {
-                setMessages(data as any)
-            }
-        }
-
-        fetchMessages()
-
-        // Subscribe to new messages
-        const channel = supabase
-            .channel(`livestream_chat:${livestreamId}`)
-            .on('postgres_changes', {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'livestream_chat',
-                filter: `livestream_id=eq.${livestreamId}`
-            }, (payload) => {
-                // Fetch the new message with user data
-                supabase
-                    .from('livestream_chat')
-                    .select(`
-                        id,
-                        livestream_id,
-                        user_id,
-                        message,
-                        created_at,
-                        user:profiles!livestream_chat_user_id_fkey(
-                            username,
-                            name,
-                            avatar_url
-                        )
-                    `)
-                    .eq('id', payload.new.id)
-                    .single()
-                    .then(({ data }) => {
-                        if (data) {
-                            setMessages(prev => [...prev, data as any])
-                        }
-                    })
-            })
-            .subscribe()
-
-        return () => {
-            supabase.removeChannel(channel)
-        }
-    }, [livestreamId])
-
-    // Auto-scroll to bottom
-    useEffect(() => {
-        if (scrollRef.current) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-        }
-    }, [messages])
-
-    const handleSendMessage = async (e: React.FormEvent) => {
-        e.preventDefault()
-
-        if (!newMessage.trim() || !loggedInUser) return
-
-        setIsSending(true)
-        try {
-            await supabase
-                .from('livestream_chat')
-                .insert({
-                    livestream_id: livestreamId,
-                    user_id: loggedInUser.id,
-                    message: newMessage.trim()
-                })
-
-            setNewMessage('')
-        } catch (error) {
-            console.error('Failed to send message:', error)
-        } finally {
-            setIsSending(false)
-        }
-    }
-
-    return (
-        <>
-            {/* Mobile Chat Toggle Button */}
-            <button
-                onClick={() => setIsChatOpen(!isChatOpen)}
-                className="lg:hidden fixed bottom-4 right-4 z-40 bg-primary text-primary-foreground rounded-full p-4 shadow-lg"
-            >
-                <MessageCircle className="h-6 w-6" />
-                {messages.length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                        {messages.length}
-                    </span>
-                )}
-            </button>
-
-            {/* Chat Panel */}
-            <div
-                className={cn(
-                    "lg:w-96 lg:border-l bg-background text-foreground flex flex-col",
-                    "fixed lg:relative bottom-0 left-0 right-0 z-50",
-                    "transition-transform duration-300",
-                    isChatOpen ? "translate-y-0" : "translate-y-full lg:translate-y-0",
-                    "h-[70vh] lg:h-full"
-                )}
-            >
-                {/* Chat Header */}
-                <div className="p-4 border-b flex items-center justify-between">
-                    <div>
-                        <h2 className="font-semibold">Live Chat</h2>
-                        <p className="text-xs text-muted-foreground">{messages.length} messages</p>
+                <div className="flex items-center gap-2">
+                    {/* Viewers */}
+                    <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 text-[10px] font-bold text-white/90">
+                        <Users className="h-3 w-3" />
+                        {participantCount}
                     </div>
+                    {/* Close */}
                     <Button
-                        size="sm"
+                        size="icon"
                         variant="ghost"
-                        onClick={() => setIsChatOpen(false)}
-                        className="lg:hidden h-8 w-8 p-0"
+                        onClick={() => window.history.back()}
+                        className="h-8 w-8 rounded-full bg-black/40 backdrop-blur-md border border-white/10 hover:bg-white/20"
                     >
                         <X className="h-4 w-4" />
                     </Button>
                 </div>
-
-                {/* Messages */}
-                <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-                    <div className="space-y-3">
-                        {messages.map((msg) => (
-                            <div key={msg.id} className="flex items-start gap-2">
-                                <Avatar className="h-8 w-8 flex-shrink-0">
-                                    <AvatarImage src={msg.user.avatar_url || '/user_Avatar/male.png'} />
-                                    <AvatarFallback>{msg.user.name[0]}</AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-baseline gap-2">
-                                        <span className="text-sm font-medium truncate">{msg.user.username}</span>
-                                        <span className="text-xs text-muted-foreground">
-                                            {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </span>
-                                    </div>
-                                    <p className="text-sm break-words">{msg.message}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </ScrollArea>
-
-                {/* Message Input */}
-                <form onSubmit={handleSendMessage} className="p-4 border-t">
-                    {loggedInUser ? (
-                        <div className="flex gap-2">
-                            <Input
-                                value={newMessage}
-                                onChange={(e) => setNewMessage(e.target.value)}
-                                placeholder="Send a message..."
-                                disabled={isSending}
-                                maxLength={500}
-                                className="flex-1"
-                            />
-                            <Button
-                                type="submit"
-                                size="icon"
-                                disabled={isSending || !newMessage.trim()}
-                                className="h-10 w-10 flex-shrink-0"
-                            >
-                                <Send className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    ) : (
-                        <p className="text-sm text-muted-foreground text-center">
-                            Log in to chat
-                        </p>
-                    )}
-                </form>
             </div>
-        </>
+
+            {/* 3. Main Interface Layer */}
+            <div className="absolute inset-0 z-10 pointer-events-none">
+                {/* Tap to Unmute Overlay */}
+                {isMuted && isLive && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
+                        <button
+                            onClick={toggleMute}
+                            className="bg-black/60 backdrop-blur-md text-white rounded-full px-6 py-3 font-semibold flex items-center gap-3 hover:scale-105 transition-transform animate-in fade-in"
+                        >
+                            <VolumeX className="h-5 w-5" />
+                            Tap to Unmute
+                        </button>
+                    </div>
+                )}
+            </div>
+
+            {/* 4. Bottom Controls & Interactions */}
+            <div className="absolute bottom-0 left-0 right-0 z-30 p-4 pb-safe-bottom flex items-end justify-between gap-4">
+                {/* Left: Chat Overlay */}
+                <div className="flex-1 max-w-[calc(100%-60px)] md:max-w-[400px]">
+                    <LiveChat livestreamId={livestreamId} isOverlay={true} />
+                </div>
+
+                {/* Right: Interaction Stack */}
+                <div className="flex flex-col items-center gap-4 pb-14 pointer-events-auto">
+                    {/* Mute Toggle (Small) */}
+                    <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={toggleMute}
+                        className="h-10 w-10 rounded-full bg-black/30 backdrop-blur-md border border-white/10 text-white hover:bg-white/20"
+                    >
+                        {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+                    </Button>
+
+                    <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-12 w-12 rounded-full bg-black/30 backdrop-blur-md border border-white/10 text-white hover:bg-white/20"
+                    >
+                        <Share2 className="h-6 w-6" />
+                        <span className="sr-only">Share</span>
+                    </Button>
+
+                    <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-12 w-12 rounded-full bg-black/30 backdrop-blur-md border border-white/10 text-white hover:bg-white/20"
+                    >
+                        <MoreVertical className="h-6 w-6" />
+                        <span className="sr-only">More</span>
+                    </Button>
+
+                    {/* Animated Heart Button is inside Live Chat input area now for easier access, 
+                        but we keep one here too for stacking aesthetic if needed */}
+                </div>
+            </div>
+        </div>
     )
 }

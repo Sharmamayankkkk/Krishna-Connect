@@ -1,79 +1,67 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Radio, Home, Search } from 'lucide-react'
+import { CheckCircle2, Home, UserPlus } from 'lucide-react'
 import Link from 'next/link'
-import { formatDistanceToNow } from 'date-fns'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { formatDistance } from 'date-fns'
 
 interface StreamEndedProps {
-    title: string
-    hostName: string
-    hostAvatar: string | null
-    endedAt: string | null
+    host: {
+        name: string
+        username: string
+        avatarUrl: string | null
+    }
+    duration?: string
+    viewerCount?: number
 }
 
-export function StreamEnded({ title, hostName, hostAvatar, endedAt }: StreamEndedProps) {
+export function StreamEnded({ host, duration, viewerCount }: StreamEndedProps) {
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-background via-background to-muted/20 p-4">
-            <Card className="max-w-md w-full border-2">
-                <CardHeader className="text-center space-y-4">
-                    <div className="flex justify-center">
-                        <div className="relative">
-                            <div className="absolute inset-0 bg-gradient-to-r from-gray-500 to-gray-600 rounded-full blur-xl opacity-20" />
-                            <div className="relative p-6 rounded-full bg-gradient-to-br from-gray-500/10 to-gray-600/10 border border-gray-500/20">
-                                <Radio className="h-12 w-12 text-gray-500" />
-                            </div>
-                        </div>
-                    </div>
+        <div className="flex flex-col items-center justify-center h-[100dvh] bg-background text-foreground p-6 text-center animate-in fade-in duration-700">
+            {/* Host Info */}
+            <div className="relative mb-8">
+                <div className="absolute inset-0 bg-gradient-to-tr from-red-500 to-purple-600 rounded-full blur-xl opacity-20 dark:opacity-50" />
+                <Avatar className="h-24 w-24 border-4 border-background relative">
+                    <AvatarImage src={host.avatarUrl || ''} />
+                    <AvatarFallback className="text-2xl">{host.name[0]}</AvatarFallback>
+                </Avatar>
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-muted text-muted-foreground text-xs px-2 py-0.5 rounded-full border border-border whitespace-nowrap font-medium">
+                    @{host.username}
+                </div>
+            </div>
 
-                    <div>
-                        <CardTitle className="text-2xl mb-2">Stream Ended</CardTitle>
-                        <CardDescription className="text-base">
-                            This livestream has ended
-                        </CardDescription>
-                    </div>
-                </CardHeader>
+            <h2 className="text-3xl font-bold mb-2">Stream Ended</h2>
+            <p className="text-muted-foreground mb-8">
+                Thanks for watching!
+            </p>
 
-                <CardContent className="space-y-6">
-                    {/* Stream Info */}
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                            <Avatar className="h-12 w-12">
-                                <AvatarImage src={hostAvatar || undefined} />
-                                <AvatarFallback>{hostName[0]}</AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 min-w-0">
-                                <p className="font-semibold truncate">{title}</p>
-                                <p className="text-sm text-muted-foreground">by {hostName}</p>
-                            </div>
-                        </div>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 gap-4 w-full max-w-sm mb-8">
+                <div className="bg-muted/50 p-4 rounded-xl border border-border">
+                    <span className="block text-2xl font-bold text-foreground">{viewerCount || 0}</span>
+                    <span className="text-xs text-muted-foreground uppercase tracking-wider">Peak Viewers</span>
+                </div>
+                <div className="bg-muted/50 p-4 rounded-xl border border-border">
+                    <span className="block text-2xl font-bold text-foreground">{duration || '0m'}</span>
+                    <span className="text-xs text-muted-foreground uppercase tracking-wider">Duration</span>
+                </div>
+            </div>
 
-                        {endedAt && (
-                            <p className="text-sm text-center text-muted-foreground">
-                                Ended {formatDistanceToNow(new Date(endedAt), { addSuffix: true })}
-                            </p>
-                        )}
-                    </div>
+            {/* Actions */}
+            <div className="flex flex-col gap-3 w-full max-w-xs">
+                <Button className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold rounded-full h-12 shadow-lg hover:scale-105 transition-transform">
+                    <UserPlus className="mr-2 h-5 w-5" />
+                    Follow Host
+                </Button>
 
-                    {/* Action Buttons */}
-                    <div className="space-y-2">
-                        <Link href="/live" className="block">
-                            <Button className="w-full" size="lg">
-                                <Search className="mr-2 h-4 w-4" />
-                                Discover Live Streams
-                            </Button>
-                        </Link>
-                        <Link href="/" className="block">
-                            <Button variant="outline" className="w-full" size="lg">
-                                <Home className="mr-2 h-4 w-4" />
-                                Go to Home
-                            </Button>
-                        </Link>
-                    </div>
-                </CardContent>
-            </Card>
+                <Link href="/live" className="w-full">
+                    <Button variant="ghost" className="w-full text-muted-foreground hover:text-foreground hover:bg-muted rounded-full h-12">
+                        <Home className="mr-2 h-5 w-5" />
+                        Back to Live Hub
+                    </Button>
+                </Link>
+            </div>
         </div>
     )
 }

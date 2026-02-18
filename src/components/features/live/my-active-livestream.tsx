@@ -1,12 +1,14 @@
+'use client'
+
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAppContext } from '@/providers/app-provider'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Radio, Video, X } from 'lucide-react'
+import { Radio, X, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
+import { cn } from '@/lib/utils'
 
 interface ActiveLivestream {
     id: string
@@ -36,43 +38,27 @@ export function MyActiveLivestream() {
                 .limit(1)
                 .single()
 
-            if (data) {
-                setLivestream(data)
-            }
+            if (data) setLivestream(data)
         }
 
         fetchActiveLivestream()
-    }, [loggedInUser])
+    }, [loggedInUser, supabase])
 
     const handleEndStream = async () => {
         if (!livestream) return
+        if (!confirm("Are you sure you want to end your active stream?")) return
 
         setIsEnding(true)
         try {
-            const { error } = await supabase
-                .from('livestreams')
-                .update({
-                    status: 'ended',
-                    ended_at: new Date().toISOString()
-                })
-                .eq('id', livestream.id)
-
+            const { error } = await supabase.from('livestreams').update({ status: 'ended', ended_at: new Date().toISOString() }).eq('id', livestream.id)
             if (error) throw error
 
-            toast({
-                title: 'Stream Ended',
-                description: 'Your livestream has been ended successfully',
-            })
-
+            toast({ title: 'Stream Ended', description: 'Your livestream has ended.' })
             setLivestream(null)
             router.refresh()
         } catch (error) {
             console.error('Failed to end stream:', error)
-            toast({
-                variant: 'destructive',
-                title: 'Failed to End Stream',
-                description: 'Could not end the livestream. Please try again.',
-            })
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not end the livestream.' })
         } finally {
             setIsEnding(false)
         }
@@ -81,43 +67,49 @@ export function MyActiveLivestream() {
     if (!livestream) return null
 
     return (
-        <Card className="mb-6 border-primary">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <Video className="h-5 w-5" />
-                    Your Active Livestream
-                </CardTitle>
-                <CardDescription>
-                    You have an active livestream in {livestream.status} mode
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="space-y-3">
-                    <div>
-                        <p className="font-medium">{livestream.title}</p>
-                        <p className="text-sm text-muted-foreground">
-                            Status: <span className="capitalize">{livestream.status}</span>
-                        </p>
+        <div className="relative overflow-hidden rounded-xl border border-border bg-card shadow-sm dark:bg-gradient-to-br dark:from-red-950/20 dark:to-black">
+            {/* Animated accent */}
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-red-500 to-transparent animate-pulse" />
+
+            <div className="p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-4 w-full md:w-auto">
+                    <div className={cn(
+                        "flex items-center justify-center w-12 h-12 rounded-full",
+                        livestream.status === 'live'
+                            ? "bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-500"
+                            : "bg-yellow-100 text-yellow-600 dark:bg-yellow-500/20 dark:text-yellow-500"
+                    )}>
+                        <Radio className={cn("h-6 w-6", livestream.status === 'live' && "animate-pulse")} />
                     </div>
-                    <div className="flex gap-2">
-                        <Link href={`/live/${livestream.id}?host=true`} className="flex-1">
-                            <Button className="w-full">
-                                <Radio className="mr-2 h-4 w-4" />
-                                {livestream.status === 'backstage' ? 'Set Up & Go Live' : 'Manage Stream'}
-                            </Button>
-                        </Link>
-                        <Button
-                            variant="destructive"
-                            onClick={handleEndStream}
-                            disabled={isEnding}
-                            className="flex-shrink-0"
-                        >
-                            <X className="mr-2 h-4 w-4" />
-                            {isEnding ? 'Ending...' : 'End Stream'}
-                        </Button>
+
+                    <div className="flex flex-col">
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            {livestream.status === 'live' ? 'Currently Live' : 'Backstage Mode'}
+                        </span>
+                        <h3 className="text-lg font-bold text-foreground leading-tight">
+                            {livestream.title}
+                        </h3>
                     </div>
                 </div>
-            </CardContent>
-        </Card>
+
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                    <Link href={`/live/${livestream.id}?host=true`} className="flex-1 md:flex-none">
+                        <Button className="w-full md:w-auto font-bold rounded-full px-6" variant="default">
+                            {livestream.status === 'backstage' ? 'Continue Setup' : 'Resume Stream'}
+                        </Button>
+                    </Link>
+
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleEndStream}
+                        disabled={isEnding}
+                        className="rounded-full text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+                    >
+                        <X className="h-5 w-5" />
+                    </Button>
+                </div>
+            </div>
+        </div>
     )
 }

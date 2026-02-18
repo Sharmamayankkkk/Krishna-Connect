@@ -39,7 +39,22 @@ export function ShareLivestreamDialog({ open, onOpenChange, livestreamId, title 
         }
     }
 
-    const handleShare = (platform: string) => {
+    const handleShare = async (platform?: string) => {
+        // Native Web Share API
+        if (!platform && navigator.share) {
+            try {
+                await navigator.share({
+                    title: `Check out this livestream: ${title}`,
+                    text: shareText,
+                    url: shareUrl,
+                })
+                return
+            } catch (error) {
+                console.log('Error sharing:', error)
+            }
+        }
+
+        // Fallback for desktop / manual selection
         const encodedUrl = encodeURIComponent(shareUrl)
         const encodedText = encodeURIComponent(shareText)
 
@@ -49,7 +64,7 @@ export function ShareLivestreamDialog({ open, onOpenChange, livestreamId, title 
             whatsapp: `https://wa.me/?text=${encodedText}%20${encodedUrl}`,
         }
 
-        if (urls[platform as keyof typeof urls]) {
+        if (platform && urls[platform as keyof typeof urls]) {
             window.open(urls[platform as keyof typeof urls], '_blank', 'width=600,height=400')
         }
     }

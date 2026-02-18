@@ -91,10 +91,14 @@ export default async function LiveStreamingPage({
   if (livestream.status === 'ended') {
     return (
       <StreamEnded
-        title={livestream.title}
-        hostName={livestream.host.name || livestream.host.username}
-        hostAvatar={livestream.host.avatar_url}
-        endedAt={livestream.ended_at}
+        host={{
+          name: livestream.host.name || livestream.host.username,
+          username: livestream.host.username,
+          avatarUrl: livestream.host.avatar_url
+        }}
+        duration={livestream.started_at && livestream.ended_at ?
+          formatDuration(new Date(livestream.started_at), new Date(livestream.ended_at)) :
+          undefined}
       />
     );
   }
@@ -122,4 +126,10 @@ export default async function LiveStreamingPage({
       title={livestream.title}
     />
   );
+}
+
+function formatDuration(start: Date, end: Date) {
+  const diff = end.getTime() - start.getTime();
+  const minutes = Math.floor(diff / 60000);
+  return `${minutes}m`;
 }
