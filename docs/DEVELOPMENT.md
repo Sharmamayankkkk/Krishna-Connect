@@ -179,6 +179,13 @@ npm run typecheck        # Run TypeScript compiler check
 - Check mobile and tablet layouts.
 - Test PWA installation and offline functionality.
 
+### Maintenance Mode
+To enable maintenance mode locally:
+1. Set `NEXT_PUBLIC_MAINTENANCE_MODE=true` in `.env.local`.
+2. Restart the dev server.
+3. Access the app to see the maintenance screen.
+4. To bypass, use `http://localhost:3000?bypass=YOUR_SECRET` (set `MAINTENANCE_BYPASS_SECRET` in `.env.local`).
+
 ## Common Development Tasks
 
 ### Adding a New Page

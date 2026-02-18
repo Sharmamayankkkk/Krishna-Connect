@@ -29,6 +29,8 @@ Ensure the following variables are set in the Vercel Project Settings:
 | `NEXT_PUBLIC_ADSENSE_CLIENT_ID` | Google AdSense client ID (required if monetization enabled). |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | VAPID public key for web push notifications. |
 | `VAPID_PRIVATE_KEY` | VAPID private key for web push notifications (server-side only). |
+| `NEXT_PUBLIC_MAINTENANCE_MODE` | Enable/Disable maintenance mode (`true`/`false`). |
+| `MAINTENANCE_BYPASS_SECRET` | Secret key to bypass maintenance mode via `?bypass=SECRET`. |
 
 > **Security Note:** Never expose the Supabase `service_role` key or the `VAPID_PRIVATE_KEY` in client-side environment variables. Use `NEXT_PUBLIC_` prefix only for client-accessible variables.
 

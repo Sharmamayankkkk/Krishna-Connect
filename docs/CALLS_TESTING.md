@@ -17,6 +17,10 @@ Execute the following SQL files **in order** in your Supabase SQL Editor (Dashbo
 | 5 | `supabase/Calls/05_fix_rpc_functions.sql` | **Important**: Fixes function signatures and reloads PostgREST schema cache |
 | 6 | `supabase/Calls/06_fix_posts_rpc.sql` | **Important**: Fixes `get_posts_paginated` RPC (`pl.id` column error) |
 | 7 | `supabase/Calls/07_fix_ambiguous_user_id.sql` | **Important**: Fixes "column reference user_id is ambiguous" in `get_posts_paginated` |
+| 8 | `supabase/Calls/23_create_group_calls_schema.sql` | Creates `call_participants` table and modifies `calls` for group support |
+| 9 | `supabase/Calls/24_fix_group_calls_rls_and_cleanup.sql` | Fixes RLS policies for group calls |
+| 10 | `supabase/Calls/25_fix_infinite_recursion.sql` | Fixes recursion issues in policies |
+| 11 | `supabase/Calls/26_fix_recursion_with_functions.sql` | Final fix for policy recursion using security definer functions |
 
 > **⚠️ Files 05, 06, and 07 are critical!** Always run them in order. File 07 fixes the ambiguous `user_id` reference caused by the RETURNS TABLE `user_id` column conflicting with table column names in EXISTS subqueries. All send `NOTIFY pgrst, 'reload schema'` to refresh the PostgREST schema cache.
 
@@ -118,6 +122,18 @@ You need **two different browser sessions** (two different users logged in):
    - Duration (for completed calls)
    - Timestamp
 3. Click the phone/video icon next to any call to call that person back
+
+### Test 8: Group Call
+
+1. **User A**: Open a **Group Chat**
+2. **User A**: Click the **video icon** (📹) in the group header
+3. **User A**: Should start a group call and see "Waiting for others..."
+4. **User B & C** (Group Members): Should see "Join Call" button/banner in the group chat
+5. **User B**: Click **Join**
+6. **Both**: Should see each other in a grid layout
+7. **User C**: Click **Join** -> Grid updates to show 3 participants
+8. **Any User**: Click Leave (Red phone) -> Disconnects only that user; call continues for others
+9. **Last User**: Leaving ends the call completely
 
 ## Troubleshooting
 

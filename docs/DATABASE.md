@@ -117,7 +117,10 @@ Comments on posts.
 - `author_id` (UUID): FK to profiles.
 - `content` (Text): Comment text.
 - `created_at` (Timestamptz).
+- `updated_at` (Timestamptz): Last edit time.
 - `parent_comment_id` (BigInt, nullable): FK for nested comments.
+- `is_pinned` (Boolean): Highlighted at the top.
+- `is_hidden` (Boolean): Hidden from view (moderation).
 
 ### `public.bookmarks`
 Saved posts.
@@ -152,6 +155,18 @@ Ephemeral 24-hour content.
 - `caption` (Text, nullable): Story text.
 - `created_at` (Timestamptz).
 - `expires_at` (Timestamptz): Auto-delete timestamp.
+
+### `public.leela_videos`
+Short-form video content (Reels/Shorts).
+- `id` (UUID, PK).
+- `user_id` (UUID): FK to profiles.
+- `video_url` (Text): URL of the video file.
+- `thumbnail_url` (Text, nullable): Preview image.
+- `caption` (Text, nullable): Video description.
+-   `view_count` (BigInt): Total views.
+-   `like_count` (BigInt): Total likes.
+-   `comment_count` (BigInt): Total comments.
+- `created_at` (Timestamptz).
 
 ---
 

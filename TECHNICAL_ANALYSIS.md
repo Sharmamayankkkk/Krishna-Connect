@@ -3,12 +3,14 @@
 | Feature | Description | Status | Files / Components |
 | :--- | :--- | :--- | :--- |
 | **IMMEDIATE PRIORITIES** | | | |
-| 1. Explore page optimization | Improve performance, relevance, and loading speed of the explore feed. | **Completed** | `src/app/(app)/explore/page.tsx` |
+| 1. Maintenance Mode | System-wide maintenance screen with admin bypass. | **Completed** | `src/app/maintenance/page.tsx`, `src/proxy.ts` |
+| 2. Explore page optimization | Improve performance, relevance, and loading speed of the explore feed. | **Completed** | `src/app/(app)/explore/page.tsx` |
 | 2. Content Moderation | Admin tools for reviewing and acting on user-reported content. | **Completed** | `supabase/reports_system.sql`, `src/app/(app)/components/report-dialog.tsx` |
 | 3. Emoji Picker | Add emojis to posts and messages. | **Completed** | `src/app/(app)/components/create-post.tsx`, `src/app/(app)/chat/[id]/components/chat-input.tsx` |
 | 4. GIF Library | Giphy integration for posts. | **Completed** | `src/app/(app)/components/create-post.tsx`, `src/components/giphy-picker.tsx` |
 | 5. Mentions & Tagging | @mentions and #tags. | **Completed** | `src/app/(app)/components/post-card.tsx`, `src/app/(app)/hashtag/[tag]/page.tsx` |
 | 6. Image Editing | Crop, rotate, filters. | **Completed** | `src/components/image-editor.tsx` |
+| 7. Comment Moderation | Pin and hide comments. | **Completed** | `supabase/migrations/20260213_improve_comments.sql` |
 | **TIER 1: Core Social Features** | | | |
 | 7. User Profiles | Dedicated user pages with bio, posts, banner, avatar. | **Completed** | `src/app/(app)/profile/[username]/page.tsx`, `src/app/(app)/profile/[username]/components/profile-view.tsx` |
 | 8. Direct Messages | Real-time 1-on-1 and Group chats. | **Completed** | `src/app/(app)/chat/[id]/page.tsx`, `src/app/(app)/components/chat-list.tsx` |
@@ -36,7 +38,8 @@
 | 26. AI Features | Translation, smart replies, content analysis. | **Completed** | `src/ai/flows/`, Google Gemini integration |
 | 27. Internationalization | Multi-language support. | **In Progress** | `src/ai/flows/translate.ts` |
 | 28. Advanced Media | Video player, Fullscreen image viewer. | **Completed** | `src/app/(app)/components/video-player.tsx`, `src/app/(app)/components/image-viewer.tsx` |
-| 29. Mood Board | Visual inspiration collages. | **Planned** | `src/app/(app)/moodboard/page.tsx` (UI only) |
+| 29. Leela Videos | Short-form video content. | **Completed** | `src/app/(app)/profile/[username]/components/profile-view.tsx`, `leela_videos` table |
+| 30. Mood Board | Visual inspiration collages. | **Planned** | `src/app/(app)/moodboard/page.tsx` (UI only) |
 | 30. Challenges | Community trends/hashtags. | **Planned** | `src/app/(app)/challenges/page.tsx` (UI only) |
 | 31. NFT Integration | Verified profile pics/collection. | **Planned** | `src/app/(app)/nft/page.tsx` (UI only) |
 | 32. AR Filters | Camera effects. | **Planned** | Not implemented |

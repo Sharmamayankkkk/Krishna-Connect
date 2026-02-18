@@ -35,7 +35,8 @@
 #### 👤 User Experience
 *   **User Profiles**: Customizable profiles with banners, avatars, bios, and social stats
 *   **Stories/Status**: Share ephemeral 24-hour content with the community
-*   **Feed System**: Explore posts with infinite scroll, likes, reposts, and comments
+*   **Feed System**: Explore posts with infinite scroll, likes, reposts, and comments (with pinning and hiding support)
+*   **Leela Videos**: Share and discover engaging short-form videos
 *   **Bookmarks**: Save and organize your favorite posts and content
 *   **Notifications**: Real-time notifications for mentions, likes, messages, and events
 *   **Theme Customization**: Switch between light and dark modes
@@ -64,6 +65,7 @@
 *   **Content Scheduling**: Schedule posts for future publication
 *   **Collaborative Posts**: Co-author posts with multiple users
 *   **Thread Support**: Create connected series of posts
+*   **Maintenance Mode**: System-wide maintenance mode with bypass capabilities for administrators
 *   **Monetization**: Optional ads integration for content promotion
 
 #### 📱 Cross-Platform

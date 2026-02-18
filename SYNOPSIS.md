@@ -38,7 +38,8 @@ The scope of the project defines its boundaries, outlining what is included and 
 - **Customization:** Light/dark modes and customizable chat appearance (bubble colors, wallpapers).
 - **Community Management:** Democratized group creation, user-powered reporting, and content moderation.
 - **Event System:** Creation of events by "Verified Users," with open RSVP for all community members.
-- **Feed System:** Public posts with likes, reposts, comments, and infinite scroll.
+- **Feed System:** Public posts with likes, reposts, comments (with pinning/hiding), and infinite scroll.
+- **Leela Videos:** Short-form video discovery and sharing.
 - **Stories/Status:** Ephemeral 24-hour content sharing.
 - **Bookmarks:** Save and organize favorite posts.
 - **Notifications:** Real-time notifications for interactions, mentions, and events.
@@ -52,6 +53,7 @@ The scope of the project defines its boundaries, outlining what is included and 
 - **Collaborative Posts:** Multi-author content creation.
 - **Thread Support:** Connected series of posts.
 - **Monetization:** Optional ads integration (Google AdSense).
+- **Maintenance Mode:** System-wide maintenance screen with admin bypass validation.
 - **Privacy & Security:** Advanced privacy controls, user blocking, and account security settings.
 
 #### **Out-of-Scope (for the current version):**

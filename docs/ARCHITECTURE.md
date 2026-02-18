@@ -24,6 +24,7 @@ The application leverages the **App Router** for efficient routing and server-si
     -   **Context API**: For global UI state (Auth, Theme, active chat).
 -   **PWA Support**: Service worker implementation for offline capabilities and installability.
 -   **Push Notifications**: Web Push API integration for real-time alerts.
+-   **Maintenance Mode**: Middleware-level interception (`proxy.ts`) to redirect users during downtime, with bypass capabilities.
 
 ### 2. Backend Layer (Supabase)
 Supabase provides the core infrastructure:
@@ -44,6 +45,7 @@ Supabase provides the core infrastructure:
 -   **`ProfileView`**: A robust component handling user details, banner/avatar display, follow actions, and content feeds (posts, media).
 -   **Data Sync**: Updates to profiles (e.g., banner upload) sync immediately with the database and UI.
 -   **Verification Badge**: Visual indicator for verified users.
+-   **Leela Videos**: A dedicated tab for short-form video content, similar to reels/shorts.
 
 ### Chat System
 -   **`ChatList`**: Fetches active conversations with real-time updates.
@@ -54,7 +56,8 @@ Supabase provides the core infrastructure:
 
 ### Feed System
 -   **Explore Page**: Infinite scroll feed of public posts with search and filtering.
--   **Post Card**: Reusable component for displaying posts, handling likes/reposts, comments, and deletions.
+-   **Post Card**: Reusable component for displaying posts, handling likes/reposts, comments (with pinning/hiding), and deletions.
+-   **Comment System**: Supports nested replies, mentions, pinning top comments, and hiding inappropriate comments.
 -   **Post Creation**: Rich text editor with media upload, GIF picker, emoji support, and scheduling.
 -   **Hashtags & Mentions**: Clickable tags that link to filtered views.
 
