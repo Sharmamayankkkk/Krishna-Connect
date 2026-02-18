@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://chat.krishnaconsciousnesssociety.com/logo/krishna_connect.png" alt="Krishna Connect Logo" width="150">
+  <img src="https://krishnaconnect.in/logo/krishna_connect.png" alt="Krishna Connect Logo" width="150">
   
   <h1 align="center">Krishna Connect</h1>
 
