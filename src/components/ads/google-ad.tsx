@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAppContext } from '@/providers/app-provider';
 
 export const GoogleAd = ({ slot, client }: { slot: string, client?: string }) => {
@@ -9,16 +9,21 @@ export const GoogleAd = ({ slot, client }: { slot: string, client?: string }) =>
     // No ads for verified or KCS users
     const isVerified = loggedInUser?.is_verified === 'verified' || loggedInUser?.is_verified === 'kcs';
 
+    const [mounted, setMounted] = useState(false);
     useEffect(() => {
-        if (isVerified) return;
+        setMounted(true);
+    }, []);
+
+    useEffect(() => {
+        if (!mounted || isVerified) return;
         try {
             ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
         } catch (e) {
             // Expected in dev strict mode
         }
-    }, [slot, isVerified]);
+    }, [slot, isVerified, mounted]);
 
-    if (isVerified) return null;
+    if (!mounted || isVerified) return null;
 
     return (
         <div className="w-full text-center my-4">

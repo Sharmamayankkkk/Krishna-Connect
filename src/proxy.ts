@@ -95,7 +95,8 @@ export async function proxy(request: NextRequest) {
     '/contact-us',
     '/developers',
     '/faq',
-    '/maintenance'
+    '/maintenance',
+    '/site.webmanifest'
   ];
 
   // Check if the current path is a public route or an API/join route

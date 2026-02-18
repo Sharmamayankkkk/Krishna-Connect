@@ -17,6 +17,12 @@ export function getAvatarUrl(url?: string): string | undefined {
   if (!url) return undefined;
   if (url.startsWith('http')) return url;
   if (url.startsWith('/')) return url; // Local public file
+
+  // Check for known static avatars or simple filenames
+  if (url === 'male.png' || url === 'female.png' || !url.includes('/')) {
+    return `/${url}`;
+  }
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!supabaseUrl) return url;
   return `${supabaseUrl}/storage/v1/object/public/attachments/${url}`;
