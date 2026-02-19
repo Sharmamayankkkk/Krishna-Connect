@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/client';
 import { GlobalSearchBar } from "@/components/global-search-bar";
 import { TrendingTopicsList, UserCard } from './components';
+import { NewsWidget } from './components/news-widget';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -461,6 +462,30 @@ export default function ExplorePage() {
                                     router.push(`/hashtag/${tag}`);
                                 }}
                             />
+                        </section>
+                    )}
+
+                    {/* News Section - Compact horizontal list (reusing NewsWidget with different styling if needed, or simple import) */}
+                    {(activeCategory === 'all' || activeCategory === 'latest') && (
+                        <section className="px-3 sm:px-4 py-3 sm:py-4 border-b">
+                            <div className="flex items-center justify-between mb-2.5 sm:mb-3">
+                                <div className="flex items-center gap-2">
+                                    <h2 className="text-xs sm:text-sm font-semibold">Latest News</h2>
+                                </div>
+                                <Link href="/news" className="text-[11px] sm:text-xs text-primary font-semibold hover:text-primary/80 flex items-center gap-0.5">
+                                    See All <ChevronRight className="h-3 w-3" />
+                                </Link>
+                            </div>
+                            {/* We can reuse NewsWidget but it's vertical. Let's make a container that forces grid or horizontal scroll. 
+                                Or simply put NewsWidget in a grid.
+                            */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                <NewsWidget limit={6} showFooter={false} className="sm:col-span-2 md:col-span-3 bg-transparent p-0" />
+                                {/* Wait, NewsWidget is designed as a vertical list in a card. 
+                                    If we want a grid on explore, we might need to adjust NewsWidget or create a new one.
+                                    For now, let's just use it as is, but maybe limit to 3 items so it doesn't take too much vertical space.
+                                */}
+                            </div>
                         </section>
                     )}
 

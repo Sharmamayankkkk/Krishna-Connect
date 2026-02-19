@@ -35,6 +35,8 @@ import { FeedSkeleton } from './components/feed-skeleton';
 import { EmptyFeedState } from './components/empty-feed-state';
 import { TrendingTopicsList } from './components/trending-topics-list';
 import { SuggestedUsersWidget } from './components/suggested-users-widget';
+import { NewsWidget } from './components/news-widget';
+import { MobileDashboard } from './components/mobile-dashboard';
 import { transformPost } from './utils';
 
 const POSTS_PER_PAGE = 10;
@@ -539,6 +541,9 @@ export default function Feed() {
                                 <StoriesBar />
                             </div>
 
+                            {/* Mobile Dashboard (Widgets) - Visible only on mobile */}
+                            <MobileDashboard />
+
                             {/* New Posts Banner */}
                             {showNewPostsBanner && (
                                 <div
@@ -600,6 +605,11 @@ export default function Feed() {
                                     // We need to import useRouter.
                                     window.location.href = `/hashtag/${tag}`;
                                 }} />
+                            </div>
+
+                            {/* News Widget */}
+                            <div className="bg-card rounded-xl border p-4 shadow-sm">
+                                <NewsWidget limit={4} />
                             </div>
 
                             {/* Footer / Links */}

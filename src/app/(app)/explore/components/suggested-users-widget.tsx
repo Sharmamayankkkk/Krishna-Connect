@@ -7,7 +7,7 @@ import { UserCard } from './user-card';
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from '@/hooks/use-toast';
 
-export function SuggestedUsersWidget() {
+export function SuggestedUsersWidget({ showHeader = true }: { showHeader?: boolean }) {
     const [suggestedUsers, setSuggestedUsers] = React.useState<any[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const { toast } = useToast();
@@ -40,10 +40,12 @@ export function SuggestedUsersWidget() {
     if (isLoading) {
         return (
             <div className="space-y-4">
-                <div className="flex items-center gap-2 mb-2">
-                    <Skeleton className="h-5 w-5 rounded-full" />
-                    <Skeleton className="h-5 w-32 rounded" />
-                </div>
+                {showHeader && (
+                    <div className="flex items-center gap-2 mb-2">
+                        <Skeleton className="h-5 w-5 rounded-full" />
+                        <Skeleton className="h-5 w-32 rounded" />
+                    </div>
+                )}
                 {[1, 2, 3].map(i => (
                     <Skeleton key={i} className="h-16 w-full rounded-lg" />
                 ))}
@@ -55,10 +57,12 @@ export function SuggestedUsersWidget() {
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-2 px-1">
-                <Users className="h-4 w-4 text-primary" />
-                <h3 className="font-semibold text-sm">Who to Follow</h3>
-            </div>
+            {showHeader && (
+                <div className="flex items-center gap-2 mb-2 px-1">
+                    <Users className="h-4 w-4 text-primary" />
+                    <h3 className="font-semibold text-sm">Who to Follow</h3>
+                </div>
+            )}
             <div className="space-y-3">
                 {suggestedUsers.map((user) => (
                     <UserCard
