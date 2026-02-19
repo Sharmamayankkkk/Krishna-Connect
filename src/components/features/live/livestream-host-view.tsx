@@ -20,9 +20,10 @@ import { LiveChat } from '@/components/features/live/live-chat'
 interface LivestreamHostViewProps {
     livestreamId: string
     callId: string
+    isGuest?: boolean
 }
 
-export function LivestreamHostView({ livestreamId, callId }: LivestreamHostViewProps) {
+export function LivestreamHostView({ livestreamId, callId, isGuest = false }: LivestreamHostViewProps) {
     const { client } = useStreamVideo()
     const { toast } = useToast()
     const router = useRouter()
@@ -71,15 +72,15 @@ export function LivestreamHostView({ livestreamId, callId }: LivestreamHostViewP
         <StreamCall call={call}>
             <LiveLayout>
                 <div className="relative w-full h-full">
-                    <LivestreamHostControls call={call} livestreamId={livestreamId} />
+                    <LivestreamHostControls call={call} livestreamId={livestreamId} isGuest={isGuest} />
                 </div>
             </LiveLayout>
         </StreamCall>
     )
 }
 
-function LivestreamHostControls({ call, livestreamId }: { call: any; livestreamId: string }) {
-    const { useCameraState, useMicrophoneState, useScreenShareState, useIsCallLive, useParticipantCount, useLocalParticipant } = useCallStateHooks()
+function LivestreamHostControls({ call, livestreamId, isGuest }: { call: any; livestreamId: string; isGuest: boolean }) {
+    const { useCameraState, useMicrophoneState, useScreenShareState, useIsCallLive, useParticipantCount, useLocalParticipant, useParticipants } = useCallStateHooks()
 
     const { camera, isEnabled: isCamEnabled } = useCameraState()
     const { microphone, isEnabled: isMicEnabled } = useMicrophoneState()
@@ -87,6 +88,14 @@ function LivestreamHostControls({ call, livestreamId }: { call: any; livestreamI
     const isLive = useIsCallLive()
     const participantCount = useParticipantCount()
     const localParticipant = useLocalParticipant()
+    const participants = useParticipants()
+
+    const formattedParticipants = participants.map((p) => ({
+        id: p.userId,
+        name: p.name,
+        username: p.name, // Fallback if username not available directly
+        avatar_url: p.image,
+    }))
 
     const { toast } = useToast()
     const router = useRouter()
@@ -167,14 +176,25 @@ function LivestreamHostControls({ call, livestreamId }: { call: any; livestreamI
 
                 <div className="flex gap-2">
                     {/* End Stream Button */}
-                    <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={handleEndStream}
-                        className="rounded-full px-4 font-semibold shadow-lg hover:bg-red-700"
-                    >
-                        End
-                    </Button>
+                    {!isGuest ? (
+                        <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={handleEndStream}
+                            className="rounded-full px-4 font-semibold shadow-lg hover:bg-red-700"
+                        >
+                            End
+                        </Button>
+                    ) : (
+                        <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => router.push('/')}
+                            className="rounded-full px-4 font-semibold shadow-lg bg-white/10 hover:bg-white/20 text-white backdrop-blur-md"
+                        >
+                            Leave
+                        </Button>
+                    )}
                 </div>
             </div>
 
@@ -286,7 +306,7 @@ function LivestreamHostControls({ call, livestreamId }: { call: any; livestreamI
             <ParticipantsModal
                 open={isParticipantsModalOpen}
                 onOpenChange={setIsParticipantsModalOpen}
-                participants={[]} // Should fetch real participants
+                participants={formattedParticipants}
                 viewerCount={participantCount}
             />
         </div>

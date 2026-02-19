@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -75,7 +75,11 @@ export function GoLiveDialog({ open, onOpenChange }: GoLiveDialogProps) {
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent hideClose className="sm:max-w-[480px] p-0 border-none bg-background text-foreground overflow-hidden shadow-2xl">
+            <DialogContent hideClose className="sm:max-w-[480px] p-0 border-none bg-background text-foreground overflow-hidden shadow-2xl" aria-describedby="go-live-desc">
+                {/* Accessibility: Hidden Description */}
+                <div id="go-live-desc" className="sr-only">
+                    Configure your livestream details including title, description and privacy settings before going live.
+                </div>
                 {/* Header Graphic */}
                 <div className="relative h-32 bg-gradient-to-br from-red-600 via-pink-600 to-purple-800 p-6 flex flex-col justify-end">
                     <div className="absolute top-4 right-4">
@@ -89,10 +93,10 @@ export function GoLiveDialog({ open, onOpenChange }: GoLiveDialogProps) {
                         </Button>
                     </div>
                     <div className="relative z-10">
-                        <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                        <DialogTitle className="text-2xl font-bold text-white flex items-center gap-2">
                             <Radio className="h-6 w-6 animate-pulse" />
                             Go Live
-                        </h2>
+                        </DialogTitle>
                         <p className="text-white/80 text-sm mt-1">Setup your stream details</p>
                     </div>
                     {/* Decorative circles */}

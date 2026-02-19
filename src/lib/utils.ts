@@ -20,12 +20,17 @@ export function getAvatarUrl(url?: string): string | undefined {
 
   // Check for known static avatars or simple filenames
   if (url === 'male.png' || url === 'female.png' || !url.includes('/')) {
-    return `/${url}`;
+    // Remove any leading slash just in case to avoid //
+    const cleanUrl = url.startsWith('/') ? url.slice(1) : url;
+    return `/${cleanUrl}`;
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!supabaseUrl) return url;
-  return `${supabaseUrl}/storage/v1/object/public/attachments/${url}`;
+  
+  // Clean up the path to avoid double slashes
+  const cleanPath = url.startsWith('/') ? url.slice(1) : url;
+  return `${supabaseUrl}/storage/v1/object/public/attachments/${cleanPath}`;
 }
 
 export function getContrastingTextColor(color: string): string {

@@ -1,4 +1,5 @@
 import { PostType, CommentType } from '@/lib/types';
+import { getAvatarUrl } from '@/lib/utils';
 
 /**
  * Transform a database post object to the UI PostType format.
@@ -10,7 +11,7 @@ export const transformPost = (dbPost: any): PostType => {
         id: 'unknown',
         name: 'Unknown User',
         username: 'unknown',
-        avatar: '',
+        avatar: getAvatarUrl(undefined),
         verified: false
     };
 
@@ -21,7 +22,7 @@ export const transformPost = (dbPost: any): PostType => {
             id: comment.user?.id || comment.profiles?.id || comment.author?.id || comment.user_id || 'unknown',
             name: comment.user?.name || comment.profiles?.name || comment.author?.name || 'Unknown User',
             username: comment.user?.username || comment.profiles?.username || comment.author?.username || 'unknown',
-            avatar: comment.user?.avatar_url || comment.profiles?.avatar_url || comment.author?.avatar_url || comment.author?.avatar || '/placeholder-user.jpg',
+            avatar: getAvatarUrl(comment.user?.avatar_url || comment.profiles?.avatar_url || comment.author?.avatar_url || comment.author?.avatar) || '/placeholder-user.jpg',
             verified: comment.user?.verified || comment.profiles?.verified || comment.author?.verified || false
         },
         text: comment.content || comment.text || '',
@@ -91,7 +92,7 @@ export const transformPost = (dbPost: any): PostType => {
             id: author.id,
             name: author.name || author.full_name || author.username,
             username: author.username,
-            avatar: author.avatar_url || author.avatar || '/placeholder-user.jpg',
+            avatar: getAvatarUrl(author.avatar_url || author.avatar) || '/placeholder-user.jpg',
             verified: author.verified || author.is_verified || false,
         },
         createdAt: dbPost.created_at || dbPost.createdAt || new Date().toISOString(),
@@ -119,7 +120,7 @@ export const transformPost = (dbPost: any): PostType => {
                 id: c.user?.id || c.id || 'unknown',
                 name: c.user?.name || c.name || 'Unknown',
                 username: c.user?.username || c.username || 'unknown',
-                avatar: c.user?.avatar_url || c.avatar || '/placeholder-user.jpg',
+                avatar: getAvatarUrl(c.user?.avatar_url || c.avatar) || '/placeholder-user.jpg',
                 verified: c.user?.verified || c.verified || false
             }))
     };

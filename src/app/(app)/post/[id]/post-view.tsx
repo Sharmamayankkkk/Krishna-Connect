@@ -91,7 +91,7 @@ function ThreadComment({ comment, onLike, currentUserId }: {
                         <VerificationBadge verified={comment.user.verified} size={14} />
                     )}
                     <span className="text-xs text-muted-foreground">@{comment.user?.username}</span>
-                    <span className="text-xs text-muted-foreground">· {timeAgo}</span>
+                    <span className="text-xs text-muted-foreground" suppressHydrationWarning>· {timeAgo}</span>
                 </div>
                 <p className="text-sm mt-0.5 whitespace-pre-wrap break-words">{comment.text}</p>
                 <div className="flex items-center gap-4 mt-1.5">
@@ -321,7 +321,7 @@ export default function PostView() {
                                                 )}
                                                 <span className="text-sm text-muted-foreground">@{post.originalPost.author?.username}</span>
                                                 <span className="text-sm text-muted-foreground">·</span>
-                                                <Link href={`/post/${post.originalPost.id}`} className="text-sm text-muted-foreground hover:underline">
+                                                <Link href={`/post/${post.originalPost.id}`} className="text-sm text-muted-foreground hover:underline" suppressHydrationWarning>
                                                     {post.originalPost.createdAt ? formatDistanceToNow(new Date(post.originalPost.createdAt), { addSuffix: false }) : ''}
                                                 </Link>
                                             </div>
@@ -392,7 +392,7 @@ export default function PostView() {
 
                                 {/* Timestamp */}
                                 <div className="mt-3 pb-3 border-b">
-                                    <span className="text-sm text-muted-foreground">
+                                    <span className="text-sm text-muted-foreground" suppressHydrationWarning>
                                         {formatFullDate(post.createdAt)}
                                     </span>
                                 </div>

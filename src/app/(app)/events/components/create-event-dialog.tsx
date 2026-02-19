@@ -248,7 +248,7 @@ export function CreateEventDialog({ open, onOpenChange, eventToEdit, onEventCrea
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Google Meet Link (Optional)</FormLabel>
-                    <FormControl><Input placeholder="https://meet.krishnaconsciousnesssociety.com/..." {...field} /></FormControl>
+                    <FormControl><Input placeholder="https://meet.krishnaconnect.in/..." {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

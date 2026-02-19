@@ -36,7 +36,8 @@ export function MyActiveLivestream() {
                 .in('status', ['backstage', 'live'])
                 .order('created_at', { ascending: false })
                 .limit(1)
-                .single()
+                .limit(1)
+                .maybeSingle()
 
             if (data) setLivestream(data)
         }

@@ -31,8 +31,8 @@ export async function generateMetadata({
 
   const title = `${livestream.title} - Live on Krishna Connect`
   const description = livestream.description || `Watch ${livestream.host.name || livestream.host.username} live on Krishna Connect`
-  const url = `${process.env.NEXT_PUBLIC_APP_URL || 'https://consciousnesssociety.com'}/live/${id}`
-  const image = livestream.host.avatar_url || `${process.env.NEXT_PUBLIC_APP_URL || 'https://consciousnesssociety.com'}/og-image.png`
+  const url = `${process.env.NEXT_PUBLIC_APP_URL || 'https://krishnaconnect.in'}/live/${id}`
+  const image = livestream.host.avatar_url || `${process.env.NEXT_PUBLIC_APP_URL || 'https://krishnaconnect.in'}/og-image.png`
 
   return {
     title,
@@ -65,13 +65,13 @@ export default async function LiveStreamingPage({
   searchParams
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ host?: string }>
+  searchParams: Promise<{ host?: string; guest?: string }>
 }) {
   const supabase = createClient();
 
   // Await params and searchParams (Next.js 15 requirement)
   const { id } = await params;
-  const { host } = await searchParams;
+  const { host, guest } = await searchParams;
 
   // Fetch livestream details from database
   const { data: livestream, error } = await supabase
@@ -106,13 +106,15 @@ export default async function LiveStreamingPage({
   // Check if current user is the host
   const { data: { user } } = await supabase.auth.getUser();
   const isHost = user?.id === livestream.host_id;
+  const isGuest = guest === 'true';
 
-  // If host parameter is set and user is the host, show host view
-  if (host === 'true' && isHost) {
+  // If host parameter is set and user is the host OR if it's a guest invite
+  if ((host === 'true' && isHost) || isGuest) {
     return (
       <LivestreamHostView
         livestreamId={livestream.id}
         callId={livestream.stream_call_id}
+        isGuest={isGuest}
       />
     );
   }

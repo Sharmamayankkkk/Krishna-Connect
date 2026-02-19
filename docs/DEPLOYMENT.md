@@ -8,7 +8,7 @@ This project is optimized for deployment on **Vercel**, which provides built-in 
 2.  **Supabase Project**: A dedicated production project (separate from dev).
 3.  **Domain Names**: 
     - Primary: `krishnaconnect.in`
-    - Secondary: `chat.krishnaconsciousnesssociety.com`
+    - Secondary: `www.krishnaconnect.in`
 
 ## Environment Variables
 
