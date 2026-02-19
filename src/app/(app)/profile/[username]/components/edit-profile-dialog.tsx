@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import type { Profile } from '@/types';
 import Image from 'next/image';
+import { PhoneCollectionDialog } from "@/components/auth/phone-collection-dialog";
 
 interface EditProfileDialogProps {
     open: boolean;
