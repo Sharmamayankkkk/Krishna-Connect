@@ -8,7 +8,12 @@ import { Icons } from "@/components/icons"
 import { useToast } from "@/hooks/use-toast"
 import type { Session, RealtimePostgresChangesPayload, User as AuthUser } from "@supabase/supabase-js"
 import { usePathname, useRouter } from "next/navigation"
+import { PhoneCollectionDialog } from "@/components/auth/phone-collection-dialog"
 import { PrivacySetupModal } from "@/components/privacy-setup-modal"
+
+// ... (existing imports)
+
+
 import { useTheme } from "next-themes"
 
 import { AppContext } from "./app-context"
@@ -195,12 +200,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
 
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showPhoneCollectionModal, setShowPhoneCollectionModal] = useState(false);
 
   useEffect(() => {
-    if (loggedInUser && !loggedInUser.has_set_privacy) {
-      setShowPrivacyModal(true);
+    if (loggedInUser) {
+      if (!loggedInUser.has_set_privacy) {
+        setShowPrivacyModal(true);
+      } else {
+        setShowPrivacyModal(false);
+      }
+
+      // Check for phone number - simple check for now
+      if (!loggedInUser.phone) {
+        setShowPhoneCollectionModal(true);
+      } else {
+        setShowPhoneCollectionModal(false);
+      }
     } else {
       setShowPrivacyModal(false);
+      setShowPhoneCollectionModal(false);
     }
   }, [loggedInUser]);
 
@@ -499,6 +517,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     <AppContext.Provider value={value}>
       {children}
       <PrivacySetupModal open={showPrivacyModal} onOpenChange={setShowPrivacyModal} />
+      <PhoneCollectionDialog
+        open={showPhoneCollectionModal}
+        onOpenChange={setShowPhoneCollectionModal}
+        forceRequired={false} // Make it optional for now, or true if strict
+        title="Add Your Phone Number"
+        description="Please add a phone number to your account to recover access if you lose your password."
+      />
     </AppContext.Provider>
   )
 }

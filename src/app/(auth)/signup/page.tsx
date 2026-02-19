@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -16,43 +15,50 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Icons } from '@/components/icons';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
 import { createClient } from '@/lib/utils';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
+
+  // Stats for both forms
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [gender, setGender] = useState<'male' | 'female'>('male');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Email specific
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Phone specific
+  const [phone, setPhone] = useState('');
+  const [otp, setOtp] = useState('');
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(0);
+
   const supabase = createClient();
 
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setIsLoading(true);
-
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters long.');
-      setIsLoading(false);
-      return;
+  useEffect(() => {
+    if (timeLeft > 0) {
+      const timerId = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+      return () => clearTimeout(timerId);
     }
+  }, [timeLeft]);
 
+  const validateCommonFields = async () => {
     const usernameRegex = /^[a-zA-Z0-9_]+$/;
     if (!usernameRegex.test(username.trim())) {
       setError('Username can only contain letters, numbers, and underscores (no spaces or special characters).');
-      setIsLoading(false);
-      return;
+      return false;
     }
 
     const { data: existingProfile, error: usernameError } = await supabase
@@ -63,12 +69,30 @@ export default function SignupPage() {
 
     if (usernameError && usernameError.code !== 'PGRST116') {
       setError('Could not verify username. Please try again.');
-      setIsLoading(false);
-      return;
+      return false;
     }
 
     if (existingProfile) {
       setError('This username is already taken. Please choose another one.');
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleEmailSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      setIsLoading(false);
+      return;
+    }
+
+    const isValid = await validateCommonFields();
+    if (!isValid) {
       setIsLoading(false);
       return;
     }
@@ -102,6 +126,64 @@ export default function SignupPage() {
       router.push('/login');
     }
   };
+
+  const handlePhoneSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+
+    if (isOtpSent) {
+      // Verify OTP
+      const { error } = await supabase.auth.verifyOtp({
+        phone,
+        token: otp,
+        type: 'sms',
+      });
+
+      if (error) {
+        setError(error.message);
+        setIsLoading(false);
+        return;
+      }
+
+      // Successful verification logs the user in
+      router.push('/');
+      router.refresh();
+      setTimeLeft(0);
+
+    } else {
+      // Send OTP
+      const isValid = await validateCommonFields();
+      if (!isValid) {
+        setIsLoading(false);
+        return;
+      }
+
+      const avatar_url = gender === 'male' ? '/user_Avatar/male.png' : '/user_Avatar/female.png';
+
+      const { error } = await supabase.auth.signInWithOtp({
+        phone,
+        options: {
+          data: {
+            name: name.trim(),
+            username: username.trim(),
+            gender,
+            avatar_url,
+          }
+        }
+      });
+
+      setIsLoading(false);
+
+      if (error) {
+        setError(error.message);
+      } else {
+        setIsOtpSent(true);
+        setTimeLeft(120);
+      }
+    }
+  };
+
 
   const handleOAuthLogin = async (provider: 'google' | 'facebook') => {
     setIsLoading(true);
@@ -142,69 +224,153 @@ export default function SignupPage() {
             <CardDescription className="text-muted-foreground">Enter your details to join Krishna Connect</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <form onSubmit={handleSignup} className="space-y-4">
-              {error && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Signup Failed</AlertTitle>
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-              <div className="space-y-2">
-                <Label htmlFor="full-name" className="text-foreground">Full Name</Label>
-                <Input id="full-name" placeholder="John Doe" required value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} className="bg-background/50 border-input focus:border-primary" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="username" className="text-foreground">Username</Label>
-                <Input id="username" placeholder="johndoe" required value={username} onChange={(e) => setUsername(e.target.value)} disabled={isLoading} className="bg-background/50 border-input focus:border-primary" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-foreground">Email</Label>
-                <Input id="email" type="email" placeholder="krishna@connect.com" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} className="bg-background/50 border-input focus:border-primary" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-foreground">Password</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={isLoading}
-                    className="pr-10 bg-background/50 border-input focus:border-primary"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    onClick={() => setShowPassword(prev => !prev)}
-                    aria-label="Toggle password visibility"
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-foreground">Gender</Label>
-                <RadioGroup value={gender} onValueChange={(value: 'male' | 'female') => setGender(value)} className="flex items-center space-x-4 pt-1" disabled={isLoading}>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="male" id="male" className="border-primary text-primary" />
-                    <Label htmlFor="male" className="font-normal cursor-pointer text-foreground">Prabhuji (Male)</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="female" id="female" className="border-primary text-primary" />
-                    <Label htmlFor="female" className="font-normal cursor-pointer text-foreground">Mataji (Female)</Label>
-                  </div>
-                </RadioGroup>
-              </div>
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Signup Failed</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
 
-              <Button type="submit" className="w-full font-semibold shadow-lg hover:shadow-primary/25 transition-all" disabled={isLoading}>
-                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                Create Account
-              </Button>
-            </form>
+            <Tabs defaultValue="email" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-4">
+                <TabsTrigger value="email">Email</TabsTrigger>
+                <TabsTrigger value="phone">Phone</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="email">
+                <form onSubmit={handleEmailSignup} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="full-name" className="text-foreground">Full Name</Label>
+                    <Input id="full-name" placeholder="John Doe" required value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} className="bg-background/50 border-input focus:border-primary" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="username" className="text-foreground">Username</Label>
+                    <Input id="username" placeholder="johndoe" required value={username} onChange={(e) => setUsername(e.target.value)} disabled={isLoading} className="bg-background/50 border-input focus:border-primary" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-foreground">Email</Label>
+                    <Input id="email" type="email" placeholder="krishna@connect.com" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} className="bg-background/50 border-input focus:border-primary" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password" className="text-foreground">Password</Label>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        disabled={isLoading}
+                        className="pr-10 bg-background/50 border-input focus:border-primary"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        onClick={() => setShowPassword(prev => !prev)}
+                        aria-label="Toggle password visibility"
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-foreground">Gender</Label>
+                    <RadioGroup value={gender} onValueChange={(value: 'male' | 'female') => setGender(value)} className="flex items-center space-x-4 pt-1" disabled={isLoading}>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="male" id="male" className="border-primary text-primary" />
+                        <Label htmlFor="male" className="font-normal cursor-pointer text-foreground">Prabhuji (Male)</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="female" id="female" className="border-primary text-primary" />
+                        <Label htmlFor="female" className="font-normal cursor-pointer text-foreground">Mataji (Female)</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  <Button type="submit" className="w-full font-semibold shadow-lg hover:shadow-primary/25 transition-all" disabled={isLoading}>
+                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    Create Account
+                  </Button>
+                </form>
+              </TabsContent>
+
+              <TabsContent value="phone">
+                <form onSubmit={handlePhoneSignup} className="space-y-4">
+                  {!isOtpSent ? (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="full-name-phone" className="text-foreground">Full Name</Label>
+                        <Input id="full-name-phone" placeholder="John Doe" required value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} className="bg-background/50 border-input focus:border-primary" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="username-phone" className="text-foreground">Username</Label>
+                        <Input id="username-phone" placeholder="johndoe" required value={username} onChange={(e) => setUsername(e.target.value)} disabled={isLoading} className="bg-background/50 border-input focus:border-primary" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone" className="text-foreground">Phone Number</Label>
+                        <Input id="phone" type="tel" placeholder="e.g. +919876543210" required value={phone} onChange={(e) => setPhone(e.target.value)} disabled={isLoading} className="bg-background/50 border-input focus:border-primary" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-foreground">Gender</Label>
+                        <RadioGroup value={gender} onValueChange={(value: 'male' | 'female') => setGender(value)} className="flex items-center space-x-4 pt-1" disabled={isLoading}>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="male" id="male-phone" className="border-primary text-primary" />
+                            <Label htmlFor="male-phone" className="font-normal cursor-pointer text-foreground">Prabhuji (Male)</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="female" id="female-phone" className="border-primary text-primary" />
+                            <Label htmlFor="female-phone" className="font-normal cursor-pointer text-foreground">Mataji (Female)</Label>
+                          </div>
+                        </RadioGroup>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="space-y-2">
+                      <Label htmlFor="otp" className="text-foreground">One-Time Password</Label>
+                      <Input id="otp" placeholder="Enter 6-digit OTP" required value={otp} onChange={(e) => setOtp(e.target.value)} disabled={isLoading} className="bg-background/50 border-input focus:border-primary" />
+                    </div>
+                  )}
+
+                  <Button type="submit" className="w-full font-semibold shadow-lg hover:shadow-primary/25 transition-all" disabled={isLoading}>
+                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    {isOtpSent ? 'Verify & Create Account' : 'Get OTP'}
+                  </Button>
+
+                  {isOtpSent && (
+                    <div className="flex flex-col items-center gap-2 text-sm text-muted-foreground mt-2">
+                      <div className="flex justify-between w-full">
+                        <Button
+                          type="button"
+                          variant="link"
+                          className="h-auto p-0 text-muted-foreground"
+                          onClick={() => {
+                            setIsOtpSent(false);
+                            setTimeLeft(0);
+                          }}
+                        >
+                          Change Details
+                        </Button>
+                        {timeLeft > 0 ? (
+                          <span>Resend in {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}</span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={(e) => handlePhoneSignup(e)}
+                            className="text-primary hover:underline font-medium"
+                            disabled={isLoading}
+                          >
+                            Resend OTP
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </form>
+              </TabsContent>
+            </Tabs>
 
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">

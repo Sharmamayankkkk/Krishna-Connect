@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -16,17 +15,30 @@ import { Icons } from '@/components/icons';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Eye, EyeOff } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createClient } from '@/lib/utils';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
+  const [otp, setOtp] = useState('');
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [timeLeft, setTimeLeft] = useState(0);
   const supabase = createClient();
+
+  useEffect(() => {
+    if (timeLeft > 0) {
+      const timerId = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+      return () => clearTimeout(timerId);
+    }
+  }, [timeLeft]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,6 +49,46 @@ export default function LoginPage() {
     });
     if (error) {
       setError(error.message);
+    } else {
+      const next = searchParams.get('next');
+      router.push(next || '/');
+      router.refresh();
+    }
+  };
+
+  const handleSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+
+    const { error } = await supabase.auth.signInWithOtp({
+      phone,
+    });
+
+    setIsLoading(false);
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setIsOtpSent(true);
+      setTimeLeft(120);
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+
+    const { error } = await supabase.auth.verifyOtp({
+      phone,
+      token: otp,
+      type: 'sms',
+    });
+
+    if (error) {
+      setError(error.message);
+      setIsLoading(false);
     } else {
       const next = searchParams.get('next');
       router.push(next || '/');
@@ -81,83 +133,189 @@ export default function LoginPage() {
           </CardHeader>
 
           <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              {error && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Login Failed</AlertTitle>
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
 
-              {/* FIXED: Email Field with proper floating label */}
-              <div className="relative">
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder=" "
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="peer pt-6 pb-2 bg-background/50 border-input focus:border-primary transition-colors"
-                />
-                <Label
-                  htmlFor="email"
-                  className={`absolute left-3 transition-all pointer-events-none ${email
-                    ? 'top-1 scale-75 text-sm text-primary'
-                    : 'top-1/2 -translate-y-1/2 scale-100 text-muted-foreground'
-                    }`}
-                >
-                  Email
-                </Label>
-              </div>
+            <Tabs defaultValue="email" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-4">
+                <TabsTrigger value="email">Email</TabsTrigger>
+                <TabsTrigger value="phone">Phone</TabsTrigger>
+              </TabsList>
 
-              {/* FIXED: Password Field with proper floating label */}
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder=" "
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="peer pr-10 pt-6 pb-2 bg-background/50 border-input focus:border-primary transition-colors"
-                />
-                <Label
-                  htmlFor="password"
-                  className={`absolute left-3 transition-all pointer-events-none ${password
-                    ? 'top-1 scale-75 text-sm text-primary'
-                    : 'top-1/2 -translate-y-1/2 scale-100 text-muted-foreground'
-                    }`}
-                >
-                  Password
-                </Label>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  onClick={() => setShowPassword(prev => !prev)}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  <span className="sr-only">Toggle password visibility</span>
-                </Button>
-              </div>
+              <TabsContent value="email">
+                <form onSubmit={handleLogin} className="space-y-4">
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertTitle>Login Failed</AlertTitle>
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
 
-              {/* "Forgot password?" link */}
-              <div className="flex justify-end -mt-2">
-                <Link
-                  href="/forgot-password"
-                  className="text-sm text-foreground/80 hover:text-primary hover:underline transition-colors"
-                >
-                  Forgot password?
-                </Link>
-              </div>
+                  {/* FIXED: Email Field with proper floating label */}
+                  <div className="relative">
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder=" "
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="peer pt-6 pb-2 bg-background/50 border-input focus:border-primary transition-colors"
+                    />
+                    <Label
+                      htmlFor="email"
+                      className={`absolute left-3 transition-all pointer-events-none ${email
+                        ? 'top-1 scale-75 text-sm text-primary'
+                        : 'top-1/2 -translate-y-1/2 scale-100 text-muted-foreground'
+                        }`}
+                    >
+                      Email
+                    </Label>
+                  </div>
 
-              <Button type="submit" className="w-full font-semibold shadow-lg hover:shadow-primary/25 transition-all" size="lg">
-                Sign In
-              </Button>
-            </form>
+                  {/* FIXED: Password Field with proper floating label */}
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder=" "
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="peer pr-10 pt-6 pb-2 bg-background/50 border-input focus:border-primary transition-colors"
+                    />
+                    <Label
+                      htmlFor="password"
+                      className={`absolute left-3 transition-all pointer-events-none ${password
+                        ? 'top-1 scale-75 text-sm text-primary'
+                        : 'top-1/2 -translate-y-1/2 scale-100 text-muted-foreground'
+                        }`}
+                    >
+                      Password
+                    </Label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      onClick={() => setShowPassword(prev => !prev)}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      <span className="sr-only">Toggle password visibility</span>
+                    </Button>
+                  </div>
+
+                  {/* "Forgot password?" link */}
+                  <div className="flex justify-end -mt-2">
+                    <Link
+                      href="/forgot-password"
+                      className="text-sm text-foreground/80 hover:text-primary hover:underline transition-colors"
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
+
+                  <Button type="submit" className="w-full font-semibold shadow-lg hover:shadow-primary/25 transition-all" size="lg">
+                    Sign In
+                  </Button>
+                </form>
+              </TabsContent>
+
+              <TabsContent value="phone">
+                <form onSubmit={isOtpSent ? handleVerifyOtp : handleSendOtp} className="space-y-4">
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertTitle>Error</AlertTitle>
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+
+                  {!isOtpSent ? (
+                    <div className="relative">
+                      <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="e.g. +919876543210"
+                        required
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="peer pt-6 pb-2 bg-background/50 border-input focus:border-primary transition-colors"
+                      />
+                      <Label
+                        htmlFor="phone"
+                        className={`absolute left-3 transition-all pointer-events-none ${phone
+                          ? 'top-1 scale-75 text-sm text-primary'
+                          : 'top-1/2 -translate-y-1/2 scale-100 text-muted-foreground'
+                          }`}
+                      >
+                        Phone Number
+                      </Label>
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <Input
+                        id="otp"
+                        type="text"
+                        placeholder="Enter 6-digit OTP"
+                        required
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                        className="peer pt-6 pb-2 bg-background/50 border-input focus:border-primary transition-colors"
+                        maxLength={6}
+                      />
+                      <Label
+                        htmlFor="otp"
+                        className={`absolute left-3 transition-all pointer-events-none ${otp
+                          ? 'top-1 scale-75 text-sm text-primary'
+                          : 'top-1/2 -translate-y-1/2 scale-100 text-muted-foreground'
+                          }`}
+                      >
+                        One-Time Password
+                      </Label>
+                    </div>
+                  )}
+
+                  <Button type="submit" className="w-full font-semibold shadow-lg hover:shadow-primary/25 transition-all" size="lg" disabled={isLoading}>
+                    {isLoading ? (
+                      <span className="flex items-center gap-2">
+                        Processing...
+                      </span>
+                    ) : isOtpSent ? 'Verify OTP & Login' : 'Get OTP'}
+                  </Button>
+
+                  {isOtpSent && (
+                    <div className="flex flex-col items-center gap-2 text-sm text-muted-foreground mt-2">
+                      <div className="flex justify-between w-full">
+                        <Button
+                          type="button"
+                          variant="link"
+                          className="h-auto p-0 text-muted-foreground"
+                          onClick={() => {
+                            setIsOtpSent(false);
+                            setTimeLeft(0);
+                          }}
+                        >
+                          Change Phone Number
+                        </Button>
+
+                        {timeLeft > 0 ? (
+                          <span>Resend in {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}</span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={(e) => handleSendOtp(e)}
+                            className="text-primary hover:underline font-medium"
+                            disabled={isLoading}
+                          >
+                            Resend OTP
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </form>
+              </TabsContent>
+            </Tabs>
 
             <div className="flex items-center my-6">
               <span className="flex-1 border-t border-border" />

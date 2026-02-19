@@ -13,6 +13,7 @@ export type User = {
   is_verified?: 'none' | 'verified' | 'kcs';
   has_set_privacy?: boolean;
   settings?: UserSettings; // JSONB column
+  phone?: string;
 };
 
 export interface UserSettings {

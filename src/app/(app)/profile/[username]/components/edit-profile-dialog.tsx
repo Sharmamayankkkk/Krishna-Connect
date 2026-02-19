@@ -47,6 +47,8 @@ export function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDi
         return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/attachments/${url}`;
     };
 
+    const [isPhoneDialogOpen, setIsPhoneDialogOpen] = useState(false);
+
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -151,7 +153,7 @@ export function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDi
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden">
+            <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden" hideClose={true}>
                 <DialogHeader className="p-4 pb-0">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -276,6 +278,26 @@ export function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDi
                         />
                     </div>
 
+                    <div className="space-y-2">
+                        <Label htmlFor="phone">Phone Number</Label>
+                        <div className="flex gap-2">
+                            <Input
+                                id="phone"
+                                value={profile.phone || ''}
+                                placeholder="Not set"
+                                disabled
+                                className="bg-muted"
+                            />
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setIsPhoneDialogOpen(true)}
+                            >
+                                {profile.phone ? 'Change' : 'Add'}
+                            </Button>
+                        </div>
+                    </div>
+
                     <div className="flex items-center justify-between p-3 border rounded-lg bg-muted/50">
                         <div className="space-y-0.5">
                             <div className="flex items-center gap-2">
@@ -293,6 +315,11 @@ export function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDi
                     </div>
                 </div>
             </DialogContent>
+
+            <PhoneCollectionDialog
+                open={isPhoneDialogOpen}
+                onOpenChange={setIsPhoneDialogOpen}
+            />
         </Dialog>
     );
 }

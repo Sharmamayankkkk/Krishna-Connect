@@ -19,6 +19,7 @@ export interface Profile {
   follow_status?: 'none' | 'pending' | 'approved';
   verified?: 'none' | 'verified' | 'kcs';
   is_private?: boolean;
+  phone?: string;
 }
 
 export interface Post {

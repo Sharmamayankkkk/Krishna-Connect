@@ -32,6 +32,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast"
 
+import { PhoneCollectionDialog } from "@/components/auth/phone-collection-dialog"
+
 interface SessionInfo {
   id: string
   device: string
@@ -47,8 +49,22 @@ export default function SecurityPage() {
   const router = useRouter()
   const { toast } = useToast()
   const [sessions, setSessions] = useState<SessionInfo[]>([])
+  const [isPhoneDialogOpen, setIsPhoneDialogOpen] = useState(false)
+  const [userPhone, setUserPhone] = useState<string | null>(null)
+
+  const fetchProfile = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data } = await supabase.from('profiles').select('phone').eq('id', user.id).single();
+      if (data) {
+        setUserPhone(data.phone);
+      }
+    }
+  }
 
   useEffect(() => {
+    fetchProfile();
+
     // Detect current session info from browser
     const ua = navigator.userAgent
     const isMobile = /Mobile|Android|iPhone/.test(ua)
@@ -119,6 +135,30 @@ export default function SecurityPage() {
             <Button variant="outline" size="sm">Change</Button>
           </Link>
         </div>
+
+        {/* Phone Number */}
+        <div className="flex items-center justify-between rounded-lg border p-4">
+          <div className="flex items-center gap-3">
+            <div className="rounded-full bg-blue-500/10 p-2">
+              <Smartphone className="h-4 w-4 text-blue-500" />
+            </div>
+            <div className="space-y-0.5">
+              <h4 className="text-sm font-medium">Phone Number</h4>
+              <p className="text-sm text-muted-foreground">
+                {userPhone ? `Linked: ${userPhone}` : 'Add a phone number for account recovery.'}
+              </p>
+            </div>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => setIsPhoneDialogOpen(true)}>
+            {userPhone ? 'Change' : 'Add'}
+          </Button>
+        </div>
+
+        <PhoneCollectionDialog
+          open={isPhoneDialogOpen}
+          onOpenChange={setIsPhoneDialogOpen}
+          onSuccess={() => fetchProfile()}
+        />
 
         {/* Two-Factor Authentication */}
         <div className="flex items-center justify-between rounded-lg border p-4">
