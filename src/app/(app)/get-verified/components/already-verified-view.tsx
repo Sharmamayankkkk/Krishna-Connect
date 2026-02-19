@@ -11,6 +11,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useAppContext } from '@/providers/app-provider';
 import { createClient } from '@/lib/supabase/client';
+import { getAvatarUrl } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
@@ -132,7 +133,7 @@ export function AlreadyVerifiedView({ request }: AlreadyVerifiedStateProps) {
                             <div className="flex items-center gap-4 mt-2">
                                 <div className="h-20 w-20 rounded-2xl bg-white/10 border border-white/20 overflow-hidden relative shadow-inner shrink-0">
                                     {loggedInUser?.avatar_url ? (
-                                        <Image src={loggedInUser.avatar_url} alt="Profile" fill className="object-cover" />
+                                        <Image src={getAvatarUrl(loggedInUser.avatar_url) || ''} alt="Profile" fill className="object-cover" />
                                     ) : (
                                         <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-xl font-bold">
                                             {loggedInUser?.name?.[0]}

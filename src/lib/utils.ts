@@ -28,10 +28,7 @@ export function getAvatarUrl(url?: string): string | undefined {
     return `/user_Avatar/${url.replace('/avatars/', '')}`;
   }
 
-  // Handle simple filenames that don't have a path - assume they are in user_Avatar if not http
-  if (!url.includes('/') && !url.startsWith('http')) {
-    return `/user_Avatar/${url}`;
-  }
+
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!supabaseUrl) return url;
