@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Compass, MessageSquare, User } from 'lucide-react'
+import { Home, Compass, MessageSquare, User, Newspaper } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAppContext } from '@/providers/app-provider'
 import Image from 'next/image'
@@ -45,6 +45,12 @@ export function MobileBottomNav() {
             label: 'Profile',
             icon: User,
             isActive: pathname.startsWith('/profile') && loggedInUser,
+        },
+        {
+            href: '/news',
+            label: 'News',
+            icon: Newspaper,
+            isActive: pathname.startsWith('/news'),
         },
     ]
 

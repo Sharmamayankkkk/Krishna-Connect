@@ -3,7 +3,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { MessageSquare, Calendar, Compass, Bell, Trophy, Sparkles, Radio } from 'lucide-react'
+import { MessageSquare, Calendar, Compass, Bell, Trophy, Sparkles, Radio, Newspaper } from 'lucide-react'
 import {
   SidebarMenu,
   SidebarMenuItem,
@@ -113,6 +113,12 @@ export function MainNav() {
       label: 'Get Verified',
       icon: Sparkles,
       isActive: pathname.startsWith('/get-verified'),
+    },
+    {
+      href: '/news',
+      label: 'News',
+      icon: Newspaper,
+      isActive: pathname.startsWith('/news'),
     },
   ]
 
