@@ -230,6 +230,8 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
   const elapsedTimeRef = useRef(0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const replyInputRef = useRef<HTMLInputElement>(null);
+  // Track viewed statuses in this session to avoid spamming the DB
+  const viewedStatusIdsRef = useRef<Set<number>>(new Set());
 
   const statusUpdate = (currentUserIndex !== null) ? allStatusUpdates[currentUserIndex] : null;
   const currentStatus = statusUpdate?.statuses[currentStoryIndex];
@@ -250,6 +252,11 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
 
   const markAsViewed = useCallback(async (statusId: number) => {
     if (!loggedInUser || !statusUpdate || loggedInUser.id === statusUpdate.user_id) return;
+
+    // Prevent duplicate views in the same session
+    if (viewedStatusIdsRef.current.has(statusId)) return;
+    viewedStatusIdsRef.current.add(statusId);
+
     await supabase.from('status_views').upsert({
       status_id: statusId,
       viewer_id: loggedInUser.id,
@@ -338,6 +345,7 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
       setCurrentUserIndex(startIndex);
       setCurrentStoryIndex(0);
       setReplyText('');
+      viewedStatusIdsRef.current.clear(); // Reset viewed session
     } else { stopTimer(); }
   }, [open, startIndex, stopTimer]);
 
@@ -674,7 +682,7 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
                   vid.play().catch(() => {
                     vid.muted = true;
                     setIsMuted(true);
-                    vid.play().catch(() => {});
+                    vid.play().catch(() => { });
                   });
                 }
               }}

@@ -6,6 +6,7 @@ import {
     useCallStateHooks,
     ParticipantView,
     StreamCall,
+    StreamVideo,
     CallControls as StreamCallControls
 } from '@stream-io/video-react-sdk'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -86,17 +87,21 @@ export function StreamCallScreen({
         )
     }
 
+    if (!client) return <Loader2 className="h-8 w-8 animate-spin" />
+
     return (
-        <StreamCall call={call}>
-            <CallContent
-                callType={callType}
-                onCallEnd={onCallEnd}
-                remoteUserName={remoteUserName}
-                remoteUserAvatar={remoteUserAvatar}
-                isFullscreen={isFullscreen}
-                setIsFullscreen={setIsFullscreen}
-            />
-        </StreamCall>
+        <StreamVideo client={client}>
+            <StreamCall call={call}>
+                <CallContent
+                    callType={callType}
+                    onCallEnd={onCallEnd}
+                    remoteUserName={remoteUserName}
+                    remoteUserAvatar={remoteUserAvatar}
+                    isFullscreen={isFullscreen}
+                    setIsFullscreen={setIsFullscreen}
+                />
+            </StreamCall>
+        </StreamVideo>
     )
 }
 

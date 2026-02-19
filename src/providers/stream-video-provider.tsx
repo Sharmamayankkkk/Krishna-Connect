@@ -89,14 +89,9 @@ export function StreamVideoProvider({ children }: { children: ReactNode }) {
     isLoading,
   }
 
-  // If no client yet, render children without StreamVideo wrapper
-  if (!client) {
-    return <StreamVideoContext.Provider value={value}>{children}</StreamVideoContext.Provider>
-  }
-
   return (
     <StreamVideoContext.Provider value={value}>
-      <StreamVideo client={client}>{children}</StreamVideo>
+      {children}
     </StreamVideoContext.Provider>
   )
 }

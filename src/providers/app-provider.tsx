@@ -261,6 +261,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [loggedInUser, pathname, allUsers]
   );
 
+  // Keep a ref to the latest handleNewMessage to avoid re-subscribing when it changes
+  const handleNewMessageRef = useRef(handleNewMessage);
+  useEffect(() => {
+    handleNewMessageRef.current = handleNewMessage;
+  }, [handleNewMessage]);
+
+  const fetchInitialDataRef = useRef(fetchInitialData);
+  useEffect(() => {
+    fetchInitialDataRef.current = fetchInitialData;
+  }, [fetchInitialData]);
+
   useEffect(() => {
     if (!loggedInUser || subscriptionsRef.current.length > 0) {
       return;
@@ -268,18 +279,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const channels = [
       supabaseRef.current.channel('public-messages-notifications')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => handleNewMessage(payload as any)),
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => handleNewMessageRef.current(payload as any)),
       supabaseRef.current.channel('participants-changes')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'participants', filter: `user_id=eq.${loggedInUser.id}` }, async () => {
-          if (session) await fetchInitialData(session.user);
+          if (session) await fetchInitialDataRef.current(session.user);
         }),
       supabaseRef.current.channel('dm-requests-changes')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'dm_requests', filter: `or(from_user_id.eq.${loggedInUser.id},to_user_id.eq.${loggedInUser.id})` }, async () => {
-          if (session) await fetchInitialData(session.user);
+          if (session) await fetchInitialDataRef.current(session.user);
         }),
       supabaseRef.current.channel('blocked-users-changes')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'blocked_users', filter: `blocker_id=eq.${loggedInUser.id}` }, async () => {
-          if (session) await fetchInitialData(session.user);
+          if (session) await fetchInitialDataRef.current(session.user);
         }),
       supabaseRef.current.channel('public:chats')
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'chats' }, payload => {
@@ -290,7 +301,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     channels.forEach(c => c.subscribe());
     subscriptionsRef.current = channels;
 
-  }, [loggedInUser, session, handleNewMessage, fetchInitialData]);
+  }, [loggedInUser, session]);
 
   const setThemeSettings = useCallback(async (newSettings: Partial<ThemeSettings>) => {
     // 1. Update local state

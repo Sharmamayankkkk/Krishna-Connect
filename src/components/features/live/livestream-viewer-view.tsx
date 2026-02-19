@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useStreamVideo } from '@/providers/stream-video-provider'
-import { useCallStateHooks, ParticipantView, StreamCall } from '@stream-io/video-react-sdk'
+import { useCallStateHooks, ParticipantView, StreamCall, StreamVideo } from '@stream-io/video-react-sdk'
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
 import { LiveLayout } from './live-layout'
@@ -62,16 +62,20 @@ export function LivestreamViewerView({ livestreamId, callId, hostName, title }: 
         )
     }
 
+    if (!client) return <Loader2 className="h-8 w-8 animate-spin" />
+
     return (
-        <StreamCall call={call}>
-            <LiveLayout>
-                <div className="relative w-full h-full">
-                    {/* Listen for end call event */}
-                    <CallListener />
-                    <LivestreamViewerContent call={call} hostName={hostName} title={title} livestreamId={livestreamId} />
-                </div>
-            </LiveLayout>
-        </StreamCall>
+        <StreamVideo client={client}>
+            <StreamCall call={call}>
+                <LiveLayout>
+                    <div className="relative w-full h-full">
+                        {/* Listen for end call event */}
+                        <CallListener />
+                        <LivestreamViewerContent call={call} hostName={hostName} title={title} livestreamId={livestreamId} />
+                    </div>
+                </LiveLayout>
+            </StreamCall>
+        </StreamVideo>
     )
 }
 

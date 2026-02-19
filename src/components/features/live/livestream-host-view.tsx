@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useStreamVideo } from '@/providers/stream-video-provider'
-import { useCallStateHooks, ParticipantView, StreamCall } from '@stream-io/video-react-sdk'
+import { useCallStateHooks, ParticipantView, StreamCall, StreamVideo } from '@stream-io/video-react-sdk'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Video, VideoOff, Mic, MicOff, Radio, Users, Loader2, MessageCircle, X, Share2, MoreVertical, Settings, MonitorUp, MonitorX } from 'lucide-react'
@@ -68,14 +68,18 @@ export function LivestreamHostView({ livestreamId, callId, isGuest = false }: Li
         )
     }
 
+    if (!client) return <Loader2 className="h-8 w-8 animate-spin" />
+
     return (
-        <StreamCall call={call}>
-            <LiveLayout>
-                <div className="relative w-full h-full">
-                    <LivestreamHostControls call={call} livestreamId={livestreamId} isGuest={isGuest} />
-                </div>
-            </LiveLayout>
-        </StreamCall>
+        <StreamVideo client={client}>
+            <StreamCall call={call}>
+                <LiveLayout>
+                    <div className="relative w-full h-full">
+                        <LivestreamHostControls call={call} livestreamId={livestreamId} isGuest={isGuest} />
+                    </div>
+                </LiveLayout>
+            </StreamCall>
+        </StreamVideo>
     )
 }
 

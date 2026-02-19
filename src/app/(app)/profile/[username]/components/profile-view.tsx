@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { useAppContext } from "@/providers/app-provider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FollowButton } from "./follow-button";
 import { EditProfileDialog } from "./edit-profile-dialog";
@@ -74,10 +75,15 @@ interface ProfileViewProps {
   currentUser: any;
 }
 
-export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], followers, following, currentUser }: ProfileViewProps) {
+export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], followers, following, currentUser: serverUser }: ProfileViewProps) {
   const router = useRouter();
   const supabase = createClient();
   const { toast } = useToast();
+  const { loggedInUser: clientUser } = useAppContext();
+
+  // Use client-side user if server-side user is missing (fixes hydration/cookie issues)
+  const currentUser = serverUser || (clientUser ? { ...clientUser, id: clientUser.id } : null);
+
   const [selectedPost, setSelectedPost] = useState<PostType | null>(null);
   const [isPostDialogOpen, setIsPostDialogOpen] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
@@ -186,6 +192,12 @@ export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], f
   } as User;
 
   const isOwnProfile = currentUser?.id === profile.id;
+
+  /* 
+    Debug Logs removed. 
+    Use console.log locally if issue persists.
+  */
+
   const displayName = profile.name || profile.full_name || profile.username;
   const joinDate = profile.created_at ? format(new Date(profile.created_at), 'MMMM yyyy') : null;
 
