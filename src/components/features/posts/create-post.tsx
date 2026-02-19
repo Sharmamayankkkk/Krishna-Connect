@@ -243,7 +243,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                 setCustomEmojiList(data.emojis || []);
                 setStickerList(data.stickers || []);
             })
-            .catch(() => {});
+            .catch(() => { });
     }, []);
 
     // Image upload
@@ -259,7 +259,18 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             return;
         }
 
+        const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+
         files.forEach(file => {
+            if (file.size > MAX_FILE_SIZE) {
+                toast({
+                    title: "File too large",
+                    description: `File ${file.name} exceeds the 50MB limit.`,
+                    variant: "destructive"
+                });
+                return;
+            }
+
             if (!file.type.startsWith('image/')) {
                 toast({
                     title: "Invalid file type",
@@ -299,7 +310,18 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             return;
         }
 
+        const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+
         files.forEach(file => {
+            if (file.size > MAX_FILE_SIZE) {
+                toast({
+                    title: "File too large",
+                    description: `File ${file.name} exceeds the 50MB limit.`,
+                    variant: "destructive"
+                });
+                return;
+            }
+
             if (!file.type.startsWith('video/')) {
                 toast({
                     title: "Invalid file type",
@@ -958,11 +980,10 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                             <button
                                                 type="button"
                                                 onClick={() => setCorrectAnswerIndex(index)}
-                                                className={`flex-shrink-0 h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                                                    correctAnswerIndex === index
-                                                        ? 'border-green-500 bg-green-500 text-white'
-                                                        : 'border-muted-foreground/30 hover:border-green-500/50'
-                                                }`}
+                                                className={`flex-shrink-0 h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all ${correctAnswerIndex === index
+                                                    ? 'border-green-500 bg-green-500 text-white'
+                                                    : 'border-muted-foreground/30 hover:border-green-500/50'
+                                                    }`}
                                                 title={correctAnswerIndex === index ? 'Correct answer' : 'Mark as correct answer'}
                                             >
                                                 {correctAnswerIndex === index && <CheckCircle2 className="h-3.5 w-3.5" />}

@@ -8,13 +8,13 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAppContext } from '@/providers/app-provider';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import {
-    ArrowLeft, Loader2, Heart, MessageCircle, Repeat2,
-    Share2, BarChart3, Bookmark, MoreHorizontal, Image as ImageIcon, Quote
+    ArrowLeft, Loader2, Heart, MessageCircle,
+    Quote
 } from 'lucide-react';
 import { PostCard, PostSkeleton } from '@/components/features/posts/post-card';
 import { Separator } from '@/components/ui/separator';
 import type { PostType as Post, CommentType as Comment, MediaType as Media } from '@/lib/types';
-import { createClient } from '@/lib/utils';
+import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { AuthGate } from '@/components/auth-gate';
 import { usePostInteractions } from '@/hooks/use-post-interactions';
@@ -117,7 +117,6 @@ export default function PostView() {
     const [isLoading, setIsLoading] = useState(true);
     const [commentContent, setCommentContent] = useState('');
     const [isPostingComment, setIsPostingComment] = useState(false);
-    const [showRepostMenu, setShowRepostMenu] = useState(false);
     const [isQuoteOpen, setIsQuoteOpen] = useState(false);
     const [quoteText, setQuoteText] = useState('');
     const commentInputRef = useRef<HTMLTextAreaElement>(null);
@@ -258,21 +257,6 @@ export default function PostView() {
         }
     };
 
-    const formatFullDate = (dateStr: string) => {
-        try {
-            const d = new Date(dateStr);
-            return format(d, "h:mm a · MMM d, yyyy");
-        } catch {
-            return dateStr;
-        }
-    };
-
-    const formatCount = (n: number) => {
-        if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
-        if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
-        return n.toString();
-    };
-
     return (
         <div className="flex h-full flex-col">
             <header className="sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
@@ -297,203 +281,39 @@ export default function PostView() {
                         </div>
                     ) : (
                         <>
-                            {/* Quoted/Original Post Thread */}
-                            {post.originalPost && (
-                                <div className="border-b">
-                                    <div className="flex gap-3 px-4 pt-4 pb-2">
-                                        <div className="flex flex-col items-center">
-                                            <Link href={`/profile/${post.originalPost.author?.username}`}>
-                                                <Avatar className="h-10 w-10">
-                                                    <AvatarImage src={post.originalPost.author?.avatar} alt={post.originalPost.author?.name} />
-                                                    <AvatarFallback>{post.originalPost.author?.name?.charAt(0) || '?'}</AvatarFallback>
-                                                </Avatar>
-                                            </Link>
-                                            {/* Thread line connecting to reply */}
-                                            <div className="w-0.5 flex-1 bg-border mt-1 min-h-[20px]" />
-                                        </div>
-                                        <div className="flex-1 min-w-0 pb-2">
-                                            <div className="flex items-center gap-1.5 flex-wrap">
-                                                <Link href={`/profile/${post.originalPost.author?.username}`} className="font-bold text-sm hover:underline">
-                                                    {post.originalPost.author?.name}
-                                                </Link>
-                                                {post.originalPost.author?.verified && post.originalPost.author.verified !== 'none' && (
-                                                    <VerificationBadge verified={post.originalPost.author.verified} size={15} />
-                                                )}
-                                                <span className="text-sm text-muted-foreground">@{post.originalPost.author?.username}</span>
-                                                <span className="text-sm text-muted-foreground">·</span>
-                                                <Link href={`/post/${post.originalPost.id}`} className="text-sm text-muted-foreground hover:underline" suppressHydrationWarning>
-                                                    {post.originalPost.createdAt ? formatDistanceToNow(new Date(post.originalPost.createdAt), { addSuffix: false }) : ''}
-                                                </Link>
-                                            </div>
-                                            <p className="text-sm mt-1 whitespace-pre-wrap break-words">{post.originalPost.content}</p>
-                                            {post.originalPost.media && post.originalPost.media.length > 0 && (
-                                                <div className="mt-2 rounded-xl overflow-hidden border">
-                                                    {post.originalPost.media[0].type === 'video' ? (
-                                                        <video src={post.originalPost.media[0].url} controls className="w-full max-h-64 object-cover" />
-                                                    ) : (
-                                                        <img src={post.originalPost.media[0].url} alt="Quoted media" className="w-full max-h-64 object-cover" />
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Main Post */}
-                            <div className="px-4 pt-3">
-                                {/* Author header */}
-                                <div className="flex items-start justify-between">
-                                    <div className="flex gap-3">
-                                        <Link href={`/profile/${post.author.username}`}>
-                                            <Avatar className="h-10 w-10">
-                                                <AvatarImage src={post.author.avatar} alt={post.author.name} />
-                                                <AvatarFallback>{post.author.name?.charAt(0) || '?'}</AvatarFallback>
-                                            </Avatar>
-                                        </Link>
-                                        <div>
-                                            <div className="flex items-center gap-1">
-                                                <Link href={`/profile/${post.author.username}`} className="font-bold hover:underline">
-                                                    {post.author.name}
-                                                </Link>
-                                                {post.author.verified && post.author.verified !== 'none' && (
-                                                    <VerificationBadge verified={post.author.verified} size={16} />
-                                                )}
-                                            </div>
-                                            <p className="text-sm text-muted-foreground">@{post.author.username}</p>
-                                        </div>
-                                    </div>
-                                    <Button variant="ghost" size="icon" className="rounded-full -mr-2">
-                                        <MoreHorizontal className="h-5 w-5" />
-                                    </Button>
-                                </div>
-
-                                {/* Post content - larger text for detail view */}
-                                <div className="mt-3">
-                                    <p className="text-base sm:text-lg whitespace-pre-wrap break-words leading-relaxed">{post.content}</p>
-                                </div>
-
-                                {/* Media */}
-                                {post.media && post.media.length > 0 && (
-                                    <div className="mt-3 rounded-2xl overflow-hidden border">
-                                        <div className={`grid ${post.media.length === 1 ? 'grid-cols-1' : 'grid-cols-2'} gap-0.5`}>
-                                            {post.media.map((m, i) => (
-                                                <div key={i} className={`relative ${post.media.length === 1 ? 'max-h-[512px]' : post.media.length === 3 && i === 0 ? 'row-span-2' : ''} overflow-hidden bg-muted`}>
-                                                    {m.type === 'video' ? (
-                                                        <video src={m.url} controls className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <img src={m.url} alt={`Media ${i + 1}`} className="w-full h-full object-cover" />
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Timestamp */}
-                                <div className="mt-3 pb-3 border-b">
-                                    <span className="text-sm text-muted-foreground" suppressHydrationWarning>
-                                        {formatFullDate(post.createdAt)}
-                                    </span>
-                                </div>
-
-                                {/* Engagement stats bar */}
-                                {(post.stats.likes > 0 || post.stats.reposts > 0 || post.stats.views > 0 || post.stats.bookmarks > 0) && (
-                                    <div className="flex items-center gap-4 py-3 border-b text-sm">
-                                        {post.stats.reposts > 0 && (
-                                            <div>
-                                                <span className="font-bold">{formatCount(post.stats.reposts)}</span>
-                                                <span className="text-muted-foreground ml-1">Reposts</span>
-                                            </div>
-                                        )}
-                                        {post.stats.likes > 0 && (
-                                            <div>
-                                                <span className="font-bold">{formatCount(post.stats.likes)}</span>
-                                                <span className="text-muted-foreground ml-1">Likes</span>
-                                            </div>
-                                        )}
-                                        {post.stats.views > 0 && (
-                                            <div>
-                                                <span className="font-bold">{formatCount(post.stats.views)}</span>
-                                                <span className="text-muted-foreground ml-1">Views</span>
-                                            </div>
-                                        )}
-                                        {post.stats.bookmarks > 0 && (
-                                            <div>
-                                                <span className="font-bold">{formatCount(post.stats.bookmarks)}</span>
-                                                <span className="text-muted-foreground ml-1">Bookmarks</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {/* Action bar */}
-                                <div className="flex items-center justify-around py-2 border-b">
-                                    <button
-                                        onClick={handleCommentClick}
-                                        className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-primary/10"
-                                    >
-                                        <MessageCircle className="h-5 w-5" />
-                                    </button>
-                                    <DropdownMenu open={showRepostMenu} onOpenChange={setShowRepostMenu}>
-                                        <DropdownMenuTrigger asChild>
-                                            <button
-                                                className={`flex items-center gap-1.5 transition-colors p-2 rounded-full hover:bg-green-500/10 ${post.repostedBy?.includes(loggedInUser?.id || '') ? 'text-green-500' : 'text-muted-foreground hover:text-green-500'}`}
-                                            >
-                                                <Repeat2 className="h-5 w-5" />
-                                            </button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="center">
-                                            <DropdownMenuItem onClick={() => { handleRepost(post); setShowRepostMenu(false); }}>
-                                                <Repeat2 className="mr-2 h-4 w-4" />
-                                                {post.repostedBy?.includes(loggedInUser?.id || '') ? 'Undo Repost' : 'Repost'}
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => { setShowRepostMenu(false); setIsQuoteOpen(true); }}>
-                                                <Quote className="mr-2 h-4 w-4" />
-                                                Quote Post
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                    <button
-                                        onClick={() => handlePostLikeToggle(post)}
-                                        className={`flex items-center gap-1.5 transition-colors p-2 rounded-full hover:bg-rose-500/10 ${post.likedBy?.includes(loggedInUser?.id || '') ? 'text-rose-500' : 'text-muted-foreground hover:text-rose-500'}`}
-                                    >
-                                        <Heart className={`h-5 w-5 ${post.likedBy?.includes(loggedInUser?.id || '') ? 'fill-current' : ''}`} />
-                                    </button>
-                                    <button
-                                        onClick={() => handlePostSaveToggle(post)}
-                                        className={`flex items-center gap-1.5 transition-colors p-2 rounded-full hover:bg-blue-500/10 ${post.savedBy?.includes(loggedInUser?.id || '') ? 'text-blue-500' : 'text-muted-foreground hover:text-blue-500'}`}
-                                    >
-                                        <Bookmark className={`h-5 w-5 ${post.savedBy?.includes(loggedInUser?.id || '') ? 'fill-current' : ''}`} />
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            if (navigator.share) {
-                                                navigator.share({ url: window.location.href });
-                                            } else {
-                                                navigator.clipboard.writeText(window.location.href);
-                                                toast({ title: 'Link copied!' });
-                                            }
-                                        }}
-                                        className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-primary/10"
-                                    >
-                                        <Share2 className="h-5 w-5" />
-                                    </button>
-                                </div>
-                            </div>
+                            <PostCard
+                                post={post}
+                                isDetailView={true}
+                                onComment={() => handleCommentClick()}
+                                onDelete={handlePostDeleted}
+                                onEdit={(updated) => updatePost(updated)}
+                                onLikeToggle={() => handlePostLikeToggle(post)}
+                                onSaveToggle={() => handlePostSaveToggle(post)}
+                                onCommentLikeToggle={(pid, cid) => handleCommentLikeToggle(post, cid)}
+                                onCommentPinToggle={() => { }}
+                                onCommentHideToggle={() => { }}
+                                onCommentDelete={(pid, cid) => handleCommentDelete(post, cid)}
+                                onQuotePost={(pid, text) => {
+                                    setQuoteText(text);
+                                    setIsQuoteOpen(true);
+                                }}
+                                onRepost={(pid) => handleRepost(post)}
+                                onPollVote={(pid, optId) => handlePollVote(post, optId)}
+                                onPromote={() => { }}
+                            />
 
                             {/* Reply composer */}
-                            <div className="px-4 py-3 flex gap-3 border-b">
+                            <div className="px-4 py-3 flex gap-3 border-b border-t mt-2">
                                 <Avatar className="h-9 w-9 shrink-0">
                                     <AvatarImage src={loggedInUser?.avatar_url} alt={loggedInUser?.name} />
                                     <AvatarFallback>{loggedInUser?.name?.charAt(0) || '?'}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1 space-y-2">
                                     <AuthGate className="w-full">
-                                        <textarea
+                                        <Textarea
                                             ref={commentInputRef}
                                             placeholder="Post your reply"
-                                            className="w-full bg-transparent border-none focus:ring-0 resize-none text-sm min-h-[2.5rem] outline-none placeholder:text-muted-foreground"
+                                            className="w-full bg-transparent border-none focus:ring-0 resize-none text-sm min-h-[2.5rem] outline-none placeholder:text-muted-foreground shadow-none p-0"
                                             value={commentContent}
                                             onChange={(e) => setCommentContent(e.target.value)}
                                             rows={1}
@@ -534,39 +354,38 @@ export default function PostView() {
                                 )}
                             </div>
 
-                            {/* Post Detail Ad */}
                             <GoogleAd slot="2052584005" />
+
+                            {/* Quote Post Dialog */}
+                            <Dialog open={isQuoteOpen} onOpenChange={setIsQuoteOpen}>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Quote Post</DialogTitle>
+                                    </DialogHeader>
+                                    <div className="space-y-4 py-4">
+                                        {post && (
+                                            <div className="border rounded-md p-3 bg-muted/50 text-sm text-muted-foreground">
+                                                <p className="font-semibold">{post.author.name}</p>
+                                                <p className="line-clamp-3">{post.content}</p>
+                                            </div>
+                                        )}
+                                        <Textarea
+                                            placeholder="Add a comment..."
+                                            value={quoteText}
+                                            onChange={(e) => setQuoteText(e.target.value)}
+                                            className="min-h-[100px]"
+                                        />
+                                    </div>
+                                    <DialogFooter>
+                                        <Button variant="ghost" onClick={() => setIsQuoteOpen(false)}>Cancel</Button>
+                                        <Button onClick={handleQuoteSubmit} disabled={!quoteText.trim()}>Post Quote</Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
                         </>
                     )}
                 </main>
             </ScrollArea>
-
-            {/* Quote Post Dialog */}
-            <Dialog open={isQuoteOpen} onOpenChange={setIsQuoteOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Quote Post</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4">
-                        {post && (
-                            <div className="border rounded-md p-3 bg-muted/50 text-sm text-muted-foreground">
-                                <p className="font-semibold">{post.author.name}</p>
-                                <p className="line-clamp-3">{post.content}</p>
-                            </div>
-                        )}
-                        <Textarea
-                            placeholder="Add a comment..."
-                            value={quoteText}
-                            onChange={(e) => setQuoteText(e.target.value)}
-                            className="min-h-[100px]"
-                        />
-                    </div>
-                    <DialogFooter>
-                        <Button variant="ghost" onClick={() => setIsQuoteOpen(false)}>Cancel</Button>
-                        <Button onClick={handleQuoteSubmit} disabled={!quoteText.trim()}>Post Quote</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
         </div>
     );
 }

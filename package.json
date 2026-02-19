@@ -86,15 +86,25 @@
     "@types/react-textarea-autosize": "^8.0.0",
     "@types/uuid": "^10.0.0",
     "@types/web-push": "^3.6.4",
-    "eslint": "9.39.2",
-    "eslint-config-next": "^15.1.0",
-    "genkit-cli": "^1.27.0",
+    "eslint": "^10.0.0",
+    "eslint-config-next": "^16.1.6",
+    "genkit-cli": "^0.0.2",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.9.3"
   },
   "overrides": {
     "fast-xml-parser": "^5.3.4",
-    "hono": "^4.11.7"
+    "hono": "^4.11.7",
+    "rimraf": "^6.0.0",
+    "glob": "^10.0.0",
+    "ejs": "^3.1.10",
+    "minimatch": "^10.0.0",
+    "filelist": "^1.0.4",
+    "jake": "^10.9.2",
+    "ajv": "^8.17.1",
+    "workbox-build": {
+      "glob": "^10.0.0"
+    }
   }
 }

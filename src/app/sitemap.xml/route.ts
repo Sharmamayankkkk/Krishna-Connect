@@ -67,11 +67,28 @@ export async function GET() {
     )
   ).join('') || '';
 
+  // 3. Fetch recent posts (limit 100 for performance)
+  const { data: posts } = await supabase
+    .from('posts')
+    .select('id, created_at')
+    .order('created_at', { ascending: false })
+    .limit(100);
+
+  const postEntries = posts?.map(post =>
+    generateUrlEntry(
+      `${URL}/post/${post.id}`,
+      post.created_at,
+      'weekly',
+      '0.8'
+    )
+  ).join('') || '';
+
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   ${staticEntries}
   ${profileEntries}
   ${eventEntries}
+  ${postEntries}
 </urlset>`;
 
   // Create new headers for the response

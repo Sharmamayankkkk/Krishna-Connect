@@ -74,6 +74,19 @@ export const metadata: Metadata = {
     creator: '@KrishnaConnect',
     site: '@KrishnaConnect',
   },
+  keywords: ["Krishna Connect", "Spiritual Social Network", "Conscious Community", "Bhakti Yoga", "Hare Krishna", "ISKCON", "Spirituality", "Meditation", "Kirtan"],
+  authors: [{ name: "Krishna Connect Team", url: "https://krishnaconnect.in" }],
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   other: {
     "google-adsense-account": process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID!,
   },
