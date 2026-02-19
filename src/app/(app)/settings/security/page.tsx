@@ -93,11 +93,57 @@ export default function SecurityPage() {
     router.push("/login")
   }
 
-  const handleExportData = () => {
+  const handleExportData = async () => {
     toast({
-      title: "Data Export Requested",
-      description: "Your data export will be sent to your email within 24 hours.",
+      title: "Exporting Data",
+      description: "Preparing your data for download...",
     })
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Fetch profile
+      const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+
+      // Fetch posts
+      const { data: posts } = await supabase.from('posts').select('*').eq('user_id', user.id);
+
+      const exportData = {
+        user: {
+          id: user.id,
+          email: user.email,
+          phone: user.phone,
+          created_at: user.created_at,
+        },
+        profile,
+        posts,
+        export_date: new Date().toISOString(),
+      };
+
+      // Create blob and download
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `krishna_connect_data_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast({
+        title: "Download Started",
+        description: "Your data has been successfully exported.",
+      });
+    } catch (error) {
+      console.error("Export error:", error);
+      toast({
+        title: "Export Failed",
+        description: "Could not export data. Please try again.",
+        variant: "destructive",
+      });
+    }
   }
 
   const handleDeleteAccount = async () => {
@@ -158,6 +204,7 @@ export default function SecurityPage() {
           open={isPhoneDialogOpen}
           onOpenChange={setIsPhoneDialogOpen}
           onSuccess={() => fetchProfile()}
+          currentPhone={userPhone}
         />
 
         {/* Two-Factor Authentication */}

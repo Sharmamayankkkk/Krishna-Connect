@@ -17,7 +17,8 @@ interface PhoneCollectionDialogProps {
     title?: string;
     description?: string;
     onSuccess?: () => void;
-    forceRequired?: boolean; // If true, hide close button/prevent closing without success
+    forceRequired?: boolean;
+    currentPhone?: string | null;
 }
 
 export function PhoneCollectionDialog({
@@ -26,7 +27,8 @@ export function PhoneCollectionDialog({
     title = "Add Phone Number",
     description = "Please link a phone number to your account for better security and recovery.",
     onSuccess,
-    forceRequired = false
+    forceRequired = false,
+    currentPhone
 }: PhoneCollectionDialogProps) {
     const [phone, setPhone] = useState('');
     const [otp, setOtp] = useState('');
@@ -109,6 +111,41 @@ export function PhoneCollectionDialog({
         }
     };
 
+    const handleRemovePhone = async () => {
+        if (!confirm("Are you sure you want to remove your phone number? You won't be able to use it for login or recovery.")) return;
+
+        setIsLoading(true);
+        setError(null);
+
+        // Unlink phone by setting it to null (empty string might not work for updateUser types, check Supabase docs, usually null)
+        // Note: updateUser type definition usually expects string | null for phone.
+        // However, standard specifiction for removing identity is often deleting the identity or updating user.
+        // Let's try updating with empty string or null.
+        const { error } = await supabase.auth.updateUser({
+            phone: '' // Setting empty string often unlinks it in some client libs, or we might need to use admin api. 
+            // Actually, for user-facing management, setting it to null is cleaner if supported.
+            // Adapting to standard Supabase behavior: phone cannot be deleted if it's the *only* factor.
+            // Assuming user has email.
+        });
+
+        if (error) {
+            // If update fails (e.g. phone is primary), try the unlink API if available or show error
+            console.error(error);
+            setError(error.message);
+            setIsLoading(false);
+            return;
+        }
+
+        // Update profile
+        await supabase.from('profiles').update({ phone: null }).eq('id', (await supabase.auth.getUser()).data.user?.id);
+
+        toast({ title: "Phone Removed", description: "Your phone number has been unlinked." });
+        setIsLoading(false);
+        if (onSuccess) onSuccess();
+        onOpenChange(false);
+        router.refresh();
+    };
+
     const handleInteractOutside = (e: Event) => {
         if (forceRequired) {
             e.preventDefault();
@@ -130,8 +167,12 @@ export function PhoneCollectionDialog({
                 onEscapeKeyDown={forceRequired ? (e) => e.preventDefault() : undefined}
             >
                 <DialogHeader>
-                    <DialogTitle>{title}</DialogTitle>
-                    <DialogDescription>{description}</DialogDescription>
+                    <DialogTitle>{currentPhone ? "Manage Phone Number" : title}</DialogTitle>
+                    <DialogDescription>
+                        {currentPhone
+                            ? `Current Linked Number: ${currentPhone}`
+                            : description}
+                    </DialogDescription>
                 </DialogHeader>
 
                 {error && (
@@ -142,10 +183,49 @@ export function PhoneCollectionDialog({
                     </Alert>
                 )}
 
+                {/* If current phone exists and we haven't started OTP flow, show options */}
+                {currentPhone && !isOtpSent && !phone && (
+                    <div className="space-y-4 py-4">
+                        <Button
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => setPhone('')} // This state handles "adding new" logic if we type in it
+                        >
+                            Change Number
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            className="w-full"
+                            onClick={handleRemovePhone}
+                            disabled={isLoading}
+                        >
+                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            Remove Number
+                        </Button>
+                        {/* Hidden input to switch modes if "Change Number" is clicked? 
+                            actually, let's make the "Change Number" button just reveal the form below 
+                            or we can just render the form immediately under "Change Number" button?
+                        */}
+                    </div>
+                )}
+
+                {/* 
+                   Logic: 
+                   1. If no currentPhone, show form immediately.
+                   2. If currentPhone, show "Remove" button. 
+                   3. To Change, user enters number in the form below (always visible for simplicity or toggled).
+                   
+                   Let's simplify: 
+                   Always show the "Add/Change" form. 
+                   If currentPhone exists, add a "Remove" button at the bottom.
+                */}
+
                 {!isOtpSent ? (
                     <form onSubmit={handleSendOtp} className="space-y-4 py-4">
                         <div className="space-y-2">
-                            <Label htmlFor="phone-collection">Phone Number</Label>
+                            <Label htmlFor="phone-collection">
+                                {currentPhone ? "New Phone Number" : "Phone Number"}
+                            </Label>
                             <Input
                                 id="phone-collection"
                                 type="tel"
@@ -155,10 +235,22 @@ export function PhoneCollectionDialog({
                                 required
                             />
                         </div>
-                        <DialogFooter>
-                            <Button type="submit" disabled={isLoading || !phone}>
+                        <DialogFooter className="flex-col sm:flex-row gap-2">
+                            {currentPhone && (
+                                <Button
+                                    type="button"
+                                    variant="destructive"
+                                    onClick={handleRemovePhone}
+                                    disabled={isLoading}
+                                    className="sm:w-auto w-full"
+                                >
+                                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    Remove Current
+                                </Button>
+                            )}
+                            <Button type="submit" disabled={isLoading || !phone} className="sm:w-auto w-full">
                                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Send OTP
+                                {currentPhone ? "Verify & Update" : "Send OTP"}
                             </Button>
                         </DialogFooter>
                     </form>

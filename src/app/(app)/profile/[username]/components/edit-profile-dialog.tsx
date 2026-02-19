@@ -320,6 +320,7 @@ export function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDi
             <PhoneCollectionDialog
                 open={isPhoneDialogOpen}
                 onOpenChange={setIsPhoneDialogOpen}
+                currentPhone={profile.phone}
             />
         </Dialog>
     );
