@@ -13,7 +13,7 @@ import {
   Monitor,
   Smartphone,
   Shield,
-  Download,
+
   Trash2,
   Globe,
   Clock,
@@ -93,58 +93,7 @@ export default function SecurityPage() {
     router.push("/login")
   }
 
-  const handleExportData = async () => {
-    toast({
-      title: "Exporting Data",
-      description: "Preparing your data for download...",
-    })
 
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // Fetch profile
-      const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-
-      // Fetch posts
-      const { data: posts } = await supabase.from('posts').select('*').eq('user_id', user.id);
-
-      const exportData = {
-        user: {
-          id: user.id,
-          email: user.email,
-          phone: user.phone,
-          created_at: user.created_at,
-        },
-        profile,
-        posts,
-        export_date: new Date().toISOString(),
-      };
-
-      // Create blob and download
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `krishna_connect_data_${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-
-      toast({
-        title: "Download Started",
-        description: "Your data has been successfully exported.",
-      });
-    } catch (error) {
-      console.error("Export error:", error);
-      toast({
-        title: "Export Failed",
-        description: "Could not export data. Please try again.",
-        variant: "destructive",
-      });
-    }
-  }
 
   const handleDeleteAccount = async () => {
     toast({
@@ -292,21 +241,7 @@ export default function SecurityPage() {
       <div className="space-y-3">
         <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Data & Account</h4>
         <div className="space-y-2">
-          {/* Export Data */}
-          <div className="flex items-center justify-between rounded-lg border p-4">
-            <div className="flex items-center gap-3">
-              <div className="rounded-full bg-purple-500/10 p-2">
-                <Download className="h-4 w-4 text-purple-500" />
-              </div>
-              <div className="space-y-0.5">
-                <h4 className="text-sm font-medium">Export Your Data</h4>
-                <p className="text-sm text-muted-foreground">
-                  Download a copy of your posts, messages, and profile data.
-                </p>
-              </div>
-            </div>
-            <Button variant="outline" size="sm" onClick={handleExportData}>Export</Button>
-          </div>
+
 
           {/* Sign Out All */}
           <div className="flex items-center justify-between rounded-lg border p-4 border-orange-200 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-900">
