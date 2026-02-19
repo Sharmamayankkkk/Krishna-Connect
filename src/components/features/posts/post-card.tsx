@@ -79,6 +79,7 @@ interface PostCardProps {
     onPollVote: (postId: string, optionId: string) => void;
     onPromote: (post: PostType) => void;
     onPin?: (postId: string) => void;
+    onView?: (postId: string | number) => void;
 }
 
 // --- CHILD COMPONENTS & DIALOGS ---
@@ -535,8 +536,8 @@ export function PostCard({
     onQuotePost,
     onRepost,
     onPollVote,
-    onPromote,
-    onPin
+    onPin,
+    onView
 }: PostCardProps) {
     const { author, createdAt, content, media, stats = { likes: 0, comments: 0, reposts: 0, reshares: 0, views: 0, bookmarks: 0 }, originalPost, editedAt, poll, isRepost, isPromoted } = post;
     const { loggedInUser } = useAppContext();
@@ -580,18 +581,13 @@ export function PostCard({
     const cardRef = React.useRef<HTMLElement>(null);
 
     React.useEffect(() => {
-        if (hasLoggedView.current || !post.id) return;
+        if (hasLoggedView.current || !post.id || !onView) return;
 
         const observer = new IntersectionObserver(
             (entries) => {
                 if (entries[0].isIntersecting) {
                     hasLoggedView.current = true;
-                    // Log view
-                    const supabase = createClient();
-                    supabase.rpc('log_post_view', { p_post_id: post.id })
-                        .then(({ error }) => {
-                            if (error) console.error('Error logging view:', error);
-                        });
+                    onView(post.id);
                     observer.disconnect();
                 }
             },
@@ -603,7 +599,7 @@ export function PostCard({
         }
 
         return () => observer.disconnect();
-    }, [post.id]);
+    }, [post.id, onView]);
 
     // Handlers
     const handlePromote = () => {

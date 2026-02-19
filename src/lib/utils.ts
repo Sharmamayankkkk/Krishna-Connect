@@ -19,15 +19,23 @@ export function getAvatarUrl(url?: string): string | undefined {
   if (url.startsWith('/')) return url; // Local public file
 
   // Check for known static avatars or simple filenames
-  if (url === 'male.png' || url === 'female.png' || !url.includes('/')) {
-    // Remove any leading slash just in case to avoid //
-    const cleanUrl = url.startsWith('/') ? url.slice(1) : url;
-    return `/${cleanUrl}`;
+  if (url === 'male.png' || url === 'female.png' || url === 'verified.png' || url === 'KCS-verified.png') {
+    return `/user_Avatar/${url}`;
+  }
+
+  // Handle local /avatars/ path (legacy or incorrect DB entries)
+  if (url.startsWith('/avatars/')) {
+    return `/user_Avatar/${url.replace('/avatars/', '')}`;
+  }
+
+  // Handle simple filenames that don't have a path - assume they are in user_Avatar if not http
+  if (!url.includes('/') && !url.startsWith('http')) {
+    return `/user_Avatar/${url}`;
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!supabaseUrl) return url;
-  
+
   // Clean up the path to avoid double slashes
   const cleanPath = url.startsWith('/') ? url.slice(1) : url;
   return `${supabaseUrl}/storage/v1/object/public/attachments/${cleanPath}`;

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from 'lucide-react';
 import { useAppContext } from '@/providers/app-provider';
 import { usePostInteractions } from '@/hooks/use-post-interactions';
+import { createClient } from '@/lib/supabase/client';
 
 interface FeedListProps {
     posts: PostType[];
@@ -94,6 +95,36 @@ export function FeedList({
         onDeletePost: onPostDeleted
     });
 
+    // Batch View Logging Logic
+    const viewQueue = React.useRef<Set<string>>(new Set());
+    const supabase = createClient();
+
+    // Flush queue every 5 seconds
+    React.useEffect(() => {
+        const interval = setInterval(async () => {
+            if (viewQueue.current.size === 0) return;
+
+            const postIds = Array.from(viewQueue.current);
+            viewQueue.current.clear(); // Clear immediately to avoid double sending
+
+            try {
+                await supabase.rpc('log_post_views_bulk', { p_post_ids: postIds });
+            } catch (error) {
+                console.error('Failed to log bulk views:', error);
+            }
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    const handlePostView = React.useCallback((postId: string | number) => {
+        if (typeof postId === 'string') {
+            viewQueue.current.add(postId);
+        } else {
+            viewQueue.current.add(postId.toString());
+        }
+    }, []);
+
     if (isLoading) {
         return (
             <div className="space-y-4">
@@ -170,6 +201,7 @@ export function FeedList({
                             onQuotePost={onQuotePost}
                             onPromote={onPromote}
                             onPin={onPin ? () => (onPin ? onPin(post) : handlePostPinToggle(post)) : () => handlePostPinToggle(post)}
+                            onView={handlePostView}
                         />
                     </React.Fragment>
                 );
