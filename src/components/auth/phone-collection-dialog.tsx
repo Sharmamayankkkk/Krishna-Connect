@@ -81,7 +81,7 @@ export function PhoneCollectionDialog({
         const { error } = await supabase.auth.verifyOtp({
             phone,
             token: otp,
-            type: 'sms',
+            type: 'phone_change',
         });
 
         setIsLoading(false);
