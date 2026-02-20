@@ -235,7 +235,7 @@ export default function SignupPage() {
             <Tabs defaultValue="email" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-4">
                 <TabsTrigger value="email">Email</TabsTrigger>
-                <TabsTrigger value="phone">Phone</TabsTrigger>
+                <TabsTrigger value="phone" disabled title="Phone signup is temporarily unavailable">Phone</TabsTrigger>
               </TabsList>
 
               <TabsContent value="email">

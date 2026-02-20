@@ -211,7 +211,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
 
       // Check for phone number - simple check for now
-      if (!loggedInUser.phone) {
+      const isPhoneCollectionEnabled = process.env.NEXT_PUBLIC_ENABLE_PHONE_COLLECTION === 'true';
+      if (isPhoneCollectionEnabled && !loggedInUser.phone) {
         setShowPhoneCollectionModal(true);
       } else {
         setShowPhoneCollectionModal(false);

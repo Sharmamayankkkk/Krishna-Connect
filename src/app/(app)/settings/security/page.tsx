@@ -132,19 +132,22 @@ export default function SecurityPage() {
         </div>
 
         {/* Phone Number */}
-        <div className="flex items-center justify-between rounded-lg border p-4">
+        <div className="flex items-center justify-between rounded-lg border p-4 opacity-70">
           <div className="flex items-center gap-3">
             <div className="rounded-full bg-blue-500/10 p-2">
               <Smartphone className="h-4 w-4 text-blue-500" />
             </div>
             <div className="space-y-0.5">
-              <h4 className="text-sm font-medium">Phone Number</h4>
+              <div className="flex items-center gap-2">
+                <h4 className="text-sm font-medium">Phone Number</h4>
+                <Badge variant="secondary" className="text-[10px]">Temporarily Unavailable</Badge>
+              </div>
               <p className="text-sm text-muted-foreground">
-                {userPhone ? `Linked: ${userPhone}` : 'Add a phone number for account recovery.'}
+                Phone number features are currently disabled.
               </p>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={() => setIsPhoneDialogOpen(true)}>
+          <Button variant="outline" size="sm" disabled title="Phone number updates are temporarily disabled">
             {userPhone ? 'Change' : 'Add'}
           </Button>
         </div>

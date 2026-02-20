@@ -281,21 +281,25 @@ export function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDi
 
                     <div className="space-y-2">
                         <Label htmlFor="phone">Phone Number</Label>
-                        <div className="flex gap-2">
-                            <Input
-                                id="phone"
-                                value={profile.phone || ''}
-                                placeholder="Not set"
-                                disabled
-                                className="bg-muted"
-                            />
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => setIsPhoneDialogOpen(true)}
-                            >
-                                {profile.phone ? 'Change' : 'Add'}
-                            </Button>
+                        <div className="flex flex-col gap-1">
+                            <div className="flex gap-2">
+                                <Input
+                                    id="phone"
+                                    value={profile.phone || ''}
+                                    placeholder="Temporarily unavailable"
+                                    disabled
+                                    className="bg-muted"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    disabled
+                                    title="Phone number updates are temporarily disabled"
+                                >
+                                    {profile.phone ? 'Change' : 'Add'}
+                                </Button>
+                            </div>
+                            <p className="text-xs text-muted-foreground">Phone number features are temporarily unavailable.</p>
                         </div>
                     </div>
 
