@@ -137,13 +137,31 @@ function LivestreamHostControls({ call, livestreamId, isGuest }: { call: any; li
     return (
         <div className="relative w-full h-full bg-black">
             {/* 1. Full-Screen Video Background */}
-            <div className="absolute inset-0 z-0">
-                {localParticipant ? (
-                    <ParticipantView participant={localParticipant} className="h-full w-full object-cover" />
-                ) : (
-                    <div className="h-full w-full flex items-center justify-center bg-gray-900">
+            <div className="absolute inset-0 z-0 bg-gray-950 flex flex-wrap items-center justify-center gap-2 p-2 pt-20 pb-40">
+                {participants.length === 0 ? (
+                    <div className="h-full w-full flex items-center justify-center">
                         <Loader2 className="h-8 w-8 animate-spin text-white/50" />
                     </div>
+                ) : (
+                    participants.map((p) => {
+                        const isSingle = participants.length === 1;
+                        return (
+                            <div
+                                key={p.sessionId}
+                                className="relative rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-black flex-grow"
+                                style={{
+                                    width: isSingle ? '100%' : 'calc(50% - 0.5rem)',
+                                    height: isSingle ? '100%' : participants.length > 2 ? 'calc(50% - 0.5rem)' : '100%',
+                                }}
+                            >
+                                <ParticipantView
+                                    participant={p}
+                                    trackType={p.screenShareStream ? 'screenShareTrack' : 'videoTrack'}
+                                    className="w-full h-full [&>video]:object-cover"
+                                />
+                            </div>
+                        )
+                    })
                 )}
                 {/* Gradient Overlays for readability */}
                 <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/60 to-transparent pointer-events-none" />

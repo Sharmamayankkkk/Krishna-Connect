@@ -114,20 +114,14 @@ function LivestreamViewerContent({ call, hostName, title, livestreamId }: { call
         mediaElements.forEach((el: Element) => {
             (el as HTMLMediaElement).muted = isMuted
         })
-    }, [isMuted, hostParticipant])
+    }, [isMuted, participants])
 
     return (
         <div className="relative w-full h-full bg-black">
-            {/* 1. Full-Screen Video */}
-            <div className="absolute inset-0 z-0" ref={containerRef}>
-                {hostParticipant ? (
-                    <ParticipantView
-                        participant={hostParticipant}
-                        trackType={hostParticipant.screenShareStream ? 'screenShareTrack' : 'videoTrack'}
-                        className="h-full w-full object-contain bg-black"
-                    />
-                ) : (
-                    <div className="h-full w-full flex items-center justify-center bg-gray-900">
+            {/* 1. Full-Screen Video Background */}
+            <div className="absolute inset-0 z-0 bg-gray-950 flex flex-wrap items-center justify-center gap-2 p-2 pb-40" ref={containerRef}>
+                {participants.length === 0 ? (
+                    <div className="h-full w-full flex items-center justify-center">
                         <div className="text-center space-y-4">
                             <div className="relative mx-auto h-20 w-20">
                                 <span className="absolute inset-0 rounded-full border-2 border-white/20 animate-ping" />
@@ -140,6 +134,26 @@ function LivestreamViewerContent({ call, hostName, title, livestreamId }: { call
                             </p>
                         </div>
                     </div>
+                ) : (
+                    participants.map((p) => {
+                        const isSingle = participants.length === 1;
+                        return (
+                            <div
+                                key={p.sessionId}
+                                className="relative rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-black flex-grow"
+                                style={{
+                                    width: isSingle ? '100%' : 'calc(50% - 0.5rem)',
+                                    height: isSingle ? '100%' : participants.length > 2 ? 'calc(50% - 0.5rem)' : '100%',
+                                }}
+                            >
+                                <ParticipantView
+                                    participant={p}
+                                    trackType={p.screenShareStream ? 'screenShareTrack' : 'videoTrack'}
+                                    className="w-full h-full [&>video]:object-cover"
+                                />
+                            </div>
+                        )
+                    })
                 )}
 
                 {/* Gradient Overlays */}
