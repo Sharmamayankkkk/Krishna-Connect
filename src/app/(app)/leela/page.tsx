@@ -484,8 +484,11 @@ export default function LeelaPage() {
   // Upload handler
   const fileInputRef = React.useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = React.useState(false)
+  const [selectedFile, setSelectedFile] = React.useState<File | null>(null)
+  const [uploadCaption, setUploadCaption] = React.useState('')
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = React.useState(false)
 
-  const handleUploadLeela = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !loggedInUser) return
 
@@ -499,11 +502,20 @@ export default function LeelaPage() {
       return
     }
 
+    setSelectedFile(file)
+    setUploadCaption('')
+    setIsUploadDialogOpen(true)
+  }
+
+  const handleUploadConfirm = async () => {
+    if (!selectedFile || !loggedInUser) return
+
+    setIsUploadDialogOpen(false)
     setIsUploading(true)
     try {
-      const ext = file.name.split('.').pop() || 'mp4'
+      const ext = selectedFile.name.split('.').pop() || 'mp4'
       const filePath = `leela/${loggedInUser.id}/${Date.now()}.${ext}`
-      const { error: uploadError } = await supabase.storage.from('leela').upload(filePath, file)
+      const { error: uploadError } = await supabase.storage.from('leela').upload(filePath, selectedFile)
       if (uploadError) throw uploadError
 
       const { data: urlData } = supabase.storage.from('leela').getPublicUrl(filePath)
@@ -511,7 +523,7 @@ export default function LeelaPage() {
       const { error: insertError } = await supabase.from('leela_videos').insert({
         user_id: loggedInUser.id,
         video_url: urlData.publicUrl,
-        caption: null,
+        caption: uploadCaption.trim() || null,
       })
 
       if (insertError) throw insertError
@@ -522,6 +534,7 @@ export default function LeelaPage() {
       toast({ title: 'Upload failed', description: err.message, variant: 'destructive' })
     } finally {
       setIsUploading(false)
+      setSelectedFile(null)
       if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
@@ -535,7 +548,48 @@ export default function LeelaPage() {
           <Image src="/icons/leela.png" alt="Leela" width={28} height={28} />
           <h1 className="text-xl font-bold">Leela</h1>
         </header>
-        <input ref={fileInputRef} type="file" accept="video/*" className="hidden" onChange={handleUploadLeela} />
+
+        {/* Hidden File Input */}
+        <input ref={fileInputRef} type="file" accept="video/*" className="hidden" onChange={handleFileSelect} />
+
+        {/* Upload Dialog */}
+        {isUploadDialogOpen && selectedFile && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in">
+            <div className="bg-card w-full max-w-md rounded-xl shadow-lg border p-6 animate-in zoom-in-95">
+              <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                <Upload className="h-5 w-5 text-primary" /> Upload Leela
+              </h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                Selected: <span className="font-semibold text-foreground">{selectedFile.name}</span>
+              </p>
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label htmlFor="caption" className="block text-sm font-medium mb-1.5">Caption <span className="text-muted-foreground font-normal">(optional)</span></label>
+                  <textarea
+                    id="caption"
+                    value={uploadCaption}
+                    onChange={(e) => setUploadCaption(e.target.value)}
+                    placeholder="Write a caption for your Leela..."
+                    className="w-full min-h-[100px] p-3 rounded-md border bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm resize-none"
+                    maxLength={200}
+                  />
+                  <div className="text-right text-xs text-muted-foreground mt-1">
+                    {uploadCaption.length}/200
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 border-t pt-4">
+                <Button variant="ghost" onClick={() => { setIsUploadDialogOpen(false); setSelectedFile(null); }}>
+                  Cancel
+                </Button>
+                <Button onClick={handleUploadConfirm} disabled={isUploading}>
+                  {isUploading ? <><div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" /> Uploading...</> : 'Post Leela'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center gap-6">
           <div className="relative">
             <div className="h-24 w-24 rounded-full bg-gradient-to-br from-primary/20 to-purple-500/20 flex items-center justify-center">
@@ -548,7 +602,7 @@ export default function LeelaPage() {
               Short-form videos from the Krishna Connect community. Be the first to share a Leela!
             </p>
           </div>
-          <Button className="gap-2" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+          <Button className="gap-2" onClick={() => fileInputRef.current?.click()} disabled={isUploading || isUploadDialogOpen}>
             {isUploading ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <Upload className="h-4 w-4" />}
             {isUploading ? 'Uploading...' : 'Upload Your First Leela'}
           </Button>
@@ -563,17 +617,66 @@ export default function LeelaPage() {
 
   return (
     <div className="relative flex flex-col h-[100dvh] bg-black">
-      <input ref={fileInputRef} type="file" accept="video/*" className="hidden" onChange={handleUploadLeela} />
+      {/* Hidden File Input */}
+      <input ref={fileInputRef} type="file" accept="video/*" className="hidden" onChange={handleFileSelect} />
+
+      {/* Upload Dialog (for when videos already exist) */}
+      {isUploadDialogOpen && selectedFile && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-card w-full max-w-md rounded-xl shadow-2xl border p-6 animate-in zoom-in-95 relative overflow-hidden">
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <Upload className="h-5 w-5 text-primary" /> Upload Leela
+            </h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Selected: <span className="font-semibold text-foreground truncate block">{selectedFile.name}</span>
+            </p>
+            <div className="space-y-4 mb-6">
+              <div>
+                <label htmlFor="caption-main" className="block text-sm font-medium mb-1.5">Caption <span className="text-muted-foreground font-normal">(optional)</span></label>
+                <textarea
+                  id="caption-main"
+                  value={uploadCaption}
+                  onChange={(e) => setUploadCaption(e.target.value)}
+                  placeholder="Write a caption for your Leela..."
+                  className="w-full min-h-[100px] p-3 rounded-md border bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm resize-none"
+                  maxLength={200}
+                />
+                <div className="text-right text-xs text-muted-foreground mt-1">
+                  {uploadCaption.length}/200
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 border-t pt-4">
+              <Button variant="ghost" onClick={() => { setIsUploadDialogOpen(false); setSelectedFile(null); }} className="hover:bg-red-500/10 hover:text-red-500">
+                Cancel
+              </Button>
+              <Button onClick={handleUploadConfirm} disabled={isUploading} className="min-w-[120px]">
+                {isUploading ? <><div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" /> Uploading</> : 'Post Leela'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header overlay */}
       <header className="absolute top-0 left-0 right-0 z-20 flex items-center gap-3 p-4">
         <SidebarTrigger className="md:hidden text-white" />
         <Image src="/icons/leela.png" alt="Leela" width={24} height={24} />
-        <h1 className="text-lg font-bold text-white drop-shadow-lg">Leela</h1>
+        <h1 className="text-lg font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Leela</h1>
         <div className="ml-auto flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-white hover:bg-white/20 rounded-full h-8 w-8 backdrop-blur-sm"
+            onClick={() => fileInputRef.current?.click()}
+            title="Upload Leela"
+          >
+            <Upload className="h-4 w-4" />
+          </Button>
           <button
             onClick={() => navigate('up')}
             disabled={currentIndex === 0}
-            className="p-1.5 rounded-full bg-white/10 backdrop-blur-sm text-white disabled:opacity-30"
+            className="p-1.5 rounded-full bg-white/10 backdrop-blur-sm text-white disabled:opacity-30 hover:bg-white/20 transition-colors"
             aria-label="Previous video"
           >
             <ChevronUp className="h-4 w-4" />
@@ -581,7 +684,7 @@ export default function LeelaPage() {
           <button
             onClick={() => navigate('down')}
             disabled={currentIndex >= videos.length - 1}
-            className="p-1.5 rounded-full bg-white/10 backdrop-blur-sm text-white disabled:opacity-30"
+            className="p-1.5 rounded-full bg-white/10 backdrop-blur-sm text-white disabled:opacity-30 hover:bg-white/20 transition-colors"
             aria-label="Next video"
           >
             <ChevronDown className="h-4 w-4" />

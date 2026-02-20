@@ -12,6 +12,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Loader2 } from 'lucide-react'
 
 export function UploadLeelaFab() {
   const { loggedInUser } = useAppContext()
@@ -19,8 +22,11 @@ export function UploadLeelaFab() {
   const supabase = createClient()
   const fileInputRef = React.useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = React.useState(false)
+  const [selectedLeelaFile, setSelectedLeelaFile] = React.useState<File | null>(null)
+  const [leelaCaption, setLeelaCaption] = React.useState('')
+  const [isLeelaDialogOpen, setIsLeelaDialogOpen] = React.useState(false)
 
-  const handleUploadLeela = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLeelaSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !loggedInUser) return
 
@@ -34,11 +40,20 @@ export function UploadLeelaFab() {
       return
     }
 
+    setSelectedLeelaFile(file)
+    setLeelaCaption('')
+    setIsLeelaDialogOpen(true)
+  }
+
+  const handleLeelaUploadConfirm = async () => {
+    if (!selectedLeelaFile || !loggedInUser) return
+
+    setIsLeelaDialogOpen(false)
     setIsUploading(true)
     try {
-      const ext = file.name.includes('.') ? file.name.substring(file.name.lastIndexOf('.') + 1) : 'mp4'
+      const ext = selectedLeelaFile.name.includes('.') ? selectedLeelaFile.name.substring(selectedLeelaFile.name.lastIndexOf('.') + 1) : 'mp4'
       const filePath = `leela/${loggedInUser.id}/${Date.now()}.${ext}`
-      const { error: uploadError } = await supabase.storage.from('leela').upload(filePath, file)
+      const { error: uploadError } = await supabase.storage.from('leela').upload(filePath, selectedLeelaFile)
       if (uploadError) throw uploadError
 
       const { data: urlData } = supabase.storage.from('leela').getPublicUrl(filePath)
@@ -46,7 +61,7 @@ export function UploadLeelaFab() {
       const { error: insertError } = await supabase.from('leela_videos').insert({
         user_id: loggedInUser.id,
         video_url: urlData.publicUrl,
-        caption: null,
+        caption: leelaCaption.trim() || null,
       })
 
       if (insertError) throw insertError
@@ -56,6 +71,7 @@ export function UploadLeelaFab() {
       toast({ title: 'Upload failed', description: err.message, variant: 'destructive' })
     } finally {
       setIsUploading(false)
+      setSelectedLeelaFile(null)
       if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
@@ -69,8 +85,61 @@ export function UploadLeelaFab() {
         type="file"
         accept="video/*"
         className="hidden"
-        onChange={handleUploadLeela}
+        onChange={handleLeelaSelect}
       />
+
+      <Dialog open={isLeelaDialogOpen} onOpenChange={(open) => {
+        setIsLeelaDialogOpen(open);
+        if (!open) {
+          setSelectedLeelaFile(null);
+          if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+      }}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Image src="/icons/leela.png" alt="Leela" width={20} height={20} />
+              Upload Leela
+            </DialogTitle>
+          </DialogHeader>
+
+          {selectedLeelaFile && (
+            <div className="py-2 space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Selected: <span className="font-semibold text-foreground truncate block">{selectedLeelaFile.name}</span>
+              </p>
+
+              <div className="space-y-2">
+                <Label htmlFor="fab-leela-caption">Caption <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                <textarea
+                  id="fab-leela-caption"
+                  value={leelaCaption}
+                  onChange={(e) => setLeelaCaption(e.target.value)}
+                  placeholder="Write a caption for your Leela..."
+                  className="w-full min-h-[100px] p-3 rounded-md border bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm resize-none"
+                  maxLength={200}
+                />
+                <div className="text-right text-xs text-muted-foreground">
+                  {leelaCaption.length}/200
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => {
+              setIsLeelaDialogOpen(false);
+              setSelectedLeelaFile(null);
+            }}>
+              Cancel
+            </Button>
+            <Button onClick={handleLeelaUploadConfirm} disabled={isUploading}>
+              {isUploading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...</> : 'Post Leela'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>

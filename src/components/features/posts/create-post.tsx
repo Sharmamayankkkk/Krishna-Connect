@@ -350,8 +350,11 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
 
     // Leela (short video) upload
     const [isUploadingLeela, setIsUploadingLeela] = React.useState(false);
+    const [selectedLeelaFile, setSelectedLeelaFile] = React.useState<File | null>(null);
+    const [leelaCaption, setLeelaCaption] = React.useState('');
+    const [isLeelaDialogOpen, setIsLeelaDialogOpen] = React.useState(false);
 
-    const handleLeelaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleLeelaSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file || !loggedInUser) return;
 
@@ -365,12 +368,21 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             return;
         }
 
+        setSelectedLeelaFile(file);
+        setLeelaCaption('');
+        setIsLeelaDialogOpen(true);
+    };
+
+    const handleLeelaUploadConfirm = async () => {
+        if (!selectedLeelaFile || !loggedInUser) return;
+
+        setIsLeelaDialogOpen(false);
         setIsUploadingLeela(true);
         try {
             const leelaSupabase = createClient();
-            const ext = file.name.includes('.') ? file.name.substring(file.name.lastIndexOf('.') + 1) : 'mp4';
+            const ext = selectedLeelaFile.name.includes('.') ? selectedLeelaFile.name.substring(selectedLeelaFile.name.lastIndexOf('.') + 1) : 'mp4';
             const filePath = `leela/${loggedInUser.id}/${Date.now()}.${ext}`;
-            const { error: uploadError } = await leelaSupabase.storage.from('leela').upload(filePath, file);
+            const { error: uploadError } = await leelaSupabase.storage.from('leela').upload(filePath, selectedLeelaFile);
             if (uploadError) throw uploadError;
 
             const { data: urlData } = leelaSupabase.storage.from('leela').getPublicUrl(filePath);
@@ -378,7 +390,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             const { error: insertError } = await leelaSupabase.from('leela_videos').insert({
                 user_id: loggedInUser.id,
                 video_url: urlData.publicUrl,
-                caption: null,
+                caption: leelaCaption.trim() || null,
             });
 
             if (insertError) throw insertError;
@@ -388,11 +400,10 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             toast({ title: 'Upload failed', description: err.message, variant: 'destructive' });
         } finally {
             setIsUploadingLeela(false);
+            setSelectedLeelaFile(null);
             if (leelaInputRef.current) leelaInputRef.current.value = '';
         }
     };
-
-    // GIF selection from GIPHY
     const handleGifSelect = (gif: any) => {
         if (mediaPreviews.length >= MAX_MEDIA) {
             toast({
@@ -1040,7 +1051,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                         <div className="flex items-center justify-between pt-3 mt-2">
                             <input type="file" ref={fileInputRef} className="hidden" multiple accept="image/*" onChange={handleImageUpload} disabled={isPosting || isPollMode} />
                             <input type="file" ref={videoInputRef} className="hidden" multiple accept="video/*" onChange={handleVideoUpload} disabled={isPosting || isPollMode} />
-                            <input type="file" ref={leelaInputRef} className="hidden" accept="video/*" onChange={handleLeelaUpload} disabled={isPosting || isUploadingLeela} />
+                            <input type="file" ref={leelaInputRef} className="hidden" accept="video/*" onChange={handleLeelaSelect} disabled={isPosting || isUploadingLeela} />
 
                             <div className="flex items-center gap-1 -ml-2">
                                 {/* Primary Actions */}
@@ -1239,7 +1250,59 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </>
 
+            {/* Leela Upload Dialog */}
+            <Dialog open={isLeelaDialogOpen} onOpenChange={(open) => {
+                setIsLeelaDialogOpen(open);
+                if (!open) {
+                    setSelectedLeelaFile(null);
+                    if (leelaInputRef.current) leelaInputRef.current.value = '';
+                }
+            }}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Image src="/icons/leela.png" alt="Leela" width={20} height={20} />
+                            Upload Leela
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    {selectedLeelaFile && (
+                        <div className="py-2 space-y-4">
+                            <p className="text-sm text-muted-foreground">
+                                Selected: <span className="font-semibold text-foreground truncate block">{selectedLeelaFile.name}</span>
+                            </p>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="leela-caption">Caption <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                                <textarea
+                                    id="leela-caption"
+                                    value={leelaCaption}
+                                    onChange={(e) => setLeelaCaption(e.target.value)}
+                                    placeholder="Write a caption for your Leela..."
+                                    className="w-full min-h-[100px] p-3 rounded-md border bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm resize-none"
+                                    maxLength={200}
+                                />
+                                <div className="text-right text-xs text-muted-foreground">
+                                    {leelaCaption.length}/200
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={() => {
+                            setIsLeelaDialogOpen(false);
+                            setSelectedLeelaFile(null);
+                        }}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleLeelaUploadConfirm} disabled={isUploadingLeela}>
+                            {isUploadingLeela ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...</> : 'Post Leela'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }
