@@ -26,7 +26,9 @@ export default function FeedPage() {
     const [isInitialLoading, setIsInitialLoading] = React.useState(true);
     const [showNewPostsBanner, setShowNewPostsBanner] = React.useState(false);
     const [newPostsCount, setNewPostsCount] = React.useState(0);
+    const [latestNewPostAuthor, setLatestNewPostAuthor] = React.useState<{ name: string; avatar: string | null } | null>(null);
     const [showScrollTop, setShowScrollTop] = React.useState(false);
+    const newPostsCheckInterval = React.useRef<NodeJS.Timeout | null>(null);
 
     // Promotion Dialog
     const [isPromotionDialogOpen, setIsPromotionDialogOpen] = React.useState(false);
@@ -91,15 +93,13 @@ export default function FeedPage() {
             setAllPosts(transformedPosts);
 
             // Generate "For You" feed
-            const { feed, hasNewPosts, newPostsCount: newCount } = generateFeed(
+            const { feed } = generateFeed(
                 transformedPosts,
                 userInteractions,
                 'for_you'
             );
 
             setVisiblePosts(feed);
-            setShowNewPostsBanner(hasNewPosts);
-            setNewPostsCount(newCount);
         }
         setIsInitialLoading(false);
     }, [toast, userInteractions]);
@@ -107,6 +107,54 @@ export default function FeedPage() {
     React.useEffect(() => {
         fetchPosts();
     }, [fetchPosts]);
+
+    const checkForNewPosts = React.useCallback(async () => {
+        if (allPosts.length === 0) return;
+        const supabase = createClient();
+        const latestPostTime = allPosts.reduce((latest, post) => {
+            const postTime = new Date(post.createdAt).getTime();
+            return postTime > latest ? postTime : latest;
+        }, 0);
+        if (latestPostTime === 0) return;
+
+        const { data, count, error } = await supabase
+            .from('posts')
+            .select('id, profiles:user_id(name, avatar_url)', { count: 'exact' })
+            .gt('created_at', new Date(latestPostTime).toISOString())
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+        if (error) {
+            console.error('Error checking for new posts:', error);
+            return;
+        }
+        if (count && count > 0) {
+            if (data && data.length > 0 && data[0].profiles) {
+                const profile: any = Array.isArray(data[0].profiles) ? data[0].profiles[0] : data[0].profiles;
+                if (profile) {
+                    setLatestNewPostAuthor({
+                        name: profile.name || 'Someone',
+                        avatar: profile.avatar_url || null
+                    });
+                }
+            }
+            setNewPostsCount(count);
+            setShowNewPostsBanner(true);
+        }
+    }, [allPosts]);
+
+    React.useEffect(() => {
+        if (!isInitialLoading) {
+            newPostsCheckInterval.current = setInterval(() => {
+                checkForNewPosts();
+            }, 30000);
+            return () => {
+                if (newPostsCheckInterval.current) {
+                    clearInterval(newPostsCheckInterval.current);
+                }
+            };
+        }
+    }, [isInitialLoading, checkForNewPosts]);
 
     // Scroll detection
     React.useEffect(() => {
@@ -124,7 +172,8 @@ export default function FeedPage() {
 
     const handleLoadNewPosts = () => {
         setShowNewPostsBanner(false);
-        setUserInteractions(prev => updateLastSeenTime(prev));
+        setNewPostsCount(0);
+        setLatestNewPostAuthor(null);
         scrollToTop();
         fetchPosts();
     };
@@ -188,16 +237,30 @@ export default function FeedPage() {
 
                 {/* Main Content */}
                 <div className="flex-1 container max-w-2xl mx-auto p-0 md:p-4">
-                    {/* New Posts Banner */}
+                    {/* New Posts Banner (Redesigned as Floating Pill) */}
                     {showNewPostsBanner && (
-                        <div
-                            className="sticky top-16 z-10 bg-primary text-primary-foreground py-2 text-center cursor-pointer mb-4 rounded-b-lg shadow-md animate-in slide-in-from-top-2"
-                            onClick={handleLoadNewPosts}
-                        >
-                            <p className="text-sm font-medium flex items-center justify-center gap-2">
-                                <ArrowUp className="h-4 w-4" />
-                                {newPostsCount} new post{newPostsCount !== 1 ? 's' : ''}
-                            </p>
+                        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top-4 fade-in duration-300">
+                            <button
+                                onClick={handleLoadNewPosts}
+                                className="flex items-center gap-2.5 bg-background border border-border/60 shadow-lg hover:shadow-xl hover:bg-muted/50 transition-all font-medium px-4 py-2 rounded-full cursor-pointer group"
+                            >
+                                {latestNewPostAuthor?.avatar && (
+                                    <img
+                                        src={latestNewPostAuthor.avatar}
+                                        alt="Author"
+                                        className="h-5 w-5 rounded-full object-cover"
+                                    />
+                                )}
+                                <div className="flex items-center gap-1.5 text-foreground text-sm">
+                                    <ArrowUp className="h-4 w-4 text-primary group-hover:-translate-y-0.5 transition-transform" />
+                                    <span>
+                                        {latestNewPostAuthor?.name
+                                            ? `New from ${latestNewPostAuthor.name.split(' ')[0]}${newPostsCount > 1 ? ` and ${newPostsCount - 1} other${newPostsCount > 2 ? 's' : ''}` : ''}`
+                                            : `${newPostsCount} New Post${newPostsCount !== 1 ? 's' : ''}`
+                                        }
+                                    </span>
+                                </div>
+                            </button>
                         </div>
                     )}
 

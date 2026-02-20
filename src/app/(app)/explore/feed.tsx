@@ -66,6 +66,7 @@ export default function Feed() {
     const [isInitialLoading, setIsInitialLoading] = React.useState(true);
     const [showNewPostsBanner, setShowNewPostsBanner] = React.useState(false);
     const [newPostsCount, setNewPostsCount] = React.useState(0);
+    const [latestNewPostAuthor, setLatestNewPostAuthor] = React.useState<{ name: string; avatar: string | null } | null>(null);
 
     // Promotion Dialog
     const [isPromotionDialogOpen, setIsPromotionDialogOpen] = React.useState(false);
@@ -233,8 +234,10 @@ export default function Feed() {
 
         let query = supabase
             .from('posts')
-            .select('*', { count: 'exact', head: true })
-            .gt('created_at', new Date(latestPostTime).toISOString());
+            .select('id, profiles:user_id(name, avatar_url)', { count: 'exact' })
+            .gt('created_at', new Date(latestPostTime).toISOString())
+            .order('created_at', { ascending: false })
+            .limit(1);
 
         // Apply following filter if needed
         if (feedFilter === 'following') {
@@ -242,13 +245,22 @@ export default function Feed() {
             query = query.in('user_id', userInteractions.followedUsers);
         }
 
-        const { count, error } = await query;
+        const { data, count, error } = await query;
 
         if (error) {
             console.error('Error checking for new posts:', error);
             return;
         }
         if (count && count > 0) {
+            if (data && data.length > 0 && data[0].profiles) {
+                const profile: any = Array.isArray(data[0].profiles) ? data[0].profiles[0] : data[0].profiles;
+                if (profile) {
+                    setLatestNewPostAuthor({
+                        name: profile.name || 'Someone',
+                        avatar: profile.avatar_url || null
+                    });
+                }
+            }
             setNewPostsCount(count);
             setShowNewPostsBanner(true);
         }
@@ -312,6 +324,7 @@ export default function Feed() {
         }
         setShowNewPostsBanner(false);
         setNewPostsCount(0);
+        setLatestNewPostAuthor(null);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
@@ -544,16 +557,30 @@ export default function Feed() {
                             {/* Mobile Dashboard (Widgets) - Visible only on mobile */}
                             <MobileDashboard />
 
-                            {/* New Posts Banner */}
+                            {/* New Posts Banner (Redesigned as Floating Pill) */}
                             {showNewPostsBanner && (
-                                <div
-                                    className="sticky top-16 z-10 bg-primary text-primary-foreground py-2 text-center cursor-pointer mb-4 rounded-b-lg shadow-md animate-in slide-in-from-top-2"
-                                    onClick={handleLoadNewPosts}
-                                >
-                                    <p className="text-sm font-medium flex items-center justify-center gap-2">
-                                        <ArrowUp className="h-4 w-4" />
-                                        {newPostsCount} New {newPostsCount === 1 ? 'Post' : 'Posts'}
-                                    </p>
+                                <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top-4 fade-in duration-300">
+                                    <button
+                                        onClick={handleLoadNewPosts}
+                                        className="flex items-center gap-2.5 bg-background border border-border/60 shadow-lg hover:shadow-xl hover:bg-muted/50 transition-all font-medium px-4 py-2 rounded-full cursor-pointer group"
+                                    >
+                                        {latestNewPostAuthor?.avatar && (
+                                            <img
+                                                src={latestNewPostAuthor.avatar}
+                                                alt="Author"
+                                                className="h-5 w-5 rounded-full object-cover"
+                                            />
+                                        )}
+                                        <div className="flex items-center gap-1.5 text-foreground text-sm">
+                                            <ArrowUp className="h-4 w-4 text-primary group-hover:-translate-y-0.5 transition-transform" />
+                                            <span>
+                                                {latestNewPostAuthor?.name
+                                                    ? `New from ${latestNewPostAuthor.name.split(' ')[0]}${newPostsCount > 1 ? ` and ${newPostsCount - 1} other${newPostsCount > 2 ? 's' : ''}` : ''}`
+                                                    : `${newPostsCount} New Post${newPostsCount !== 1 ? 's' : ''}`
+                                                }
+                                            </span>
+                                        </div>
+                                    </button>
                                 </div>
                             )}
 
