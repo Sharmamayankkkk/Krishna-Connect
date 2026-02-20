@@ -46,10 +46,31 @@ export async function inviteGuestToLivestream(livestreamId: string, guestUserId:
             return { success: false, error: 'Database error' };
         }
 
-        // 3. Add to Stream Call as a member with 'admin' role
-        // 'admin' role has full permissions, including publishing.
         const serverClient = getServerClient();
-        const call = serverClient.call('livestream', livestream.stream_call_id);
+
+        // Ensure the guest user exists in Stream Video Backend
+        const { data: guestProfile, error: profileError } = await supabase
+            .from('profiles')
+            .select('name, username, avatar_url')
+            .eq('id', guestUserId)
+            .single();
+
+        if (profileError || !guestProfile) {
+            return { success: false, error: 'Guest profile not found' };
+        }
+
+        await serverClient.upsertUsers([
+            {
+                id: guestUserId,
+                name: guestProfile.name || guestProfile.username,
+                image: guestProfile.avatar_url || undefined,
+            }
+        ]);
+
+
+        // Add to Stream Call as a member with 'admin' role
+        // 'admin' role has full permissions, including publishing.
+        const call = serverClient.video.call('livestream', livestream.stream_call_id);
 
         await call.updateCallMembers({
             update_members: [{
@@ -63,10 +84,9 @@ export async function inviteGuestToLivestream(livestreamId: string, guestUserId:
             .from('notifications')
             .insert({
                 user_id: guestUserId,
-                from_user_id: user.id,
+                actor_id: user.id,
                 type: 'livestream_invite',
-                content: `${user.user_metadata.name || 'Host'} invited you to join their livestream`,
-                related_id: livestreamId,
+                entity_id: parseInt(livestreamId), // Assuming livestreamId is string and entity_id expects BigInt
                 is_read: false
             });
 
@@ -76,8 +96,8 @@ export async function inviteGuestToLivestream(livestreamId: string, guestUserId:
 
         revalidatePath(`/live/${livestreamId}`);
         return { success: true };
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error inviting guest:', error);
-        return { success: false, error: 'Failed to invite guest' };
+        return { success: false, error: error.message || 'Failed to invite guest' };
     }
 }

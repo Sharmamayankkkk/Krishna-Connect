@@ -52,17 +52,18 @@ export function GoLiveDialog({ open, onOpenChange }: GoLiveDialogProps) {
                 data: { custom: { title, description, privacy } }
             })
 
-            const { error } = await supabase.from('livestreams').insert({
+            const { data: dbLivestream, error } = await supabase.from('livestreams').insert({
                 stream_call_id: callId,
                 host_id: loggedInUser.id,
                 title,
                 description,
                 status: 'backstage',
-            })
+            }).select('id').single()
 
             if (error) throw error
+            if (!dbLivestream) throw new Error("Failed to retrieve livestream ID from database")
 
-            router.push(`/live/${callId}?host=true`) // Use callId as ID for simplicity or fetch proper ID
+            router.push(`/live/${dbLivestream.id}?host=true`)
             onOpenChange(false)
             toast({ title: 'Studio Ready', description: 'Setting up your stream...' })
         } catch (error) {
@@ -82,12 +83,13 @@ export function GoLiveDialog({ open, onOpenChange }: GoLiveDialogProps) {
                 </div>
                 {/* Header Graphic */}
                 <div className="relative h-32 bg-gradient-to-br from-red-600 via-pink-600 to-purple-800 p-6 flex flex-col justify-end">
-                    <div className="absolute top-4 right-4">
+                    <div className="absolute top-4 right-4 z-20">
                         <Button
                             size="icon"
                             variant="ghost"
                             className="text-white/70 hover:text-white hover:bg-white/10 rounded-full h-8 w-8"
                             onClick={() => onOpenChange(false)}
+                            aria-label="Close"
                         >
                             <X className="h-5 w-5" />
                         </Button>
@@ -105,24 +107,24 @@ export function GoLiveDialog({ open, onOpenChange }: GoLiveDialogProps) {
                 </div>
 
                 <div className="p-6 space-y-5">
-                    <div className="space-y-2">
-                        <Label htmlFor="title" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    <div className="space-y-2 relative">
+                        <Label htmlFor="title" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground z-10 relative">
                             Stream Title <span className="text-red-500">*</span>
                         </Label>
-                        <div className="relative">
+                        <div className="relative mt-2">
+                            <Wand2 className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground z-10" />
                             <Input
                                 id="title"
                                 placeholder="What's on your mind?"
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
-                                className="bg-muted border-transparent focus:border-red-500 focus:bg-background text-foreground placeholder:text-muted-foreground pl-10 h-12 text-base transition-all"
+                                className="bg-muted border-transparent focus:border-red-500 focus:bg-background text-foreground placeholder:text-muted-foreground pl-10 h-12 text-base transition-all relative z-10"
                             />
-                            <Wand2 className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
                         </div>
                     </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="description" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    <div className="space-y-2 relative">
+                        <Label htmlFor="description" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground z-10 relative">
                             Description
                         </Label>
                         <Textarea
@@ -130,7 +132,7 @@ export function GoLiveDialog({ open, onOpenChange }: GoLiveDialogProps) {
                             placeholder="Tell your viewers more..."
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            className="bg-muted border-transparent focus:border-red-500 focus:bg-background text-foreground placeholder:text-muted-foreground resize-none min-h-[80px]"
+                            className="bg-muted border-transparent focus:border-red-500 focus:bg-background text-foreground placeholder:text-muted-foreground resize-none min-h-[80px] relative z-10 mt-2"
                         />
                     </div>
 
