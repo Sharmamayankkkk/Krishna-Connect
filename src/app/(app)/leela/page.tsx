@@ -165,7 +165,7 @@ function VideoPlayer({
 
       <button
         onClick={toggleMute}
-        className="absolute top-4 right-4 bg-black/40 rounded-full p-2 backdrop-blur-sm z-10"
+        className="absolute top-20 right-4 bg-black/40 rounded-full p-2 backdrop-blur-sm z-10"
         aria-label={isMuted ? 'Unmute' : 'Mute'}
       >
         {isMuted ? <VolumeX className="h-5 w-5 text-white" /> : <Volume2 className="h-5 w-5 text-white" />}
@@ -562,7 +562,7 @@ export default function LeelaPage() {
   }
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-black">
+    <div className="relative flex flex-col h-[100dvh] bg-black">
       <input ref={fileInputRef} type="file" accept="video/*" className="hidden" onChange={handleUploadLeela} />
       {/* Header overlay */}
       <header className="absolute top-0 left-0 right-0 z-20 flex items-center gap-3 p-4">
@@ -627,9 +627,7 @@ export default function LeelaPage() {
           )
         })}
 
-        <div className="absolute top-4 right-16 md:right-4 z-20 bg-black/30 backdrop-blur-sm rounded-full px-2.5 py-1">
-          <span className="text-white text-xs font-medium">{currentIndex + 1}/{videos.length}</span>
-        </div>
+
 
         {/* Ad banner every 3rd video */}
         {currentIndex > 0 && currentIndex % 3 === 0 && (
