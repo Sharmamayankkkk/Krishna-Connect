@@ -209,7 +209,7 @@ export default function AboutPage() {
 
                             <div className="w-full md:w-5/12 order-2 md:order-2 flex justify-center md:justify-start">
                                 <div className="text-center md:text-left max-w-lg">
-                                    <div className="inline-block px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-sm font-bold tracking-widest mb-6">FOUNDER-ACHARYA</div>
+                                    <div className="inline-block px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-sm font-bold tracking-widest mb-6">OUR ACHARYA</div>
                                     <h3 className="text-4xl sm:text-5xl font-black text-white mb-2 leading-tight">His Divine Grace</h3>
                                     <h4 className="text-2xl sm:text-3xl text-orange-400 font-bold mb-8">A.C. Bhaktivedanta Swami Prabhupada</h4>
                                     <p className="text-white/70 text-lg sm:text-xl leading-[1.8] font-light">
@@ -240,7 +240,7 @@ export default function AboutPage() {
 
                             <div className="w-full md:w-5/12 flex justify-center md:justify-end">
                                 <div className="text-center md:text-right max-w-lg">
-                                    <div className="inline-block px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm font-bold tracking-widest mb-6">VISIONARY GUIDE</div>
+                                    <div className="inline-block px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm font-bold tracking-widest mb-6">OUR GURUDEV</div>
                                     <h3 className="text-4xl sm:text-5xl font-black text-white mb-2 leading-tight">Inspired By</h3>
                                     <h4 className="text-2xl sm:text-3xl text-amber-200 font-bold mb-8">HG Gauranga Sundar Das Gurudev</h4>
                                     <p className="text-white/70 text-lg sm:text-xl leading-[1.8] font-light">
