@@ -245,7 +245,7 @@ export default function AboutPage() {
                                 <div className="text-center md:text-right max-w-lg">
                                     <div className="inline-block px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm font-bold tracking-widest mb-6">VISIONARY GUIDE</div>
                                     <h3 className="text-4xl sm:text-5xl font-black text-white mb-2 leading-tight">Inspired By</h3>
-                                    <h4 className="text-2xl sm:text-3xl text-amber-200 font-bold mb-8">HG Gauranga Sundar Das Gurudev</h4>
+                                    <h4 className="text-2xl sm:text-3xl text-amber-200 font-bold mb-8">HG Gauranga Sundar Das</h4>
                                     <p className="text-white/70 text-lg sm:text-xl leading-[1.8] font-light">
                                         Our eternal guiding light and endless source of encouragement.
                                         His profound wisdom, visionary leadership, and boundless compassionate guidance have been the ultimate driving force
