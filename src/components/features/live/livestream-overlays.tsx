@@ -87,8 +87,8 @@ export function LivestreamOverlays({ call, livestreamId, role, hostProfile, titl
             <div className="p-4 pt-[max(env(safe-area-inset-top),16px)] flex items-start justify-between relative z-20 pointer-events-auto w-full">
                 {/* Left side: Host Info, Live Badge */}
                 <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md pl-1 pr-3 py-1 rounded-full border border-white/10">
+                    <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 bg-black/50 backdrop-blur-xl pl-1 pr-3 py-1 rounded-full border border-white/10 shadow-lg">
                             <Avatar className="h-8 w-8 ring-1 ring-white/20">
                                 <AvatarImage src={hostProfile.avatar_url || ''} />
                                 <AvatarFallback className="text-[10px] bg-gradient-to-br from-indigo-500 to-purple-600 border-none uppercase">
@@ -96,13 +96,13 @@ export function LivestreamOverlays({ call, livestreamId, role, hostProfile, titl
                                 </AvatarFallback>
                             </Avatar>
                             <div className="flex flex-col mb-0.5">
-                                <span className="text-[11px] font-bold leading-tight text-white">
+                                <span className="text-[11px] font-bold leading-tight text-white drop-shadow-md">
                                     {hostProfile.name || hostProfile.username}
                                 </span>
-                                <span className="text-[9px] text-gray-300 flex items-center gap-1 font-medium">
+                                <span className="text-[9px] text-gray-200 flex items-center gap-1 font-medium drop-shadow-md">
                                     {isLive ? (
                                         <>
-                                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
                                             LIVE
                                         </>
                                     ) : (
@@ -114,17 +114,17 @@ export function LivestreamOverlays({ call, livestreamId, role, hostProfile, titl
 
                         <button
                             onClick={() => setIsParticipantsOpen(true)}
-                            className="flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 text-[11px] font-bold text-white hover:bg-black/60 transition-colors"
+                            className="flex items-center gap-1.5 bg-black/50 backdrop-blur-xl px-3 py-1.5 rounded-full border border-white/10 text-[11px] font-bold text-white hover:bg-black/80 transition-colors shadow-lg"
                         >
                             <Users className="h-3 w-3" />
                             {participantCount}
                         </button>
                     </div>
 
-                    {/* Room Title */}
+                    {/* Room Title nicely integrated */}
                     {title && (
-                        <div className="bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-white/10 max-w-[200px]">
-                            <p className="text-xs font-medium text-white line-clamp-2 leading-tight">
+                        <div className="bg-black/50 backdrop-blur-xl px-3 py-1 rounded-full border border-white/10 inline-flex self-start shadow-lg">
+                            <p className="text-[11px] font-medium text-white/90 line-clamp-1">
                                 {title}
                             </p>
                         </div>
@@ -159,70 +159,73 @@ export function LivestreamOverlays({ call, livestreamId, role, hostProfile, titl
             <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
 
             {/* Bottom Controls */}
-            <div className="p-4 pb-[max(env(safe-area-inset-bottom),16px)] flex items-end justify-between relative z-20 gap-2 w-full pointer-events-none">
+            <div className="p-4 pb-[max(env(safe-area-inset-bottom),16px)] flex flex-col justify-end relative z-20 gap-2 w-full pointer-events-none h-full">
 
-                {/* Left Side: Chat */}
-                <div className={cn(
-                    "flex-1 w-full transition-all duration-300 pointer-events-auto",
-                    isChatOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"
-                )}>
-                    <LiveChat livestreamId={livestreamId} isOverlay={true} />
-                </div>
-
-                {/* Right Side: Toolbar */}
-                <div className="flex flex-col items-end gap-3 pb-2 pl-2 shrink-0 pointer-events-auto">
-                    {hasHardware && (
-                        <>
-                            <Button
-                                size="icon"
-                                variant="ghost"
-                                onClick={() => isCamEnabled ? camera.disable() : camera.enable()}
-                                className={cn("h-10 w-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white hover:bg-white/20", !isCamEnabled && "text-red-500 bg-red-500/10 border-red-500/30")}
-                            >
-                                {isCamEnabled ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
-                            </Button>
-                            <Button
-                                size="icon"
-                                variant="ghost"
-                                onClick={() => isMicEnabled ? microphone.disable() : microphone.enable()}
-                                className={cn("h-10 w-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white hover:bg-white/20", !isMicEnabled && "text-red-500 bg-red-500/10 border-red-500/30")}
-                            >
-                                {isMicEnabled ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
-                            </Button>
-                        </>
-                    )}
-
-                    {role === 'host' && !isLive && (
-                        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-50">
-                            <Button
-                                onClick={handleGoLive}
-                                className="bg-white text-black hover:bg-gray-200 rounded-full font-bold px-8 shadow-2xl h-12 text-lg whitespace-nowrap"
-                            >
-                                Go Live
-                            </Button>
-                        </div>
-                    )}
-
-                    <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => setIsShareOpen(true)}
-                        className="h-10 w-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white hover:bg-white/20"
-                    >
-                        <Share2 className="h-5 w-5" />
-                    </Button>
-
-                    {role === 'host' && (
+                {/* "Go Live" Button placed securely above the Chat Input, not over the face */}
+                {role === 'host' && !isLive && (
+                    <div className="flex justify-center mb-4 pointer-events-auto">
                         <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => setIsInviteOpen(true)}
-                            className="h-10 w-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white hover:bg-white/20"
+                            onClick={handleGoLive}
+                            className="bg-white text-black hover:bg-gray-200 rounded-full font-bold px-10 shadow-2xl h-14 text-xl whitespace-nowrap animate-pulse"
                         >
-                            <MoreVertical className="h-5 w-5" />
+                            Go Live
                         </Button>
-                    )}
+                    </div>
+                )}
 
+                {/* Full Width Chat with Horizontal Actions */}
+                <div className={cn(
+                    "w-full transition-all duration-300 pointer-events-auto",
+                    isChatOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+                )}>
+                    <LiveChat
+                        livestreamId={livestreamId}
+                        isOverlay={true}
+                        actionButtons={
+                            <>
+                                {hasHardware && (
+                                    <>
+                                        <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            onClick={() => isCamEnabled ? camera.disable() : camera.enable()}
+                                            className={cn("h-10 w-10 shrink-0 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white hover:bg-white/20", !isCamEnabled && "text-red-500 bg-red-500/10 border-red-500/30")}
+                                        >
+                                            {isCamEnabled ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
+                                        </Button>
+                                        <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            onClick={() => isMicEnabled ? microphone.disable() : microphone.enable()}
+                                            className={cn("h-10 w-10 shrink-0 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white hover:bg-white/20", !isMicEnabled && "text-red-500 bg-red-500/10 border-red-500/30")}
+                                        >
+                                            {isMicEnabled ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
+                                        </Button>
+                                    </>
+                                )}
+
+                                <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={() => setIsShareOpen(true)}
+                                    className="h-10 w-10 shrink-0 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white hover:bg-white/20"
+                                >
+                                    <Share2 className="h-5 w-5" />
+                                </Button>
+
+                                {role === 'host' && (
+                                    <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        onClick={() => setIsInviteOpen(true)}
+                                        className="h-10 w-10 shrink-0 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white hover:bg-white/20"
+                                    >
+                                        <MoreVertical className="h-5 w-5" />
+                                    </Button>
+                                )}
+                            </>
+                        }
+                    />
                 </div>
             </div>
 

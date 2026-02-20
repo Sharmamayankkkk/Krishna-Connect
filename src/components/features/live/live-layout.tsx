@@ -32,17 +32,22 @@ export function LiveLayout({ children, className }: LiveLayoutProps) {
     }, [])
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950">
-            {/* Desktop Backdrop Blur Effect (Optional aesthetic) */}
-            <div className="hidden md:block absolute inset-0 bg-gradient-to-br from-indigo-950/20 via-black to-red-950/20 pointer-events-none" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950 overflow-hidden">
+            {/* Desktop Backdrop Blur Effect (High-End Mesh Gradient) */}
+            <div className="hidden md:flex absolute inset-0 items-center justify-center pointer-events-none">
+                <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-950 to-black z-0" />
+                <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-violet-600/20 blur-[120px] rounded-full mix-blend-screen animate-pulse z-10" style={{ animationDuration: '8s' }} />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-fuchsia-600/10 blur-[120px] rounded-full mix-blend-screen animate-pulse z-10" style={{ animationDuration: '12s' }} />
+                <div className="absolute top-[20%] right-[10%] w-[30vw] h-[30vw] bg-rose-600/10 blur-[100px] rounded-full mix-blend-screen z-10" />
+            </div>
 
-            {/* Mobile-Constrained Container */}
+            {/* Mobile-Constrained Container (The Phone) */}
             <div
                 className={cn(
-                    "relative w-full bg-black text-white overflow-hidden touch-none z-10 shadow-2xl",
+                    "relative w-full bg-black text-white overflow-hidden touch-none z-20",
                     "h-[100dvh] supports-[height:100dvh]:h-[100dvh] supports-[not(height:100dvh)]:h-[var(--app-height)]",
-                    // Desktop Constraints - Mimic a phone screen entirely
-                    "md:max-w-[420px] md:h-[90dvh] md:rounded-[2.5rem] md:border md:border-white/10 md:ring-8 md:ring-black/50"
+                    // Desktop Constraints - Mimic a seamless sleek phone screen
+                    "md:max-w-[420px] md:h-[90dvh] md:min-h-[700px] md:rounded-[3rem] md:border-[6px] md:border-zinc-800 md:shadow-[0_0_80px_rgba(0,0,0,0.8)] md:ring-1 md:ring-white/10"
                 )}
             >
                 {/* 

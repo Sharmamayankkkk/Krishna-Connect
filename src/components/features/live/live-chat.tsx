@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils'
 interface LiveChatProps {
     livestreamId: string
     isOverlay?: boolean
+    actionButtons?: React.ReactNode
 }
 
 interface ChatMessage {
@@ -27,7 +28,7 @@ interface ChatMessage {
     }
 }
 
-export function LiveChat({ livestreamId, isOverlay = false }: LiveChatProps) {
+export function LiveChat({ livestreamId, isOverlay = false, actionButtons }: LiveChatProps) {
     const { loggedInUser } = useAppContext()
     const supabase = createClient()
     const scrollRef = useRef<HTMLDivElement>(null)
@@ -164,10 +165,10 @@ export function LiveChat({ livestreamId, isOverlay = false }: LiveChatProps) {
                             onChange={(e) => setNewMessage(e.target.value)}
                             placeholder="Add a comment..."
                             className={cn(
-                                "pr-10 h-11 w-full rounded-full border-white/20 text-white placeholder:text-white/60 focus:ring-0 focus:border-white/40 transition-all",
+                                "pr-10 h-11 w-full rounded-full border border-white/10 text-white placeholder:text-white/70 focus:ring-0 focus:border-white/30 transition-all shadow-lg",
                                 // IMPORTANT: text-base prevents iOS zoom
                                 "text-base outline-none",
-                                isOverlay ? "bg-black/20 backdrop-blur-md" : "bg-gray-900"
+                                isOverlay ? "bg-black/30 backdrop-blur-xl" : "bg-gray-900"
                             )}
                         />
                         <Button
@@ -184,16 +185,22 @@ export function LiveChat({ livestreamId, isOverlay = false }: LiveChatProps) {
                         </Button>
                     </div>
 
-                    {/* Like Button (Viewer only, but simplifying for now) */}
                     {isOverlay && (
                         <Button
                             type="button" // Prevent form submission
                             size="icon"
                             onClick={addHeart}
-                            className="h-11 w-11 rounded-full bg-black/30 backdrop-blur-md border border-white/10 text-rose-500 hover:bg-rose-500/20 hover:text-rose-400 shadow-lg active:scale-90 transition-all"
+                            className="h-10 w-10 shrink-0 rounded-full bg-black/30 backdrop-blur-md border border-white/10 text-rose-500 hover:bg-rose-500/20 hover:text-rose-400 shadow-lg active:scale-90 transition-all"
                         >
-                            <Heart className="h-6 w-6 fill-current" />
+                            <Heart className="h-5 w-5 fill-current" />
                         </Button>
+                    )}
+
+                    {/* External Actions (Camera, Mic, Share, etc.) aligned horizontally! */}
+                    {actionButtons && (
+                        <div className="flex items-center gap-1.5 shrink-0">
+                            {actionButtons}
+                        </div>
                     )}
                 </div>
             </form>
