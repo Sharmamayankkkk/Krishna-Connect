@@ -79,7 +79,8 @@ export async function inviteGuestToLivestream(livestreamId: string, guestUserId:
             }]
         });
 
-        // 4. Send Notification
+        // 4. Send Notification (Temporarily disabled due to missing livestream_invite Notification Enum)
+        /*
         const { error: notificationError } = await supabase
             .from('notifications')
             .insert({
@@ -93,6 +94,7 @@ export async function inviteGuestToLivestream(livestreamId: string, guestUserId:
         if (notificationError) {
             console.error('Failed to send notification:', notificationError);
         }
+        */
 
         revalidatePath(`/live/${livestreamId}`);
         return { success: true };

@@ -1,7 +1,6 @@
 import { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
-import { LivestreamHostView } from '@/components/features/live/livestream-host-view';
-import { LivestreamViewerView } from '@/components/features/live/livestream-viewer-view';
+import { LivestreamRoom } from '@/components/features/live/livestream-room';
 import { StreamEnded } from '@/components/features/live/stream-ended';
 import { redirect } from 'next/navigation';
 
@@ -108,23 +107,38 @@ export default async function LiveStreamingPage({
   const isHost = user?.id === livestream.host_id;
   const isGuest = guest === 'true';
 
-  // If host parameter is set and user is the host OR if it's a guest invite
-  if ((host === 'true' && isHost) || isGuest) {
-    return (
-      <LivestreamHostView
-        livestreamId={livestream.id}
-        callId={livestream.stream_call_id}
-        isGuest={isGuest}
-      />
-    );
+  // --- STRICT FRONTEND ROLE ASSIGNMENT ---
+  // We NEVER trust URL parameters (like ?host=true or ?guest=true) for permissions.
+  // Roles are strictly defined by database relations to prevent UI spoofing.
+  let role: 'host' | 'co-host' | 'viewer' = 'viewer';
+
+  if (isHost) {
+    // If you are the creator of the stream, you are ALWAYS the host.
+    role = 'host';
+  } else if (user) {
+    // If you are NOT the host, check if the Host formally invited you via the database.
+    const { data: guestRecord } = await supabase
+      .from('livestream_guests')
+      .select('id')
+      .eq('livestream_id', livestream.id)
+      .eq('user_id', user.id)
+      .single();
+
+    if (guestRecord) {
+      role = 'co-host';
+    }
   }
 
-  // Otherwise show viewer view
   return (
-    <LivestreamViewerView
+    <LivestreamRoom
       livestreamId={livestream.id}
       callId={livestream.stream_call_id}
-      hostName={livestream.host.name || livestream.host.username}
+      role={role}
+      hostProfile={{
+        name: livestream.host.name || livestream.host.username,
+        username: livestream.host.username,
+        avatar_url: livestream.host.avatar_url
+      }}
       title={livestream.title}
     />
   );

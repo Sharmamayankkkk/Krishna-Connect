@@ -83,6 +83,10 @@ export default {
           from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: '0' },
         },
+        'float-up': {
+          '0%': { transform: 'translateY(0) scale(1)', opacity: '1' },
+          '100%': { transform: 'translateY(-120px) scale(1.5)', opacity: '0' },
+        },
         'highlight-message': {
           '0%': { backgroundColor: 'hsl(var(--accent))' },
           '100%': { backgroundColor: 'transparent' },
@@ -92,6 +96,7 @@ export default {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'highlight': 'highlight-message 1.5s ease-out',
+        'float-up': 'float-up ease-out forwards',
       },
     },
   },

@@ -99,12 +99,12 @@ export function LiveChat({ livestreamId, isOverlay = false }: LiveChatProps) {
     return (
         <div className={cn(
             "flex flex-col h-full pointer-events-auto",
-            isOverlay ? "bg-transparent" : "bg-black border-l border-white/10"
+            isOverlay ? "" : "bg-black border-l border-white/10"
         )}>
             {/* Messages Area - Faded Mask for Overlay */}
             <div
                 className={cn(
-                    "flex-1 overflow-y-auto px-4 pb-2 scrollbar-hide mask-image-gradient",
+                    "flex-1 overflow-y-auto px-1 pb-2 scrollbar-hide mask-image-gradient",
                     isOverlay ? "h-[300px] md:h-[400px]" : "h-full"
                 )}
                 ref={scrollRef}
@@ -156,18 +156,18 @@ export function LiveChat({ livestreamId, isOverlay = false }: LiveChatProps) {
             </div>
 
             {/* Input Area */}
-            <form onSubmit={handleSendMessage} className="p-3 pt-2 w-full relative z-10">
+            <form onSubmit={handleSendMessage} className={cn("p-2 w-full relative z-10", isOverlay ? "px-0 pb-0" : "")}>
                 <div className="relative flex items-center gap-2">
                     <div className="relative flex-1">
                         <Input
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
-                            placeholder="Say something..."
+                            placeholder="Add a comment..."
                             className={cn(
-                                "pr-10 h-11 w-full rounded-full border-white/10 text-white placeholder:text-white/40 focus:ring-red-500 focus:border-red-500 transition-all",
+                                "pr-10 h-11 w-full rounded-full border-white/20 text-white placeholder:text-white/60 focus:ring-0 focus:border-white/40 transition-all",
                                 // IMPORTANT: text-base prevents iOS zoom
-                                "text-base",
-                                isOverlay ? "bg-black/30 backdrop-blur-md" : "bg-gray-900"
+                                "text-base outline-none",
+                                isOverlay ? "bg-black/20 backdrop-blur-md" : "bg-gray-900"
                             )}
                         />
                         <Button
