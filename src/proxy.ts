@@ -96,6 +96,7 @@ export async function proxy(request: NextRequest) {
     '/developers',
     '/faq',
     '/maintenance',
+    '/about',
     '/site.webmanifest'
   ];
 
