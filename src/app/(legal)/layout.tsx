@@ -32,6 +32,9 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
               <Link href="/terms-and-conditions" className="text-muted-foreground hover:text-foreground transition-colors">
                 Terms & Conditions
               </Link>
+              <Link href="/directory" className="text-muted-foreground hover:text-foreground transition-colors">
+                Legal Directory
+              </Link>
               <Link href="/contact-us" className="text-muted-foreground hover:text-foreground transition-colors">
                 Contact Us
               </Link>

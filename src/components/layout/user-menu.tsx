@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MoreHorizontal, BarChart3, Bookmark, Settings, LogOut, User } from "lucide-react";
+import { MoreHorizontal, BarChart3, Bookmark, Settings, LogOut, User, FileText } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -97,6 +97,12 @@ export function UserMenu() {
           <DropdownMenuItem>
             <Settings className="mr-2 h-4 w-4" />
             Settings
+          </DropdownMenuItem>
+        </Link>
+        <Link href="/directory">
+          <DropdownMenuItem>
+            <FileText className="mr-2 h-4 w-4" />
+            Policies & Guidelines
           </DropdownMenuItem>
         </Link>
         <DropdownMenuSeparator />

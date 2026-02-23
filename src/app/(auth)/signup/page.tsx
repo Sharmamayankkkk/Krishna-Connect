@@ -405,10 +405,14 @@ export default function SignupPage() {
               By creating an account, you agree to our{' '}
               <Link href="/terms-and-conditions" className="underline hover:text-primary transition-colors">
                 Terms
-              </Link>{' '}
-              and{' '}
+              </Link>
+              ,{' '}
               <Link href="/privacy-policy" className="underline hover:text-primary transition-colors">
                 Privacy Policy
+              </Link>
+              , and{' '}
+              <Link href="/p/acceptable-use-policy" className="underline hover:text-primary transition-colors">
+                Acceptable Use Policy
               </Link>
               .
             </p>

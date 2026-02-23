@@ -344,8 +344,9 @@ export default function AboutPage() {
                         <div className="md:col-span-3 lg:col-span-2">
                             <h4 className="text-white font-bold mb-6 tracking-wide uppercase text-sm">Legal & Connect</h4>
                             <ul className="space-y-4 text-sm font-light">
+                                <li><Link href="/directory" className="hover:text-orange-400 transition-colors">Legal Directory</Link></li>
                                 <li><Link href="/privacy-policy" className="hover:text-orange-400 transition-colors">Privacy Policy</Link></li>
-                                <li><Link href="/terms-of-service" className="hover:text-orange-400 transition-colors">Terms of Service</Link></li>
+                                <li><Link href="/terms-and-conditions" className="hover:text-orange-400 transition-colors">Terms of Service</Link></li>
                                 <li className="pt-2">
                                     <Link href="mailto:madanmohandas@krishnaconnect.com" className="flex items-center gap-2 hover:text-orange-400 transition-colors text-white">
                                         Support <ExternalLink className="h-3 w-3" />

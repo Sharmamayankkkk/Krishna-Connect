@@ -646,6 +646,8 @@ export default function Feed() {
                                     <span>·</span>
                                     <Link href="/terms-and-conditions" className="hover:underline">Terms</Link>
                                     <span>·</span>
+                                    <Link href="/directory" className="hover:underline">Policies</Link>
+                                    <span>·</span>
                                     <Link href="/contact-us" className="hover:underline">Contact</Link>
                                     <span>·</span>
                                     <Link href="/faq" className="hover:underline">FAQ</Link>
