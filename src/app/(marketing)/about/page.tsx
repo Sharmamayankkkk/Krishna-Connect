@@ -204,9 +204,10 @@ export default function AboutPage() {
 
                     <div className="flex flex-col gap-32 md:gap-48 max-w-7xl mx-auto relative z-10 px-4">
 
-                        {/* Srila Prabhupada - Left Image, Right Text */}
+                        {/* Srila Prabhupada - Photo first on mobile, Left on desktop */}
                         <div className="flex flex-col md:flex-row items-center gap-12 lg:gap-24 group">
 
+                            {/* Text - order-2 on mobile (below photo), order-2 on desktop (right side) */}
                             <div className="w-full md:w-5/12 order-2 md:order-2 flex justify-center md:justify-start">
                                 <div className="text-center md:text-left max-w-lg">
                                     <div className="inline-block px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-sm font-bold tracking-widest mb-6">FOUNDER-ACHARYA</div>
@@ -220,6 +221,7 @@ export default function AboutPage() {
                                 </div>
                             </div>
 
+                            {/* Photo - order-1 on mobile (above text), order-1 on desktop (left side) */}
                             <div className="w-full md:w-7/12 order-1 md:order-1 flex justify-center md:justify-end relative">
                                 <div className="absolute inset-0 bg-orange-500/20 blur-[80px] rounded-[2.5rem] -z-10 group-hover:bg-orange-500/40 transition-colors duration-1000" />
                                 <div className="relative w-80 h-80 sm:w-[500px] sm:h-[500px] rounded-[2.5rem] overflow-hidden border border-white/10 shadow-[0_0_80px_rgba(255,152,0,0.15)] group-hover:shadow-[0_0_120px_rgba(255,152,0,0.3)] transition-all duration-1000 group-hover:border-orange-500/40 -rotate-2 group-hover:rotate-0 translate-x-0 group-hover:translate-x-2">
@@ -235,14 +237,15 @@ export default function AboutPage() {
 
                         </div>
 
-                        {/* HG Gauranga Sundar Das Gurudev - Left Text, Right Image  */}
+                        {/* HG Gauranga Sundar Das Gurudev - Photo first on mobile, Right on desktop */}
                         <div className="flex flex-col md:flex-row items-center gap-12 lg:gap-24 group">
 
-                            <div className="w-full md:w-5/12 flex justify-center md:justify-end">
+                            {/* Text - order-2 on mobile (below photo), order-1 on desktop (left side) */}
+                            <div className="w-full md:w-5/12 order-2 md:order-1 flex justify-center md:justify-end">
                                 <div className="text-center md:text-right max-w-lg">
                                     <div className="inline-block px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm font-bold tracking-widest mb-6">VISIONARY GUIDE</div>
                                     <h3 className="text-4xl sm:text-5xl font-black text-white mb-2 leading-tight">Inspired By</h3>
-                                    <h4 className="text-2xl sm:text-3xl text-amber-200 font-bold mb-8">HG Gauranga Sundar Das Gurudev</h4>
+                                    <h4 className="text-2xl sm:text-3xl text-amber-200 font-bold mb-8">HG Gauranga Sundar Das</h4>
                                     <p className="text-white/70 text-lg sm:text-xl leading-[1.8] font-light">
                                         Our eternal guiding light and endless source of encouragement.
                                         His profound wisdom, visionary leadership, and boundless compassionate guidance have been the ultimate driving force
@@ -251,7 +254,8 @@ export default function AboutPage() {
                                 </div>
                             </div>
 
-                            <div className="w-full md:w-7/12 flex justify-center md:justify-start relative">
+                            {/* Photo - order-1 on mobile (above text), order-2 on desktop (right side) */}
+                            <div className="w-full md:w-7/12 order-1 md:order-2 flex justify-center md:justify-start relative">
                                 <div className="absolute inset-0 bg-amber-500/10 blur-[80px] rounded-full -z-10 group-hover:bg-amber-500/30 transition-colors duration-1000" />
                                 <div className="relative w-80 h-80 sm:w-[500px] sm:h-[500px] rounded-full overflow-hidden border border-white/10 shadow-[0_0_80px_rgba(255,255,255,0.05)] group-hover:shadow-[0_0_120px_rgba(255,255,255,0.15)] transition-all duration-1000 group-hover:border-white/30 rotate-2 group-hover:rotate-0 translate-x-0 group-hover:-translate-x-2">
                                     <Image
@@ -337,7 +341,8 @@ export default function AboutPage() {
                             <ul className="space-y-4 text-sm font-light">
                                 <li><Link href="/about" className="text-orange-400 font-medium">About Us</Link></li>
                                 <li><Link href="/verification" className="hover:text-orange-400 transition-colors">Get Verified</Link></li>
-                                <li><Link href="/faq" className="hover:text-orange-400 transition-colors">Help Center & FAQ</Link></li>                            </ul>
+                                <li><Link href="/faq" className="hover:text-orange-400 transition-colors">Help Center & FAQ</Link></li>
+                            </ul>
                         </div>
 
                         {/* Column 4: Legal & Contact */}
@@ -360,15 +365,6 @@ export default function AboutPage() {
                     {/* Bottom Footer Section: Copyright */}
                     <div className="pt-8 border-t border-white/10 text-sm font-light flex flex-col md:flex-row justify-between items-center opacity-70 hover:opacity-100 transition-opacity">
                         <p className="mb-4 md:mb-0">© {new Date().getFullYear()} Krishna Connect. All rights reserved.</p>
-                        {/*
-                        <div className="flex items-center gap-8 mb-4 md:mb-0">
-                            {/* Placeholder Social Links 
-                            <a href="#" className="hover:text-white transition-colors" aria-label="YouTube">YouTube</a>
-                            <a href="#" className="hover:text-white transition-colors" aria-label="Instagram">Instagram</a>
-                            <a href="#" className="hover:text-white transition-colors" aria-label="Twitter X">X (Twitter)</a>
-                        </div>
-                        */}
-
                         <p className="flex items-center gap-2 text-white">
                             Hare Krishna <Sparkles className="h-3 w-3 text-orange-400" />
                         </p>
@@ -378,4 +374,3 @@ export default function AboutPage() {
         </div>
     );
 }
-
