@@ -303,6 +303,11 @@ export default function LeelaPage() {
     const videoId = videos[currentIndex]?.id
     if (videoId && !viewedVideos.current.has(videoId)) {
       viewedVideos.current.add(videoId)
+      // Optimistically bump the count in UI immediately
+      setVideos(prev => prev.map(v =>
+        v.id === videoId ? { ...v, view_count: v.view_count + 1 } : v
+      ))
+      // Persist to DB (fire-and-forget)
       void supabase.rpc('record_leela_view', { p_video_id: videoId })
     }
   }, [currentIndex, videos, supabase])
