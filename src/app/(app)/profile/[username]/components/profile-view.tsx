@@ -54,6 +54,7 @@ import {
 import { VerificationBadge } from "@/components/shared/verification-badge";
 import { GoogleAd } from '@/components/ads/google-ad';
 import { UploadLeelaFab } from '@/components/features/leela/upload-leela-fab';
+import { TrophyCase } from './trophy-case';
 
 interface LeelaVideo {
   id: string;
@@ -179,9 +180,8 @@ export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], f
     return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/attachments/${url}`;
   };
 
-  // Mocking challenge points for profile display until a proper RPC is wired
-  // In a full implementation, this should come from the profile fetch directly.
-  const challengePoints = profile.challenge_points || Math.floor(Math.random() * 500);
+  // Fetch actual challenge points from the profile object, fallback to 0
+  const challengePoints = profile.challenge_points || 0;
 
   // Convert Profile to User format for PostDetailDialog
   const profileUser = {
@@ -536,12 +536,25 @@ export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], f
             </div>
           )}
 
-          <div className="flex items-center gap-1.5 px-2 py-0.5 bg-primary/10 text-primary rounded-full cursor-pointer hover:bg-primary/20 transition-colors">
-            <Trophy className="h-3.5 w-3.5" />
-            <span className="font-bold text-sm">{challengePoints}</span>
-            <span className="text-xs font-medium">pts</span>
-          </div>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center gap-1.5 px-2 py-0.5 bg-primary/10 text-primary rounded-full cursor-pointer hover:bg-primary/20 transition-colors">
+                  <Trophy className="h-3.5 w-3.5" />
+                  <span className="font-bold text-sm">{challengePoints}</span>
+                  <span className="text-xs font-medium">pts</span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-[200px] text-center">
+                <p className="font-bold mb-1">Challenge Points</p>
+                <p className="text-xs text-muted-foreground">Points earned from accepted challenge submissions. Rank up on the leaderboard!</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
+
+        {/* Display earned Challenge Badges if applicable */}
+        <TrophyCase userId={profile.id} />
       </div>
 
       {/* Private Account Lock Screen OR Public Feed */}

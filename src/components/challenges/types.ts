@@ -24,6 +24,7 @@ export interface Challenge {
     visibility: ChallengeVisibility;
     category: string | null;
     tags: string[];
+    is_featured: boolean;
 
     // Dates
     start_date: string;
@@ -77,6 +78,7 @@ export interface Challenge {
     has_joined: boolean;
     has_submitted: boolean;
     user_submission_status: string | null;
+    network_reason?: string;
 }
 
 export interface Submission {

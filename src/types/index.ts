@@ -20,6 +20,7 @@ export interface Profile {
   verified?: 'none' | 'verified' | 'kcs';
   is_private?: boolean;
   phone?: string;
+  challenge_points?: number;
 }
 
 export interface Post {

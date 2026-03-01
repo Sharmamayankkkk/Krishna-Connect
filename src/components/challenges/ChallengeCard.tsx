@@ -3,7 +3,7 @@
 import { Challenge } from './types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Users, Clock, Flame, ShieldCheck, ChevronRight, Bookmark, BadgeCheck, Lock } from 'lucide-react';
+import { Trophy, Users, Clock, Flame, ShieldCheck, ChevronRight, Bookmark, BadgeCheck, Lock, Award } from 'lucide-react';
 import { VerificationBadge } from '@/components/shared/verification-badge';
 import { Button } from '@/components/ui/button';
 import { getAvatarUrl } from '@/lib/utils';
@@ -54,6 +54,11 @@ export function ChallengeCard({ challenge, userId, onClick, onToggleBookmark }: 
                 </div>
 
                 <div className="absolute top-2 left-2 flex flex-col gap-1">
+                    {challenge.is_featured && (
+                        <Badge variant="default" className="text-[10px] px-2 rounded-sm bg-amber-500 hover:bg-amber-600 text-white shadow-sm border-none tracking-wider font-bold">
+                            <Flame className="h-3 w-3 mr-1" /> Featured
+                        </Badge>
+                    )}
                     {challenge.status === 'submission_closed' && (
                         <Badge variant="destructive" className="text-[10px] px-1.5 rounded-sm bg-red-500/90 hover:bg-red-500/90 shadow-sm border-none uppercase tracking-wider font-bold">Closed</Badge>
                     )}
@@ -103,6 +108,11 @@ export function ChallengeCard({ challenge, userId, onClick, onToggleBookmark }: 
                             Voting
                         </Badge>
                     )}
+                    {challenge.prize_description && (
+                        <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-normal text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/30 shadow-sm">
+                            <Award className="h-3 w-3 mr-0.5" /> Prize
+                        </Badge>
+                    )}
                 </div>
             </CardHeader>
 
@@ -110,6 +120,13 @@ export function ChallengeCard({ challenge, userId, onClick, onToggleBookmark }: 
                 <CardDescription className="line-clamp-2 text-xs mt-1">
                     {challenge.description || "No description provided."}
                 </CardDescription>
+
+                {challenge.network_reason && (
+                    <div className="flex items-center gap-1.5 text-[10px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded w-fit">
+                        <Users className="h-3 w-3" />
+                        {challenge.network_reason}
+                    </div>
+                )}
 
                 {/* Footer section inside content for alignment */}
                 <div className="flex items-center justify-between mt-auto pt-2 border-t border-border/40">
