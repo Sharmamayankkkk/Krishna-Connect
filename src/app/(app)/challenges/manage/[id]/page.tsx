@@ -66,7 +66,7 @@ export default function ManageChallengePage() {
             const found = (data as Challenge[]).find(c => c.id === cId);
             if (found) {
                 // Verify ownership
-                if (found.created_by !== currentUserId) {
+                if (found.author_id !== currentUserId) {
                     toast({ title: 'Access Denied', description: 'You are not the author of this challenge.', variant: 'destructive' });
                     router.push(`/challenges/${cId}`);
                     return;
