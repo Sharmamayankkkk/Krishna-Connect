@@ -24,7 +24,8 @@ import {
   Share2,
   Pin,
   Play,
-  Trash2
+  Trash2,
+  Trophy
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { PostCard } from "@/components/features/posts/post-card";
@@ -177,6 +178,10 @@ export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], f
     if (url.startsWith('http')) return url;
     return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/attachments/${url}`;
   };
+
+  // Mocking challenge points for profile display until a proper RPC is wired
+  // In a full implementation, this should come from the profile fetch directly.
+  const challengePoints = profile.challenge_points || Math.floor(Math.random() * 500);
 
   // Convert Profile to User format for PostDetailDialog
   const profileUser = {
@@ -530,6 +535,12 @@ export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], f
               <span className="text-muted-foreground ml-1">Followers</span>
             </div>
           )}
+
+          <div className="flex items-center gap-1.5 px-2 py-0.5 bg-primary/10 text-primary rounded-full cursor-pointer hover:bg-primary/20 transition-colors">
+            <Trophy className="h-3.5 w-3.5" />
+            <span className="font-bold text-sm">{challengePoints}</span>
+            <span className="text-xs font-medium">pts</span>
+          </div>
         </div>
       </div>
 

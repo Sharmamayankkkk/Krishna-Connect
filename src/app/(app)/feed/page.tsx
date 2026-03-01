@@ -14,6 +14,8 @@ import { FeedList } from '@/components/features/posts/feed-list';
 import { StoriesBar } from '@/components/features/stories/stories-bar';
 import { transformPost } from '@/lib/post-utils';
 import { GoogleAd } from '@/components/ads/google-ad';
+import { ChallengeCard } from '@/components/challenges/ChallengeCard';
+import { Challenge } from '@/components/challenges/types';
 
 const SCROLL_THRESHOLD = 500;
 
@@ -47,6 +49,9 @@ export default function FeedPage() {
         mutedWords: [],
         lastSeenPostTime: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString()
     });
+
+    // Home Page Challenges Row
+    const [featuredChallenges, setFeaturedChallenges] = React.useState<Challenge[]>([]);
 
     // Fetch posts
     const fetchPosts = React.useCallback(async () => {
@@ -106,6 +111,21 @@ export default function FeedPage() {
 
     React.useEffect(() => {
         fetchPosts();
+
+        // Fetch featured challenges for the home timeline
+        const fetchFeaturedChallenges = async () => {
+            const supabase = createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data } = await supabase.rpc('get_all_challenges', { p_user_id: user.id });
+                if (data) {
+                    // Filter active/scheduled, sort by participants to get top ones
+                    const active = (data as Challenge[]).filter(c => c.status === 'active' || c.status === 'scheduled');
+                    setFeaturedChallenges(active.sort((a, b) => b.participant_count - a.participant_count).slice(0, 3));
+                }
+            }
+        };
+        fetchFeaturedChallenges();
     }, [fetchPosts]);
 
     const checkForNewPosts = React.useCallback(async () => {
@@ -274,6 +294,23 @@ export default function FeedPage() {
                             }}
                         />
                     </div>
+
+                    {/* Featured Challenges Mini-Carousel */}
+                    {featuredChallenges.length > 0 && (
+                        <div className="mb-6 space-y-3">
+                            <div className="flex items-center justify-between px-1">
+                                <h2 className="text-sm font-bold flex items-center gap-1.5"><Sparkles className="h-4 w-4 text-primary" /> Trending Challenges</h2>
+                                <a href="/challenges" className="text-xs text-primary font-medium hover:underline">View All</a>
+                            </div>
+                            <div className="flex overflow-x-auto gap-3 pb-2 snap-x hide-scrollbar">
+                                {featuredChallenges.map(challenge => (
+                                    <div key={challenge.id} className="min-w-[260px] max-w-[280px] snap-center shrink-0">
+                                        <ChallengeCard challenge={challenge} userId={loggedInUser?.id || null} />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Feed */}
                     <FeedList

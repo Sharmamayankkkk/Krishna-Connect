@@ -14,6 +14,7 @@ export type User = {
   has_set_privacy?: boolean;
   settings?: UserSettings; // JSONB column
   phone?: string;
+  challenge_points?: number;
 };
 
 export interface UserSettings {
@@ -396,7 +397,7 @@ export type PostType = {
 
 export type NotificationType = {
   id: string;
-  type: 'like' | 'comment' | 'repost' | 'quote' | 'follow' | 'mention' | 'poll_vote' | 'collaboration_request' | 'livestream_invite';
+  type: 'like' | 'comment' | 'repost' | 'quote' | 'follow' | 'mention' | 'poll_vote' | 'collaboration_request' | 'livestream_invite' | 'challenge_invite' | 'challenge_submission' | 'challenge_approved' | 'challenge_rejected' | 'challenge_won';
   fromUser: {
     id: string;
     name: string;

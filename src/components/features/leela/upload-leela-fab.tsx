@@ -145,7 +145,7 @@ export function UploadLeelaFab() {
           <TooltipTrigger asChild>
             <Button
               size="icon"
-              className="fixed bottom-20 right-4 z-50 h-14 w-14 rounded-full shadow-lg md:bottom-8 bg-gradient-to-br from-purple-600 to-primary hover:from-purple-700 hover:to-primary/90 transition-all hover:scale-105"
+              className="fixed bottom-20 right-4 z-50 h-14 w-14 rounded-full md:bottom-8 bg-white dark:bg-gradient-to-br dark:from-slate-800 dark:to-slate-900 border border-slate-200 dark:border-slate-700 shadow-[0_4px_15px_rgba(6,182,212,0.3)] dark:shadow-[0_0_15px_rgba(6,182,212,0.4)] transition-all hover:scale-105 hover:shadow-[0_4px_25px_rgba(6,182,212,0.4)] dark:hover:shadow-[0_0_25px_rgba(6,182,212,0.6)] hover:bg-slate-50 dark:hover:from-slate-700 dark:hover:to-slate-800"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
               aria-label="Upload Leela"

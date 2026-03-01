@@ -25,7 +25,11 @@ import {
     FileText,
     ChevronDown,
     Sparkles,
-    Radio
+    Radio,
+    Trophy,
+    CheckCircle,
+    XCircle,
+    Flame
 } from 'lucide-react';
 import { formatDistanceToNow, isToday, isYesterday, isThisWeek } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -48,6 +52,13 @@ const NotificationIconBubble = ({ type }: { type: NotificationType['type'] }) =>
         poll_vote: { icon: <BarChart3 className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-cyan-400 to-sky-600' },
         collaboration_request: { icon: <Users className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-indigo-400 to-indigo-600' },
         livestream_invite: { icon: <Radio className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-red-400 to-rose-600' },
+
+        // Challenge specific
+        challenge_invite: { icon: <Flame className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-orange-500 to-red-600' },
+        challenge_submission: { icon: <Trophy className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-blue-400 to-indigo-600' },
+        challenge_approved: { icon: <CheckCircle className="h-3.5 w-3.5 text-white fill-white" />, bg: 'bg-gradient-to-br from-green-400 to-emerald-600' },
+        challenge_rejected: { icon: <XCircle className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-red-500 to-rose-700' },
+        challenge_won: { icon: <Trophy className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />, bg: 'bg-gradient-to-br from-yellow-100 to-yellow-300' },
     };
     const iconConfig = config[type] || { icon: <Bell className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-gray-400 to-gray-600' };
     return (
@@ -69,6 +80,11 @@ const getActionText = (type: NotificationType['type']) => {
         poll_vote: 'voted on your poll',
         collaboration_request: 'invited you to collaborate',
         livestream_invite: 'invited you to join their livestream',
+        challenge_invite: 'invited you to a challenge',
+        challenge_submission: 'submitted an entry to your challenge',
+        challenge_approved: 'approved your challenge entry',
+        challenge_rejected: 'needs revisions on your challenge entry',
+        challenge_won: 'declared you a winner!',
     };
     return map[type] || 'sent you a notification';
 };
@@ -158,6 +174,21 @@ const NotificationItem = React.memo(({
                                     <span className="capitalize">{notification.postMediaType}</span> post
                                 </p>
                             )}
+                        </div>
+                    </Link>
+                )}
+
+                {/* Challenge Routing Logic */}
+                {notification.type.startsWith('challenge_') && notification.postId && (
+                    <Link
+                        href={notification.type === 'challenge_submission'
+                            ? `/challenges/manage/${notification.postId}`
+                            : `/challenges/${notification.postId}`}
+                        className="block mt-1.5"
+                    >
+                        <div className="border rounded-lg px-3 py-2 bg-primary/5 hover:bg-primary/10 border-primary/20 transition-colors text-xs sm:text-sm font-medium text-primary flex items-center gap-2">
+                            <Trophy className="h-4 w-4" />
+                            View Challenge Detail
                         </div>
                     </Link>
                 )}
@@ -273,7 +304,12 @@ const mapNotificationType = (dbType: string): NotificationType['type'] => {
         'follow_request': 'follow',
         'new_follower': 'follow',
         'collaboration_request': 'collaboration_request',
-        'livestream_invite': 'livestream_invite'
+        'livestream_invite': 'livestream_invite',
+        'challenge_invite': 'challenge_invite',
+        'challenge_submission': 'challenge_submission',
+        'challenge_approved': 'challenge_approved',
+        'challenge_rejected': 'challenge_rejected',
+        'challenge_won': 'challenge_won'
     };
     return typeMap[dbType] || 'follow';
 };

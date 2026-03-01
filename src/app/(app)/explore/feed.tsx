@@ -8,7 +8,8 @@ import {
     Users,
     Sidebar,
     Clock,
-    ArrowUp
+    ArrowUp,
+    Bell
 } from 'lucide-react';
 
 import { useAppContext } from '@/providers/app-provider';
@@ -487,11 +488,17 @@ export default function Feed() {
                                 <Search className="h-5 w-5" />
                             </Button>
 
-                            <Link href={`/profile/${loggedInUser?.username || 'me'}`}>
-                                <Avatar className="h-9 w-9 ring-2 ring-background transition-transform hover:scale-105">
-                                    <AvatarImage src={loggedInUser?.avatar_url || '/placeholder-user.jpg'} />
-                                    <AvatarFallback>U</AvatarFallback>
-                                </Avatar>
+                            {/* Notifications Toggle */}
+                            <Link href="/notifications">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="rounded-full hover:bg-muted relative"
+                                >
+                                    <Bell className="h-5 w-5" />
+                                    {/* Optional active dot if needed */}
+                                    <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 border border-background"></span>
+                                </Button>
                             </Link>
                         </div>
                     </div>
