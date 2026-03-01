@@ -8,6 +8,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarMenuBadge,
 } from '@/components/ui/sidebar'
 import { Badge } from '@/components/ui/badge'
 import { useEffect, useState } from 'react'
@@ -145,6 +146,7 @@ export function MainNav() {
             <SidebarMenuButton
               asChild
               isActive={item.isActive}
+              tooltip={item.label}
               className="w-full justify-start text-sm font-medium h-11"
             >
               <Link
@@ -153,22 +155,23 @@ export function MainNav() {
                 onClick={(e) => handleLinkClick(e, item.href!)}
               >
                 {item.customIcon ? (
-                  <Image
-                    src={item.customIcon}
-                    alt={item.label}
-                    width={20}
-                    height={20}
-                    className="mr-3"
-                  />
+                  <div className="relative h-5 w-5 shrink-0 flex items-center justify-center">
+                    <Image
+                      src={item.customIcon}
+                      alt={item.label}
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
                 ) : item.icon ? (
-                  <item.icon className="h-5 w-5 mr-3" />
+                  <item.icon />
                 ) : null}
                 <span>{item.label}</span>
-                {item.href === '/notifications' && unreadCount > 0 && (
-                  <Badge className="ml-auto">{unreadCount}</Badge>
-                )}
               </Link>
             </SidebarMenuButton>
+            {item.href === '/notifications' && unreadCount > 0 && (
+              <SidebarMenuBadge className="bg-primary text-primary-foreground border-border right-2 top-1.5 h-6 min-w-6 rounded-full group-data-[collapsible=icon]:hidden">{unreadCount}</SidebarMenuBadge>
+            )}
           </SidebarMenuItem>
         ))}
       </SidebarMenu>

@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -16,6 +15,7 @@ import { UserMenu } from "../../layout/user-menu"
 import { ChatList } from "./chat-list"
 import { MainNav } from "../../layout/main-nav"
 import { MobileBottomNav } from "../../layout/mobile-bottom-nav"
+import Image from "next/image"
 
 import { usePathname } from "next/navigation"
 
@@ -36,14 +36,23 @@ export function ChatLayout({ chats, children }: ChatLayoutProps) {
   return (
     <>
       {/* This is the sidebar component from our UI library. */}
-      <Sidebar className="flex flex-col border-r">
+      {/* We apply a modern subtle backdrop border instead of a harsh solid line */}
+      <Sidebar className="flex flex-col border-r border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         {/* The header of the sidebar, containing the logo and app name. */}
-        <SidebarHeader className="p-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Icons.logo className="h-8 w-8 text-primary" />
-              <span className="text-lg font-semibold">Krishna Connect</span>
+        <SidebarHeader className="p-4 flex flex-row items-center h-16 w-full group-data-[collapsible=icon]:p-2 group-data-[state=collapsed]:justify-center group-data-[state=expanded]:justify-start">
+          <div className="flex items-center group-data-[state=collapsed]:justify-center w-full gap-3 overflow-hidden">
+            <div className="relative h-8 w-8 shrink-0 flex items-center justify-center">
+              <Image
+                src="/logo/krishna_connect.png"
+                alt="Krishna Connect Logo"
+                fill
+                className="object-contain"
+                priority
+              />
             </div>
+            <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 bg-clip-text text-transparent group-data-[collapsible=icon]:hidden drop-shadow-sm">
+              Krishna Connect
+            </span>
           </div>
         </SidebarHeader>
 

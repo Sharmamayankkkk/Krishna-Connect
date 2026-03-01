@@ -53,7 +53,7 @@ import {
 import { CollaborativePostDialog, type Collaborator } from './dialogs/collaborative-post-dialog';
 import { useAppContext } from '@/providers/app-provider';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
+import { cn, getAvatarUrl } from '@/lib/utils';
 import Image from 'next/image';
 import { PollType, MediaType, DraftPost, createEmptyPoll, createDraft } from '@/lib/types';
 import { createClient } from '@/lib/supabase/client';
@@ -820,7 +820,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                 />
                 <Link href={`/profile/${encodeURIComponent(loggedInUser?.username || '')}`} className="flex-shrink-0 pt-1">
                     <Avatar className="h-10 w-10 ring-2 ring-background transition-transform duration-300 group-focus-within/create-post:scale-105">
-                        <AvatarImage src={loggedInUser.avatar_url} alt={loggedInUser.name} />
+                        <AvatarImage src={getAvatarUrl(loggedInUser.avatar_url)} alt={loggedInUser.name} />
                         <AvatarFallback>{loggedInUser.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                 </Link>

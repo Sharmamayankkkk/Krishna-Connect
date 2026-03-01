@@ -16,6 +16,7 @@ import { createClient } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthGuard } from "@/hooks/use-auth-guard";
 import UserIdentity from "@/components/shared/user-identity";
+import { SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 
 function UserMenuSkeleton() {
   return (
@@ -62,13 +63,19 @@ export function UserMenu() {
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="w-full justify-start gap-3 p-2 h-auto">
-          <UserIdentity user={loggedInUser} size="sm" className="flex-1 min-w-0" />
-          <MoreHorizontal className="ml-auto h-4 w-4 flex-shrink-0" />
-        </Button>
-      </DropdownMenuTrigger>
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground h-14">
+                <UserIdentity user={loggedInUser} size="sm" hideText className="shrink-0" />
+                <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+                    <span className="truncate font-semibold">{loggedInUser.name}</span>
+                    <span className="truncate text-xs text-muted-foreground">@{loggedInUser.username}</span>
+                </div>
+                <MoreHorizontal className="ml-auto size-4 shrink-0 group-data-[collapsible=icon]:hidden" />
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56 mb-2" side="top" align="start">
         <div className="p-2">
           <p className="text-sm font-medium leading-none">{loggedInUser.name}</p>
@@ -116,5 +123,7 @@ export function UserMenu() {
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
+    </SidebarMenuItem>
+    </SidebarMenu>
   )
 }

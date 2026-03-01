@@ -9,7 +9,8 @@ import {
     Sidebar,
     Clock,
     ArrowUp,
-    Bell
+    Bell,
+    Sparkles
 } from 'lucide-react';
 
 import { useAppContext } from '@/providers/app-provider';
@@ -458,18 +459,13 @@ export default function Feed() {
                 {/* Header with Search */}
                 <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/40 supports-[backdrop-filter]:bg-background/60 transition-all duration-200">
                     <div className="flex items-center justify-between px-4 py-3 gap-2 sm:gap-4 overflow-hidden">
-                        <div className="flex items-center gap-2 md:hidden min-w-0 flex-1">
-                            <SidebarTrigger className="flex-shrink-0" />
-                            <h1 className="text-xl font-bold bg-gradient-to-br from-foreground to-muted-foreground bg-clip-text text-transparent truncate pr-2">Feed</h1>
+                        {/* Mobile Sidebar Trigger only */}
+                        <div className="flex items-center gap-3 md:hidden flex-shrink-0">
+                            <SidebarTrigger />
                         </div>
 
-                        {/* Desktop Title */}
-                        <div className="hidden md:block flex-shrink-0">
-                            <h1 className="text-xl font-bold tracking-tight">Feed</h1>
-                        </div>
-
-                        {/* Search Bar - Centered and Wide on Desktop */}
-                        <div className="flex-1 max-w-xl mx-auto hidden md:block px-4">
+                        {/* Search Bar - Center focus */}
+                        <div className="flex-1 max-w-xl mx-auto px-4 md:px-0">
                             <GlobalSearchBar
                                 placeholder="Search..."
                                 className="w-full max-w-full"

@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Plus, Star, Trash2 } from 'lucide-react';
 import { useAppContext } from '@/providers/app-provider';
 import { createClient } from '@/lib/supabase/client';
-import { cn } from '@/lib/utils';
+import { cn, getAvatarUrl } from '@/lib/utils';
 import { CreateStatusDialog } from './create-status-dialog';
 import { ViewStatusDialog } from './view-status-dialog';
 
@@ -378,7 +378,7 @@ export function StoriesBar() {
                         >
                             <StoryRing variant={myStatus ? 'own-active' : 'own-empty'}>
                                 <Avatar className="w-full h-full">
-                                    <AvatarImage src={loggedInUser.avatar_url} alt="Your Story" className="object-cover" />
+                                    <AvatarImage src={getAvatarUrl(loggedInUser.avatar_url)} alt="Your Story" className="object-cover" />
                                     <AvatarFallback className="text-sm">{loggedInUser.name?.charAt(0) || 'Y'}</AvatarFallback>
                                 </Avatar>
                             </StoryRing>
@@ -425,7 +425,7 @@ export function StoriesBar() {
                                     <div className="relative transition-transform duration-200 group-hover:scale-105">
                                         <StoryRing variant={ringVariant}>
                                             <Avatar className="w-full h-full">
-                                                <AvatarImage src={update.avatar_url} alt={update.name} className="object-cover" />
+                                                <AvatarImage src={getAvatarUrl(update.avatar_url)} alt={update.name} className="object-cover" />
                                                 <AvatarFallback className="text-sm">{update.name?.charAt(0) || '?'}</AvatarFallback>
                                             </Avatar>
                                         </StoryRing>
