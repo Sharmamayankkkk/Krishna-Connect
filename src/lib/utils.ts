@@ -16,16 +16,16 @@ export const createClient = () =>
 export function getAvatarUrl(url?: string): string | undefined {
   if (!url) return undefined;
   if (url.startsWith('http')) return url;
+  // Handle local /avatars/ path (legacy or incorrect DB entries)
+  if (url.startsWith('/avatars/')) {
+    return `/user_Avatar/${url.replace('/avatars/', '')}`;
+  }
+
   if (url.startsWith('/')) return url; // Local public file
 
   // Check for known static avatars or simple filenames
   if (url === 'male.png' || url === 'female.png' || url === 'verified.png' || url === 'KCS-verified.png') {
     return `/user_Avatar/${url}`;
-  }
-
-  // Handle local /avatars/ path (legacy or incorrect DB entries)
-  if (url.startsWith('/avatars/')) {
-    return `/user_Avatar/${url.replace('/avatars/', '')}`;
   }
 
 
@@ -50,17 +50,7 @@ export function getOptimizedImageUrl(
   opts: { width?: number; quality?: number } = {}
 ): string | undefined {
   if (!url) return undefined;
-
-  const { width = 800, quality = 75 } = opts;
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-
-  // Only transform direct Supabase storage URLs — leave CDN/Worker URLs as-is
-  if (supabaseUrl && url.startsWith(supabaseUrl) && url.includes('/storage/v1/object/public/')) {
-    const path = url.replace(`${supabaseUrl}/storage/v1/object/public/`, '');
-    return `${supabaseUrl}/storage/v1/render/image/public/${path}?width=${width}&quality=${quality}&resize=contain`;
-  }
-
-  return url; // Cloudflare Worker URLs, other CDNs — served as-is
+  return url;
 }
 
 

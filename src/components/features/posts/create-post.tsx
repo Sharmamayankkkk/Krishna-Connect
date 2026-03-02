@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
@@ -771,6 +771,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Your Drafts ({drafts.length})</DialogTitle>
+                        <DialogDescription className="sr-only">List of your saved post drafts</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-3 max-h-[400px] overflow-y-auto">
                         {drafts.length === 0 ? (
@@ -1234,6 +1235,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
                         <DialogTitle>Schedule Post</DialogTitle>
+                        <DialogDescription className="sr-only">Select a date and time to schedule your post</DialogDescription>
                     </DialogHeader>
                     <div className="py-4">
                         <Label htmlFor="schedule-date" className="mb-2 block">Pick a date and time</Label>
@@ -1265,6 +1267,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                             <Image src="/icons/leela.png" alt="Leela" width={20} height={20} />
                             Upload Leela
                         </DialogTitle>
+                        <DialogDescription className="sr-only">Upload a Leela video</DialogDescription>
                     </DialogHeader>
 
                     {selectedLeelaFile && (

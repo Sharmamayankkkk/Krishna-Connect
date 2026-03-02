@@ -158,6 +158,9 @@ export function MobileFab() {
                             <Image src="/icons/leela.png" alt="Leela" width={20} height={20} />
                             Upload Leela
                         </DialogTitle>
+                        <DialogDescription className="sr-only">
+                            Upload a new Leela video and add an optional caption
+                        </DialogDescription>
                     </DialogHeader>
 
                     {selectedLeelaFile && (
