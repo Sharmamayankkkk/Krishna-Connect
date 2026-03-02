@@ -159,7 +159,7 @@ function VideoPlayer({
         </div>
       )}
 
-      <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+      <div className="absolute bottom-16 md:bottom-0 left-0 right-0 h-1 bg-white/20">
         <div className="h-full bg-white transition-all duration-100" style={{ width: `${progress}%` }} />
       </div>
 
@@ -171,7 +171,7 @@ function VideoPlayer({
         {isMuted ? <VolumeX className="h-5 w-5 text-white" /> : <Volume2 className="h-5 w-5 text-white" />}
       </button>
 
-      <div className="absolute bottom-4 left-4 right-16 z-10">
+      <div className="absolute bottom-20 md:bottom-4 left-4 right-16 z-10">
         <Link href={`/profile/${video.author_username}`} onClick={e => e.stopPropagation()} className="flex items-center gap-2 mb-3">
           <Avatar className="h-10 w-10 border-2 border-white">
             <AvatarImage src={video.author_avatar || undefined} />
@@ -201,7 +201,7 @@ function VideoPlayer({
         )}
       </div>
 
-      <div className="absolute right-3 bottom-20 flex flex-col items-center gap-5 z-10">
+      <div className="absolute right-3 bottom-24 md:bottom-20 flex flex-col items-center gap-5 z-10">
         <button onClick={(e) => { e.stopPropagation(); onLike(video.id); }} className="flex flex-col items-center gap-1">
           <div className={cn("p-2 rounded-full", video.is_liked ? "text-red-500" : "text-white")}>
             <Heart className="h-7 w-7 drop-shadow-lg" fill={video.is_liked ? "currentColor" : "none"} />
@@ -621,7 +621,7 @@ export default function LeelaPage() {
   }
 
   return (
-    <div className="relative flex flex-col h-[100dvh] bg-black">
+    <div className="relative flex flex-col h-[100dvh] pb-16 md:pb-0 bg-black">
       {/* Hidden File Input */}
       <input ref={fileInputRef} type="file" accept="video/*" className="hidden" onChange={handleFileSelect} />
 

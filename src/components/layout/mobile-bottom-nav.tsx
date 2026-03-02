@@ -11,8 +11,8 @@ export function MobileBottomNav() {
     const pathname = usePathname()
     const { loggedInUser } = useAppContext()
 
-    // Hide bottom nav on chat conversation pages, leela video player, and active livestream pages (but show on discovery)
-    const hideOnRoutes = /^(\/chat\/\d+|\/leela|\/live\/.+)/
+    // Hide bottom nav on chat conversation pages and active livestream pages (but show on discovery and leela)
+    const hideOnRoutes = /^(\/chat\/\d+|\/live\/.+)/
     if (hideOnRoutes.test(pathname)) return null
 
     const navItems = [
