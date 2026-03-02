@@ -41,16 +41,16 @@ export function MobileBottomNav() {
             isActive: pathname.startsWith('/chat'),
         },
         {
-            href: loggedInUser ? `/profile/${loggedInUser.username}` : '/',
-            label: 'Profile',
-            icon: User,
-            isActive: pathname.startsWith('/profile') && loggedInUser,
-        },
-        {
             href: '/news',
             label: 'News',
             icon: Newspaper,
             isActive: pathname.startsWith('/news'),
+        },
+        {
+            href: loggedInUser ? `/profile/${loggedInUser.username}` : '/',
+            label: 'Profile',
+            icon: User,
+            isActive: pathname.startsWith('/profile') && loggedInUser,
         },
     ]
 
