@@ -3,15 +3,9 @@ import * as React from 'react';
 import { getAvatarUrl } from '@/lib/utils';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-    Search,
-    Users,
-    Sidebar,
-    Clock,
     ArrowUp,
-    Bell,
-    Sparkles
+    Bell
 } from 'lucide-react';
 
 import { useAppContext } from '@/providers/app-provider';
