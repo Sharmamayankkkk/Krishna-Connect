@@ -328,6 +328,7 @@ export function ImageEditor({ open, onClose, image, onSave }: ImageEditorProps) 
         <DialogHeader className="px-6 pt-6 pb-4 border-b">
           <div className="flex items-center justify-between">
             <DialogTitle>Image Editor</DialogTitle>
+            <DialogDescription className="sr-only">Editor to crop, adjust, and apply filters to images.</DialogDescription>
             <div className="flex items-center gap-2">
               <Button
                 variant="ghost"

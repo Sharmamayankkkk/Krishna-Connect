@@ -45,14 +45,14 @@ export function ReportDialog({ open, onOpenChange, userToReport, messageToReport
     setIsSending(false)
     onOpenChange(false)
   }
-  
+
   const handleOpenChange = (isOpen: boolean) => {
-      if (!isOpen) {
-          setReason('');
-          setAlsoBlock(false);
-          setIsSending(false);
-      }
-      onOpenChange(isOpen);
+    if (!isOpen) {
+      setReason('');
+      setAlsoBlock(false);
+      setIsSending(false);
+    }
+    onOpenChange(isOpen);
   }
 
   return (
@@ -66,26 +66,26 @@ export function ReportDialog({ open, onOpenChange, userToReport, messageToReport
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
-             {messageToReport && (
-                <div className="text-sm p-3 rounded-md border bg-muted">
-                    <p className="font-semibold mb-1">Reporting a specific message:</p>
-                    <p className="italic line-clamp-2 text-muted-foreground">"{messageToReport.content || 'Attachment'}"</p>
-                </div>
-             )}
+            {messageToReport && (
+              <div className="text-sm p-3 rounded-md border bg-muted">
+                <p className="font-semibold mb-1">Reporting a specific message:</p>
+                <p className="italic line-clamp-2 text-muted-foreground">"{messageToReport.content || 'Attachment'}"</p>
+              </div>
+            )}
             <div className="space-y-2">
-                <Label htmlFor="reason">Reason for Report</Label>
-                <Textarea
-                  id="reason"
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  placeholder={`Why are you reporting @${userToReport.username}?`}
-                  className="min-h-[100px]"
-                  required
-                />
+              <Label htmlFor="reason">Reason for Report</Label>
+              <Textarea
+                id="reason"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder={`Why are you reporting @${userToReport.username}?`}
+                className="min-h-[100px]"
+                required
+              />
             </div>
             <div className="flex items-center space-x-2">
-                <Checkbox id="also-block" checked={alsoBlock} onCheckedChange={(checked) => setAlsoBlock(!!checked)} />
-                <Label htmlFor="also-block" className="text-sm font-normal">Also block this user</Label>
+              <Checkbox id="also-block" checked={alsoBlock} onCheckedChange={(checked) => setAlsoBlock(!!checked)} />
+              <Label htmlFor="also-block" className="text-sm font-normal">Also block this user</Label>
             </div>
           </div>
           <DialogFooter>

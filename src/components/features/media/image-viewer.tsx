@@ -96,7 +96,7 @@ export function ImageViewerDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[95vw] max-h-[95vh] w-auto h-auto bg-black/95 border-none shadow-2xl p-0 flex flex-col">
+      <DialogContent hideClose className="max-w-[95vw] max-h-[95vh] w-auto h-auto bg-black/95 border-none shadow-2xl p-0 flex flex-col">
         <DialogTitle className="sr-only">Media Viewer</DialogTitle>
         <DialogDescription className="sr-only">Viewing media in full screen. Use controls to navigate, zoom, rotate, or download.</DialogDescription>
 

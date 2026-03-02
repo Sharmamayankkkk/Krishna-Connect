@@ -21,6 +21,12 @@ export function getAvatarUrl(url?: string): string | undefined {
     return `/user_Avatar/${url.replace('/avatars/', '')}`;
   }
 
+  // Handle bare UUID_TIMESTAMP.jpg strings often dropped by Supabase bugs into the top level path
+  const uuidTimestampPattern = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}_\d+\.(jpg|jpeg|png|webp|gif)$/i;
+  if (uuidTimestampPattern.test(url)) {
+    return `/user_Avatar/${url}`;
+  }
+
   if (url.startsWith('/')) return url; // Local public file
 
   // Check for known static avatars or simple filenames

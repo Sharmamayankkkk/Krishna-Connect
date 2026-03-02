@@ -38,18 +38,22 @@ export function RequestDmDialog({ open, onOpenChange, targetUser }: RequestDmDia
     onOpenChange(false)
     setReason('')
   }
-  
+
   const handleOpenChange = (isOpen: boolean) => {
-      if (!isOpen) {
-          setReason('');
-          setIsSending(false);
-      }
-      onOpenChange(isOpen);
+    if (!isOpen) {
+      setReason('');
+      setIsSending(false);
+    }
+    onOpenChange(isOpen);
   }
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
+        <DialogHeader className="sr-only">
+          <DialogTitle>Request Message</DialogTitle>
+          <DialogDescription>Send a message request to this user</DialogDescription>
+        </DialogHeader>
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Request to Message {targetUser.name}</DialogTitle>
