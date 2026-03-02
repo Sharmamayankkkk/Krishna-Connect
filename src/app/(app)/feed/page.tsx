@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { Sparkles, ArrowUp } from 'lucide-react';
 import { useAppContext } from '@/providers/app-provider';
+import { getAvatarUrl } from '@/lib/utils';
 import { PostType } from '@/lib/types';
 import { CreatePost } from '@/components/features/posts/create-post';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -273,7 +274,7 @@ export default function FeedPage() {
                             >
                                 {latestNewPostAuthor?.avatar && (
                                     <img
-                                        src={latestNewPostAuthor.avatar}
+                                        src={getAvatarUrl(latestNewPostAuthor.avatar) || '/male.png'}
                                         alt="Author"
                                         className="h-5 w-5 rounded-full object-cover"
                                     />

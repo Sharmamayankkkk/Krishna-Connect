@@ -1,5 +1,6 @@
 "use client";
 import * as React from 'react';
+import { getAvatarUrl } from '@/lib/utils';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -545,7 +546,7 @@ export default function Feed() {
                                     >
                                         {latestNewPostAuthor?.avatar && (
                                             <img
-                                                src={latestNewPostAuthor.avatar}
+                                                src={getAvatarUrl(latestNewPostAuthor.avatar) || '/male.png'}
                                                 alt="Author"
                                                 className="h-5 w-5 rounded-full object-cover"
                                             />
