@@ -35,32 +35,38 @@ export function NewChatDialog({ open, onOpenChange }: NewChatDialogProps) {
   const supabase = createClient();
 
   React.useEffect(() => {
-    if (open && loggedInUser) {
-      const fetchUsers = async () => {
-        setIsLoading(true);
-        const { data, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .neq('id', loggedInUser.id); // Exclude self
-
-        if (error) {
-          toast({ variant: 'destructive', title: "Error fetching users", description: error.message });
-          setAllUsers([]);
-        } else {
-          setAllUsers(data as User[]);
-        }
-        setIsLoading(false);
-      };
-      fetchUsers();
-    } else {
-        setSearchQuery('');
-        setAllUsers([]);
+    if (!open) {
+      setSearchQuery('');
+      setAllUsers([]);
+      return;
     }
-  }, [open, supabase, toast, loggedInUser]);
-  
+    if (!searchQuery.trim()) {
+      setAllUsers([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, name, username, avatar_url, role, is_admin')
+        .or(`name.ilike.%${searchQuery}%,username.ilike.%${searchQuery}%`)
+        .neq('id', loggedInUser?.id || '')
+        .limit(30);
+      if (error) {
+        toast({ variant: 'destructive', title: "Error fetching users", description: error.message });
+        setAllUsers([]);
+      } else {
+        setAllUsers(data as User[]);
+      }
+      setIsLoading(false);
+    }, 300);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, open, loggedInUser?.id]);
+
   const handleUserClick = async (targetUser: User) => {
     if (!loggedInUser) return;
-    
+
     setIsLoading(true);
 
     // 1. Check if a DM chat already exists
@@ -72,9 +78,9 @@ export function NewChatDialog({ open, onOpenChange }: NewChatDialogProps) {
     );
 
     if (existingChat) {
-        router.push(`/chat/${existingChat.id}`);
-        onOpenChange(false);
-        return;
+      router.push(`/chat/${existingChat.id}`);
+      onOpenChange(false);
+      return;
     }
 
     // 2. If not, create a new DM chat
@@ -85,7 +91,7 @@ export function NewChatDialog({ open, onOpenChange }: NewChatDialogProps) {
         .insert({ type: 'dm' })
         .select()
         .single();
-      
+
       if (chatError) throw chatError;
       const newChatId = chatData.id;
 
@@ -94,19 +100,19 @@ export function NewChatDialog({ open, onOpenChange }: NewChatDialogProps) {
         { chat_id: newChatId, user_id: loggedInUser.id },
         { chat_id: newChatId, user_id: targetUser.id }
       ];
-      
+
       const { error: participantsError } = await supabase.from('participants').insert(participantData);
       if (participantsError) throw participantsError;
-      
+
       // Fetch the full chat object to add to the context
       const { data: newFullChat, error: newChatError } = await supabase
         .from('chats')
         .select(`*, participants:participants!chat_id ( user_id, profiles:profiles!user_id (*) )`)
         .eq('id', newChatId)
         .single();
-      
+
       if (newChatError || !newFullChat) {
-          throw newChatError || new Error("Failed to fetch newly created chat.");
+        throw newChatError || new Error("Failed to fetch newly created chat.");
       }
 
       addChat({ ...newFullChat, messages: [] } as unknown as Chat);
@@ -115,36 +121,25 @@ export function NewChatDialog({ open, onOpenChange }: NewChatDialogProps) {
       router.push(`/chat/${newChatId}`);
 
     } catch (error: any) {
-        console.error("Supabase error details:", error);
-        toast({
-          variant: 'destructive',
-          title: 'Error starting chat',
-          description: `Database error: ${error.message}. Please ensure RLS policies are correct or disabled for testing.`
-        });
+      console.error("Supabase error details:", error);
+      toast({
+        variant: 'destructive',
+        title: 'Error starting chat',
+        description: `Database error: ${error.message}. Please ensure RLS policies are correct or disabled for testing.`
+      });
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   }
 
+  // filteredUsers: server already filtered by searchQuery & excluded self; just hide gurudev from non-admins
   const filteredUsers = React.useMemo(() => {
     if (!loggedInUser) return [];
-
-    const usersToShow = allUsers.filter(user => {
-      // Hide Gurudev from non-admins
-      if (user.role === 'gurudev' && !loggedInUser.is_admin) {
-        return false;
-      }
+    return allUsers.filter(user => {
+      if (user.role === 'gurudev' && !loggedInUser.is_admin) return false;
       return true;
     });
-
-    if (!searchQuery) return usersToShow;
-
-    const lowercasedQuery = searchQuery.toLowerCase();
-    return usersToShow.filter(user =>
-      user.name.toLowerCase().includes(lowercasedQuery) ||
-      (user.username && user.username.toLowerCase().includes(lowercasedQuery))
-    );
-  }, [allUsers, searchQuery, loggedInUser]);
+  }, [allUsers, loggedInUser]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -163,7 +158,9 @@ export function NewChatDialog({ open, onOpenChange }: NewChatDialogProps) {
           />
         </div>
         <ScrollArea className="h-72 w-full mt-4">
-          {isLoading && !allUsers.length ? (
+          {!searchQuery.trim() ? (
+            <p className="text-sm text-center text-muted-foreground py-10">Type a name to search for users.</p>
+          ) : isLoading ? (
             <div className="space-y-3 pr-4">
               {[...Array(5)].map((_, i) => (
                 <div key={i} className="flex items-center space-x-3">

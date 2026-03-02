@@ -126,7 +126,6 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
     // like the theme settings, the list of all users, and functions to block a user or leave a group.
     const {
         themeSettings,
-        allUsers,
         dmRequests,
         leaveGroup,
         deleteGroup,
@@ -593,9 +592,11 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                 if (mention) {
                     const username = mention.substring(1);
                     const isEveryone = username === 'everyone';
-                    const mentionedUser = allUsers?.find(u => u.username === username);
+                    // Use chat.participants instead of global allUsers
+                    const participantProfiles = chat.participants?.map(p => p.profiles).filter(Boolean) || [];
+                    const mentionedUser = participantProfiles.find((u: any) => u?.username === username);
                     if (isEveryone || mentionedUser) {
-                        const isMe = mentionedUser && loggedInUser && mentionedUser.id === loggedInUser.id;
+                        const isMe = mentionedUser && loggedInUser && (mentionedUser as any).id === loggedInUser.id;
                         subElements.push(
                             <span key={`mention-${offset}`} className={cn("font-semibold rounded-sm px-1", isMe ? "bg-amber-400/30 text-amber-800 dark:text-amber-200" : "bg-primary/20 text-primary")}>
                                 {match}
@@ -638,7 +639,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
 
         return elements;
 
-    }, [customEmojiList, allUsers, loggedInUser?.id]);
+    }, [customEmojiList, chat.participants, loggedInUser?.id]);
 
     // This function determines how to display a message based on its content,
     // especially whether it's a text message or an attachment (image, file, event).
@@ -845,7 +846,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                                 </TooltipTrigger>
                                 <TooltipContent>
                                     <p className="max-w-xs text-sm">
-                                        {userIds.map(id => allUsers.find(u => u.id === id)?.name || '...').join(', ')}
+                                        {userIds.map(id => chat.participants?.find(p => p.user_id === id)?.profiles?.name || '...').join(', ')}
                                     </p>
                                 </TooltipContent>
                             </Tooltip>

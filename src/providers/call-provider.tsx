@@ -49,7 +49,7 @@ export function useCallContext() {
 
 export function CallProvider({ children }: { children: ReactNode }) {
   const supabaseRef = useRef(createClient())
-  const { loggedInUser, allUsers } = useAppContext()
+  const { loggedInUser } = useAppContext()
   const { toast } = useToast()
   const webrtc = useWebRTC()
 
@@ -66,12 +66,17 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
   const isInCall = activeCall !== null
 
-  // Helper to find a user by ID
+  // On-demand user lookup — fetches only 1 profile row, no global list needed
   const findUser = useCallback(
-    (userId: string): User | null => {
-      return allUsers.find((u) => u.id === userId) || null
+    async (userId: string): Promise<User | null> => {
+      const { data } = await supabaseRef.current
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single()
+      return (data as User | null) ?? null
     },
-    [allUsers]
+    [] // no deps — supabaseRef is stable
   )
 
   // Send a WebRTC signal via Supabase
@@ -336,7 +341,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         return
       }
 
-      const remoteUser = findUser(userId)
+      const remoteUser = await findUser(userId)
       if (!remoteUser) {
         toast({ variant: "destructive", title: "User not found" })
         return
@@ -496,7 +501,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         const call: ActiveCall = {
           callRecord,
           isOutgoing: false,
-          remoteUser: findUser(callRecord.caller_id) || loggedInUser, // Provide caller as "remote" context initally
+          remoteUser: (await findUser(callRecord.caller_id)) || loggedInUser, // Provide caller as "remote" context initially
           callType: callRecord.call_type,
         }
         setActiveCall(call)
@@ -669,7 +674,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
           table: "calls",
           filter: `callee_id=eq.${loggedInUser.id}`,
         },
-        (payload) => {
+        async (payload) => {
           const callRecord = payload.new as CallRecord
           if (callRecord.status !== "ringing") return
 
@@ -679,7 +684,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
             return
           }
 
-          const callerUser = findUser(callRecord.caller_id)
+          const callerUser = await findUser(callRecord.caller_id)
           if (!callerUser) return
 
           const incoming: ActiveCall = {

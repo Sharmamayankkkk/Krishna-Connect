@@ -38,6 +38,32 @@ export function getAvatarUrl(url?: string): string | undefined {
   return `${supabaseUrl}/storage/v1/object/public/attachments/${cleanPath}`;
 }
 
+/**
+ * Returns an optimized image URL using Supabase's built-in image transform CDN.
+ * For direct Supabase storage URLs: rewrites to /render/image/ with width + quality params.
+ * For Cloudflare Worker proxy URLs and other CDNs: returns the original URL unchanged.
+ *
+ * Usage: replace `src={url}` with `src={getOptimizedImageUrl(url, { width: 800 })}`
+ */
+export function getOptimizedImageUrl(
+  url?: string,
+  opts: { width?: number; quality?: number } = {}
+): string | undefined {
+  if (!url) return undefined;
+
+  const { width = 800, quality = 75 } = opts;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+  // Only transform direct Supabase storage URLs — leave CDN/Worker URLs as-is
+  if (supabaseUrl && url.startsWith(supabaseUrl) && url.includes('/storage/v1/object/public/')) {
+    const path = url.replace(`${supabaseUrl}/storage/v1/object/public/`, '');
+    return `${supabaseUrl}/storage/v1/render/image/public/${path}?width=${width}&quality=${quality}&resize=contain`;
+  }
+
+  return url; // Cloudflare Worker URLs, other CDNs — served as-is
+}
+
+
 export function getContrastingTextColor(color: string): string {
   if (!color) return '#000000';
 

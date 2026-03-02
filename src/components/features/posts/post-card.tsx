@@ -42,7 +42,7 @@ import {
     Plus
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { cn, getAvatarUrl, formatNumber } from '@/lib/utils';
+import { cn, getAvatarUrl, formatNumber, getOptimizedImageUrl } from '@/lib/utils';
 import { PollType, PostType, CommentType, ReplyType, MediaType } from '@/lib/types';
 import { VideoPlayer } from '../media/video-player';
 import { ImageViewerDialog } from '../media/image-viewer';
@@ -302,7 +302,7 @@ const MediaGrid = ({ media, onMediaClick }: { media: MediaType[], onMediaClick: 
                             onClick={(e) => { e.stopPropagation(); onMediaClick(index); }}
                         >
                             <Image
-                                src={m.url}
+                                src={getOptimizedImageUrl(m.url, { width: 1080, quality: 75 }) || m.url}
                                 alt={m.alt || 'Post media'}
                                 fill
                                 className="object-cover transition-transform duration-500 group-hover/image:scale-105"

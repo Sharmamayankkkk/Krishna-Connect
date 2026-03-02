@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, Compass, MessageSquare, User, Newspaper } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, getAvatarUrl } from '@/lib/utils'
 import { useAppContext } from '@/providers/app-provider'
 import Image from 'next/image'
 
@@ -82,6 +82,19 @@ export function MobileBottomNav() {
                                         width={24}
                                         height={24}
                                     />
+                                ) : item.label === 'Profile' && loggedInUser?.avatar_url ? (
+                                    <div className={cn(
+                                        "h-6 w-6 rounded-full overflow-hidden ring-2 ring-offset-1 ring-offset-background transition-all shrink-0",
+                                        item.isActive
+                                            ? "ring-primary"
+                                            : "ring-border"
+                                    )}>
+                                        <img
+                                            src={getAvatarUrl(loggedInUser.avatar_url)}
+                                            alt={loggedInUser.name || 'Profile'}
+                                            className="h-full w-full object-cover"
+                                        />
+                                    </div>
                                 ) : IconComponent ? (
                                     <IconComponent className="h-6 w-6" />
                                 ) : null}

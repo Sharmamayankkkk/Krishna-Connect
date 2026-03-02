@@ -29,9 +29,13 @@ interface EditGroupDialogProps {
 }
 
 export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogProps) {
-  const { allUsers, loggedInUser } = useAppContext();
+  const { loggedInUser } = useAppContext();
   const { toast } = useToast();
   const supabase = createClient();
+
+  const [memberSearch, setMemberSearch] = React.useState('');
+  const [searchResults, setSearchResults] = React.useState<User[]>([]);
+  const [isSearching, setIsSearching] = React.useState(false);
 
   const [name, setName] = React.useState(group.name || '');
   const [description, setDescription] = React.useState(group.description || '');
@@ -54,8 +58,29 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
       setHistoryVisible(group.history_visible);
       setInviteCode(group.invite_code);
       setAvatarFile(null);
+      setMemberSearch('');
+      setSearchResults([]);
     }
   }, [group, open]);
+
+  // Search for users to add — debounced, on-demand Supabase query
+  React.useEffect(() => {
+    if (!memberSearch.trim()) { setSearchResults([]); return; }
+    setIsSearching(true);
+    const timer = setTimeout(async () => {
+      const existingIds = participants.map(p => p.user_id);
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, name, username, avatar_url, role, verified')
+        .or(`name.ilike.%${memberSearch}%,username.ilike.%${memberSearch}%`)
+        .not('id', 'in', `(${existingIds.join(',')})`)
+        .limit(20);
+      setSearchResults((data as unknown as User[]) || []);
+      setIsSearching(false);
+    }, 300);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [memberSearch, participants.length]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -107,13 +132,13 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
       }
 
       const { error: chatUpdateError } = await supabase.from('chats')
-        .update({ 
-            name, 
-            description, 
-            avatar_url,
-            is_public: isPublic,
-            history_visible: historyVisible,
-            invite_code: inviteCode
+        .update({
+          name,
+          description,
+          avatar_url,
+          is_public: isPublic,
+          history_visible: historyVisible,
+          invite_code: inviteCode
         })
         .eq('id', group.id);
       if (chatUpdateError) throw chatUpdateError;
@@ -121,7 +146,7 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
       // 2. Sync participants
       const originalParticipantIds = new Set(group.participants.map(p => p.user_id));
       const newParticipantIds = new Set(participants.map(p => p.user_id));
-      
+
       const toAdd = participants.filter(p => !originalParticipantIds.has(p.user_id));
       const toRemove = group.participants.filter(p => !newParticipantIds.has(p.user_id));
       const toUpdate = participants.filter(p => {
@@ -140,11 +165,11 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
         const { error } = await supabase.from('participants').delete().in('user_id', toRemove.map(p => p.user_id)).eq('chat_id', group.id);
         if (error) throw error;
       }
-      
+
       if (toUpdate.length > 0) {
         for (const p of toUpdate) {
-            const { error } = await supabase.from('participants').update({ is_admin: p.is_admin }).match({ chat_id: p.chat_id, user_id: p.user_id });
-            if (error) throw error;
+          const { error } = await supabase.from('participants').update({ is_admin: p.is_admin }).match({ chat_id: p.chat_id, user_id: p.user_id });
+          if (error) throw error;
         }
       }
 
@@ -157,7 +182,7 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
     }
   };
 
-  const otherUsers = allUsers.filter(u => !participants.some(p => p.user_id === u.id));
+  const currentParticipantIds = new Set(participants.map(p => p.user_id));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -173,7 +198,7 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
             <TabsTrigger value="members">Members</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="general" className="space-y-6 py-4">
             <div className="flex items-center gap-6">
               <div className="relative">
@@ -199,7 +224,7 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
               </div>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="settings" className="space-y-6 py-4">
             <div className="flex items-center justify-between rounded-lg border p-4">
               <div>
@@ -208,7 +233,7 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
               </div>
               <Switch checked={isPublic} onCheckedChange={setIsPublic} />
             </div>
-             <div className="flex items-center justify-between rounded-lg border p-4">
+            <div className="flex items-center justify-between rounded-lg border p-4">
               <div>
                 <Label>Chat History</Label>
                 <p className="text-xs text-muted-foreground">Allow new members to see past messages.</p>
@@ -216,16 +241,16 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
               <Switch checked={historyVisible} onCheckedChange={setHistoryVisible} />
             </div>
             <div className="space-y-2">
-                <Label>Invite Link</Label>
-                {inviteCode ? (
-                    <div className="flex gap-2">
-                      <Input readOnly value={`${window.location.origin}/join/${inviteCode}`} />
-                      <Button variant="secondary" size="icon" onClick={copyInviteLink}><Copy className="h-4 w-4" /></Button>
-                      <Button variant="destructive" size="icon" onClick={() => setInviteCode(null)}><UserX className="h-4 w-4" /></Button>
-                    </div>
-                ) : (
-                    <Button variant="outline" className="w-full" onClick={() => setInviteCode(uuidv4())}>Generate Invite Link</Button>
-                )}
+              <Label>Invite Link</Label>
+              {inviteCode ? (
+                <div className="flex gap-2">
+                  <Input readOnly value={`${window.location.origin}/join/${inviteCode}`} />
+                  <Button variant="secondary" size="icon" onClick={copyInviteLink}><Copy className="h-4 w-4" /></Button>
+                  <Button variant="destructive" size="icon" onClick={() => setInviteCode(null)}><UserX className="h-4 w-4" /></Button>
+                </div>
+              ) : (
+                <Button variant="outline" className="w-full" onClick={() => setInviteCode(uuidv4())}>Generate Invite Link</Button>
+              )}
             </div>
           </TabsContent>
 
@@ -271,8 +296,19 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
                   <Separator />
                   <div>
                     <h4 className="font-medium mb-2">Add New Members</h4>
+                    <div className="relative mb-2">
+                      <Input
+                        placeholder="Search users to add..."
+                        value={memberSearch}
+                        onChange={e => setMemberSearch(e.target.value)}
+                      />
+                      {isSearching && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />}
+                    </div>
                     <div className="space-y-2">
-                      {otherUsers.length > 0 ? otherUsers.map(user => (
+                      {searchResults.length === 0 && memberSearch.trim() && !isSearching && (
+                        <p className="text-sm text-muted-foreground text-center py-4">No users found.</p>
+                      )}
+                      {searchResults.filter(u => !currentParticipantIds.has(u.id)).map(user => (
                         <div key={user.id} className="flex items-center justify-between p-2 rounded-md hover:bg-muted">
                           <div className="flex items-center gap-3">
                             <Avatar className="h-9 w-9">
@@ -286,7 +322,7 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
                             Add
                           </Button>
                         </div>
-                      )) : <p className="text-sm text-muted-foreground text-center py-4">All users are already in the group.</p>}
+                      ))}
                     </div>
                   </div>
                 </div>

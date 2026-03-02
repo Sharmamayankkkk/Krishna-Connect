@@ -2,6 +2,7 @@
 'use client'
 
 import * as React from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -50,7 +51,8 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
   const router = useRouter();
   const { toast } = useToast();
   const { loggedInUser } = useAppContext();
-  const [allUsers, setAllUsers] = React.useState<User[]>([]);
+  const [memberSearch, setMemberSearch] = React.useState('');
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isCreating, setIsCreating] = React.useState(false);
   const supabase = createClient();
@@ -64,25 +66,30 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
     },
   })
 
-  React.useEffect(() => {
-    if (open && loggedInUser) {
-      const fetchUsers = async () => {
-        setIsLoading(true);
-        const { data, error } = await supabase.from('profiles').select('*');
-        if (error) {
-          toast({ variant: 'destructive', title: "Error fetching users", description: error.message });
-          setAllUsers([]);
-        } else {
-          setAllUsers(data as User[]);
-        }
-        setIsLoading(false);
-      };
-      fetchUsers();
-    } else {
+  // Search-as-you-type instead of loading all profiles
+  useEffect(() => {
+    if (!open) {
       form.reset();
       setAllUsers([]);
+      setMemberSearch('');
+      return;
     }
-  }, [open, supabase, toast, form, loggedInUser]);
+    if (!memberSearch.trim()) { setAllUsers([]); return; }
+
+    const timer = setTimeout(async () => {
+      setIsLoading(true);
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, name, username, avatar_url, role')
+        .or(`name.ilike.%${memberSearch}%,username.ilike.%${memberSearch}%`)
+        .neq('id', loggedInUser?.id || '')
+        .limit(30);
+      setAllUsers((data as User[]) || []);
+      setIsLoading(false);
+    }, 300);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [memberSearch, open, loggedInUser?.id]);
 
   const onSubmit = async (values: z.infer<typeof createGroupSchema>) => {
     if (!loggedInUser) return;
@@ -138,7 +145,7 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
     }
   }
 
-  const otherUsers = allUsers.filter(u => u.id !== loggedInUser?.id);
+  const otherUsers = allUsers; // already excludes self via .neq() in query
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -190,6 +197,15 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
               render={() => (
                 <FormItem>
                   <FormLabel>Add Members</FormLabel>
+                  <div className="mb-2">
+                    <input
+                      type="text"
+                      placeholder="Search by name or username..."
+                      value={memberSearch}
+                      onChange={e => setMemberSearch(e.target.value)}
+                      className="w-full px-3 py-1.5 text-sm border rounded-md bg-background focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
+                  </div>
                   <ScrollArea className="h-40 w-full rounded-md border p-4">
                     {isLoading ? (
                       <div className="space-y-3">

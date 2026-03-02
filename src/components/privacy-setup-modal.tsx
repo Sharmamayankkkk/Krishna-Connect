@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Icons } from '@/components/icons';
 import { useRouter } from 'next/navigation';
 import { Lock, Globe, Loader2 } from 'lucide-react';
-import { useAppContext } from '@/providers/app-context';
+import { useAuthContext } from '@/providers/auth-context';
 
 interface PrivacySetupModalProps {
     open: boolean;
@@ -30,7 +30,7 @@ export function PrivacySetupModal({ open, onOpenChange }: PrivacySetupModalProps
     const { toast } = useToast();
     const supabase = createClient();
     const router = useRouter();
-    const { refreshProfile } = useAppContext();
+    const { refreshProfile } = useAuthContext();
 
     const handleSave = async () => {
         setLoading(true);

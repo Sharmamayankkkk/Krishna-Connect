@@ -1,37 +1,47 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useAppContext } from "@/providers/app-provider"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/utils"
 
 export default function PrivacyPage() {
-  const { loggedInUser, blockedUsers, unblockUser, allUsers, updateUser } = useAppContext()
+  const { loggedInUser, blockedUsers, unblockUser, updateUser } = useAppContext()
   const supabase = createClient()
 
   const isPrivate = loggedInUser?.is_private || false
   const [loading, setLoading] = useState(false)
 
+  // Fetch only the profiles of blocked users by ID (no global users list needed)
+  const [blockedProfiles, setBlockedProfiles] = useState<Array<{ id: string; name: string; username: string; avatar_url: string }>>([])
+
+  useEffect(() => {
+    if (!blockedUsers.length) {
+      setBlockedProfiles([])
+      return
+    }
+    supabase
+      .from('profiles')
+      .select('id, name, username, avatar_url')
+      .in('id', blockedUsers)
+      .then(({ data }) => setBlockedProfiles(data || []))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [blockedUsers.join(',')])
+
   const handlePrivacyToggle = async (checked: boolean) => {
     setLoading(true)
     try {
-      await updateUser({ is_private: checked });
-      // Also update settings json just in case? Or rely on columns? 
-      // The prompt asked to sync with `profiles.settings` but `is_private` is a column.
-      // We will stick to the column for now as it influences RLS.
-      await supabase.from('profiles').update({ is_private: checked }).eq('id', loggedInUser?.id);
+      await updateUser({ is_private: checked })
+      await supabase.from('profiles').update({ is_private: checked }).eq('id', loggedInUser?.id)
     } catch (e) {
       console.error(e)
     } finally {
       setLoading(false)
     }
   }
-
-  const blockedList = allUsers.filter(u => blockedUsers.includes(u.id))
 
   return (
     <div className="space-y-6">
@@ -58,11 +68,11 @@ export default function PrivacyPage() {
 
         <div className="pt-4">
           <h4 className="mb-4 text-sm font-medium">Blocked Users</h4>
-          {blockedList.length === 0 ? (
+          {blockedProfiles.length === 0 ? (
             <p className="text-sm text-muted-foreground">You haven't blocked anyone yet.</p>
           ) : (
             <div className="space-y-4">
-              {blockedList.map(user => (
+              {blockedProfiles.map(user => (
                 <div key={user.id} className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-8 w-8">

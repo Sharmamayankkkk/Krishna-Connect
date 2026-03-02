@@ -36,7 +36,7 @@ export default function FeedPage() {
     const [isPromotionDialogOpen, setIsPromotionDialogOpen] = React.useState(false);
     const [postToPromote, setPostToPromote] = React.useState<PostType | null>(null);
 
-    // User interactions for algorithm
+    // User interactions for algorithm — stored in a ref so changes don't trigger re-fetches
     const [userInteractions, setUserInteractions] = React.useState<UserInteractions>({
         userId: loggedInUser?.id || '',
         likedPosts: [],
@@ -49,17 +49,20 @@ export default function FeedPage() {
         mutedWords: [],
         lastSeenPostTime: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString()
     });
+    // Keep a ref so fetchPosts can access current interactions without being in deps
+    const userInteractionsRef = React.useRef(userInteractions);
+    React.useEffect(() => { userInteractionsRef.current = userInteractions; }, [userInteractions]);
 
     // Home Page Challenges Row
     const [featuredChallenges, setFeaturedChallenges] = React.useState<Challenge[]>([]);
 
-    // Fetch posts
+    // Fetch posts — only depends on toast, not userInteractions (avoids re-fetch loop)
     const fetchPosts = React.useCallback(async () => {
         setIsInitialLoading(true);
         const supabase = createClient();
 
         const { data, error } = await supabase
-            .rpc('get_home_feed', { p_limit: 50, p_offset: 0 })
+            .rpc('get_home_feed', { p_limit: 20, p_offset: 0 })
             .select(`
                 *,
                 author:profiles!user_id(*),
@@ -97,36 +100,40 @@ export default function FeedPage() {
             const transformedPosts = data.map(transformPost);
             setAllPosts(transformedPosts);
 
-            // Generate "For You" feed
+            // Use ref so this doesn't need userInteractions in deps
             const { feed } = generateFeed(
                 transformedPosts,
-                userInteractions,
+                userInteractionsRef.current,
                 'for_you'
             );
 
-            setVisiblePosts(feed);
+            // Deduplicate by ID before setting — prevents duplicates when a locally-created
+            // post is already in state and then returned again by the next fetchPosts() call
+            const uniqueFeed = feed.filter((p, i, arr) => arr.findIndex(x => x.id === p.id) === i);
+            setVisiblePosts(uniqueFeed);
         }
         setIsInitialLoading(false);
-    }, [toast, userInteractions]);
+    }, [toast]); // NOTE: no userInteractions dep — prevents re-fetch loop
 
     React.useEffect(() => {
+        // Fire posts fetch and challenges fetch IN PARALLEL, not sequentially
         fetchPosts();
 
-        // Fetch featured challenges for the home timeline
         const fetchFeaturedChallenges = async () => {
             const supabase = createClient();
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 const { data } = await supabase.rpc('get_all_challenges', { p_user_id: user.id });
                 if (data) {
-                    // Filter active/scheduled, sort by participants to get top ones
                     const active = (data as Challenge[]).filter(c => c.status === 'active' || c.status === 'scheduled');
                     setFeaturedChallenges(active.sort((a, b) => b.participant_count - a.participant_count).slice(0, 3));
                 }
             }
         };
+        // Don't await fetchPosts — run challenges independently
         fetchFeaturedChallenges();
-    }, [fetchPosts]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Only runs once on mount
 
     const checkForNewPosts = React.useCallback(async () => {
         if (allPosts.length === 0) return;
@@ -289,7 +296,10 @@ export default function FeedPage() {
                         <CreatePost
                             onPostCreated={(newPost) => {
                                 if (typeof newPost !== 'string') {
-                                    setVisiblePosts(prev => [newPost, ...prev]);
+                                    setVisiblePosts(prev => {
+                                        const next = [newPost, ...prev];
+                                        return next.filter((p, i, arr) => arr.findIndex(x => x.id === p.id) === i);
+                                    });
                                 }
                             }}
                         />

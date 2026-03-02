@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client';
 import { cn, getAvatarUrl } from '@/lib/utils';
 import { CreateStatusDialog } from './create-status-dialog';
 import { ViewStatusDialog } from './view-status-dialog';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 type StatusUpdate = {
     user_id: string;
@@ -167,9 +168,7 @@ function OwnStoryMenu({
 
 export function StoriesBar() {
     const { loggedInUser } = useAppContext();
-    const [statusUpdates, setStatusUpdates] = React.useState<StatusUpdate[]>([]);
-    const [myStatus, setMyStatus] = React.useState<StatusUpdate | null>(null);
-    const [isLoading, setIsLoading] = React.useState(true);
+    const queryClient = useQueryClient();
     const [isCreateOpen, setIsCreateOpen] = React.useState(false);
     const [viewingStatusIndex, setViewingStatusIndex] = React.useState<number | null>(null);
     const [isMyStatusViewing, setIsMyStatusViewing] = React.useState(false);
@@ -181,12 +180,11 @@ export function StoriesBar() {
 
     const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
+    // ── Cached status fetch (2-min stale time = no re-fetch on nav back) ─────
     const fetchStatuses = React.useCallback(async () => {
-        if (!loggedInUser) return;
+        if (!loggedInUser) return { statusUpdates: [], myStatus: null };
 
         const supabase = createClient();
-
-        // Fetch statuses, close friends list, and live profiles in parallel
         const [statusesResult, closeFriendsResult] = await Promise.all([
             supabase
                 .from('statuses')
@@ -196,34 +194,18 @@ export function StoriesBar() {
             supabase
                 .from('close_friends')
                 .select('user_id, friend_id'),
-            // Fetch live profiles (if needed in future)
-            // supabase
-            //     .from('profiles')
-            //     .select('id, is_live')
-            //     .eq('is_live', true),
         ]);
 
-        // For now, no profiles are marked as live
         const liveProfiles: any[] = [];
         const liveProfileIds = new Set(liveProfiles?.map((p: any) => p.id) || []);
 
-        if (statusesResult.error || !statusesResult.data) {
-            setIsLoading(false);
-            return;
-        }
+        if (statusesResult.error || !statusesResult.data) return { statusUpdates: [], myStatus: null };
 
-
-        // Build close friends lookup: set of user_ids who have me as close friend
         const closeFriendOfSet = new Set<string>();
-        // Also: set of user_ids that I have as close friends
         const myCloseFriendsSet = new Set<string>();
         (closeFriendsResult.data ?? []).forEach((row: any) => {
-            if (row.friend_id === loggedInUser.id) {
-                closeFriendOfSet.add(row.user_id);
-            }
-            if (row.user_id === loggedInUser.id) {
-                myCloseFriendsSet.add(row.friend_id);
-            }
+            if (row.friend_id === loggedInUser.id) closeFriendOfSet.add(row.user_id);
+            if (row.user_id === loggedInUser.id) myCloseFriendsSet.add(row.friend_id);
         });
 
         const statusesByUser: Record<string, StatusUpdate> = {};
@@ -231,14 +213,11 @@ export function StoriesBar() {
             const userId = status.profile.id;
             const visibility: string = status.visibility ?? 'public';
 
-            // Filter close_friends stories: skip if not creator and not in their close friends
             if (
                 visibility === 'close_friends' &&
                 userId !== loggedInUser.id &&
                 !closeFriendOfSet.has(userId)
-            ) {
-                return;
-            }
+            ) return;
 
             if (!statusesByUser[userId]) {
                 statusesByUser[userId] = {
@@ -254,14 +233,8 @@ export function StoriesBar() {
             }
 
             const hasViewed = status.status_views?.some((view: any) => view.viewer_id === loggedInUser.id) ?? false;
-            if (!hasViewed && userId !== loggedInUser.id) {
-                statusesByUser[userId].is_all_viewed = false;
-            }
-
-            // Mark as close friend if any status is close_friends-only
-            if (visibility === 'close_friends') {
-                statusesByUser[userId].is_close_friend = true;
-            }
+            if (!hasViewed && userId !== loggedInUser.id) statusesByUser[userId].is_all_viewed = false;
+            if (visibility === 'close_friends') statusesByUser[userId].is_close_friend = true;
 
             statusesByUser[userId].statuses.push({
                 id: status.id,
@@ -277,21 +250,30 @@ export function StoriesBar() {
         if (myStatusUpdate) myStatusUpdate.is_all_viewed = true;
         delete statusesByUser[loggedInUser.id];
 
-        // Sort: live first, then unviewed, then viewed
         const allUpdates = Object.values(statusesByUser).sort((a, b) => {
             if (a.is_live !== b.is_live) return a.is_live ? -1 : 1;
             if (a.is_all_viewed !== b.is_all_viewed) return a.is_all_viewed ? 1 : -1;
             return 0;
         });
 
-        setMyStatus(myStatusUpdate);
-        setStatusUpdates(allUpdates);
-        setIsLoading(false);
+        return { statusUpdates: allUpdates, myStatus: myStatusUpdate };
     }, [loggedInUser]);
 
-    React.useEffect(() => {
-        fetchStatuses();
-    }, [fetchStatuses]);
+    const { data: statusData, isLoading } = useQuery({
+        queryKey: ['stories', loggedInUser?.id],
+        queryFn: fetchStatuses,
+        staleTime: 2 * 60 * 1000, // 2 minutes — no re-fetch on navigation
+        gcTime: 5 * 60 * 1000,
+        enabled: !!loggedInUser,
+    });
+
+    const statusUpdates = statusData?.statusUpdates ?? [];
+    const myStatus = statusData?.myStatus ?? null;
+
+    const invalidateStories = React.useCallback(() => {
+        queryClient.invalidateQueries({ queryKey: ['stories', loggedInUser?.id] });
+    }, [queryClient, loggedInUser?.id]);
+
 
     // --- Long press handler for own story ---
     const handleOwnStoryLongPress = React.useCallback(() => {
@@ -317,7 +299,7 @@ export function StoriesBar() {
         const supabase = createClient();
         const latestId = myStatus.statuses[0].id;
         await supabase.from('statuses').delete().eq('id', latestId);
-        fetchStatuses();
+        invalidateStories();
     };
 
     // --- Viewer controls ---
@@ -345,13 +327,13 @@ export function StoriesBar() {
 
     return (
         <>
-            <CreateStatusDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} onStatusCreated={fetchStatuses} />
+            <CreateStatusDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} onStatusCreated={invalidateStories} />
             <ViewStatusDialog
-                allStatusUpdates={isMyStatusViewing && myStatus ? [myStatus] : combinedUpdates}
+                allStatusUpdates={isMyStatusViewing && myStatus ? [myStatus] : (statusUpdates ?? [])}
                 startIndex={viewingStatusIndex}
                 open={viewingStatusIndex !== null}
                 onOpenChange={handleCloseViewer}
-                onStatusViewed={fetchStatuses}
+                onStatusViewed={invalidateStories}
             />
 
             <OwnStoryMenu

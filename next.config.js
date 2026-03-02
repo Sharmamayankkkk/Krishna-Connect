@@ -1,26 +1,14 @@
 /** @type {import('next').NextConfig} */
 
-const supabaseHostname = process.env.NEXT_PUBLIC_SUPABASE_URL
-  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
-  : '';
-
 const nextConfig = {
   trailingSlash: false,
   images: {
-    unoptimized: true,
+    unoptimized: true, // Next.js can't proxy Worker/CDN URLs server-side; compression handled via Supabase transform API
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'placehold.co',
-      },
-      {
-        protocol: 'https',
-        hostname: 'madhavstore.com',
-      },
-      ...(supabaseHostname ? [{
-        protocol: 'https',
-        hostname: supabaseHostname,
-      }] : []),
+      { protocol: 'https', hostname: 'placehold.co' },
+      { protocol: 'https', hostname: 'madhavstore.com' },
+      { protocol: 'https', hostname: '*.supabase.co' },
+      { protocol: 'https', hostname: '*.workers.dev' },
     ],
   },
 }

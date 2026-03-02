@@ -90,7 +90,6 @@ export function ChatInput({
     onRequestDm,
 }: ChatInputProps) {
     const { toast } = useToast();
-    const { allUsers } = useAppContext();
     // State variables for the component.
     const [message, setMessage] = useState('');
     const [caption, setCaption] = useState('');

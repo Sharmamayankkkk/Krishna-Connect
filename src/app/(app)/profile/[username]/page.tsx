@@ -133,22 +133,18 @@ export default async function ProfilePage(props: ProfilePageProps) {
     .single() as { data: Profile | null };
 
   if (!profile) {
-    // Fallback: Fetch profiles directly and match in memory
-    // This bypasses potential DB collation or RPC weirdness
-    const { data: allProfiles } = await supabase
+    // Fallback: targeted case-insensitive lookup (avoids loading 100+ profiles)
+    const { data: fallbackProfile } = await supabase
       .from('profiles')
       .select('*')
-      .limit(100);
+      .ilike('username', username)
+      .maybeSingle();
 
-    const foundMatch = allProfiles?.find(p =>
-      p.username && p.username.toLowerCase() === username.toLowerCase()
-    );
-
-    if (foundMatch) {
+    if (fallbackProfile) {
       // Retry RPC with exact username from DB
       const { data: retryProfile } = await supabase
         .rpc('get_profile_by_username', {
-          p_username: foundMatch.username,
+          p_username: fallbackProfile.username,
           p_requesting_user_id: user?.id,
         })
         .single() as { data: Profile | null };
@@ -156,17 +152,14 @@ export default async function ProfilePage(props: ProfilePageProps) {
       if (retryProfile) {
         profile = retryProfile;
       } else {
-        // If RPC still fails, use the raw profile data
-        // We'll mock the missing counts for now to allow the page to render
         profile = {
-          ...foundMatch,
-          // Map potential column names for bio and verified
-          bio: foundMatch.bio || foundMatch.description || '',
-          verified: foundMatch.is_verified || foundMatch.verified || false,
-          banner_url: foundMatch.banner_url || null,
-          location: foundMatch.location || null,
-          website: foundMatch.website || null,
-          created_at: foundMatch.created_at || null,
+          ...fallbackProfile,
+          bio: fallbackProfile.bio || fallbackProfile.description || '',
+          verified: fallbackProfile.is_verified || fallbackProfile.verified || false,
+          banner_url: fallbackProfile.banner_url || null,
+          location: fallbackProfile.location || null,
+          website: fallbackProfile.website || null,
+          created_at: fallbackProfile.created_at || null,
           follower_count: 0,
           following_count: 0,
           post_count: 0,
@@ -236,13 +229,14 @@ export default async function ProfilePage(props: ProfilePageProps) {
     );
   }
 
-  // Fetch the data for the tabs
+  // Fetch all profile tab data IN PARALLEL — posts, reposts, leela all at once
   let posts: any[] = [];
   let repostedPosts: any[] = [];
-  let followers: any[] = [];
-  let following: any[] = [];
+  let leelaVideos: any[] = [];
 
-  // Consistent Select Query (Same as feed.tsx and post-view.tsx)
+  const { transformPost } = await import("@/lib/post-utils");
+
+  // Shared select query for post data
   const POST_SELECT_QUERY = `
     *,
     author:user_id (id, name, username, avatar_url, verified),
@@ -270,69 +264,51 @@ export default async function ProfilePage(props: ProfilePageProps) {
     views:post_views(count)
   `;
 
-  try {
-    const { data } = await supabase
-      .rpc('get_posts_by_user_id', {
-        p_user_id: profile.id,
-        p_limit: 50,
-        p_offset: 0
-      })
-      .select(POST_SELECT_QUERY);
-
-    if (data) {
-      // Transform the data to match the component's expected format (Post type)
-      // Use the standardized transformPost utility
-      const { transformPost } = await import("@/lib/post-utils");
-
-      posts = data.map((post: any) => transformPost({
-        ...post,
-      }));
-    }
-  } catch (e) {
-    console.error("Error fetching profile posts:", e);
-  }
-
-  // Fetch reposted posts
-  try {
-    const { data: repostData } = await supabase
-      .from('post_reposts')
-      .select('post_id')
-      .eq('user_id', profile.id)
-      .order('created_at', { ascending: false })
-      .limit(50);
-
-    if (repostData && repostData.length > 0) {
-      const repostIds = repostData.map((r: any) => r.post_id);
-      const { data: repostPostsData } = await supabase
-        .from('posts')
+  // Run all three queries in parallel
+  const [postsResult, repostsResult, leelaResult] = await Promise.all([
+    // 1. User's posts
+    Promise.resolve(
+      supabase
+        .rpc('get_posts_by_user_id', { p_user_id: profile.id, p_limit: 50, p_offset: 0 })
         .select(POST_SELECT_QUERY)
-        .in('id', repostIds);
+    ).then((r) => r, (e: any) => { console.error("Error fetching profile posts:", e); return { data: null }; }),
 
-      if (repostPostsData) {
-        const { transformPost } = await import("@/lib/post-utils");
-        repostedPosts = repostPostsData.map((post: any) => transformPost(post));
-      }
-    }
-  } catch (e) {
-    console.error("Error fetching reposted posts:", e);
+    // 2. Repost IDs
+    Promise.resolve(
+      supabase
+        .from('post_reposts')
+        .select('post_id')
+        .eq('user_id', profile.id)
+        .order('created_at', { ascending: false })
+        .limit(50)
+    ).then((r) => r, (e: any) => { console.error("Error fetching reposts:", e); return { data: null }; }),
+
+    // 3. Leela videos
+    Promise.resolve(
+      supabase.rpc('get_user_leela_videos', { p_user_id: profile.id, p_limit: 30, p_offset: 0 })
+    ).then((r) => r, (e: any) => { console.error("Error fetching leela:", e); return { data: null }; }),
+  ]);
+
+  // Process posts
+  if (postsResult.data) {
+    posts = postsResult.data.map((post: any) => transformPost({ ...post }));
   }
 
-  // We skip followers/following for now as tabs are "Coming Soon"
-
-  // Fetch Leela videos for this user
-  let leelaVideos: any[] = [];
-  try {
-    const { data: leelaData } = await supabase
-      .rpc('get_user_leela_videos', {
-        p_user_id: profile.id,
-        p_limit: 30,
-        p_offset: 0
-      });
-    if (leelaData) {
-      leelaVideos = leelaData;
+  // Process reposts — need to fetch full post data for the repost IDs
+  if (repostsResult.data && repostsResult.data.length > 0) {
+    const repostIds = repostsResult.data.map((r: any) => r.post_id);
+    const { data: repostPostsData } = await supabase
+      .from('posts')
+      .select(POST_SELECT_QUERY)
+      .in('id', repostIds);
+    if (repostPostsData) {
+      repostedPosts = repostPostsData.map((post: any) => transformPost(post));
     }
-  } catch (e) {
-    console.error("Error fetching leela videos:", e);
+  }
+
+  // Process leela
+  if (leelaResult.data) {
+    leelaVideos = leelaResult.data;
   }
 
   return (
@@ -341,10 +317,9 @@ export default async function ProfilePage(props: ProfilePageProps) {
       posts={posts}
       repostedPosts={repostedPosts}
       leelaVideos={leelaVideos}
-      followers={followers}
-      following={following}
+      followers={[]}
+      following={[]}
       currentUser={user}
     />
-
   );
 }

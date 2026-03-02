@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState, useCallback } from "react"
 import { useCallContext } from "@/providers/call-provider"
 import { useAppContext } from "@/providers/app-provider"
+import { createClient } from "@/lib/utils"
+import type { User } from "@/lib/types"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { CallControls } from "./call-controls"
 import { getAvatarUrl, cn } from "@/lib/utils"
@@ -155,7 +157,7 @@ export function ActiveCallScreen() {
     endCall,
   } = useCallContext()
 
-  const { allUsers } = useAppContext()
+  const { loggedInUser } = useAppContext()
 
   const [callDuration, setCallDuration] = useState(0)
   const [isMinimized, setIsMinimized] = useState(false)
@@ -164,12 +166,32 @@ export function ActiveCallScreen() {
   const [layoutMode, setLayoutMode] = useState<'grid' | 'speaker'>('grid');
   const [pinnedPeerId, setPinnedPeerId] = useState<string | null>(null);
 
+  // On-demand profile cache for group call participants
+  const [peerProfiles, setPeerProfiles] = useState<Map<string, User>>(new Map());
+
   const timerRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Helper to get user info by ID
+  // Fetch and cache a peer's profile on first encounter
+  useEffect(() => {
+    const supabase = createClient();
+    const peerIds = Array.from(remoteStreams.keys());
+    peerIds.forEach(async (userId) => {
+      if (peerProfiles.has(userId)) return;
+      if (activeCall?.remoteUser.id === userId) {
+        setPeerProfiles(prev => new Map(prev).set(userId, activeCall.remoteUser));
+        return;
+      }
+      const { data } = await supabase.from("profiles").select("*").eq("id", userId).single();
+      if (data) setPeerProfiles(prev => new Map(prev).set(userId, data as User));
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [remoteStreams.size]);
+
+  // Helper to get user info by ID (from local cache)
   const getUserInfo = useCallback((userId: string) => {
-    return allUsers.find(u => u.id === userId)
-  }, [allUsers])
+    return peerProfiles.get(userId) ?? activeCall?.remoteUser;
+  }, [peerProfiles, activeCall?.remoteUser])
+
 
   // Call duration timer
   useEffect(() => {

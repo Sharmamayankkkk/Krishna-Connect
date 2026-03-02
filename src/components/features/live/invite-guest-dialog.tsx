@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,22 +19,34 @@ interface InviteGuestDialogProps {
 }
 
 export function InviteGuestDialog({ open, onOpenChange, livestreamId, currentGuests }: InviteGuestDialogProps) {
-    const { allUsers, loggedInUser } = useAppContext()
+    const { loggedInUser } = useAppContext()
     const { toast } = useToast()
     const supabase = createClient()
 
     const [searchQuery, setSearchQuery] = useState('')
     const [inviting, setInviting] = useState<string | null>(null)
+    const [searchResults, setSearchResults] = useState<any[]>([])
+    const [isSearching, setIsSearching] = useState(false)
 
-    const availableUsers = allUsers.filter(user => {
-        if (!loggedInUser || user.id === loggedInUser.id) return false
-        if (currentGuests.includes(user.id)) return false
-        const query = searchQuery.toLowerCase()
-        return (
-            user.name?.toLowerCase().includes(query) ||
-            user.username?.toLowerCase().includes(query)
-        )
-    })
+    // Debounced search — fetches users matching query, excluding already-invited guests
+    useEffect(() => {
+        if (!open) return;
+        if (!searchQuery.trim()) { setSearchResults([]); return; }
+        setIsSearching(true);
+        const timer = setTimeout(async () => {
+            const exclude = [...currentGuests, loggedInUser?.id || ''].filter(Boolean);
+            const { data } = await supabase
+                .from('profiles')
+                .select('id, name, username, avatar_url')
+                .or(`name.ilike.%${searchQuery}%,username.ilike.%${searchQuery}%`)
+                .not('id', 'in', `(${exclude.join(',')})`)
+                .limit(20);
+            setSearchResults(data || []);
+            setIsSearching(false);
+        }, 300);
+        return () => clearTimeout(timer);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchQuery, open]);
 
     const handleInvite = async (userId: string) => {
         if (!loggedInUser) return
@@ -101,12 +113,20 @@ export function InviteGuestDialog({ open, onOpenChange, livestreamId, currentGue
                     style={{ scrollbarGutter: 'stable' }}
                 >
                     <div className="space-y-1 py-2">
-                        {availableUsers.length === 0 ? (
+                        {!searchQuery.trim() ? (
                             <p className="text-sm text-muted-foreground text-center py-8">
-                                {searchQuery ? 'No users found' : 'No available users to invite'}
+                                Type a name to search for users
+                            </p>
+                        ) : isSearching ? (
+                            <div className="flex justify-center py-8">
+                                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                            </div>
+                        ) : searchResults.length === 0 ? (
+                            <p className="text-sm text-muted-foreground text-center py-8">
+                                No users found
                             </p>
                         ) : (
-                            availableUsers.map((user) => (
+                            searchResults.map((user) => (
                                 <div
                                     key={user.id}
                                     className="flex items-center gap-3 px-2 py-2 rounded-xl transition-colors hover:bg-muted/50"
