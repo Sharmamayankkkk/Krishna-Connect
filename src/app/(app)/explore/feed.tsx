@@ -441,9 +441,6 @@ export default function Feed() {
         });
     };
 
-    // Mobile Search State
-    const [isMobileSearchOpen, setIsMobileSearchOpen] = React.useState(false);
-
     return (
         <>
             <PromotePostDialog
@@ -474,16 +471,6 @@ export default function Feed() {
 
                         {/* Mobile Search & Profile Actions */}
                         <div className="flex items-center gap-2 flex-shrink-0">
-                            {/* Mobile Search Toggle */}
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="md:hidden rounded-full hover:bg-muted"
-                                onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
-                            >
-                                <Search className="h-5 w-5" />
-                            </Button>
-
                             {/* Notifications Toggle */}
                             <Link href="/notifications">
                                 <Button
@@ -498,17 +485,6 @@ export default function Feed() {
                             </Link>
                         </div>
                     </div>
-
-                    {/* Mobile Search Expandable Area */}
-                    {isMobileSearchOpen && (
-                        <div className="px-4 pb-3 md:hidden animate-in slide-in-from-top-2">
-                            <GlobalSearchBar
-                                placeholder="Search posts, users..."
-                                autoFocus
-                                className="w-full"
-                            />
-                        </div>
-                    )}
 
                     {/* Feed Filters / Tabs */}
                     <div className="flex w-full border-t border-border/10">

@@ -10,6 +10,7 @@ import {
 import { UserMenu } from "./user-menu"
 import { MainNav } from "./main-nav"
 import { MobileBottomNav } from "./mobile-bottom-nav"
+import { MobileFab } from "./mobile-fab"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
 
@@ -56,6 +57,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         {children}
       </main>
 
+      <MobileFab />
       <MobileBottomNav />
     </>
   )
