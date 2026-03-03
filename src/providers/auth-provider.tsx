@@ -189,13 +189,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (!isReady) return <AppLoading />
 
+    // setLoggedInUser, setChats, setDmRequests, setBlockedUsers are stable (React useState setters).
+    // sortChats is a module-level function (stable). supabaseRef is a useRef (stable).
     const authContextValue = useMemo(() => ({
         session, loggedInUser, setLoggedInUser,
         chats, setChats, sortChats,
         dmRequests, setDmRequests,
         blockedUsers, setBlockedUsers,
         supabaseRef, isReady, refreshProfile, fetchInitialData,
-    }), [session, loggedInUser, chats, dmRequests, blockedUsers, isReady, refreshProfile, fetchInitialData])
+    }), [session, loggedInUser, chats, dmRequests, blockedUsers, isReady, refreshProfile, fetchInitialData,
+        setLoggedInUser, setChats, setDmRequests, setBlockedUsers, supabaseRef])
 
     return (
         <AuthContext.Provider value={authContextValue}>

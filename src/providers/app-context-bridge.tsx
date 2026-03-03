@@ -17,7 +17,7 @@ import { useChatActions } from "./chat-actions-context"
 import { useUserActions } from "./user-actions-context"
 import { useThemeActions } from "./theme-actions-context"
 
-const EMPTY_USERS: never[] = []
+const NO_USERS: never[] = []
 
 export function AppContextBridge({ children }: { children: ReactNode }) {
     const auth = useAuthContext()
@@ -52,7 +52,7 @@ export function AppContextBridge({ children }: { children: ReactNode }) {
         updateSettings: themeActions.updateSettings,
         // allUsers removed — was causing full profiles table fetch on every login.
         // Components that needed allUsers for chat sender lookup now fetch on demand.
-        allUsers: EMPTY_USERS,
+        allUsers: NO_USERS,
     }), [
         auth.loggedInUser, auth.isReady, auth.refreshProfile,
         auth.chats, auth.dmRequests, auth.blockedUsers,
