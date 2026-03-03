@@ -969,8 +969,8 @@ export function PostCard({
                                 onClick={() => setIsCommentsOpen(true)}
                                 aria-label={`${stats.comments || 0} comments. Click to view comments`}
                             >
-                                <div className="p-1.5 rounded-full group-hover:bg-blue-500/20 transition-colors">
-                                    <MessageCircle className="h-4.5 w-4.5" />
+                                <div className="p-1 sm:p-1.5 rounded-full group-hover:bg-blue-500/20 transition-colors">
+                                    <MessageCircle className="h-4 w-4" />
                                 </div>
                                 <span className="text-xs font-medium tabular-nums">{formatNumber(stats.comments || 0)}</span>
                             </Button>
@@ -987,8 +987,8 @@ export function PostCard({
                                         )}
                                         aria-label={isReposted ? "Undo repost" : "Repost options"}
                                     >
-                                        <div className={cn("p-1.5 rounded-full transition-colors", isReposted ? "bg-green-500/20" : "group-hover:bg-green-500/20")}>
-                                            <Repeat2 className="h-4.5 w-4.5" />
+                                        <div className={cn("p-1 sm:p-1.5 rounded-full transition-colors", isReposted ? "bg-green-500/20" : "group-hover:bg-green-500/20")}>
+                                            <Repeat2 className="h-4 w-4" />
                                         </div>
                                         <span className="text-xs font-medium tabular-nums">{formatNumber((stats.reshares || 0) + (stats.reposts || 0))}</span>
                                     </Button>
@@ -1018,29 +1018,29 @@ export function PostCard({
                                     size="sm"
                                     className={cn(
                                         "flex items-center gap-1 sm:gap-1.5 rounded-full px-2 sm:px-3 transition-colors",
-                                        isLiked ? "text-pink-600 bg-pink-50" : "group-hover:bg-pink-500/10 group-hover:text-pink-500"
+                                        isLiked ? "text-pink-600 bg-pink-50 dark:bg-pink-950" : "hover:bg-pink-500/10 hover:text-pink-500"
                                     )}
                                     onClick={handleLike}
                                     aria-label={isLiked ? `Unlike. ${stats.likes || 0} likes` : `Like. ${stats.likes || 0} likes`}
                                 >
-                                    <div className={cn("p-1.5 rounded-full transition-colors", isLiked ? "bg-pink-100" : "group-hover:bg-pink-500/20")}>
+                                    <div className={cn("p-1 sm:p-1.5 rounded-full transition-colors", isLiked ? "bg-pink-100 dark:bg-pink-900" : "group-hover:bg-pink-500/20")}>
                                         <Heart className={cn(
-                                            "h-4.5 w-4.5 transition-all duration-300",
+                                            "h-4 w-4 transition-all duration-300",
                                             isLiked ? "fill-current scale-110" : "group-hover:scale-110"
                                         )} />
                                     </div>
+                                    {(stats.likes || 0) > 0 && (
+                                        <span
+                                            onClick={(e) => { e.stopPropagation(); setIsLikedByDialogOpen(true); }}
+                                            className={cn(
+                                                "text-xs font-medium tabular-nums hover:underline",
+                                                isLiked ? "font-bold" : ""
+                                            )}
+                                        >
+                                            {formatNumber(stats.likes)}
+                                        </span>
+                                    )}
                                 </Button>
-                                {(stats.likes || 0) > 0 && (
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); setIsLikedByDialogOpen(true); }}
-                                        className={cn(
-                                            "text-xs font-medium tabular-nums hover:underline cursor-pointer -ml-1",
-                                            isLiked ? "text-pink-600 font-bold" : "text-muted-foreground"
-                                        )}
-                                    >
-                                        {formatNumber(stats.likes)}
-                                    </button>
-                                )}
                             </div>
 
                             {/* Views */}
@@ -1050,24 +1050,28 @@ export function PostCard({
                                 className="group flex items-center gap-1 sm:gap-1.5 hover:bg-primary/10 hover:text-primary transition-colors rounded-full px-2 sm:px-3"
                                 aria-label={`${stats.views?.toLocaleString() || 0} views`}
                             >
-                                <div className="p-1.5 rounded-full group-hover:bg-primary/20 transition-colors">
-                                    <BarChart2 className="h-4.5 w-4.5" />
+                                <div className="p-1 sm:p-1.5 rounded-full group-hover:bg-primary/20 transition-colors">
+                                    <BarChart2 className="h-4 w-4" />
                                 </div>
-                                <span className="text-xs font-medium tabular-nums">{formatNumber(stats.views || 0)}</span>
+                                {(stats.views || 0) > 0 && (
+                                    <span className="text-xs font-medium tabular-nums">{formatNumber(stats.views!)}</span>
+                                )}
                             </Button>
 
                             {/* Share */}
                             <Button
                                 variant="ghost"
-                                size="icon"
-                                className="text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full h-9 w-9 group/action transition-colors -mr-2"
+                                size="sm"
+                                className="group flex items-center gap-1 sm:gap-1.5 hover:bg-primary/10 hover:text-primary transition-colors rounded-full px-2 sm:px-3 -mr-2"
                                 aria-label="Share post"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setIsShareDialogOpen(true);
                                 }}
                             >
-                                <Share className="h-4.5 w-4.5" />
+                                <div className="p-1 sm:p-1.5 rounded-full group-hover:bg-primary/20 transition-colors">
+                                    <Share className="h-4 w-4" />
+                                </div>
                             </Button>
                         </div>
                     </div>

@@ -123,11 +123,48 @@ export default function PostView() {
     }, [postId, isReady, supabase, toast]);
 
     const handleCommentSubmit = async () => {
-        if (!commentContent.trim() || !post) return;
+        if (!commentContent.trim() || !post || !loggedInUser || isPostingComment) return;
         setIsPostingComment(true);
-        toast({ title: 'Comment posted!' });
-        setCommentContent('');
-        setIsPostingComment(false);
+
+        try {
+            const { data, error } = await supabase
+                .from('comments')
+                .insert({
+                    post_id: post.id,
+                    user_id: loggedInUser.id,
+                    content: commentContent.trim()
+                })
+                .select(`
+                    id,
+                    content,
+                    created_at,
+                    user_id,
+                    parent_comment_id,
+                    user: profiles!comments_user_id_fkey(id, username, name, avatar_url, verified),
+                    likes: comment_likes(user_id)
+                `)
+                .single();
+
+            if (error) throw error;
+
+            setCommentContent('');
+            toast({ title: 'Comment posted!' });
+
+            if (data) {
+                setPost(prev => prev ? ({
+                    ...prev,
+                    comments: [...(prev.comments || []), data as any],
+                    stats: {
+                        ...prev.stats,
+                        comments: (prev.stats?.comments || 0) + 1
+                    }
+                }) : null);
+            }
+        } catch (error) {
+            toast({ variant: 'destructive', title: 'Failed to post reply' });
+        } finally {
+            setIsPostingComment(false);
+        }
     };
 
     const handleCommentClick = () => {

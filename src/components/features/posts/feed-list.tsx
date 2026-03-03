@@ -104,14 +104,15 @@ export function FeedList({
         const interval = setInterval(async () => {
             if (viewQueue.current.size === 0) return;
 
-            // Filter for valid UUIDs to prevent RPC 400 errors
-            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-            const postIds = Array.from(viewQueue.current).filter(id => uuidRegex.test(id));
+            // Post IDs are numeric (BIGINT), filter for valid integers only
+            const postIds = Array.from(viewQueue.current).filter(id => /^\d+$/.test(id));
 
             if (postIds.length === 0) return;
 
             try {
-                await supabase.rpc('log_post_views_bulk', { p_post_ids: postIds });
+                await supabase.rpc('log_post_views_bulk', { p_post_ids: postIds.map(Number) });
+                // Only clear processed IDs after successful RPC call
+                postIds.forEach(id => viewQueue.current.delete(id));
             } catch (error) {
                 console.error('Failed to log bulk views:', error);
             }

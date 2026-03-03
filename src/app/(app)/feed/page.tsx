@@ -313,7 +313,7 @@ export default function FeedPage() {
                                 <h2 className="text-sm font-bold flex items-center gap-1.5"><Sparkles className="h-4 w-4 text-primary" /> Trending Challenges</h2>
                                 <a href="/challenges" className="text-xs text-primary font-medium hover:underline">View All</a>
                             </div>
-                            <div className="flex overflow-x-auto gap-3 pb-2 snap-x hide-scrollbar">
+                            <div className="flex overflow-x-auto gap-3 pb-2 snap-x no-scrollbar">
                                 {featuredChallenges.map(challenge => (
                                     <div key={challenge.id} className="min-w-[260px] max-w-[280px] snap-center shrink-0">
                                         <ChallengeCard challenge={challenge} userId={loggedInUser?.id || null} />
@@ -338,7 +338,7 @@ export default function FeedPage() {
                 {showScrollTop && (
                     <button
                         onClick={scrollToTop}
-                        className="fixed bottom-6 right-6 p-3 bg-primary text-primary-foreground rounded-full shadow-lg hover:scale-110 transition-transform z-50"
+                        className="fixed bottom-24 right-4 md:bottom-6 md:right-6 p-3 bg-primary text-primary-foreground rounded-full shadow-lg hover:scale-110 transition-transform z-50"
                     >
                         <ArrowUp className="h-5 w-5" />
                     </button>

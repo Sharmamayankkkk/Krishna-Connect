@@ -11,7 +11,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import type { Post, Message as Comment, User } from '@/lib/types';
 import { useAppContext } from '@/providers/app-provider';
-import { Heart, MessageCircle, Send, MoreHorizontal, Bookmark, BookmarkCheck, Share2, Flag, Trash2, Copy, X } from 'lucide-react';
+import { Heart, MessageCircle, Send, Loader2, MoreHorizontal, Bookmark, BookmarkCheck, Share2, Flag, Trash2, Copy, X } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
@@ -35,6 +35,9 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
   const [likeCount, setLikeCount] = useState(0);
   const [isMobileCommentsOpen, setIsMobileCommentsOpen] = useState(false);
   const [replyingTo, setReplyingTo] = useState<Comment | null>(null);
+  const [isPostingComment, setIsPostingComment] = useState(false);
+  // Synchronous guard — prevents a second DB insert before React re-renders.
+  const isPostingCommentRef = useRef(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const commentInputRef = useRef<HTMLInputElement>(null);
   const mobileCommentInputRef = useRef<HTMLInputElement>(null);
@@ -132,7 +135,7 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
 
   const handlePostComment = async (text: string) => {
     const trimmedText = text.trim();
-    if (!trimmedText || !loggedInUser || !post) return;
+    if (!trimmedText || !loggedInUser || !post || isPostingCommentRef.current) return;
 
     // Remove @mention prefix if replying
     const commentContent = replyingTo
@@ -141,9 +144,13 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
 
     if (!commentContent) return;
 
+    isPostingCommentRef.current = true;
+    setIsPostingComment(true);
+
     const supabase = createClient();
+    const optimisticId = `temp-${Date.now()}`;
     const optimisticComment: Comment = {
-      id: `temp-${Date.now()}`,
+      id: optimisticId,
       content: commentContent,
       created_at: new Date().toISOString(),
       user_id: loggedInUser.id,
@@ -176,12 +183,17 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
       });
     } catch (error) {
       console.error("Error posting comment:", error);
+      // Revert optimistic update and restore the typed text
+      setComments(prev => prev.filter(c => c.id !== optimisticId));
+      setNewComment(commentContent);
       toast({
         title: "Error",
         description: "Failed to post comment",
         variant: "destructive"
       });
-      // Optionally revert optimistic update
+    } finally {
+      isPostingCommentRef.current = false;
+      setIsPostingComment(false);
     }
   };
 
@@ -594,14 +606,15 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
                     className="flex-1"
                     aria-label="Write a comment"
                     maxLength={500}
+                    disabled={isPostingComment}
                   />
                   <Button
                     onClick={handleDesktopSubmit}
-                    disabled={!newComment.trim()}
+                    disabled={!newComment.trim() || isPostingComment}
                     aria-label="Post comment"
                     className="hover:scale-105 transition-transform"
                   >
-                    <Send className="h-4 w-4" />
+                    {isPostingComment ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   </Button>
                 </div>
               </div>
@@ -727,14 +740,15 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 maxLength={500}
+                disabled={isPostingComment}
               />
               <Button
                 type="submit"
                 size="icon"
                 className="rounded-full flex-shrink-0"
-                disabled={!newComment.trim()}
+                disabled={!newComment.trim() || isPostingComment}
               >
-                <Send className="h-4 w-4" />
+                {isPostingComment ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </Button>
             </form>
           </div>

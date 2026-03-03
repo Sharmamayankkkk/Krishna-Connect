@@ -1,6 +1,7 @@
 
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useRef } from 'react';
 import { PostType, CommentType, ReplyType, PollType, UserType } from '@/lib/types';
 
 interface UsePostInteractionsProps {
@@ -11,6 +12,8 @@ interface UsePostInteractionsProps {
 
 export function usePostInteractions({ loggedInUser, updatePost, onDeletePost }: UsePostInteractionsProps) {
     const { toast } = useToast();
+    // Synchronous guard — prevents concurrent comment inserts before React re-renders.
+    const isSubmittingCommentRef = useRef(false);
 
     const handlePostLikeToggle = async (post: PostType) => {
         if (!loggedInUser) {
@@ -206,7 +209,8 @@ export function usePostInteractions({ loggedInUser, updatePost, onDeletePost }: 
     }
 
     const handleCommentSubmit = async (post: PostType, commentText: string, parentCommentId?: string) => {
-        if (!loggedInUser) return;
+        if (!loggedInUser || isSubmittingCommentRef.current) return;
+        isSubmittingCommentRef.current = true;
 
         const commenterUser = {
             id: loggedInUser.id,
@@ -280,6 +284,8 @@ export function usePostInteractions({ loggedInUser, updatePost, onDeletePost }: 
             console.error("Error creating comment:", error);
             updatePost(post); // Revert
             toast({ title: "Error", description: "Failed to post comment", variant: "destructive" });
+        } finally {
+            isSubmittingCommentRef.current = false;
         }
     };
 
