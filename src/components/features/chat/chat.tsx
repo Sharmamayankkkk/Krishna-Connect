@@ -222,7 +222,8 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
     }, []);
 
     // We create a Supabase client instance to interact with our database.
-    const supabase = createClient();
+    // Memoized to prevent re-creation on every render which would cause infinite useEffect loops.
+    const supabase = useMemo(() => createClient(), []);
 
     // Listen for real-time message updates (e.g., edited messages, call status changes)
     useEffect(() => {
@@ -1458,12 +1459,6 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                             <DropdownMenuItem onClick={() => setIsStarredDialogOpen(true)}>
                                 <Star className="mr-2 h-4 w-4" />
                                 <span>Starred Messages</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                                <Link href="/starred">
-                                    <Star className="mr-2 h-4 w-4" />
-                                    <span>All Starred Messages</span>
-                                </Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
