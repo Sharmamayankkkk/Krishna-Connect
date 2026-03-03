@@ -640,14 +640,17 @@ export function PostCard({
         requireAuth(() => onLikeToggle(post.id), "Log in to like");
     };
 
+    const DOUBLE_TAP_THRESHOLD_MS = 300;
+    const LIKE_ANIMATION_DURATION_MS = 800;
+
     const handleDoubleTapLike = () => {
         const now = Date.now();
-        if (now - lastTapRef.current < 300) {
+        if (now - lastTapRef.current < DOUBLE_TAP_THRESHOLD_MS) {
             if (!isLiked) {
                 handleLike();
             }
             setShowLikeAnimation(true);
-            setTimeout(() => setShowLikeAnimation(false), 800);
+            setTimeout(() => setShowLikeAnimation(false), LIKE_ANIMATION_DURATION_MS);
         }
         lastTapRef.current = now;
     };

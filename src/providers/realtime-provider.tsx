@@ -40,11 +40,17 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
                 const newChats = currentChats.map((c) => {
                     if (c.id === newMessage.chat_id) {
                         const shouldIncreaseUnread = !isMyMessage && (!isChatOpen || !isWindowFocused)
+
+                        let previewContent: string | null
+                        if (newMessage.attachment_url) {
+                            previewContent = newMessage.attachment_metadata?.name || "Sent an attachment"
+                        } else {
+                            previewContent = typeof newMessage.content === 'string' ? newMessage.content : null
+                        }
+
                         return {
                             ...c,
-                            last_message_content: newMessage.attachment_url
-                                ? (newMessage.attachment_metadata?.name || "Sent an attachment")
-                                : (typeof newMessage.content === 'string' ? newMessage.content : (newMessage.content ? String(newMessage.content) : null)),
+                            last_message_content: previewContent,
                             last_message_timestamp: newMessage.created_at,
                             unreadCount: shouldIncreaseUnread ? (c.unreadCount || 0) + 1 : (c.unreadCount || 0),
                         }
