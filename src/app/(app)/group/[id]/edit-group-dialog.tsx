@@ -19,7 +19,7 @@ import type { Chat, User, Participant } from '@/lib/types'
 import { UserPlus, UserX, Loader2, Upload, RefreshCcw, Copy, Tag, Globe, Eye, Lock } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
-import { createClient } from '@/lib/utils'
+import { createClient, getAvatarUrl } from '@/lib/utils'
 import { v4 as uuidv4 } from 'uuid';
 
 interface EditGroupDialogProps {
@@ -310,7 +310,7 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
                           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
                             <div className="flex items-center gap-3 mb-3 sm:mb-0">
                               <Avatar className="h-9 w-9">
-                                <AvatarImage src={p.profiles.avatar_url} alt={p.profiles.name} />
+                                <AvatarImage src={getAvatarUrl(p.profiles.avatar_url)} alt={p.profiles.name} />
                                 <AvatarFallback>{p.profiles.name.charAt(0)}</AvatarFallback>
                               </Avatar>
                               <div>
@@ -369,7 +369,7 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
                         <div key={user.id} className="flex items-center justify-between p-2 rounded-md hover:bg-muted">
                           <div className="flex items-center gap-3">
                             <Avatar className="h-9 w-9">
-                              <AvatarImage src={user.avatar_url} alt={user.name} />
+                              <AvatarImage src={getAvatarUrl(user.avatar_url)} alt={user.name} />
                               <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                             </Avatar>
                             <span>{user.name}</span>

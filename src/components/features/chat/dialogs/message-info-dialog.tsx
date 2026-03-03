@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CheckCheck } from 'lucide-react';
 import type { Message, Chat, Participant, User } from '@/lib/types';
+import { getAvatarUrl } from '@/lib/utils';
 
 interface MessageInfoDialogProps {
   message: Message;
@@ -72,7 +73,7 @@ export function MessageInfoDialog({ message, chat, open, onOpenChange }: Message
                             <div key={user.id} className="flex items-center justify-between p-2 rounded-md">
                                 <div className="flex items-center gap-3">
                                     <Avatar className="h-9 w-9">
-                                        <AvatarImage src={user.avatar_url} />
+                                        <AvatarImage src={getAvatarUrl(user.avatar_url)} />
                                         <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                                     </Avatar>
                                     <span>{user.name}</span>
@@ -89,7 +90,7 @@ export function MessageInfoDialog({ message, chat, open, onOpenChange }: Message
                             <div key={user.id} className="flex items-center justify-between p-2 rounded-md">
                                 <div className="flex items-center gap-3">
                                     <Avatar className="h-9 w-9">
-                                        <AvatarImage src={user.avatar_url} />
+                                        <AvatarImage src={getAvatarUrl(user.avatar_url)} />
                                         <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                                     </Avatar>
                                     <span>{user.name}</span>

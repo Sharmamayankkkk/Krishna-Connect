@@ -117,6 +117,7 @@ export function SharePostDialog({ post, open, onOpenChange }: SharePostDialogPro
                     title: post.content ? post.content.substring(0, 50) + (post.content.length > 50 ? '...' : '') : 'Media Post',
                     description: `@${post.author.username}`,
                     image: post.media && post.media.length > 0 ? post.media[0].url : post.author.avatar,
+                    postMediaType: post.media && post.media.length > 0 ? post.media[0].type : undefined,
                     url: `/profile/${post.author.username}/post/${post.id}`,
                     icon: 'post',
                     // New rich preview fields

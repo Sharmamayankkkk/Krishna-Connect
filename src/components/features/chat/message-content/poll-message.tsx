@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { createClient } from '@/lib/utils';
+import { createClient, getAvatarUrl } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { BarChart3, Users, Undo2, Circle, CheckCircle2, Square, CheckSquare, Eye, EyeOff } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -25,7 +25,7 @@ export const PollMessage = ({ pollId, loggedInUserId, chatParticipants }: PollMe
     const [votes, setVotes] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showVoters, setShowVoters] = useState(false);
-    const supabase = createClient();
+    const supabase = useMemo(() => createClient(), []);
     const { toast } = useToast();
 
     useEffect(() => {
@@ -231,7 +231,7 @@ export const PollMessage = ({ pollId, loggedInUserId, chatParticipants }: PollMe
                                                 <Tooltip delayDuration={200}>
                                                     <TooltipTrigger asChild>
                                                         <Avatar className="w-5 h-5 border border-border/50 shadow-sm cursor-help">
-                                                            <AvatarImage src={profile.avatar_url} />
+                                                            <AvatarImage src={getAvatarUrl(profile.avatar_url)} />
                                                             <AvatarFallback className="text-[8px] font-bold bg-primary/10 text-primary">{profile.name?.[0]}</AvatarFallback>
                                                         </Avatar>
                                                     </TooltipTrigger>

@@ -12,6 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Pin, X } from 'lucide-react';
 import type { Message } from '@/lib/types';
+import { getAvatarUrl } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 
 interface PinnedMessagesDialogProps {
@@ -52,7 +53,7 @@ export function PinnedMessagesDialog({
                         <div className="flex justify-between items-start">
                              <div className="flex items-start gap-3">
                                 <Avatar className="h-8 w-8">
-                                    <AvatarImage src={message.profiles?.avatar_url} />
+                                    <AvatarImage src={getAvatarUrl(message.profiles?.avatar_url)} />
                                     <AvatarFallback>{message.profiles?.name?.charAt(0) || 'U'}</AvatarFallback>
                                 </Avatar>
                                 <div>

@@ -151,11 +151,11 @@ export function Chat({
     // Theme styles
     // -------------------------------------------------------------------------
     const wallpaperStyle = {
-        backgroundImage: themeSettings.chatWallpaper ? `url(${themeSettings.chatWallpaper})` : `url('/chat-bg.png')`,
+        backgroundImage: themeSettings.chatWallpaper ? `url(${themeSettings.chatWallpaper})` : `url('/chat-bg/light.png')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         filter: `brightness(${themeSettings.wallpaperBrightness / 100})`,
-        backgroundRepeat: themeSettings.chatWallpaper?.startsWith('/chat-bg.png') ? 'repeat' : 'no-repeat',
+        backgroundRepeat: themeSettings.chatWallpaper?.startsWith('/chat-bg/') ? 'repeat' : 'no-repeat',
     };
 
     const outgoingBubbleStyle = {

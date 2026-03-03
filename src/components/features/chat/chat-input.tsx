@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import TextareaAutosize from 'react-textarea-autosize';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { Chat, User, Message, AttachmentMetadata, DmRequest } from '@/lib/types';
-import { cn, createClient } from '@/lib/utils';
+import { cn, createClient, getAvatarUrl } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import EmojiPicker, { EmojiClickData, SkinTones } from 'emoji-picker-react';
@@ -880,7 +880,7 @@ export function ChatInput({
                                                 <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center"><Users className="h-4 w-4" /></div>
                                             ) : (
                                                 <Avatar className="h-8 w-8">
-                                                    <AvatarImage src={(user as User).avatar_url} alt={user.name} />
+                                                    <AvatarImage src={getAvatarUrl((user as User).avatar_url)} alt={user.name} />
                                                     <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
                                                 </Avatar>
                                             )}

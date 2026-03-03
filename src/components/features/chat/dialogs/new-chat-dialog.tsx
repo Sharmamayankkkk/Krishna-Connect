@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useToast } from "@/hooks/use-toast"
 import { useAppContext } from "@/providers/app-provider"
 import type { User, Chat } from '@/lib/types'
-import { createClient } from '@/lib/utils'
+import { createClient, getAvatarUrl } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Search } from 'lucide-react'
 
@@ -182,7 +182,7 @@ export function NewChatDialog({ open, onOpenChange }: NewChatDialogProps) {
                   disabled={isLoading}
                 >
                   <Avatar>
-                    <AvatarImage src={user.avatar_url} alt={user.name} />
+                    <AvatarImage src={getAvatarUrl(user.avatar_url)} alt={user.name} />
                     <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div>

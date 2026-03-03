@@ -3,7 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { FileIcon, Download } from 'lucide-react';
+import { FileIcon, Download, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -99,6 +99,7 @@ export const createRenderMessageContent = ({
                 const authorAvatar = metadata?.postAuthorAvatar || metadata?.image;
                 const postContent = metadata?.postContent || metadata?.title;
                 const hasMedia = metadata?.image && metadata.image !== metadata.postAuthorAvatar;
+                const isVideo = metadata?.postMediaType === 'video' || (hasMedia && /\.(mp4|webm|mov|avi|mkv)(\?|$)/i.test(metadata?.image || ''));
                 return (
                     <Link href={metadata?.url || '#'} className="block max-w-sm w-full group/card">
                         <Card className="bg-muted/40 hover:bg-muted/60 transition-all duration-200 overflow-hidden border-primary/10 shadow-sm group-hover/card:shadow-md">
@@ -113,9 +114,26 @@ export const createRenderMessageContent = ({
                                 <ArrowDown className="w-3 h-3 -rotate-90 text-muted-foreground/50 opacity-0 group-hover/card:opacity-100 transition-opacity" />
                             </div>
                             {hasMedia && (
-                                <div className="relative aspect-square w-full bg-black/5">
-                                    <Image src={metadata.image!} alt="Post content" fill className="object-cover" sizes="(max-width: 768px) 100vw, 300px" />
-                                </div>
+                                isVideo ? (
+                                    <div className="relative aspect-video w-full bg-black/10">
+                                        <video
+                                            src={metadata.image!}
+                                            className="h-full w-full object-cover"
+                                            preload="metadata"
+                                            muted
+                                            playsInline
+                                        />
+                                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                            <div className="bg-black/60 backdrop-blur-sm rounded-full p-2.5">
+                                                <Play className="h-5 w-5 text-white fill-white" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="relative aspect-square w-full bg-black/5">
+                                        <Image src={metadata.image!} alt="Post content" fill className="object-cover" sizes="(max-width: 768px) 100vw, 300px" />
+                                    </div>
+                                )
                             )}
                             <div className="p-3 bg-background/30">
                                 <p className="text-sm line-clamp-3 text-foreground/90 leading-relaxed font-normal">

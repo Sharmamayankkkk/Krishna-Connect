@@ -92,6 +92,7 @@ export type AttachmentMetadata = {
   postAuthor?: string;
   postAuthorAvatar?: string;
   postContent?: string;
+  postMediaType?: 'image' | 'video' | 'gif';
   // Voice Notes
   duration?: number;
   waveform?: number[];

@@ -18,7 +18,7 @@ export default {
     },
     extend: {
       backgroundImage: {
-        'chat-pattern': "url('/chat-bg.png')",
+        'chat-pattern': "url('/chat-bg/light.png')",
       },
       fontFamily: {
         sans: ['var(--font-sans)', 'sans-serif'],

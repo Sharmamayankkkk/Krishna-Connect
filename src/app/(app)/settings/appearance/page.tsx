@@ -37,7 +37,7 @@ const ChatPreview = ({ themeSettings }: { themeSettings: any }) => {
   return (
     <div className="rounded-xl border overflow-hidden relative h-[200px] w-full">
       <img
-        src={themeSettings.chatWallpaper || '/chat-bg.png'}
+        src={themeSettings.chatWallpaper || '/chat-bg/light.png'}
         alt="Chat Wallpaper"
         className="absolute inset-0 z-0 h-full w-full object-cover"
         style={{ filter: `brightness(${themeSettings.wallpaperBrightness / 100})` }}

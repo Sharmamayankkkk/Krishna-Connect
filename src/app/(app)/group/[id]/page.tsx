@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label';
 import React from 'react';
 import { EditGroupDialog } from './edit-group-dialog';
 import type { Chat } from '@/lib/types';
+import { getAvatarUrl } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 
@@ -96,7 +97,7 @@ export default function GroupInfoPage() {
               <CardContent className="p-6 flex flex-col items-center text-center">
                 <Avatar className="h-24 w-24 mb-4 ring-2 ring-primary ring-offset-2 ring-offset-background">
                   <AvatarImage
-                    src={group.avatar_url}
+                    src={getAvatarUrl(group.avatar_url)}
                     alt={group.name}
                     data-ai-hint="group symbol"
                   />
@@ -240,7 +241,7 @@ export default function GroupInfoPage() {
                       <div key={participant.user_id} className="flex items-center justify-between rounded-lg p-3 hover:bg-muted/50 transition-colors">
                           <Link href={`/profile/${participant.profiles.username}`} className="flex items-center gap-3 group min-w-0">
                               <Avatar className="h-10 w-10 shrink-0">
-                                  <AvatarImage src={participant.profiles.avatar_url} alt={participant.profiles.name} data-ai-hint="avatar" />
+                                  <AvatarImage src={getAvatarUrl(participant.profiles.avatar_url)} alt={participant.profiles.name} data-ai-hint="avatar" />
                                   <AvatarFallback>{participant.profiles.name.charAt(0)}</AvatarFallback>
                               </Avatar>
                               <div className="min-w-0">

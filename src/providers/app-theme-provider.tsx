@@ -16,7 +16,7 @@ const DEFAULT_THEME_SETTINGS: ThemeSettings = {
     outgoingBubbleColor: "hsl(221.2 83.2% 53.3%)",
     incomingBubbleColor: "hsl(210 40% 96.1%)",
     usernameColor: "hsl(var(--primary))",
-    chatWallpaper: "/chat-bg.png",
+    chatWallpaper: "/chat-bg/light.png",
     wallpaperBrightness: 100,
 }
 
