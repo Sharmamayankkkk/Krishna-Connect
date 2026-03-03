@@ -11,7 +11,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import type { Post, Message as Comment, User } from '@/lib/types';
 import { useAppContext } from '@/providers/app-provider';
-import { Heart, MessageCircle, Send, MoreHorizontal, Bookmark, BookmarkCheck, Share2, Flag, Trash2, Copy, X } from 'lucide-react';
+import { Heart, MessageCircle, Send, Loader2, MoreHorizontal, Bookmark, BookmarkCheck, Share2, Flag, Trash2, Copy, X } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
@@ -614,7 +614,7 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
                     aria-label="Post comment"
                     className="hover:scale-105 transition-transform"
                   >
-                    <Send className="h-4 w-4" />
+                    {isPostingComment ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   </Button>
                 </div>
               </div>
@@ -748,7 +748,7 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
                 className="rounded-full flex-shrink-0"
                 disabled={!newComment.trim() || isPostingComment}
               >
-                <Send className="h-4 w-4" />
+                {isPostingComment ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </Button>
             </form>
           </div>

@@ -117,6 +117,8 @@ export default function PostView() {
     const [isLoading, setIsLoading] = useState(true);
     const [commentContent, setCommentContent] = useState('');
     const [isPostingComment, setIsPostingComment] = useState(false);
+    // Synchronous guard — prevents a second DB insert before React re-renders.
+    const isPostingCommentRef = useRef(false);
     const [isQuoteOpen, setIsQuoteOpen] = useState(false);
     const [quoteText, setQuoteText] = useState('');
     const commentInputRef = useRef<HTMLTextAreaElement>(null);
@@ -179,7 +181,8 @@ export default function PostView() {
     }, [postId, isReady, supabase, toast]);
 
     const handleCommentSubmit = async () => {
-        if (!commentContent.trim() || !post) return;
+        if (!commentContent.trim() || !post || isPostingCommentRef.current) return;
+        isPostingCommentRef.current = true;
         setIsPostingComment(true);
 
         try {
@@ -226,6 +229,7 @@ export default function PostView() {
         } catch (error) {
             toast({ variant: 'destructive', title: 'Failed to post reply' });
         } finally {
+            isPostingCommentRef.current = false;
             setIsPostingComment(false);
         }
     };
