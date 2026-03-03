@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAppContext } from "@/providers/app-provider";
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Users, Shield, ArrowLeft, Trash2, LogOut, Link as LinkIcon, Settings, EyeOff, Copy, ShieldCheck } from 'lucide-react';
+import { MessageSquare, Users, Shield, ArrowLeft, Trash2, LogOut, Link as LinkIcon, Settings, EyeOff, Copy, ShieldCheck, Tag, Globe, Lock, Eye } from 'lucide-react';
 import Link from 'next/link';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
@@ -83,6 +83,9 @@ export default function GroupInfoPage() {
       <EditGroupDialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} group={group} />
       <header className="flex items-center gap-4 p-4 border-b bg-background sticky top-0 z-10">
         <SidebarTrigger className="md:hidden" />
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
         <h2 className="text-xl font-bold tracking-tight">{group.name} Info</h2>
       </header>
 
@@ -177,21 +180,41 @@ export default function GroupInfoPage() {
               <CardHeader>
                 <CardTitle>Group Settings</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <p className="font-medium">Group Type</p>
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between rounded-lg border p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-full bg-primary/10 p-2">
+                      <Globe className="h-4 w-4 text-primary" />
+                    </div>
+                    <p className="font-medium text-sm">Group Type</p>
+                  </div>
                   <Badge variant="secondary" className="capitalize">{group.is_public ? 'Public' : 'Private'}</Badge>
                 </div>
-                <div className="flex items-center justify-between">
-                  <p className="font-medium">History for New Members</p>
+                <div className="flex items-center justify-between rounded-lg border p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-full bg-blue-500/10 p-2">
+                      <Eye className="h-4 w-4 text-blue-500" />
+                    </div>
+                    <p className="font-medium text-sm">History for New Members</p>
+                  </div>
                   <Badge variant="secondary" className="capitalize">{group.history_visible ? 'Visible' : 'Hidden'}</Badge>
                 </div>
-                <div className="flex items-center justify-between">
-                  <p className="font-medium">Disable Sharing</p>
+                <div className="flex items-center justify-between rounded-lg border p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-full bg-orange-500/10 p-2">
+                      <Lock className="h-4 w-4 text-orange-500" />
+                    </div>
+                    <p className="font-medium text-sm">Disable Sharing</p>
+                  </div>
                   <Badge variant="secondary" className="capitalize">{group.disable_sharing ? 'Yes' : 'No'}</Badge>
                 </div>
-                <div className="flex items-center justify-between">
-                  <p className="font-medium">Self-Assign Member Tags</p>
+                <div className="flex items-center justify-between rounded-lg border p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-full bg-green-500/10 p-2">
+                      <Tag className="h-4 w-4 text-green-500" />
+                    </div>
+                    <p className="font-medium text-sm">Self-Assign Member Tags</p>
+                  </div>
                   <Badge variant="secondary" className="capitalize">{group.settings?.members_can_set_tag ? 'Yes' : 'No'}</Badge>
                 </div>
                 {isAdmin && group.invite_code && (
@@ -212,20 +235,21 @@ export default function GroupInfoPage() {
                 <CardTitle>Members</CardTitle>
                 <CardDescription>People in this {group.type}.</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-2">
                   {displayedParticipants.map(participant => (
-                      <div key={participant.user_id} className="flex items-center justify-between">
-                          <Link href={`/profile/${participant.profiles.username}`} className="flex items-center gap-3 group">
-                              <Avatar className="h-10 w-10">
+                      <div key={participant.user_id} className="flex items-center justify-between rounded-lg p-3 hover:bg-muted/50 transition-colors">
+                          <Link href={`/profile/${participant.profiles.username}`} className="flex items-center gap-3 group min-w-0">
+                              <Avatar className="h-10 w-10 shrink-0">
                                   <AvatarImage src={participant.profiles.avatar_url} alt={participant.profiles.name} data-ai-hint="avatar" />
                                   <AvatarFallback>{participant.profiles.name.charAt(0)}</AvatarFallback>
                               </Avatar>
-                              <div>
-                                  <p className="font-semibold group-hover:underline">{participant.profiles.name}</p>
-                                  <p className="text-sm text-muted-foreground">@{participant.profiles.username}</p>
+                              <div className="min-w-0">
+                                  <p className="font-semibold group-hover:underline truncate">{participant.profiles.name}</p>
+                                  <p className="text-sm text-muted-foreground truncate">@{participant.profiles.username}</p>
                               </div>
                           </Link>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 shrink-0 ml-2">
+                            {participant.tag && <Badge variant="outline" className="flex items-center gap-1 text-xs font-normal"><Tag className="h-3 w-3" />{participant.tag}</Badge>}
                             {participant.profiles.role === 'gurudev' && <Badge variant="destructive">Gurudev</Badge>}
                             {participant.is_admin && participant.profiles.role !== 'gurudev' && <Badge variant="secondary" className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5" />Admin</Badge>}
                           </div>
