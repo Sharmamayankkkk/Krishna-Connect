@@ -641,7 +641,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- SECTION 5: POST HELPERS
 -- ============================================================================
 
--- Get Post Comments (with is_liked for current user)
+-- Get Post Comments (final — verified TEXT, with hidden/pinned)
 DROP FUNCTION IF EXISTS public.get_post_comments(BIGINT);
 CREATE OR REPLACE FUNCTION public.get_post_comments(p_post_id BIGINT)
 RETURNS TABLE (
@@ -649,16 +649,15 @@ RETURNS TABLE (
     parent_comment_id BIGINT, content TEXT, created_at TIMESTAMPTZ,
     user_name      TEXT, user_username TEXT, user_avatar_url TEXT,
     user_verified  TEXT, like_count BIGINT,
-    is_pinned      BOOLEAN, is_hidden BOOLEAN, is_liked BOOLEAN
+    is_pinned      BOOLEAN, is_hidden BOOLEAN
 ) AS $$
 BEGIN
     RETURN QUERY
     SELECT
         c.id, c.user_id, c.post_id, c.parent_comment_id, c.content, c.created_at,
         p.name, p.username, p.avatar_url, p.verified,
-        COALESCE(COUNT(cl.user_id), 0)::BIGINT,
-        c.is_pinned, c.is_hidden,
-        EXISTS(SELECT 1 FROM public.comment_likes cl2 WHERE cl2.comment_id = c.id AND cl2.user_id = auth.uid())
+        COALESCE(COUNT(cl.user_id), 0),
+        c.is_pinned, c.is_hidden
     FROM public.comments c
     LEFT JOIN public.profiles     p  ON c.user_id    = p.id
     LEFT JOIN public.comment_likes cl ON c.id         = cl.comment_id
@@ -668,47 +667,13 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY INVOKER;
 
--- Log Post View (single, deduplicates per user per post)
+-- Log Post View (bulk safe)
 CREATE OR REPLACE FUNCTION public.log_post_view(p_post_id BIGINT)
 RETURNS VOID AS $$
 BEGIN
-    IF auth.uid() IS NOT NULL THEN
-        -- For authenticated users, only record first view per post
-        IF NOT EXISTS (
-            SELECT 1 FROM public.post_views
-            WHERE post_id = p_post_id AND user_id = auth.uid()
-        ) THEN
-            INSERT INTO public.post_views (post_id, user_id) VALUES (p_post_id, auth.uid());
-        END IF;
-    ELSE
-        INSERT INTO public.post_views (post_id, user_id) VALUES (p_post_id, NULL);
-    END IF;
+    INSERT INTO public.post_views (post_id, user_id) VALUES (p_post_id, auth.uid());
 EXCEPTION WHEN OTHERS THEN
     NULL; -- Silently ignore errors so UI is never blocked
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Log Post Views Bulk (accepts array of BIGINT post IDs, deduplicates per user)
-CREATE OR REPLACE FUNCTION public.log_post_views_bulk(p_post_ids BIGINT[])
-RETURNS VOID AS $$
-DECLARE
-    v_post_id BIGINT;
-BEGIN
-    FOREACH v_post_id IN ARRAY p_post_ids
-    LOOP
-        IF auth.uid() IS NOT NULL THEN
-            IF NOT EXISTS (
-                SELECT 1 FROM public.post_views
-                WHERE post_id = v_post_id AND user_id = auth.uid()
-            ) THEN
-                INSERT INTO public.post_views (post_id, user_id) VALUES (v_post_id, auth.uid());
-            END IF;
-        ELSE
-            INSERT INTO public.post_views (post_id, user_id) VALUES (v_post_id, NULL);
-        END IF;
-    END LOOP;
-EXCEPTION WHEN OTHERS THEN
-    NULL;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
