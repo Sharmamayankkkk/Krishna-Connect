@@ -118,7 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         ; (lastMessages as any[]).forEach((msg) => {
                             const chat = chatsMap.get(msg.chat_id)
                             if (chat) {
-                                chat.last_message_content = msg.content || msg.attachment_metadata?.name || "No messages yet"
+                                chat.last_message_content = (typeof msg.content === 'string' ? msg.content : null) || msg.attachment_metadata?.name || "No messages yet"
                                 chat.last_message_timestamp = msg.created_at
                             }
                         })

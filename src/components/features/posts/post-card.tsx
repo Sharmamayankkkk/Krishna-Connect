@@ -62,7 +62,6 @@ import { VerificationBadge } from "@/components/shared/verification-badge";
 import { AutoLinkPreview } from './auto-link-preview';
 import { QrCodeOverlay } from '../media/qr-code-overlay';
 import { LikeAnimation } from '@/components/shared/like-animation';
-import { AddToCollectionDialog } from './dialogs/add-to-collection-dialog';
 
 interface PostCardProps {
     post: PostType;
@@ -920,6 +919,10 @@ export function PostCard({
                             </DropdownMenu>
                         </div>
 
+                        {/* Post Content + Media (with double-tap to like) */}
+                        <div className="relative" onClick={handleDoubleTapLike}>
+                        <LikeAnimation show={showLikeAnimation} />
+
                         {/* Post Content */}
                         <div className="mt-1 text-[15px] sm:text-base text-foreground/90 whitespace-pre-wrap break-words leading-relaxed">
                             {content && content.length > MAX_CONTENT_LENGTH && !isExpanded ? (
@@ -967,6 +970,7 @@ export function PostCard({
                         {/* Media Grid */}
                         <div className="mt-3">
                             <MediaGrid media={media || []} onMediaClick={handleMediaClick} />
+                        </div>
                         </div>
 
                         {/* Embedded Post */}

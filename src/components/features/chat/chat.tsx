@@ -551,7 +551,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
     // for special formatting like mentions, custom emojis, and links, and replaces them
     // with the appropriate React components.
     const parseContent = useCallback((content: string | null): (string | React.ReactNode)[] => {
-        if (!content) return [];
+        if (!content || typeof content !== 'string') return [];
 
         let processedContent = content;
 
@@ -1217,13 +1217,20 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                                             </DropdownMenuItem>
                                         )}
                                         <DropdownMenuItem onClick={() => handleToggleStar(message)} disabled={isOptimistic}>
-                                            <Star className="mr-2 h-4 w-4" />
+                                            <Star className={cn("mr-2 h-4 w-4", message.is_starred && "text-amber-400 fill-amber-400")} />
                                             <span>{message.is_starred ? 'Unstar' : 'Star'}</span>
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handleTogglePin(message)} disabled={(isGroup && !isGroupAdmin) || isOptimistic}>
-                                            {message.is_pinned ? <PinOff className="mr-2 h-4 w-4" /> : <Pin className="mr-2 h-4 w-4" />}
-                                            <span>{message.is_pinned ? 'Unpin' : 'Pin'}</span>
-                                        </DropdownMenuItem>
+                                        {isGroup && !isGroupAdmin ? (
+                                            <DropdownMenuItem onClick={() => handleToggleStar(message)} disabled={isOptimistic}>
+                                                {message.is_starred ? <PinOff className="mr-2 h-4 w-4" /> : <Pin className="mr-2 h-4 w-4" />}
+                                                <span>{message.is_starred ? 'Unpin for me' : 'Pin for me'}</span>
+                                            </DropdownMenuItem>
+                                        ) : (
+                                            <DropdownMenuItem onClick={() => handleTogglePin(message)} disabled={isOptimistic}>
+                                                {message.is_pinned ? <PinOff className="mr-2 h-4 w-4" /> : <Pin className="mr-2 h-4 w-4" />}
+                                                <span>{message.is_pinned ? 'Unpin' : (isGroup ? 'Pin for everyone' : 'Pin')}</span>
+                                            </DropdownMenuItem>
+                                        )}
                                         {isMyMessage && isGroup && !isOptimistic && (
                                             <DropdownMenuItem onClick={() => setMessageInfo(message)}>
                                                 <Info className="mr-2 h-4 w-4" />

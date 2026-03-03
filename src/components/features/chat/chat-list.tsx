@@ -98,7 +98,7 @@ function LastMessagePreview({
     hasUnread ? 'text-foreground font-medium' : 'text-muted-foreground'
   );
 
-  if (!content) {
+  if (!content || typeof content !== 'string') {
     return <span className={baseClass}>No messages yet</span>;
   }
 
@@ -221,7 +221,7 @@ export function ChatList({ chats }: ChatListProps) {
     }
     return {
       name: chat.name || 'Group Chat',
-      avatar: chat.avatar_url || 'https://placehold.co/100x100.png',
+      avatar: getAvatarUrl(chat.avatar_url) || 'https://placehold.co/100x100.png',
       partnerId: null,
     };
   };

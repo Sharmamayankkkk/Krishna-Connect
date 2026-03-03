@@ -43,8 +43,8 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
                         return {
                             ...c,
                             last_message_content: newMessage.attachment_url
-                                ? newMessage.attachment_metadata?.name || "Sent an attachment"
-                                : newMessage.content,
+                                ? (newMessage.attachment_metadata?.name || "Sent an attachment")
+                                : (typeof newMessage.content === 'string' ? newMessage.content : (newMessage.content ? String(newMessage.content) : null)),
                             last_message_timestamp: newMessage.created_at,
                             unreadCount: shouldIncreaseUnread ? (c.unreadCount || 0) + 1 : (c.unreadCount || 0),
                         }
