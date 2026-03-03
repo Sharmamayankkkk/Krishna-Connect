@@ -257,8 +257,23 @@ CREATE TABLE IF NOT EXISTS public.comments (
     content           TEXT   NOT NULL,
     is_pinned         BOOLEAN DEFAULT FALSE,     -- pinned comment (20260213)
     is_hidden         BOOLEAN DEFAULT FALSE,     -- hidden comment (20260213)
-    created_at        TIMESTAMPTZ DEFAULT NOW() NOT NULL
+    created_at        TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+    updated_at        TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
+
+-- Auto-update updated_at whenever a comment is edited
+CREATE OR REPLACE FUNCTION public.set_comments_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS comments_set_updated_at ON public.comments;
+CREATE TRIGGER comments_set_updated_at
+    BEFORE UPDATE ON public.comments
+    FOR EACH ROW EXECUTE FUNCTION public.set_comments_updated_at();
 
 -- ── Likes & Reposts ──────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.post_likes (
