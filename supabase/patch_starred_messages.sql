@@ -17,6 +17,7 @@ SECURITY DEFINER
 AS $$
 DECLARE
     v_is_starred BOOLEAN;
+    v_new_starred UUID[];
 BEGIN
     -- Check if user already starred the message
     SELECT p_user_id = ANY(starred_by) INTO v_is_starred
@@ -25,9 +26,10 @@ BEGIN
 
     IF v_is_starred THEN
         -- Remove the star
+        v_new_starred := array_remove(starred_by, p_user_id);
         UPDATE public.messages
-        SET starred_by = array_remove(starred_by, p_user_id),
-            is_starred = (array_length(array_remove(starred_by, p_user_id), 1) IS NOT NULL)
+        SET starred_by = v_new_starred,
+            is_starred = (array_length(v_new_starred, 1) IS NOT NULL)
         WHERE id = p_message_id;
         RETURN FALSE;
     ELSE

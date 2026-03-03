@@ -66,6 +66,7 @@ const DELETED_MESSAGE_MARKER = '[[MSG_DELETED]]';
 const SYSTEM_MESSAGE_PREFIX = '[[SYS:';
 const CALL_MESSAGE_PREFIX = '[[CALL:';
 const STORY_REPLY_PREFIX = '[[STORY_REPLY:';
+const PIN_MESSAGE_MARKER = '[PIN]';
 
 const Spoiler = ({ content }: { content: string }) => {
     const [revealed, setRevealed] = useState(false);
@@ -510,7 +511,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
             toast({ variant: 'destructive', title: 'Error pinning message', description: error.message });
         } else {
             if (newIsPinned) {
-                sendSystemMessage(`[PIN] ${loggedInUser.name} pinned a message.`);
+                sendSystemMessage(`${PIN_MESSAGE_MARKER} ${loggedInUser.name} pinned a message.`);
             }
             toast({ title: newIsPinned ? 'Message pinned' : 'Message unpinned' });
         }
@@ -938,8 +939,8 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
 
     const SystemMessage = ({ content }: { content: string }) => {
         const parsedContent = content.replace(SYSTEM_MESSAGE_PREFIX, '').replace(']]', '');
-        const isPinMessage = parsedContent.startsWith('[PIN]');
-        const displayText = parsedContent.replace('[PIN] ', '');
+        const isPinMessage = parsedContent.startsWith(PIN_MESSAGE_MARKER);
+        const displayText = parsedContent.replace(`${PIN_MESSAGE_MARKER} `, '');
 
         return (
             <div className="text-center text-xs text-muted-foreground my-3">

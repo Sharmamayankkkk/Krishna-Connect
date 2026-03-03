@@ -99,53 +99,53 @@ export function FeedList({
     const postsRef = React.useRef(posts);
     postsRef.current = posts;
 
-    const getPost = React.useCallback((postId: string) => postsRef.current.find(p => p.id === postId), []);
+    const getPost = (postId: string) => postsRef.current.find(p => p.id === postId);
 
     // Stable callbacks that don't change on every render
     const stableOnLikeToggle = React.useCallback((postId: string) => {
         const post = getPost(postId);
         if (post) handlePostLikeToggle(post);
-    }, [getPost, handlePostLikeToggle]);
+    }, [handlePostLikeToggle]);
 
     const stableOnRepost = React.useCallback((postId: string) => {
         const post = getPost(postId);
         if (post) handleRepost(post);
-    }, [getPost, handleRepost]);
+    }, [handleRepost]);
 
     const stableOnSaveToggle = React.useCallback((postId: string) => {
         const post = getPost(postId);
         if (post) handlePostSaveToggle(post);
-    }, [getPost, handlePostSaveToggle]);
+    }, [handlePostSaveToggle]);
 
     const stableOnComment = React.useCallback((postId: string, text: string, parentId?: string) => {
         const post = getPost(postId);
         if (post) handleCommentSubmit(post, text, parentId);
-    }, [getPost, handleCommentSubmit]);
+    }, [handleCommentSubmit]);
 
     const stableOnCommentLikeToggle = React.useCallback((postId: string, commentId: string, isReply?: boolean) => {
         const post = getPost(postId);
         if (post) handleCommentLikeToggle(post, commentId, isReply);
-    }, [getPost, handleCommentLikeToggle]);
+    }, [handleCommentLikeToggle]);
 
     const stableOnCommentPinToggle = React.useCallback((postId: string, commentId: string) => {
         const post = getPost(postId);
         if (post) handleCommentPinToggle(post, commentId);
-    }, [getPost, handleCommentPinToggle]);
+    }, [handleCommentPinToggle]);
 
     const stableOnCommentHideToggle = React.useCallback((postId: string, commentId: string, isReply?: boolean) => {
         const post = getPost(postId);
         if (post) handleCommentHideToggle(post, commentId, isReply);
-    }, [getPost, handleCommentHideToggle]);
+    }, [handleCommentHideToggle]);
 
     const stableOnCommentDelete = React.useCallback((postId: string, commentId: string, isReply?: boolean, parentId?: string) => {
         const post = getPost(postId);
         if (post) handleCommentDelete(post, commentId, isReply, parentId);
-    }, [getPost, handleCommentDelete]);
+    }, [handleCommentDelete]);
 
     const stableOnPollVote = React.useCallback((postId: string, optionId: string) => {
         const post = getPost(postId);
         if (post) handlePollVote(post, optionId);
-    }, [getPost, handlePollVote]);
+    }, [handlePollVote]);
 
     const stableOnPin = React.useCallback((postId: string) => {
         const post = getPost(postId);
@@ -156,7 +156,7 @@ export function FeedList({
                 handlePostPinToggle(post);
             }
         }
-    }, [getPost, onPin, handlePostPinToggle]);
+    }, [onPin, handlePostPinToggle]);
 
     // Batch View Logging Logic
     const viewQueue = React.useRef<Set<string>>(new Set());
