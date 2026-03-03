@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   Sheet,
@@ -276,6 +276,9 @@ export function CommentSheet({ post, open, onOpenChange, onComment }: CommentShe
   const { loggedInUser } = useAppContext();
   const [content, setContent] = useState('');
   const [isPosting, setIsPosting] = useState(false);
+  // Synchronous guard — prevents a second submission while the first async call
+  // is still in flight (before React re-renders with isPosting=true).
+  const isPostingRef = useRef(false);
   const { toast } = useToast();
   const [comments, setComments] = useState<Comment[]>([]);
   const [replyingTo, setReplyingTo] = useState<Comment | null>(null);
@@ -328,7 +331,8 @@ export function CommentSheet({ post, open, onOpenChange, onComment }: CommentShe
 
   // Actions
   const handleComment = async () => {
-    if (!content.trim() || !loggedInUser) return;
+    if (!content.trim() || !loggedInUser || isPostingRef.current) return;
+    isPostingRef.current = true;
     setIsPosting(true);
 
     try {
@@ -352,6 +356,7 @@ export function CommentSheet({ post, open, onOpenChange, onComment }: CommentShe
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Error posting comment', description: error.message });
     } finally {
+      isPostingRef.current = false;
       setIsPosting(false);
     }
   };
