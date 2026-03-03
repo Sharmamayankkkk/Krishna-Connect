@@ -4,7 +4,7 @@ import * as React from 'react'
 import { Heart, MessageCircle, Share2, Bookmark, Music2, Play, Pause, Volume2, VolumeX, ChevronUp, ChevronDown, Upload, Film, Lightbulb, CheckCircle, Send, Trash2, MoreVertical } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { cn, getMaxFileSize, getMaxFileSizeMB } from '@/lib/utils'
 import { useAppContext } from '@/providers/app-provider'
 import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
@@ -509,8 +509,8 @@ export default function LeelaPage() {
       return
     }
 
-    if (file.size > 50 * 1024 * 1024) {
-      toast({ title: 'Video must be under 50MB', variant: 'destructive' })
+    if (file.size > getMaxFileSize(loggedInUser?.is_verified)) {
+      toast({ title: `Video must be under ${getMaxFileSizeMB(loggedInUser?.is_verified)}MB`, variant: 'destructive' })
       return
     }
 

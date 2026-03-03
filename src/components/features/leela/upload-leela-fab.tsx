@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { useAppContext } from '@/providers/app-provider'
 import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { getMaxFileSize, getMaxFileSizeMB } from '@/lib/utils'
 import {
   Tooltip,
   TooltipContent,
@@ -35,8 +36,8 @@ export function UploadLeelaFab() {
       return
     }
 
-    if (file.size > 50 * 1024 * 1024) {
-      toast({ title: 'Video must be under 50MB', variant: 'destructive' })
+    if (file.size > getMaxFileSize(loggedInUser?.is_verified)) {
+      toast({ title: `Video must be under ${getMaxFileSizeMB(loggedInUser?.is_verified)}MB`, variant: 'destructive' })
       return
     }
 

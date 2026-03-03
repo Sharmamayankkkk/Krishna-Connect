@@ -117,3 +117,13 @@ export function formatNumber(num: number): string {
   }
   return num.toString();
 }
+
+export function getMaxFileSize(isVerified?: 'none' | 'verified' | 'kcs'): number {
+  return isVerified === 'verified' || isVerified === 'kcs'
+    ? 200 * 1024 * 1024
+    : 50 * 1024 * 1024;
+}
+
+export function getMaxFileSizeMB(isVerified?: 'none' | 'verified' | 'kcs'): number {
+  return isVerified === 'verified' || isVerified === 'kcs' ? 200 : 50;
+}

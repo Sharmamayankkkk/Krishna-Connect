@@ -27,6 +27,7 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PostType, MediaType } from '@/lib/types';
 import { createClient } from '@/lib/supabase/client';
+import { getMaxFileSize, getMaxFileSizeMB } from '@/lib/utils';
 
 interface EditPostDialogProps {
     post: PostType;
@@ -115,9 +116,11 @@ export function EditPostDialog({ post, open, onOpenChange, onPostUpdated }: Edit
             return;
         }
 
-        // Check video size (e.g., 50MB limit)
-        if (file.size > 50 * 1024 * 1024) {
-            setErrors(['Video must be smaller than 50MB']);
+        // Check video size based on verification status
+        const maxSize = getMaxFileSize(loggedInUser?.is_verified);
+        const maxSizeMB = getMaxFileSizeMB(loggedInUser?.is_verified);
+        if (file.size > maxSize) {
+            setErrors([`Video must be smaller than ${maxSizeMB}MB`]);
             return;
         }
 

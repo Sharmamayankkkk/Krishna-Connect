@@ -53,7 +53,7 @@ import {
 import { CollaborativePostDialog, type Collaborator } from './dialogs/collaborative-post-dialog';
 import { useAppContext } from '@/providers/app-provider';
 import { useToast } from '@/hooks/use-toast';
-import { cn, getAvatarUrl } from '@/lib/utils';
+import { cn, getAvatarUrl, getMaxFileSize, getMaxFileSizeMB } from '@/lib/utils';
 import Image from 'next/image';
 import { PollType, MediaType, DraftPost, createEmptyPoll, createDraft } from '@/lib/types';
 import { createClient } from '@/lib/supabase/client';
@@ -259,13 +259,14 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             return;
         }
 
-        const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+        const MAX_FILE_SIZE = getMaxFileSize(loggedInUser?.is_verified);
+        const maxSizeMB = getMaxFileSizeMB(loggedInUser?.is_verified);
 
         files.forEach(file => {
             if (file.size > MAX_FILE_SIZE) {
                 toast({
                     title: "File too large",
-                    description: `File ${file.name} exceeds the 50MB limit.`,
+                    description: `File ${file.name} exceeds the ${maxSizeMB}MB limit.`,
                     variant: "destructive"
                 });
                 return;
@@ -310,13 +311,14 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             return;
         }
 
-        const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+        const MAX_FILE_SIZE = getMaxFileSize(loggedInUser?.is_verified);
+        const maxSizeMB = getMaxFileSizeMB(loggedInUser?.is_verified);
 
         files.forEach(file => {
             if (file.size > MAX_FILE_SIZE) {
                 toast({
                     title: "File too large",
-                    description: `File ${file.name} exceeds the 50MB limit.`,
+                    description: `File ${file.name} exceeds the ${maxSizeMB}MB limit.`,
                     variant: "destructive"
                 });
                 return;
@@ -363,8 +365,8 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             return;
         }
 
-        if (file.size > 50 * 1024 * 1024) {
-            toast({ title: 'Video must be under 50MB', variant: 'destructive' });
+        if (file.size > getMaxFileSize(loggedInUser?.is_verified)) {
+            toast({ title: `Video must be under ${getMaxFileSizeMB(loggedInUser?.is_verified)}MB`, variant: 'destructive' });
             return;
         }
 
