@@ -53,6 +53,467 @@ interface ChatProps {
     initialUnreadCount?: number;
 }
 
+// ---------------------------------------------------------------------------
+// Types shared by the module-level sub-components below
+// ---------------------------------------------------------------------------
+
+interface MessageBubbleContext {
+    loggedInUser: User;
+    isGroup: boolean;
+    isGroupAdmin: boolean;
+    themeSettings: any;
+    outgoingBubbleStyle: React.CSSProperties;
+    incomingBubbleStyle: React.CSSProperties;
+    editingMessage: { id: number; content: string } | null;
+    highlightMessageId?: number | null;
+    reactionPickerCustomEmojis: { id: string; names: string[]; imgUrl: string }[];
+    chatParticipants: any[];
+    loggedInUserId: string;
+    startCall?: ((userId: string, type: 'voice' | 'video') => void) | null;
+    joinCall?: ((callId: string) => void) | null;
+    handleStartReply: (message: Message) => void;
+    handleDeleteForEveryone: (messageId: number) => void;
+    handleCopy: (text: string) => void;
+    handleStartEdit: (message: Message) => void;
+    onReact: (emojiData: EmojiClickData, message: Message) => void;
+    onCustomReact: (emojiUrl: string, message: Message) => void;
+    handleToggleStar: (message: Message) => Promise<void>;
+    handleTogglePin: (message: Message) => Promise<void>;
+    setMessageToForward: React.Dispatch<React.SetStateAction<Message | null>>;
+    setMessageToReport: React.Dispatch<React.SetStateAction<Message | null>>;
+    setIsReportDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    setMessageInfo: React.Dispatch<React.SetStateAction<Message | null>>;
+    setMessageToTranslate: React.Dispatch<React.SetStateAction<Message | null>>;
+    jumpToMessage: (messageId: number) => void;
+    getMessageStatus: (message: Message) => 'pending' | 'sent' | 'read' | null;
+    renderMessageContent: (message: Message) => React.ReactNode;
+    renderReactions: (message: Message) => React.ReactNode;
+    chatName: string | null | undefined;
+}
+
+// ---------------------------------------------------------------------------
+// Module-level sub-components (defined OUTSIDE Chat so their references are
+// stable across renders — otherwise React unmounts/remounts on every render,
+// breaking useEffect hooks in children such as VoiceNotePlayer → error #310)
+// ---------------------------------------------------------------------------
+
+const SystemMessage = ({ content }: { content: string }) => {
+    const parsedContent = content.replace(SYSTEM_MESSAGE_PREFIX, '').replace(']]', '');
+    const isPinMessage = parsedContent.startsWith(PIN_MESSAGE_MARKER);
+    const displayText = parsedContent.replace(`${PIN_MESSAGE_MARKER} `, '');
+    return (
+        <div className="text-center text-xs text-muted-foreground my-3">
+            <span className="bg-muted px-2.5 py-1.5 rounded-full">
+                {isPinMessage && <Pin className="inline-block h-3 w-3 mr-1.5" />}
+                {displayText}
+            </span>
+        </div>
+    );
+};
+
+const CallMessage = ({
+    content,
+    message,
+    loggedInUserId,
+    chatParticipants,
+    startCall,
+    joinCall,
+}: {
+    content: string;
+    message: Message;
+    loggedInUserId: string;
+    chatParticipants: any[];
+    startCall?: ((userId: string, type: 'voice' | 'video') => void) | null;
+    joinCall?: ((callId: string) => void) | null;
+}) => {
+    const callData = content.replace(CALL_MESSAGE_PREFIX, '').replace(']]', '');
+    const [callType, callStatus, durationStr, , callId] = callData.split('|');
+    const duration = parseInt(durationStr) || 0;
+    const isMyCall = message.user_id === loggedInUserId;
+    const isMissed = callStatus === 'missed' || callStatus === 'declined';
+    const isVideo = callType === 'video';
+    const isGroupCall = callStatus === 'started';
+    const canJoin = isGroupCall;
+
+    const formatDuration = (s: number) => {
+        if (s < 60) return `${s}s`;
+        const m = Math.floor(s / 60);
+        const remaining = s % 60;
+        return remaining > 0 ? `${m}m ${remaining}s` : `${m}m`;
+    };
+
+    return (
+        <div className="flex items-center justify-center my-3">
+            <div className={cn(
+                "flex items-center gap-3 px-4 py-2.5 rounded-xl border",
+                isMissed ? "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900/30" : "bg-muted/50 border-border"
+            )}>
+                <div className={cn(
+                    "h-8 w-8 rounded-full flex items-center justify-center",
+                    isMissed ? "bg-red-100 dark:bg-red-900/30" : "bg-green-100 dark:bg-green-900/30"
+                )}>
+                    {isVideo ? (
+                        <Video className={cn("h-4 w-4", isMissed ? "text-red-500" : "text-green-600")} />
+                    ) : (
+                        <Phone className={cn("h-4 w-4", isMissed ? "text-red-500" : "text-green-600")} />
+                    )}
+                </div>
+                <div className="flex flex-col">
+                    <span className={cn("text-sm font-medium", isMissed && "text-red-600 dark:text-red-400")}>
+                        {isMissed
+                            ? `Missed ${isVideo ? 'Video' : 'Voice'} Call`
+                            : isGroupCall ? `Group ${isVideo ? 'Video' : 'Voice'} Call`
+                                : `${isVideo ? 'Video' : 'Voice'} Call`}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                        {isMissed
+                            ? (isMyCall ? 'No answer' : 'Tap to call back')
+                            : isGroupCall ? 'Tap to join'
+                                : formatDuration(duration)}
+                    </span>
+                </div>
+                {isMissed && !isMyCall && startCall && (
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="ml-2 h-7 text-xs text-primary"
+                        onClick={() => {
+                            const otherUser = chatParticipants?.find((p: any) => p.user_id !== loggedInUserId);
+                            if (otherUser) startCall(otherUser.user_id, isVideo ? 'video' : 'voice');
+                        }}
+                    >
+                        Call Back
+                    </Button>
+                )}
+                {canJoin && joinCall && callId && (
+                    <Button
+                        variant="default"
+                        size="sm"
+                        className="ml-2 h-7 text-xs"
+                        onClick={() => joinCall(callId)}
+                    >
+                        Join
+                    </Button>
+                )}
+            </div>
+        </div>
+    );
+};
+
+const StoryReplyMessage = ({ content, message }: { content: string; message: Message }) => {
+    const isMyMessage = message.user_id === (message as any)._loggedInUserId;
+    const match = content.match(/\[\[STORY_REPLY:(.*?)\]\]\s*([\s\S]*)/);
+    const mediaUrl = match?.[1] || '';
+    const replyText = match?.[2] || content;
+    const isVideoStory = mediaUrl.includes('.mp4') || mediaUrl.includes('.webm') || mediaUrl.includes('.mov');
+    // isMyMessage is derived from a hidden field; the actual caller passes it directly:
+    return null; // replaced by StoryReplyMessageWithCtx below
+};
+
+const StoryReplyMessageWithCtx = ({
+    content,
+    message,
+    loggedInUserId,
+}: {
+    content: string;
+    message: Message;
+    loggedInUserId: string;
+}) => {
+    const isMyMessage = message.user_id === loggedInUserId;
+    const match = content.match(/\[\[STORY_REPLY:(.*?)\]\]\s*([\s\S]*)/);
+    const mediaUrl = match?.[1] || '';
+    const replyText = match?.[2] || content;
+    const isVideoStory = mediaUrl.includes('.mp4') || mediaUrl.includes('.webm') || mediaUrl.includes('.mov');
+    return (
+        <div className={cn("flex items-end gap-1.5 sm:gap-2 group/message", isMyMessage ? "justify-end" : "justify-start")}>
+            {!isMyMessage && <div className="w-6 sm:w-8 shrink-0" />}
+            <div className={cn("relative max-w-[85%] sm:max-w-md rounded-xl overflow-hidden", isMyMessage ? "bg-primary text-primary-foreground" : "bg-muted")}>
+                <div className="px-3 pt-2 pb-1">
+                    <p className="text-[10px] uppercase tracking-wide opacity-60 font-medium">
+                        {isMyMessage ? 'Replied to story' : 'Replied to your story'}
+                    </p>
+                </div>
+                {mediaUrl && (
+                    <div className="mx-3 mb-1 h-16 w-16 rounded-lg overflow-hidden bg-black/20 relative">
+                        {isVideoStory ? (
+                            <video src={mediaUrl} className="w-full h-full object-cover" muted playsInline />
+                        ) : (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={mediaUrl} alt="Story" className="w-full h-full object-cover" />
+                        )}
+                    </div>
+                )}
+                <div className="px-3 pb-2">
+                    <p className="text-sm">{replyText}</p>
+                    <p className={cn("text-[10px] mt-1", isMyMessage ? "text-primary-foreground/60" : "text-muted-foreground")}>
+                        {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+                    </p>
+                </div>
+            </div>
+            {isMyMessage && <div className="w-6 sm:w-8 shrink-0" />}
+        </div>
+    );
+};
+
+const MessageBubble = React.memo(function MessageBubble({
+    message,
+    ctx,
+}: {
+    message: Message;
+    ctx: MessageBubbleContext;
+}) {
+    const {
+        loggedInUser, isGroup, isGroupAdmin, themeSettings, outgoingBubbleStyle, incomingBubbleStyle,
+        editingMessage, highlightMessageId, reactionPickerCustomEmojis, chatParticipants,
+        loggedInUserId, startCall, joinCall, chatName,
+        handleStartReply, handleDeleteForEveryone, handleCopy, handleStartEdit,
+        onReact, onCustomReact, handleToggleStar, handleTogglePin,
+        setMessageToForward, setMessageToReport, setIsReportDialogOpen,
+        setMessageInfo, setMessageToTranslate, jumpToMessage,
+        getMessageStatus, renderMessageContent, renderReactions,
+    } = ctx;
+
+    // ⚠️ RULES OF HOOKS: always called before any early returns
+    const isMyMessage = message.user_id === loggedInUserId;
+    const isOptimistic = typeof message.id === 'string';
+
+    const swipeHandlers = useSwipeable({
+        onSwipedRight: () => { if (!isMyMessage && !isOptimistic) handleStartReply(message); },
+        onSwipedLeft: () => { if (isMyMessage && !isOptimistic) handleStartReply(message); },
+        trackMouse: true,
+        preventScrollOnSwipe: true,
+    });
+
+    if (message.content && message.content.startsWith(SYSTEM_MESSAGE_PREFIX)) {
+        return <SystemMessage content={message.content} />;
+    }
+    if (message.content && message.content.startsWith(CALL_MESSAGE_PREFIX)) {
+        return (
+            <CallMessage
+                content={message.content}
+                message={message}
+                loggedInUserId={loggedInUserId}
+                chatParticipants={chatParticipants}
+                startCall={startCall}
+                joinCall={joinCall}
+            />
+        );
+    }
+    if (message.content && message.content.startsWith(STORY_REPLY_PREFIX)) {
+        return (
+            <StoryReplyMessageWithCtx
+                content={message.content}
+                message={message}
+                loggedInUserId={loggedInUserId}
+            />
+        );
+    }
+    if (message.content === DELETED_MESSAGE_MARKER) {
+        const bubbleStyle = isMyMessage ? outgoingBubbleStyle : incomingBubbleStyle;
+        return (
+            <div className={cn("flex items-end gap-1.5 sm:gap-2 group/message", isMyMessage ? "justify-end" : "justify-start")}>
+                {!isMyMessage && <div className="w-6 sm:w-8 shrink-0" />}
+                <div
+                    className="relative max-w-[85%] sm:max-w-md lg:max-w-lg rounded-lg text-sm px-2 sm:px-3 py-2"
+                    style={bubbleStyle}
+                >
+                    <div className="flex items-center gap-2 italic text-current/70">
+                        <CircleSlash className="h-4 w-4" />
+                        <span>This message was deleted</span>
+                    </div>
+                </div>
+                {isMyMessage && <div className="w-6 sm:w-8 shrink-0" />}
+            </div>
+        );
+    }
+
+    const sender = message.profiles;
+    const isEditing = editingMessage?.id === message.id;
+    const messageStatus = getMessageStatus(message);
+
+    if (!sender) {
+        return <div>Loading message...</div>;
+    }
+
+    const bubbleStyle = isMyMessage ? outgoingBubbleStyle : incomingBubbleStyle;
+    const senderName = isGroup && sender.role === 'gurudev' ? chatName : sender.name;
+    const senderAvatar = getAvatarUrl(sender.avatar_url);
+    const senderFallback = (senderName || 'U').charAt(0);
+
+    const ReplyPreview = ({ repliedTo }: { repliedTo: Message }) => (
+        <div
+            className="flex items-center gap-2 p-2 mb-2 rounded-md cursor-pointer border-l-2 bg-foreground/[.07] dark:bg-foreground/[.1] hover:bg-foreground/[.1] dark:hover:bg-foreground/[.15] transition-colors"
+            style={{ borderColor: themeSettings.usernameColor }}
+            onClick={() => jumpToMessage(repliedTo.id as number)}
+        >
+            <div className="flex-1 overflow-hidden">
+                <p className="font-semibold text-sm truncate" style={{ color: themeSettings.usernameColor }}>
+                    {repliedTo.profiles?.name || 'Unknown'}
+                </p>
+                <p className="text-xs truncate opacity-80" style={{ color: 'inherit', opacity: 0.8 }}>
+                    {typeof repliedTo.content === 'string' ? repliedTo.content : (repliedTo.attachment_metadata?.name || 'Attachment')}
+                </p>
+            </div>
+        </div>
+    );
+
+    return (
+        <div key={message.id} id={`message-${message.id}`} className={cn(
+            "flex w-full items-end gap-1.5 sm:gap-2 group/message",
+            isMyMessage ? "justify-end" : "justify-start",
+            message.id === highlightMessageId && "rounded-lg"
+        )}>
+            {!isMyMessage && (
+                <Avatar className="h-6 w-6 sm:h-8 sm:w-8 self-end shrink-0">
+                    <AvatarImage src={senderAvatar} alt={senderName ?? undefined} data-ai-hint="avatar" />
+                    <AvatarFallback className="text-[10px] sm:text-xs">{senderFallback}</AvatarFallback>
+                </Avatar>
+            )}
+            <div {...swipeHandlers} className={cn("relative transition-transform duration-200 ease-out min-w-0", isMyMessage ? "group-data-[swiped=true]/message:translate-x-[-2rem]" : "group-data-[swiped=true]/message:translate-x-[2rem]")}>
+                <div
+                    className={cn("group/bubble relative rounded-lg text-sm px-2 sm:px-3 py-2 break-words max-w-[80vw] sm:max-w-md md:max-w-lg")}
+                    style={bubbleStyle}
+                >
+                    {isEditing ? (
+                        <div className="w-full">
+                            <p className="text-xs font-semibold text-primary mb-2">Editing...</p>
+                        </div>
+                    ) : (
+                        <>
+                            {isGroup && !isMyMessage && (
+                                <div className="flex items-center gap-2 font-semibold mb-1 text-sm">
+                                    <span style={{ color: themeSettings.usernameColor }}>{senderName}</span>
+                                    {sender.role === 'gurudev' && (
+                                        <Badge variant="destructive" className="text-xs px-1.5 py-0 leading-none">Gurudev</Badge>
+                                    )}
+                                </div>
+                            )}
+                            {message.replied_to_message && <ReplyPreview repliedTo={message.replied_to_message} />}
+                            {renderMessageContent(message)}
+                            <div className="text-xs mt-1 flex items-center gap-1.5 opacity-70" style={{ justifyContent: isMyMessage ? 'flex-end' : 'flex-start' }}>
+                                {message.is_pinned && <Pin className="h-3 w-3 text-current mr-1" />}
+                                {message.is_edited && <span className="text-xs italic">Edited</span>}
+                                {(message.starred_by?.includes(loggedInUserId) ?? message.is_starred) && <Star className="h-3 w-3 text-amber-400 fill-amber-400 mr-1" />}
+                                <span>{format(new Date(message.created_at), 'p')}</span>
+                                {isMyMessage && messageStatus === 'pending' && <Clock className="h-4 w-4" />}
+                                {isMyMessage && messageStatus === 'sent' && <Check className="h-4 w-4" />}
+                                {isMyMessage && messageStatus === 'read' && <CheckCheck className="h-4 w-4 text-primary" />}
+                            </div>
+                        </>
+                    )}
+
+                    {!isEditing && (
+                        <div className={cn(
+                            "absolute -top-4 flex items-center gap-1 opacity-0 group-hover/bubble:opacity-100 transition-opacity",
+                            isMyMessage ? "left-[-8px]" : "right-[-8px]"
+                        )}>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full bg-background/80 hover:bg-background">
+                                        <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-auto p-1">
+                                    <DropdownMenuItem onClick={() => handleStartReply(message)} disabled={isOptimistic}>
+                                        <Reply className="mr-2 h-4 w-4" /><span>Reply</span>
+                                    </DropdownMenuItem>
+                                    {message.content && !isMyMessage && (
+                                        <DropdownMenuItem onClick={() => setMessageToTranslate(message)}>
+                                            <Languages className="mr-2 h-4 w-4" /><span>Translate</span>
+                                        </DropdownMenuItem>
+                                    )}
+                                    <DropdownMenuItem onClick={() => setMessageToForward(message)} disabled={isOptimistic}>
+                                        <Share2 className="mr-2 h-4 w-4" /><span>Forward</span>
+                                    </DropdownMenuItem>
+                                    {message.content && (
+                                        <DropdownMenuItem onClick={() => handleCopy(message.content as string)}>
+                                            <Copy className="mr-2 h-4 w-4" /><span>Copy</span>
+                                        </DropdownMenuItem>
+                                    )}
+                                    {(() => {
+                                        const isMessageStarred = message.starred_by?.includes(loggedInUserId) ?? message.is_starred;
+                                        return isGroup && !isGroupAdmin ? (
+                                            <DropdownMenuItem onClick={() => handleToggleStar(message)} disabled={isOptimistic}>
+                                                {isMessageStarred ? <PinOff className="mr-2 h-4 w-4" /> : <Pin className="mr-2 h-4 w-4" />}
+                                                <span>{isMessageStarred ? 'Unpin for me' : 'Pin for me'}</span>
+                                            </DropdownMenuItem>
+                                        ) : (
+                                            <>
+                                                <DropdownMenuItem onClick={() => handleToggleStar(message)} disabled={isOptimistic}>
+                                                    <Star className={cn("mr-2 h-4 w-4", isMessageStarred && "text-amber-400 fill-amber-400")} />
+                                                    <span>{isMessageStarred ? 'Unstar' : 'Star'}</span>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleTogglePin(message)} disabled={isOptimistic}>
+                                                    {message.is_pinned ? <PinOff className="mr-2 h-4 w-4" /> : <Pin className="mr-2 h-4 w-4" />}
+                                                    <span>{message.is_pinned ? 'Unpin' : (isGroup ? 'Pin for everyone' : 'Pin')}</span>
+                                                </DropdownMenuItem>
+                                            </>
+                                        );
+                                    })()}
+                                    {isMyMessage && isGroup && !isOptimistic && (
+                                        <DropdownMenuItem onClick={() => setMessageInfo(message)}>
+                                            <Info className="mr-2 h-4 w-4" /><span>Message Info</span>
+                                        </DropdownMenuItem>
+                                    )}
+                                    {!isMyMessage && (
+                                        <DropdownMenuItem onClick={() => { setMessageToReport(message); setIsReportDialogOpen(true); }} disabled={isOptimistic}>
+                                            <ShieldAlert className="mr-2 h-4 w-4" /><span>Report Message</span>
+                                        </DropdownMenuItem>
+                                    )}
+                                    {isMyMessage && !isOptimistic && (
+                                        <>
+                                            <DropdownMenuSeparator />
+                                            {message.content && (
+                                                <DropdownMenuItem onClick={() => handleStartEdit(message)}>
+                                                    <Pencil className="mr-2 h-4 w-4" /><span>Edit</span>
+                                                </DropdownMenuItem>
+                                            )}
+                                            <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteForEveryone(message.id as number)}>
+                                                <Trash2 className="mr-2 h-4 w-4" /><span>Delete for everyone</span>
+                                            </DropdownMenuItem>
+                                        </>
+                                    )}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full bg-background/80 hover:bg-background" disabled={isOptimistic}>
+                                        <SmilePlus className="h-4 w-4" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0 border-none">
+                                    <EmojiPicker
+                                        customEmojis={reactionPickerCustomEmojis}
+                                        onEmojiClick={(emojiData) => {
+                                            if (emojiData.isCustom) {
+                                                onCustomReact(emojiData.imageUrl, message);
+                                            } else {
+                                                onReact(emojiData, message);
+                                            }
+                                        }}
+                                        defaultSkinTone={SkinTones.NEUTRAL}
+                                        getEmojiUrl={(unified, style) => `https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/${style}/64/${unified}.png`}
+                                    />
+                                </PopoverContent>
+                            </Popover>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full bg-background/80 hover:bg-background" onClick={() => handleStartReply(message)} disabled={isOptimistic}>
+                                <Reply className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    )}
+                    {renderReactions(message)}
+                </div>
+            </div>
+            {isMyMessage && (
+                <Avatar className="h-6 w-6 sm:h-8 sm:w-8 self-end shrink-0">
+                    <AvatarImage src={getAvatarUrl(loggedInUser.avatar_url)} alt={loggedInUser.name} data-ai-hint="avatar" />
+                    <AvatarFallback className="text-[10px] sm:text-xs">{loggedInUser.name?.charAt(0)}</AvatarFallback>
+                </Avatar>
+            )}
+        </div>
+    );
+});
+
 const formatBytes = (bytes: number, decimals = 2) => {
     if (!+bytes) return '0 Bytes'
     const k = 1024
@@ -911,7 +1372,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
         return items;
     }, [chat.messages, initialUnreadCount]);
 
-    // Simple components for rendering the separators in the message list.
+    // Simple separator components (no hooks — these stay inline because they have no state)
     const DateSeparator = ({ date }: { date: string }) => (
         <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
@@ -938,395 +1399,50 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
         </div>
     );
 
-    const SystemMessage = ({ content }: { content: string }) => {
-        const parsedContent = content.replace(SYSTEM_MESSAGE_PREFIX, '').replace(']]', '');
-        const isPinMessage = parsedContent.startsWith(PIN_MESSAGE_MARKER);
-        const displayText = parsedContent.replace(`${PIN_MESSAGE_MARKER} `, '');
-
-        return (
-            <div className="text-center text-xs text-muted-foreground my-3">
-                <span className="bg-muted px-2.5 py-1.5 rounded-full">
-                    {isPinMessage && <Pin className="inline-block h-3 w-3 mr-1.5" />}
-                    {displayText}
-                </span>
-            </div>
-        );
-    }
-
-    // Call history message (e.g., "[[CALL:video|ended|125|caller_id|call_id]]")
-    const CallMessage = ({ content, message }: { content: string; message: Message }) => {
-        const callData = content.replace(CALL_MESSAGE_PREFIX, '').replace(']]', '');
-        const [callType, callStatus, durationStr, callerId, callId] = callData.split('|');
-        const duration = parseInt(durationStr) || 0;
-        const isMyCall = message.user_id === loggedInUser.id;
-        const isMissed = callStatus === 'missed' || callStatus === 'declined';
-        const isVideo = callType === 'video';
-
-        // Group calls are "started" or "ended". If started, showing "Join" button.
-        // We can infer it's a group call if callId is present and (maybe) callerId is different?
-        // Actually, CallProvider always inserts callId now.
-        // Let's assume if status is 'started', it's an active group call that can be joined.
-        const isGroupCall = callStatus === 'started';
-        const canJoin = isGroupCall;
-
-        const formatDuration = (s: number) => {
-            if (s < 60) return `${s}s`;
-            const m = Math.floor(s / 60);
-            const remaining = s % 60;
-            return remaining > 0 ? `${m}m ${remaining}s` : `${m}m`;
-        };
-
-        return (
-            <div className="flex items-center justify-center my-3">
-                <div className={cn(
-                    "flex items-center gap-3 px-4 py-2.5 rounded-xl border",
-                    isMissed ? "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900/30" : "bg-muted/50 border-border"
-                )}>
-                    <div className={cn(
-                        "h-8 w-8 rounded-full flex items-center justify-center",
-                        isMissed ? "bg-red-100 dark:bg-red-900/30" : "bg-green-100 dark:bg-green-900/30"
-                    )}>
-                        {isVideo ? (
-                            <Video className={cn("h-4 w-4", isMissed ? "text-red-500" : "text-green-600")} />
-                        ) : (
-                            <Phone className={cn("h-4 w-4", isMissed ? "text-red-500" : "text-green-600")} />
-                        )}
-                    </div>
-                    <div className="flex flex-col">
-                        <span className={cn("text-sm font-medium", isMissed && "text-red-600 dark:text-red-400")}>
-                            {isMissed
-                                ? `Missed ${isVideo ? 'Video' : 'Voice'} Call`
-                                : isGroupCall ? `Group ${isVideo ? 'Video' : 'Voice'} Call`
-                                    : `${isVideo ? 'Video' : 'Voice'} Call`}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                            {isMissed
-                                ? (isMyCall ? 'No answer' : 'Tap to call back')
-                                : isGroupCall ? 'Tap to join'
-                                    : formatDuration(duration)}
-                        </span>
-                    </div>
-                    {isMissed && !isMyCall && startCall && (
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="ml-2 h-7 text-xs text-primary"
-                            onClick={() => {
-                                const otherUser = chat.participants?.find(p => p.user_id !== loggedInUser.id);
-                                if (otherUser) startCall(otherUser.user_id, isVideo ? 'video' : 'voice');
-                            }}
-                        >
-                            Call Back
-                        </Button>
-                    )}
-                    {canJoin && joinCall && callId && (
-                        <Button
-                            variant="default"
-                            size="sm"
-                            className="ml-2 h-7 text-xs"
-                            onClick={() => joinCall(callId)}
-                        >
-                            Join
-                        </Button>
-                    )}
-                </div>
-            </div>
-        );
-    };
-
-    // Story reply message (e.g., "[[STORY_REPLY:url]] reply text")
-    const StoryReplyMessage = ({ content, message }: { content: string; message: Message }) => {
-        const isMyMessage = message.user_id === loggedInUser.id;
-        const match = content.match(/\[\[STORY_REPLY:(.*?)\]\]\s*([\s\S]*)/);
-        const mediaUrl = match?.[1] || '';
-        const replyText = match?.[2] || content;
-        const isVideoStory = mediaUrl.includes('.mp4') || mediaUrl.includes('.webm') || mediaUrl.includes('.mov');
-        return (
-            <div className={cn("flex items-end gap-1.5 sm:gap-2 group/message", isMyMessage ? "justify-end" : "justify-start")}>
-                {!isMyMessage && <div className="w-6 sm:w-8 shrink-0" />}
-                <div className={cn("relative max-w-[85%] sm:max-w-md rounded-xl overflow-hidden", isMyMessage ? "bg-primary text-primary-foreground" : "bg-muted")}>
-                    <div className="px-3 pt-2 pb-1">
-                        <p className="text-[10px] uppercase tracking-wide opacity-60 font-medium">
-                            {isMyMessage ? 'Replied to story' : 'Replied to your story'}
-                        </p>
-                    </div>
-                    {mediaUrl && (
-                        <div className="mx-3 mb-1 h-16 w-16 rounded-lg overflow-hidden bg-black/20 relative">
-                            {isVideoStory ? (
-                                <video src={mediaUrl} className="w-full h-full object-cover" muted playsInline />
-                            ) : (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img src={mediaUrl} alt="Story" className="w-full h-full object-cover" />
-                            )}
-                        </div>
-                    )}
-                    <div className="px-3 pb-2">
-                        <p className="text-sm">{replyText}</p>
-                        <p className={cn("text-[10px] mt-1", isMyMessage ? "text-primary-foreground/60" : "text-muted-foreground")}>
-                            {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
-                        </p>
-                    </div>
-                </div>
-                {isMyMessage && <div className="w-6 sm:w-8 shrink-0" />}
-            </div>
-        );
-    };
-
-    // This is the component for a single message bubble.
-    const MessageBubble = ({ message }: { message: Message }) => {
-        // ⚠️ RULES OF HOOKS: useSwipeable must be called unconditionally at the top,
-        // before any early returns, so React always sees the same hook call order.
-        const isMyMessage = message.user_id === loggedInUser.id;
-        const isOptimistic = typeof message.id === 'string';
-
-        // This adds the "swipe to reply" functionality.
-        const swipeHandlers = useSwipeable({
-            onSwipedRight: () => {
-                if (!isMyMessage && !isOptimistic) handleStartReply(message);
-            },
-            onSwipedLeft: () => {
-                if (isMyMessage && !isOptimistic) handleStartReply(message);
-            },
-            trackMouse: true,
-            preventScrollOnSwipe: true,
-        });
-
-        // Handle system messages (e.g., "User pinned a message").
-        if (message.content && message.content.startsWith(SYSTEM_MESSAGE_PREFIX)) {
-            return <SystemMessage content={message.content} />;
-        }
-
-        // Handle call history messages
-        if (message.content && message.content.startsWith(CALL_MESSAGE_PREFIX)) {
-            return <CallMessage content={message.content} message={message} />;
-        }
-
-        // Handle story reply messages
-        if (message.content && message.content.startsWith(STORY_REPLY_PREFIX)) {
-            return <StoryReplyMessage content={message.content} message={message} />;
-        }
-
-        // Handle deleted messages.
-        if (message.content === DELETED_MESSAGE_MARKER) {
-            const bubbleStyle = isMyMessage ? outgoingBubbleStyle : incomingBubbleStyle;
-            return (
-                <div className={cn("flex items-end gap-1.5 sm:gap-2 group/message", isMyMessage ? "justify-end" : "justify-start")}>
-                    {!isMyMessage && <div className="w-6 sm:w-8 shrink-0" />}
-                    <div
-                        className="relative max-w-[85%] sm:max-w-md lg:max-w-lg rounded-lg text-sm px-2 sm:px-3 py-2"
-                        style={bubbleStyle}
-                    >
-                        <div className="flex items-center gap-2 italic text-current/70">
-                            <CircleSlash className="h-4 w-4" />
-                            <span>This message was deleted</span>
-                        </div>
-                    </div>
-                    {isMyMessage && <div className="w-6 sm:w-8 shrink-0" />}
-                </div>
-            );
-        }
-
-        const sender = message.profiles;
-        const isEditing = editingMessage?.id === message.id;
-        const messageStatus = getMessageStatus(message);
-
-        if (!sender) {
-            return <div key={message.id}>Loading message...</div>;
-        }
-
-        const bubbleStyle = isMyMessage ? outgoingBubbleStyle : incomingBubbleStyle;
-        const senderName = isGroup && sender.role === 'gurudev' ? chat.name : sender.name;
-        const senderAvatar = getAvatarUrl(sender.avatar_url);
-        const senderFallback = (senderName || 'U').charAt(0);
-
-        const ReplyPreview = ({ repliedTo }: { repliedTo: Message }) => (
-            <div
-                className="flex items-center gap-2 p-2 mb-2 rounded-md cursor-pointer border-l-2 bg-foreground/[.07] dark:bg-foreground/[.1] hover:bg-foreground/[.1] dark:hover:bg-foreground/[.15] transition-colors"
-                style={{ borderColor: themeSettings.usernameColor }}
-                onClick={() => jumpToMessage(repliedTo.id as number)}
-            >
-                <div className="flex-1 overflow-hidden">
-                    <p className="font-semibold text-sm truncate" style={{ color: themeSettings.usernameColor }}>
-                        {repliedTo.profiles?.name || 'Unknown'}
-                    </p>
-                    <p className="text-xs truncate opacity-80" style={{ color: 'inherit', opacity: 0.8 }}>
-                        {typeof repliedTo.content === 'string' ? repliedTo.content : (repliedTo.attachment_metadata?.name || 'Attachment')}
-                    </p>
-                </div>
-            </div>
-        );
-
-        return (
-            <div key={message.id} id={`message-${message.id}`} className={cn(
-                "flex w-full items-end gap-1.5 sm:gap-2 group/message",
-                isMyMessage ? "justify-end" : "justify-start",
-                message.id === highlightMessageId && "rounded-lg"
-            )}>
-                {!isMyMessage && (
-                    <Avatar className="h-6 w-6 sm:h-8 sm:w-8 self-end shrink-0">
-                        <AvatarImage src={senderAvatar} alt={senderName} data-ai-hint="avatar" />
-                        <AvatarFallback className="text-[10px] sm:text-xs">{senderFallback}</AvatarFallback>
-                    </Avatar>
-                )}
-                <div {...swipeHandlers} className={cn("relative transition-transform duration-200 ease-out min-w-0", isMyMessage ? "group-data-[swiped=true]/message:translate-x-[-2rem]" : "group-data-[swiped=true]/message:translate-x-[2rem]")}>
-                    <div
-                        className={cn("group/bubble relative rounded-lg text-sm px-2 sm:px-3 py-2 break-words max-w-[80vw] sm:max-w-md md:max-w-lg")}
-                        style={bubbleStyle}
-                    >
-                        {isEditing ? (
-                            <div className="w-full">
-                                <p className="text-xs font-semibold text-primary mb-2">Editing...</p>
-                                {/* The ChatInput component handles the actual editing input field */}
-                            </div>
-                        ) : (
-                            <>
-                                {isGroup && !isMyMessage && (
-                                    <div className="flex items-center gap-2 font-semibold mb-1 text-sm">
-                                        <span style={{ color: themeSettings.usernameColor }}>
-                                            {senderName}
-                                        </span>
-                                        {sender.role === 'gurudev' && (
-                                            <Badge variant="destructive" className="text-xs px-1.5 py-0 leading-none">Gurudev</Badge>
-                                        )}
-                                    </div>
-                                )}
-                                {message.replied_to_message && <ReplyPreview repliedTo={message.replied_to_message} />}
-                                {renderMessageContent(message)}
-
-                                <div className="text-xs mt-1 flex items-center gap-1.5 opacity-70" style={{ justifyContent: isMyMessage ? 'flex-end' : 'flex-start' }}>
-                                    {message.is_pinned && <Pin className="h-3 w-3 text-current mr-1" />}
-                                    {message.is_edited && <span className="text-xs italic">Edited</span>}
-                                    {(message.starred_by?.includes(loggedInUser.id) ?? message.is_starred) && <Star className="h-3 w-3 text-amber-400 fill-amber-400 mr-1" />}
-                                    <span>{format(new Date(message.created_at), 'p')}</span>
-                                    {isMyMessage && messageStatus === 'pending' && <Clock className="h-4 w-4" />}
-                                    {isMyMessage && messageStatus === 'sent' && <Check className="h-4 w-4" />}
-                                    {isMyMessage && messageStatus === 'read' && <CheckCheck className="h-4 w-4 text-primary" />}
-                                </div>
-                            </>
-                        )}
-
-                        {/* This is the message action menu that appears on hover */}
-                        {!isEditing && (
-                            <div className={cn(
-                                "absolute -top-4 flex items-center gap-1 opacity-0 group-hover/bubble:opacity-100 transition-opacity",
-                                isMyMessage ? "left-[-8px]" : "right-[-8px]"
-                            )}>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full bg-background/80 hover:bg-background">
-                                            <MoreVertical className="h-4 w-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="w-auto p-1">
-                                        <DropdownMenuItem onClick={() => handleStartReply(message)} disabled={isOptimistic}>
-                                            <Reply className="mr-2 h-4 w-4" />
-                                            <span>Reply</span>
-                                        </DropdownMenuItem>
-                                        {message.content && !isMyMessage && (
-                                            <DropdownMenuItem onClick={() => setMessageToTranslate(message)}>
-                                                <Languages className="mr-2 h-4 w-4" />
-                                                <span>Translate</span>
-                                            </DropdownMenuItem>
-                                        )}
-                                        <DropdownMenuItem onClick={() => setMessageToForward(message)} disabled={isOptimistic}>
-                                            <Share2 className="mr-2 h-4 w-4" />
-                                            <span>Forward</span>
-                                        </DropdownMenuItem>
-                                        {message.content && (
-                                            <DropdownMenuItem onClick={() => handleCopy(message.content as string)}>
-                                                <Copy className="mr-2 h-4 w-4" />
-                                                <span>Copy</span>
-                                            </DropdownMenuItem>
-                                        )}
-                                        {/* "Pin for me" uses the star/bookmark mechanism for non-admin group users */}
-                                        {(() => {
-                                            const isMessageStarred = message.starred_by?.includes(loggedInUser.id) ?? message.is_starred;
-                                            return isGroup && !isGroupAdmin ? (
-                                                <DropdownMenuItem onClick={() => handleToggleStar(message)} disabled={isOptimistic}>
-                                                    {isMessageStarred ? <PinOff className="mr-2 h-4 w-4" /> : <Pin className="mr-2 h-4 w-4" />}
-                                                    <span>{isMessageStarred ? 'Unpin for me' : 'Pin for me'}</span>
-                                                </DropdownMenuItem>
-                                            ) : (
-                                                <>
-                                                    <DropdownMenuItem onClick={() => handleToggleStar(message)} disabled={isOptimistic}>
-                                                        <Star className={cn("mr-2 h-4 w-4", isMessageStarred && "text-amber-400 fill-amber-400")} />
-                                                        <span>{isMessageStarred ? 'Unstar' : 'Star'}</span>
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => handleTogglePin(message)} disabled={isOptimistic}>
-                                                        {message.is_pinned ? <PinOff className="mr-2 h-4 w-4" /> : <Pin className="mr-2 h-4 w-4" />}
-                                                        <span>{message.is_pinned ? 'Unpin' : (isGroup ? 'Pin for everyone' : 'Pin')}</span>
-                                                    </DropdownMenuItem>
-                                                </>
-                                            );
-                                        })()}
-                                        {isMyMessage && isGroup && !isOptimistic && (
-                                            <DropdownMenuItem onClick={() => setMessageInfo(message)}>
-                                                <Info className="mr-2 h-4 w-4" />
-                                                <span>Message Info</span>
-                                            </DropdownMenuItem>
-                                        )}
-                                        {!isMyMessage && (
-                                            <DropdownMenuItem onClick={() => { setMessageToReport(message); setIsReportDialogOpen(true); }} disabled={isOptimistic}>
-                                                <ShieldAlert className="mr-2 h-4 w-4" />
-                                                <span>Report Message</span>
-                                            </DropdownMenuItem>
-                                        )}
-                                        {isMyMessage && !isOptimistic && (
-                                            <>
-                                                <DropdownMenuSeparator />
-                                                {message.content && (
-                                                    <DropdownMenuItem onClick={() => handleStartEdit(message)}>
-                                                        <Pencil className="mr-2 h-4 w-4" />
-                                                        <span>Edit</span>
-                                                    </DropdownMenuItem>
-                                                )}
-                                                <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteForEveryone(message.id as number)}>
-                                                    <Trash2 className="mr-2 h-4 w-4" />
-                                                    <span>Delete for everyone</span>
-                                                </DropdownMenuItem>
-                                            </>
-                                        )}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full bg-background/80 hover:bg-background" disabled={isOptimistic}>
-                                            <SmilePlus className="h-4 w-4" />
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0 border-none">
-                                        <EmojiPicker
-                                            customEmojis={reactionPickerCustomEmojis}
-                                            onEmojiClick={(emojiData) => {
-                                                if (emojiData.isCustom) {
-                                                    onCustomReact(emojiData.imageUrl, message);
-                                                } else {
-                                                    onReact(emojiData, message);
-                                                }
-                                            }}
-                                            defaultSkinTone={SkinTones.NEUTRAL}
-                                            getEmojiUrl={(unified, style) => `https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/${style}/64/${unified}.png`}
-                                        />
-
-                                    </PopoverContent>
-                                </Popover>
-                                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full bg-background/80 hover:bg-background" onClick={() => handleStartReply(message)} disabled={isOptimistic}>
-                                    <Reply className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        )}
-                        {renderReactions(message)}
-                    </div>
-                </div>
-                {isMyMessage && (
-                    <Avatar className="h-6 w-6 sm:h-8 sm:w-8 self-end shrink-0">
-                        <AvatarImage src={getAvatarUrl(loggedInUser.avatar_url)} alt={loggedInUser.name} data-ai-hint="avatar" />
-                        <AvatarFallback className="text-[10px] sm:text-xs">{loggedInUser.name?.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                )}
-            </div>
-        );
-    }
+    // Build the context object that the module-level MessageBubble needs.
+    // useMemo keeps the reference stable so MessageBubble (React.memo) doesn't re-render
+    // unless something it actually uses changes.
+    const bubbleCtx: MessageBubbleContext = useMemo(() => ({
+        loggedInUser,
+        isGroup,
+        isGroupAdmin: !!isGroupAdmin,
+        themeSettings,
+        outgoingBubbleStyle,
+        incomingBubbleStyle,
+        editingMessage,
+        highlightMessageId,
+        reactionPickerCustomEmojis,
+        chatParticipants: chat.participants,
+        loggedInUserId: loggedInUser.id,
+        chatName: chat.name,
+        startCall,
+        joinCall,
+        handleStartReply,
+        handleDeleteForEveryone,
+        handleCopy,
+        handleStartEdit,
+        onReact,
+        onCustomReact,
+        handleToggleStar,
+        handleTogglePin,
+        setMessageToForward,
+        setMessageToReport,
+        setIsReportDialogOpen,
+        setMessageInfo,
+        setMessageToTranslate,
+        jumpToMessage,
+        getMessageStatus,
+        renderMessageContent,
+        renderReactions,
+    }), [
+        loggedInUser, isGroup, isGroupAdmin, themeSettings, outgoingBubbleStyle, incomingBubbleStyle,
+        editingMessage, highlightMessageId, reactionPickerCustomEmojis, chat.participants, chat.name,
+        startCall, joinCall, handleStartReply, handleDeleteForEveryone, handleCopy, handleStartEdit,
+        onReact, onCustomReact, handleToggleStar, handleTogglePin,
+        setMessageToForward, setMessageToReport, setIsReportDialogOpen,
+        setMessageInfo, setMessageToTranslate, jumpToMessage, getMessageStatus,
+        renderMessageContent, renderReactions,
+    ]);
 
     // This is the main return statement for the Chat component.
     // It lays out the entire chat interface, using all the pieces and logic defined above.
@@ -1515,7 +1631,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                                     return <UnreadSeparator key="unread-separator" />;
                                 }
                                 const message = item as Message;
-                                return <MessageBubble key={message.id} message={message} />
+                                return <MessageBubble key={message.id} message={message} ctx={bubbleCtx} />
                             })}
                         {/* This is an invisible div at the end of the message list that we use as a target to scroll to. */}
                         <div ref={messagesEndRef} />
