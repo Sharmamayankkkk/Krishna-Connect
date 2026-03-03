@@ -95,6 +95,69 @@ export function FeedList({
         onDeletePost: onPostDeleted
     });
 
+    // Keep a ref to posts so stable callbacks can look up current post data
+    const postsRef = React.useRef(posts);
+    postsRef.current = posts;
+
+    const getPost = React.useCallback((postId: string) => postsRef.current.find(p => p.id === postId), []);
+
+    // Stable callbacks that don't change on every render
+    const stableOnLikeToggle = React.useCallback((postId: string) => {
+        const post = getPost(postId);
+        if (post) handlePostLikeToggle(post);
+    }, [getPost, handlePostLikeToggle]);
+
+    const stableOnRepost = React.useCallback((postId: string) => {
+        const post = getPost(postId);
+        if (post) handleRepost(post);
+    }, [getPost, handleRepost]);
+
+    const stableOnSaveToggle = React.useCallback((postId: string) => {
+        const post = getPost(postId);
+        if (post) handlePostSaveToggle(post);
+    }, [getPost, handlePostSaveToggle]);
+
+    const stableOnComment = React.useCallback((postId: string, text: string, parentId?: string) => {
+        const post = getPost(postId);
+        if (post) handleCommentSubmit(post, text, parentId);
+    }, [getPost, handleCommentSubmit]);
+
+    const stableOnCommentLikeToggle = React.useCallback((postId: string, commentId: string, isReply?: boolean) => {
+        const post = getPost(postId);
+        if (post) handleCommentLikeToggle(post, commentId, isReply);
+    }, [getPost, handleCommentLikeToggle]);
+
+    const stableOnCommentPinToggle = React.useCallback((postId: string, commentId: string) => {
+        const post = getPost(postId);
+        if (post) handleCommentPinToggle(post, commentId);
+    }, [getPost, handleCommentPinToggle]);
+
+    const stableOnCommentHideToggle = React.useCallback((postId: string, commentId: string, isReply?: boolean) => {
+        const post = getPost(postId);
+        if (post) handleCommentHideToggle(post, commentId, isReply);
+    }, [getPost, handleCommentHideToggle]);
+
+    const stableOnCommentDelete = React.useCallback((postId: string, commentId: string, isReply?: boolean, parentId?: string) => {
+        const post = getPost(postId);
+        if (post) handleCommentDelete(post, commentId, isReply, parentId);
+    }, [getPost, handleCommentDelete]);
+
+    const stableOnPollVote = React.useCallback((postId: string, optionId: string) => {
+        const post = getPost(postId);
+        if (post) handlePollVote(post, optionId);
+    }, [getPost, handlePollVote]);
+
+    const stableOnPin = React.useCallback((postId: string) => {
+        const post = getPost(postId);
+        if (post) {
+            if (onPin) {
+                onPin(post);
+            } else {
+                handlePostPinToggle(post);
+            }
+        }
+    }, [getPost, onPin, handlePostPinToggle]);
+
     // Batch View Logging Logic
     const viewQueue = React.useRef<Set<string>>(new Set());
     const supabase = createClient();
@@ -191,20 +254,20 @@ export function FeedList({
                         {/* The Actual Post */}
                         <PostCard
                             post={post}
-                            onLikeToggle={() => handlePostLikeToggle(post)}
-                            onRepost={() => handleRepost(post)}
-                            onSaveToggle={() => handlePostSaveToggle(post)}
+                            onLikeToggle={stableOnLikeToggle}
+                            onRepost={stableOnRepost}
+                            onSaveToggle={stableOnSaveToggle}
                             onDelete={handlePostDeleted}
                             onEdit={onPostUpdated}
-                            onComment={(_postId, text, parentId) => handleCommentSubmit(post, text, parentId)}
-                            onCommentLikeToggle={(_postId, commentId, isReply) => handleCommentLikeToggle(post, commentId, isReply)}
-                            onCommentPinToggle={(_postId, commentId) => handleCommentPinToggle(post, commentId)}
-                            onCommentHideToggle={(_postId, commentId, isReply) => handleCommentHideToggle(post, commentId, isReply)}
-                            onCommentDelete={(_postId, commentId, isReply, parentId) => handleCommentDelete(post, commentId, isReply, parentId)}
-                            onPollVote={(_postId, optionId) => handlePollVote(post, optionId)}
+                            onComment={stableOnComment}
+                            onCommentLikeToggle={stableOnCommentLikeToggle}
+                            onCommentPinToggle={stableOnCommentPinToggle}
+                            onCommentHideToggle={stableOnCommentHideToggle}
+                            onCommentDelete={stableOnCommentDelete}
+                            onPollVote={stableOnPollVote}
                             onQuotePost={onQuotePost}
                             onPromote={onPromote}
-                            onPin={onPin ? () => (onPin ? onPin(post) : handlePostPinToggle(post)) : () => handlePostPinToggle(post)}
+                            onPin={stableOnPin}
                             onView={handlePostView}
                         />
                     </React.Fragment>

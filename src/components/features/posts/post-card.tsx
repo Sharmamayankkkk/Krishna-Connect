@@ -523,7 +523,7 @@ const VotersList = ({ voterIds }: { voterIds: string[] }) => {
 
 
 // --- MAIN POST CARD COMPONENT ---
-export function PostCard({
+export const PostCard = React.memo(function PostCard({
     post,
     onComment,
     onDelete,
@@ -636,12 +636,18 @@ export function PostCard({
         requireAuth(() => onSaveToggle(post.id), "Log in to bookmark");
     };
 
-    const handleLike = () => {
-        requireAuth(() => onLikeToggle(post.id), "Log in to like");
-    };
-
     const DOUBLE_TAP_THRESHOLD_MS = 300;
     const LIKE_ANIMATION_DURATION_MS = 800;
+
+    const handleLike = () => {
+        requireAuth(() => {
+            onLikeToggle(post.id);
+            if (!isLiked) {
+                setShowLikeAnimation(true);
+                setTimeout(() => setShowLikeAnimation(false), LIKE_ANIMATION_DURATION_MS);
+            }
+        }, "Log in to like");
+    };
 
     const handleDoubleTapLike = () => {
         const now = Date.now();
@@ -1160,7 +1166,7 @@ export function PostCard({
             />
         </>
     );
-}
+});
 
 export function PostSkeleton() {
     return (
