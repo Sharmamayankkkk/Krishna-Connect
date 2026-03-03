@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, Sparkles, Pin, TrendingUp, Crown, Send, Gift, ShieldOff } from 'lucide-react';
+import { CheckCircle2, Sparkles, Pin, TrendingUp, Crown, Send, Gift, ShieldOff, Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function BenefitsGrid() {
@@ -11,6 +11,7 @@ export function BenefitsGrid() {
         { icon: <TrendingUp className="h-6 w-6" />, title: 'Promote Posts', desc: '3 boosted posts/month (yearly)', color: 'from-rose-500 to-pink-600' },
         { icon: <Crown className="h-6 w-6" />, title: 'Create Challenges', desc: 'Only verified users can create', color: 'from-yellow-500 to-amber-600' },
         { icon: <Send className="h-6 w-6" />, title: 'Priority Support', desc: 'Direct access to the team', color: 'from-cyan-500 to-blue-600' },
+        { icon: <Upload className="h-6 w-6" />, title: '200MB Uploads', desc: 'Upload media up to 200MB', color: 'from-indigo-500 to-blue-600' },
         { icon: <Gift className="h-6 w-6" />, title: 'Exclusive Perks', desc: 'Madhav Stores coupons & more', color: 'from-fuchsia-500 to-purple-600' },
     ];
 

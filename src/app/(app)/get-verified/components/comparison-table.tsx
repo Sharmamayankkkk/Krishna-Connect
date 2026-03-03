@@ -10,6 +10,7 @@ export function ComparisonTable() {
         { feature: 'Pin Posts to Profile', free: '3', verified: '∞' },
         { feature: 'Create Challenges', free: false, verified: true },
         { feature: 'Create Events', free: false, verified: true },
+        { feature: 'Media Upload Limit', free: '50MB', verified: '200MB' },
         { feature: 'Promote Posts', free: false, verified: true },
         { feature: 'Priority Support', free: false, verified: true },
     ];

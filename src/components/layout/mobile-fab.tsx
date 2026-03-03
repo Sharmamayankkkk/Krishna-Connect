@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
+import { getMaxFileSize, getMaxFileSizeMB } from '@/lib/utils'
 
 export function MobileFab() {
     const [isOpen, setIsOpen] = useState(false)
@@ -39,8 +40,8 @@ export function MobileFab() {
             toast({ title: 'Only video files are allowed', variant: 'destructive' })
             return
         }
-        if (file.size > 50 * 1024 * 1024) {
-            toast({ title: 'Video must be under 50MB', variant: 'destructive' })
+        if (file.size > getMaxFileSize(loggedInUser?.is_verified)) {
+            toast({ title: `Video must be under ${getMaxFileSizeMB(loggedInUser?.is_verified)}MB`, variant: 'destructive' })
             return
         }
 
