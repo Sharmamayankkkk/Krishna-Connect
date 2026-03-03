@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAppContext } from "@/providers/app-provider";
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Users, Shield, ArrowLeft, Trash2, LogOut, Link as LinkIcon, Settings, EyeOff, Copy, ShieldCheck } from 'lucide-react';
+import { MessageSquare, Users, Shield, ArrowLeft, Trash2, LogOut, Link as LinkIcon, Settings, EyeOff, Copy, ShieldCheck, Tag } from 'lucide-react';
 import Link from 'next/link';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
@@ -226,6 +226,7 @@ export default function GroupInfoPage() {
                               </div>
                           </Link>
                           <div className="flex items-center gap-2">
+                            {participant.tag && <Badge variant="outline" className="flex items-center gap-1 text-xs font-normal"><Tag className="h-3 w-3" />{participant.tag}</Badge>}
                             {participant.profiles.role === 'gurudev' && <Badge variant="destructive">Gurudev</Badge>}
                             {participant.is_admin && participant.profiles.role !== 'gurudev' && <Badge variant="secondary" className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5" />Admin</Badge>}
                           </div>

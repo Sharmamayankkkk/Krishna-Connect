@@ -16,7 +16,7 @@ import { Switch } from "@/components/ui/switch"
 import { useToast } from "@/hooks/use-toast"
 import { useAppContext } from "@/providers/app-provider"
 import type { Chat, User, Participant } from '@/lib/types'
-import { UserPlus, UserX, Loader2, Upload, RefreshCcw, Copy } from 'lucide-react'
+import { UserPlus, UserX, Loader2, Upload, RefreshCcw, Copy, Tag } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { createClient } from '@/lib/utils'
@@ -102,6 +102,10 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
     setParticipants(prev => prev.filter(p => p.user_id !== userId));
   };
 
+  const handleTagChange = (userId: string, tag: string) => {
+    setParticipants(prev => prev.map(p => p.user_id === userId ? { ...p, tag: tag.slice(0, 25) } : p));
+  };
+
   const handleAddMember = (user: User) => {
     if (!participants.some(p => p.user_id === user.id)) {
       setParticipants(prev => [...prev, {
@@ -157,7 +161,7 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
       const toRemove = group.participants.filter(p => !newParticipantIds.has(p.user_id));
       const toUpdate = participants.filter(p => {
         const original = group.participants.find(op => op.user_id === p.user_id);
-        return original && original.is_admin !== p.is_admin;
+        return original && (original.is_admin !== p.is_admin || (original.tag ?? '') !== (p.tag ?? ''));
       });
 
       if (toAdd.length > 0) {
@@ -174,7 +178,7 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
 
       if (toUpdate.length > 0) {
         for (const p of toUpdate) {
-          const { error } = await supabase.from('participants').update({ is_admin: p.is_admin }).match({ chat_id: p.chat_id, user_id: p.user_id });
+          const { error } = await supabase.from('participants').update({ is_admin: p.is_admin, tag: p.tag || null }).match({ chat_id: p.chat_id, user_id: p.user_id });
           if (error) throw error;
         }
       }
@@ -282,32 +286,44 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
                     <h4 className="font-medium mb-2">Current Members ({participants.length})</h4>
                     <div className="space-y-3">
                       {participants.map(p => (
-                        <div key={p.user_id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-lg border hover:bg-muted/50">
-                          <div className="flex items-center gap-3 mb-3 sm:mb-0">
-                            <Avatar className="h-9 w-9">
-                              <AvatarImage src={p.profiles.avatar_url} alt={p.profiles.name} />
-                              <AvatarFallback>{p.profiles.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-semibold">{p.profiles.name}</p>
-                              <p className="text-xs text-muted-foreground">@{p.profiles.username}</p>
+                        <div key={p.user_id} className="flex flex-col p-3 rounded-lg border hover:bg-muted/50 space-y-2">
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+                            <div className="flex items-center gap-3 mb-3 sm:mb-0">
+                              <Avatar className="h-9 w-9">
+                                <AvatarImage src={p.profiles.avatar_url} alt={p.profiles.name} />
+                                <AvatarFallback>{p.profiles.name.charAt(0)}</AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-semibold">{p.profiles.name}</p>
+                                <p className="text-xs text-muted-foreground">@{p.profiles.username}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto justify-between">
+                              <div className="flex items-center space-x-2">
+                                <Switch id={`admin-switch-${p.user_id}`} checked={p.is_admin} onCheckedChange={() => handleToggleAdmin(p.user_id)} disabled={p.user_id === loggedInUser?.id} aria-label={`Toggle admin status for ${p.profiles.name}`} />
+                                <Label htmlFor={`admin-switch-${p.user_id}`} className="text-sm font-normal cursor-pointer">Admin</Label>
+                              </div>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleRemoveMember(p.user_id)} disabled={p.user_id === loggedInUser?.id}>
+                                    <UserX className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Remove from group</p>
+                                </TooltipContent>
+                              </Tooltip>
                             </div>
                           </div>
-                          <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto justify-between">
-                            <div className="flex items-center space-x-2">
-                              <Switch id={`admin-switch-${p.user_id}`} checked={p.is_admin} onCheckedChange={() => handleToggleAdmin(p.user_id)} disabled={p.user_id === loggedInUser?.id} aria-label={`Toggle admin status for ${p.profiles.name}`} />
-                              <Label htmlFor={`admin-switch-${p.user_id}`} className="text-sm font-normal cursor-pointer">Admin</Label>
-                            </div>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleRemoveMember(p.user_id)} disabled={p.user_id === loggedInUser?.id}>
-                                  <UserX className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Remove from group</p>
-                              </TooltipContent>
-                            </Tooltip>
+                          <div className="flex items-center gap-2">
+                            <Tag className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                            <Input
+                              placeholder="Member tag (e.g. Designer)"
+                              value={p.tag || ''}
+                              onChange={e => handleTagChange(p.user_id, e.target.value)}
+                              maxLength={25}
+                              className="h-7 text-xs"
+                            />
                           </div>
                         </div>
                       ))}
