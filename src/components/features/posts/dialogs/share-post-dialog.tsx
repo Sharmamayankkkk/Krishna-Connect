@@ -114,7 +114,7 @@ export function SharePostDialog({ post, open, onOpenChange }: SharePostDialogPro
                     name: 'Shared Post',
                     type: 'post_share',
                     size: 0,
-                    title: post.content ? post.content.substring(0, 50) + (post.content.length > 50 ? '...' : '') : 'Media Post',
+                    title: post.content ? post.content.substring(0, 50) + (post.content.length > 50 ? '...' : '') : (post.poll ? 'Poll' : 'Media Post'),
                     description: `@${post.author.username}`,
                     image: post.media && post.media.length > 0 ? post.media[0].url : post.author.avatar,
                     url: `/profile/${post.author.username}/post/${post.id}`,
@@ -122,7 +122,9 @@ export function SharePostDialog({ post, open, onOpenChange }: SharePostDialogPro
                     // New rich preview fields
                     postAuthor: post.author.name || post.author.username,
                     postAuthorAvatar: post.author.avatar,
-                    postContent: post.content || ''
+                    postContent: post.content || '',
+                    hasPoll: !!post.poll,
+                    pollQuestion: post.poll?.question
                 }
             };
 
@@ -325,27 +327,27 @@ export function SharePostDialog({ post, open, onOpenChange }: SharePostDialogPro
                                 ))}
                             </div>
 
-                            <div className="space-y-3 pt-4 border-t">
+                            <div className="space-y-3 pt-4 border-t pb-4">
                                 <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Page Link</Label>
-                                <div className="flex items-center gap-2 p-1.5 bg-muted/50 border rounded-full pl-4 pr-1.5">
+                                <div className="flex items-center gap-2 p-1 border rounded-full pl-3 pr-1 w-full bg-muted/50 overflow-hidden">
                                     <Link2 className="h-4 w-4 text-muted-foreground shrink-0" />
                                     <input
                                         readOnly
                                         value={`${typeof window !== 'undefined' ? window.location.origin : ''}/profile/${post.author.username}/post/${post.id}`}
-                                        className="flex-1 bg-transparent border-none text-sm text-muted-foreground focus:outline-none truncate h-9"
+                                        className="flex-1 min-w-0 bg-transparent border-none text-sm text-muted-foreground focus:outline-none truncate h-9"
                                     />
                                     <Button
                                         size="sm"
-                                        className="rounded-full px-4 h-8"
+                                        className="rounded-full px-3 h-8 shrink-0 whitespace-nowrap"
                                         onClick={handleCopyLink}
                                     >
                                         {hasCopied ? (
                                             <>
-                                                <Check className="h-3.5 w-3.5 mr-1.5" /> Copied
+                                                <Check className="h-3.5 w-3.5 mr-1" /> Copied
                                             </>
                                         ) : (
                                             <>
-                                                <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy
+                                                <Copy className="h-3.5 w-3.5 mr-1" /> Copy
                                             </>
                                         )}
                                     </Button>

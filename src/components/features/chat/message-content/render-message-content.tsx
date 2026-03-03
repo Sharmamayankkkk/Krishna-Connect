@@ -3,7 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { FileIcon, Download } from 'lucide-react';
+import { FileIcon, Download, Play, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -38,6 +38,85 @@ interface RenderMessageContentOptions {
     setImageViewerSrc: (src: string) => void;
     setIsImageViewerOpen: (open: boolean) => void;
     chatParticipants: any[];
+}
+
+function PostShareCard({ metadata }: { metadata: any }) {
+    const [thumbnail, setThumbnail] = React.useState<string | null>(null);
+    const authorName = metadata?.postAuthor || metadata?.description?.replace('@', '') || 'Unknown';
+    const authorAvatar = metadata?.postAuthorAvatar || metadata?.image;
+    const postContent = metadata?.postContent || metadata?.title;
+    
+    const mediaUrl = metadata?.image;
+    // Check if the URL indicates a video or if the type is explicitly video
+    const isVideoUrl = typeof mediaUrl === 'string' && !!mediaUrl.toLowerCase().match(/\.(mp4|webm|ogg|mov|avi)(\?.*)?$/);
+    const isVideoType = metadata?.mediaType === 'video' || metadata?.type === 'video';
+    const isVideo = isVideoUrl || isVideoType;
+    const hasMedia = mediaUrl && mediaUrl !== metadata?.postAuthorAvatar;
+    const hasPoll = metadata?.hasPoll;
+    const pollQuestion = metadata?.pollQuestion;
+
+    React.useEffect(() => {
+        let isMounted = true;
+        if (isVideo && mediaUrl) {
+            import('@/lib/video-thumbnail').then(({ extractVideoThumbnail }) => {
+                extractVideoThumbnail(mediaUrl)
+                    .then(thumb => {
+                        if (isMounted) setThumbnail(thumb);
+                    })
+                    .catch(err => console.error("Error generating thumbnail", err));
+            });
+        }
+        return () => { isMounted = false; };
+    }, [isVideo, mediaUrl]);
+
+    const displaySrc = (isVideo && thumbnail) ? thumbnail : mediaUrl;
+
+    return (
+        <Link href={metadata?.url || '#'} className="block max-w-sm w-full group/card">
+            <Card className="bg-muted/40 hover:bg-muted/60 transition-all duration-200 overflow-hidden border-primary/10 shadow-sm group-hover/card:shadow-md">
+                <div className="flex items-center justify-between p-3 border-b border-border/50 bg-background/50 backdrop-blur-sm">
+                    <div className="flex items-center gap-2.5 overflow-hidden">
+                        <Avatar className="h-6 w-6 border border-border/50 shrink-0">
+                            <AvatarImage src={getAvatarUrl(authorAvatar)} className="object-cover" />
+                            <AvatarFallback className="text-[10px]">{authorName[0]?.toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm font-semibold truncate opacity-90">{authorName}</span>
+                    </div>
+                    <ArrowDown className="w-3 h-3 -rotate-90 text-muted-foreground/50 opacity-0 group-hover/card:opacity-100 transition-opacity" />
+                </div>
+                {hasMedia && displaySrc && (
+                    <div className="relative aspect-square w-full bg-black/5">
+                        <Image src={displaySrc} alt="Post content" fill className="object-cover" sizes="(max-width: 768px) 100vw, 300px" />
+                        {isVideo && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                <div className="bg-black/50 backdrop-blur-sm rounded-full p-2.5">
+                                    <Play className="h-5 w-5 text-white fill-white ml-0.5" />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+                {hasMedia && !displaySrc && isVideo && (
+                    <div className="relative aspect-square w-full bg-muted flex items-center justify-center">
+                        <div className="bg-black/50 backdrop-blur-sm rounded-full p-2.5">
+                            <Play className="h-5 w-5 text-white fill-white ml-0.5" />
+                        </div>
+                    </div>
+                )}
+                {hasPoll && (
+                   <div className="p-3 bg-primary/5 border-b border-border/50 flex items-center gap-2">
+                       <BarChart3 className="w-4 h-4 text-primary shrink-0" />
+                       <p className="text-sm font-medium text-foreground truncate">{pollQuestion || 'Poll'}</p>
+                   </div>
+                )}
+                <div className="p-3 bg-background/30">
+                    <p className="text-sm line-clamp-3 text-foreground/90 leading-relaxed font-normal">
+                        {typeof postContent === 'string' ? postContent : 'Shared post'}
+                    </p>
+                </div>
+            </Card>
+        </Link>
+    );
 }
 
 /**
@@ -94,37 +173,7 @@ export const createRenderMessageContent = ({
             }
 
             if (type === 'post_share') {
-                const metadata = message.attachment_metadata;
-                const authorName = metadata?.postAuthor || metadata?.description?.replace('@', '') || 'Unknown';
-                const authorAvatar = metadata?.postAuthorAvatar || metadata?.image;
-                const postContent = metadata?.postContent || metadata?.title;
-                const hasMedia = metadata?.image && metadata.image !== metadata.postAuthorAvatar;
-                return (
-                    <Link href={metadata?.url || '#'} className="block max-w-sm w-full group/card">
-                        <Card className="bg-muted/40 hover:bg-muted/60 transition-all duration-200 overflow-hidden border-primary/10 shadow-sm group-hover/card:shadow-md">
-                            <div className="flex items-center justify-between p-3 border-b border-border/50 bg-background/50 backdrop-blur-sm">
-                                <div className="flex items-center gap-2.5 overflow-hidden">
-                                    <Avatar className="h-6 w-6 border border-border/50 shrink-0">
-                                        <AvatarImage src={getAvatarUrl(authorAvatar)} className="object-cover" />
-                                        <AvatarFallback className="text-[10px]">{authorName[0]?.toUpperCase()}</AvatarFallback>
-                                    </Avatar>
-                                    <span className="text-sm font-semibold truncate opacity-90">{authorName}</span>
-                                </div>
-                                <ArrowDown className="w-3 h-3 -rotate-90 text-muted-foreground/50 opacity-0 group-hover/card:opacity-100 transition-opacity" />
-                            </div>
-                            {hasMedia && (
-                                <div className="relative aspect-square w-full bg-black/5">
-                                    <Image src={metadata.image!} alt="Post content" fill className="object-cover" sizes="(max-width: 768px) 100vw, 300px" />
-                                </div>
-                            )}
-                            <div className="p-3 bg-background/30">
-                                <p className="text-sm line-clamp-3 text-foreground/90 leading-relaxed font-normal">
-                                    {typeof postContent === 'string' ? postContent : 'Shared post'}
-                                </p>
-                            </div>
-                        </Card>
-                    </Link>
-                );
+                return <PostShareCard metadata={message.attachment_metadata} />;
             }
 
             const isSticker = name === 'sticker.webp';
