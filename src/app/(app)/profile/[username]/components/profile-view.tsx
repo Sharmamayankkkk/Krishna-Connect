@@ -383,7 +383,7 @@ export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], f
             </Avatar>
           </div>
 
-          <div className="flex items-center gap-2 mt-3">
+          <div className="flex items-center flex-wrap gap-2 mt-3">
             {isOwnProfile ? (
               <>
                 <Button

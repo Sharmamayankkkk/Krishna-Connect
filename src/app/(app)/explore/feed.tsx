@@ -450,14 +450,14 @@ export default function Feed() {
                 {/* Header with Search */}
                 {/* Header with Search */}
                 <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/40 supports-[backdrop-filter]:bg-background/60 transition-all duration-200">
-                    <div className="flex items-center justify-between px-4 py-3 gap-2 sm:gap-4 overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-3 gap-2 sm:gap-4 min-w-0">
                         {/* Mobile Sidebar Trigger only */}
                         <div className="flex items-center gap-3 md:hidden flex-shrink-0">
                             <SidebarTrigger />
                         </div>
 
                         {/* Search Bar - Center focus */}
-                        <div className="flex-1 max-w-xl mx-auto px-4 md:px-0">
+                        <div className="flex-1 min-w-0 max-w-xl mx-auto px-2 md:px-0">
                             <GlobalSearchBar
                                 placeholder="Search..."
                                 className="w-full max-w-full"
@@ -523,8 +523,8 @@ export default function Feed() {
 
                         {/* Feed Column */}
                         <div className="col-span-1 lg:col-span-8 xl:col-span-7 w-full min-w-0">
-                            {/* Stories Bar - Overflow handled internally but wrapped for safety */}
-                            <div className="mb-4 overflow-hidden rounded-lg border bg-background shadow-sm">
+                            {/* Stories Bar - overflow-x-hidden lets corners clip but allows internal scroll */}
+                            <div className="mb-4 overflow-x-hidden rounded-lg border bg-background shadow-sm">
                                 <StoriesBar />
                             </div>
 

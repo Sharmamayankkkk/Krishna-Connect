@@ -53,7 +53,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         </SidebarFooter>
       </Sidebar>
 
-      <main className={`flex-1 md:pb-0 ${isMobileNavHidden ? 'overflow-hidden' : 'overflow-y-auto pb-16'}`}>
+      <main className={`flex-1 overflow-x-hidden md:pb-0 ${isMobileNavHidden ? 'overflow-hidden' : 'overflow-y-auto pb-16'}`}>
         {children}
       </main>
 

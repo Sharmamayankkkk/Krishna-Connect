@@ -741,7 +741,7 @@ export default function NotificationsPage() {
 
                 {/* Filter Tabs with unread counts */}
                 <Tabs value={filter} onValueChange={(v) => setFilter(v as NotificationFilter)} className="w-full">
-                    <TabsList className="w-full justify-start rounded-none border-b-0 bg-transparent h-auto p-0 overflow-x-auto flex-nowrap">
+                    <TabsList className="w-full justify-start rounded-none border-b-0 bg-transparent h-auto p-0 overflow-x-auto flex-nowrap no-scrollbar">
                         <TabsTrigger value="all" className={filterTabClassName}>All</TabsTrigger>
                         <TabsTrigger value="mentions" className={filterTabClassName}>
                             <AtSign className="h-3.5 w-3.5" />
