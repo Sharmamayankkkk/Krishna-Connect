@@ -33,6 +33,7 @@ import { Badge } from '@/components/ui/badge';
 import { ForwardMessageDialog } from './dialogs/forward-message-dialog';
 import { ReportDialog } from '../../dialogs/report-dialog';
 import { PinnedMessagesDialog } from './dialogs/pinned-messages-dialog';
+import { StarredMessagesDialog } from './dialogs/starred-messages-dialog';
 import { LinkPreview } from '../posts/link-preview';
 import { ImageViewerDialog } from '../media/image-viewer';
 import { MessageInfoDialog } from './dialogs/message-info-dialog';
@@ -65,6 +66,7 @@ const DELETED_MESSAGE_MARKER = '[[MSG_DELETED]]';
 const SYSTEM_MESSAGE_PREFIX = '[[SYS:';
 const CALL_MESSAGE_PREFIX = '[[CALL:';
 const STORY_REPLY_PREFIX = '[[STORY_REPLY:';
+const PIN_MESSAGE_MARKER = '[PIN]';
 
 const Spoiler = ({ content }: { content: string }) => {
     const [revealed, setRevealed] = useState(false);
@@ -158,6 +160,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
     const [messageToReport, setMessageToReport] = useState<Message | null>(null);
 
     const [isPinnedDialogOpen, setIsPinnedDialogOpen] = useState(false);
+    const [isStarredDialogOpen, setIsStarredDialogOpen] = useState(false);
 
     const [showScrollToBottom, setShowScrollToBottom] = useState(false);
     const [firstUnreadMentionId, setFirstUnreadMentionId] = useState<number | null>(null);
@@ -219,7 +222,8 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
     }, []);
 
     // We create a Supabase client instance to interact with our database.
-    const supabase = createClient();
+    // Memoized to prevent re-creation on every render which would cause infinite useEffect loops.
+    const supabase = useMemo(() => createClient(), []);
 
     // Listen for real-time message updates (e.g., edited messages, call status changes)
     useEffect(() => {
@@ -276,6 +280,9 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
         [chat, loggedInUser.id, isGroup]);
 
     const pinnedMessages = useMemo(() => (chat.messages || []).filter(m => m.is_pinned), [chat.messages]);
+    const starredMessages = useMemo(() => (chat.messages || []).filter(m => 
+        m.starred_by?.includes(loggedInUser.id) ?? m.is_starred
+    ), [chat.messages, loggedInUser.id]);
 
     const isDmRestricted = useMemo(() => {
         if (chat.type !== 'dm' || !chatPartner || !dmRequests || loggedInUser.is_admin || chatPartner.is_admin) {
@@ -466,15 +473,27 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
     };
 
     // Functions to toggle the "starred" or "pinned" state of a message.
+    // Uses per-user starred_by array via RPC, falls back to direct update if RPC unavailable.
     const handleToggleStar = async (messageToStar: Message) => {
         if (typeof messageToStar.id === 'string') return;
-        const { error } = await supabase
-            .from('messages')
-            .update({ is_starred: !messageToStar.is_starred })
-            .eq('id', messageToStar.id);
+        const isCurrentlyStarred = messageToStar.starred_by?.includes(loggedInUser.id) ?? messageToStar.is_starred;
 
-        if (error) {
-            toast({ variant: 'destructive', title: 'Error starring message', description: error.message });
+        // Try using the per-user RPC function first
+        const { data, error: rpcError } = await supabase.rpc('toggle_star_message', {
+            p_message_id: messageToStar.id,
+            p_user_id: loggedInUser.id,
+        });
+
+        if (rpcError) {
+            // Fall back to the simple boolean toggle if the RPC doesn't exist yet
+            const { error } = await supabase
+                .from('messages')
+                .update({ is_starred: !isCurrentlyStarred })
+                .eq('id', messageToStar.id);
+
+            if (error) {
+                toast({ variant: 'destructive', title: 'Error starring message', description: error.message });
+            }
         }
     };
 
@@ -493,7 +512,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
             toast({ variant: 'destructive', title: 'Error pinning message', description: error.message });
         } else {
             if (newIsPinned) {
-                sendSystemMessage(`📌 ${loggedInUser.name} pinned a message.`);
+                sendSystemMessage(`${PIN_MESSAGE_MARKER} ${loggedInUser.name} pinned a message.`);
             }
             toast({ title: newIsPinned ? 'Message pinned' : 'Message unpinned' });
         }
@@ -551,7 +570,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
     // for special formatting like mentions, custom emojis, and links, and replaces them
     // with the appropriate React components.
     const parseContent = useCallback((content: string | null): (string | React.ReactNode)[] => {
-        if (!content) return [];
+        if (!content || typeof content !== 'string') return [];
 
         let processedContent = content;
 
@@ -713,7 +732,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                             {/* Caption/Content */}
                             <div className="p-3 bg-background/30">
                                 <p className="text-sm line-clamp-3 text-foreground/90 leading-relaxed font-normal">
-                                    {postContent}
+                                    {typeof postContent === 'string' ? postContent : 'Shared post'}
                                 </p>
                             </div>
                         </Card>
@@ -921,13 +940,14 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
 
     const SystemMessage = ({ content }: { content: string }) => {
         const parsedContent = content.replace(SYSTEM_MESSAGE_PREFIX, '').replace(']]', '');
-        const icon = parsedContent.startsWith('📌') ? <Pin className="inline-block h-3 w-3 mr-1.5" /> : null;
+        const isPinMessage = parsedContent.startsWith(PIN_MESSAGE_MARKER);
+        const displayText = parsedContent.replace(`${PIN_MESSAGE_MARKER} `, '');
 
         return (
             <div className="text-center text-xs text-muted-foreground my-3">
                 <span className="bg-muted px-2.5 py-1.5 rounded-full">
-                    {icon}
-                    {parsedContent.replace('📌 ', '')}
+                    {isPinMessage && <Pin className="inline-block h-3 w-3 mr-1.5" />}
+                    {displayText}
                 </span>
             </div>
         );
@@ -1022,8 +1042,8 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
         const replyText = match?.[2] || content;
         const isVideoStory = mediaUrl.includes('.mp4') || mediaUrl.includes('.webm') || mediaUrl.includes('.mov');
         return (
-            <div className={cn("flex items-end gap-2 group/message", isMyMessage ? "justify-end" : "justify-start")}>
-                {!isMyMessage && <div className="w-8 shrink-0" />}
+            <div className={cn("flex items-end gap-1.5 sm:gap-2 group/message", isMyMessage ? "justify-end" : "justify-start")}>
+                {!isMyMessage && <div className="w-6 sm:w-8 shrink-0" />}
                 <div className={cn("relative max-w-[85%] sm:max-w-md rounded-xl overflow-hidden", isMyMessage ? "bg-primary text-primary-foreground" : "bg-muted")}>
                     <div className="px-3 pt-2 pb-1">
                         <p className="text-[10px] uppercase tracking-wide opacity-60 font-medium">
@@ -1047,7 +1067,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                         </p>
                     </div>
                 </div>
-                {isMyMessage && <div className="w-8 shrink-0" />}
+                {isMyMessage && <div className="w-6 sm:w-8 shrink-0" />}
             </div>
         );
     };
@@ -1074,8 +1094,8 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
             const isMyMessage = message.user_id === loggedInUser.id;
             const bubbleStyle = isMyMessage ? outgoingBubbleStyle : incomingBubbleStyle;
             return (
-                <div className={cn("flex items-end gap-2 group/message", isMyMessage ? "justify-end" : "justify-start")}>
-                    {!isMyMessage && <div className="w-8 shrink-0" />}
+                <div className={cn("flex items-end gap-1.5 sm:gap-2 group/message", isMyMessage ? "justify-end" : "justify-start")}>
+                    {!isMyMessage && <div className="w-6 sm:w-8 shrink-0" />}
                     <div
                         className="relative max-w-[85%] sm:max-w-md lg:max-w-lg rounded-lg text-sm px-2 sm:px-3 py-2"
                         style={bubbleStyle}
@@ -1085,7 +1105,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                             <span>This message was deleted</span>
                         </div>
                     </div>
-                    {isMyMessage && <div className="w-8 shrink-0" />}
+                    {isMyMessage && <div className="w-6 sm:w-8 shrink-0" />}
                 </div>
             );
         }
@@ -1114,7 +1134,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
 
         const bubbleStyle = isMyMessage ? outgoingBubbleStyle : incomingBubbleStyle;
         const senderName = isGroup && sender.role === 'gurudev' ? chat.name : sender.name;
-        const senderAvatar = sender.avatar_url;
+        const senderAvatar = getAvatarUrl(sender.avatar_url);
         const senderFallback = (senderName || 'U').charAt(0);
 
         const ReplyPreview = ({ repliedTo }: { repliedTo: Message }) => (
@@ -1125,10 +1145,10 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
             >
                 <div className="flex-1 overflow-hidden">
                     <p className="font-semibold text-sm truncate" style={{ color: themeSettings.usernameColor }}>
-                        {repliedTo.profiles.name}
+                        {repliedTo.profiles?.name || 'Unknown'}
                     </p>
                     <p className="text-xs truncate opacity-80" style={{ color: 'inherit', opacity: 0.8 }}>
-                        {repliedTo.content || (repliedTo.attachment_metadata?.name || 'Attachment')}
+                        {typeof repliedTo.content === 'string' ? repliedTo.content : (repliedTo.attachment_metadata?.name || 'Attachment')}
                     </p>
                 </div>
             </div>
@@ -1136,14 +1156,14 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
 
         return (
             <div key={message.id} id={`message-${message.id}`} className={cn(
-                "flex w-full items-end gap-2 group/message",
+                "flex w-full items-end gap-1.5 sm:gap-2 group/message",
                 isMyMessage ? "justify-end" : "justify-start",
                 message.id === highlightMessageId && "rounded-lg"
             )}>
                 {!isMyMessage && (
-                    <Avatar className="h-8 w-8 self-end shrink-0">
+                    <Avatar className="h-6 w-6 sm:h-8 sm:w-8 self-end shrink-0">
                         <AvatarImage src={senderAvatar} alt={senderName} data-ai-hint="avatar" />
-                        <AvatarFallback>{senderFallback}</AvatarFallback>
+                        <AvatarFallback className="text-[10px] sm:text-xs">{senderFallback}</AvatarFallback>
                     </Avatar>
                 )}
                 <div {...swipeHandlers} className={cn("relative transition-transform duration-200 ease-out min-w-0", isMyMessage ? "group-data-[swiped=true]/message:translate-x-[-2rem]" : "group-data-[swiped=true]/message:translate-x-[2rem]")}>
@@ -1174,7 +1194,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                                 <div className="text-xs mt-1 flex items-center gap-1.5 opacity-70" style={{ justifyContent: isMyMessage ? 'flex-end' : 'flex-start' }}>
                                     {message.is_pinned && <Pin className="h-3 w-3 text-current mr-1" />}
                                     {message.is_edited && <span className="text-xs italic">Edited</span>}
-                                    {message.is_starred && <Star className="h-3 w-3 text-amber-400 fill-amber-400 mr-1" />}
+                                    {(message.starred_by?.includes(loggedInUser.id) ?? message.is_starred) && <Star className="h-3 w-3 text-amber-400 fill-amber-400 mr-1" />}
                                     <span>{format(new Date(message.created_at), 'p')}</span>
                                     {isMyMessage && messageStatus === 'pending' && <Clock className="h-4 w-4" />}
                                     {isMyMessage && messageStatus === 'sent' && <Check className="h-4 w-4" />}
@@ -1216,14 +1236,27 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                                                 <span>Copy</span>
                                             </DropdownMenuItem>
                                         )}
-                                        <DropdownMenuItem onClick={() => handleToggleStar(message)} disabled={isOptimistic}>
-                                            <Star className="mr-2 h-4 w-4" />
-                                            <span>{message.is_starred ? 'Unstar' : 'Star'}</span>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handleTogglePin(message)} disabled={(isGroup && !isGroupAdmin) || isOptimistic}>
-                                            {message.is_pinned ? <PinOff className="mr-2 h-4 w-4" /> : <Pin className="mr-2 h-4 w-4" />}
-                                            <span>{message.is_pinned ? 'Unpin' : 'Pin'}</span>
-                                        </DropdownMenuItem>
+                                        {/* "Pin for me" uses the star/bookmark mechanism for non-admin group users */}
+                                        {(() => {
+                                            const isMessageStarred = message.starred_by?.includes(loggedInUser.id) ?? message.is_starred;
+                                            return isGroup && !isGroupAdmin ? (
+                                                <DropdownMenuItem onClick={() => handleToggleStar(message)} disabled={isOptimistic}>
+                                                    {isMessageStarred ? <PinOff className="mr-2 h-4 w-4" /> : <Pin className="mr-2 h-4 w-4" />}
+                                                    <span>{isMessageStarred ? 'Unpin for me' : 'Pin for me'}</span>
+                                                </DropdownMenuItem>
+                                            ) : (
+                                                <>
+                                                    <DropdownMenuItem onClick={() => handleToggleStar(message)} disabled={isOptimistic}>
+                                                        <Star className={cn("mr-2 h-4 w-4", isMessageStarred && "text-amber-400 fill-amber-400")} />
+                                                        <span>{isMessageStarred ? 'Unstar' : 'Star'}</span>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => handleTogglePin(message)} disabled={isOptimistic}>
+                                                        {message.is_pinned ? <PinOff className="mr-2 h-4 w-4" /> : <Pin className="mr-2 h-4 w-4" />}
+                                                        <span>{message.is_pinned ? 'Unpin' : (isGroup ? 'Pin for everyone' : 'Pin')}</span>
+                                                    </DropdownMenuItem>
+                                                </>
+                                            );
+                                        })()}
                                         {isMyMessage && isGroup && !isOptimistic && (
                                             <DropdownMenuItem onClick={() => setMessageInfo(message)}>
                                                 <Info className="mr-2 h-4 w-4" />
@@ -1284,9 +1317,9 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                     </div>
                 </div>
                 {isMyMessage && (
-                    <Avatar className="h-8 w-8 self-end shrink-0">
-                        <AvatarImage src={loggedInUser.avatar_url} alt={loggedInUser.name} data-ai-hint="avatar" />
-                        <AvatarFallback>{loggedInUser.name?.charAt(0)}</AvatarFallback>
+                    <Avatar className="h-6 w-6 sm:h-8 sm:w-8 self-end shrink-0">
+                        <AvatarImage src={getAvatarUrl(loggedInUser.avatar_url)} alt={loggedInUser.name} data-ai-hint="avatar" />
+                        <AvatarFallback className="text-[10px] sm:text-xs">{loggedInUser.name?.charAt(0)}</AvatarFallback>
                     </Avatar>
                 )}
             </div>
@@ -1320,51 +1353,74 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                 }}
                 isAdmin={isGroupAdmin || false}
             />
+            <StarredMessagesDialog
+                open={isStarredDialogOpen}
+                onOpenChange={setIsStarredDialogOpen}
+                messages={starredMessages}
+                onJumpToMessage={jumpToMessage}
+                onUnstarMessage={(id) => {
+                    const msg = chat.messages?.find(m => m.id === id);
+                    if (msg) handleToggleStar(msg);
+                }}
+            />
 
             {/* This is the header of the chat window. */}
-            <header className="flex items-center justify-between p-2 border-b gap-2 shrink-0">
-                <div className="flex items-center gap-2 min-w-0">
+            <header className="flex items-center justify-between p-2 border-b gap-1 sm:gap-2 shrink-0">
+                <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
                     <div className="md:hidden">
                         <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => router.push('/chat')}
-                            className="h-9 w-9"
+                            className="h-8 w-8 sm:h-9 sm:w-9 shrink-0"
                         >
-                            <ArrowLeft className="h-5 w-5" />
+                            <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
                         </Button>
                     </div>
                     <Link href={isGroup ? `/group/${chat.id}` : `/profile/${chatPartner?.username || ''}`} className="flex-shrink-0">
-                        <Avatar className="h-10 w-10">
-                            <AvatarImage src={isGroup ? chat.avatar_url : chatPartner?.avatar_url} alt={isGroup ? chat.name : chatPartner?.name} data-ai-hint={isGroup ? 'group symbol' : 'avatar'} />
-                            <AvatarFallback>{(isGroup ? chat.name : chatPartner?.name)?.charAt(0).toUpperCase()}</AvatarFallback>
+                        <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
+                            <AvatarImage src={getAvatarUrl(isGroup ? chat.avatar_url : chatPartner?.avatar_url)} alt={isGroup ? chat.name : chatPartner?.name} data-ai-hint={isGroup ? 'group symbol' : 'avatar'} />
+                            <AvatarFallback className="text-xs sm:text-sm">{(isGroup ? chat.name : chatPartner?.name)?.charAt(0).toUpperCase()}</AvatarFallback>
                         </Avatar>
                     </Link>
-                    <div className="flex flex-col truncate">
+                    <div className="flex flex-col min-w-0">
                         <Link href={isGroup ? `/group/${chat.id}` : `/profile/${chatPartner?.username || ''}`}>
-                            <span className="font-semibold hover:underline truncate">{isGroup ? chat.name : chatPartner?.name}</span>
+                            <span className="font-semibold hover:underline truncate block text-sm sm:text-base">{isGroup ? chat.name : chatPartner?.name}</span>
                         </Link>
-                        <span className="text-xs text-muted-foreground truncate">
+                        <span className="text-[10px] sm:text-xs text-muted-foreground truncate block">
                             {isGroup ? `${chat.participants?.length} members` : chatPartner ? `@${chatPartner.username}` : ''}
                         </span>
                     </div>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center shrink-0">
                     {pinnedMessages.length > 0 && (
                         <TooltipProvider>
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" onClick={() => setIsPinnedDialogOpen(true)}>
-                                        <Pin className="h-5 w-5" />
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" onClick={() => setIsPinnedDialogOpen(true)}>
+                                        <Pin className="h-4 w-4 sm:h-5 sm:w-5" />
                                     </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>View Pinned Messages</TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
                     )}
+                    {starredMessages.length > 0 && (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" onClick={() => setIsStarredDialogOpen(true)}>
+                                        <Star className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400 fill-amber-400" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>View Starred Messages</TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
                     <Button
                         variant="ghost"
                         size="icon"
+                        className="hidden sm:inline-flex h-8 w-8 sm:h-9 sm:w-9"
                         onClick={() => {
                             if (isGroup) {
                                 startGroupCall(chat.id.toString(), 'voice'); // Ensure chat.id is string if expected
@@ -1374,11 +1430,12 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                         }}
                         disabled={!isGroup && !chatPartner}
                     >
-                        <Phone className="h-5 w-5" />
+                        <Phone className="h-4 w-4 sm:h-5 sm:w-5" />
                     </Button>
                     <Button
                         variant="ghost"
                         size="icon"
+                        className="h-8 w-8 sm:h-9 sm:w-9"
                         onClick={() => {
                             if (isGroup) {
                                 startGroupCall(chat.id.toString(), 'video');
@@ -1388,17 +1445,35 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                         }}
                         disabled={!isGroup && !chatPartner}
                     >
-                        <Video className="h-5 w-5" />
+                        <Video className="h-4 w-4 sm:h-5 sm:w-5" />
                     </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                                <MoreVertical />
+                            <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9">
+                                <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuItem asChild><Link href={isGroup ? `/group/${chat.id}` : `/profile/${chatPartner?.username || ''}`}>View Info</Link></DropdownMenuItem>
                             <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => setIsStarredDialogOpen(true)}>
+                                <Star className="mr-2 h-4 w-4" />
+                                <span>Starred Messages</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    if (isGroup) {
+                                        startGroupCall(chat.id.toString(), 'voice');
+                                    } else if (chatPartner) {
+                                        startCall(chatPartner.id, 'voice');
+                                    }
+                                }}
+                                className="sm:hidden"
+                            >
+                                <Phone className="mr-2 h-4 w-4" />
+                                <span>Voice Call</span>
+                            </DropdownMenuItem>
                             <DropdownMenuItem disabled>Clear chat</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>

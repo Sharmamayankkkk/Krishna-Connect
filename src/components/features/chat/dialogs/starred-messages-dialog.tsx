@@ -10,38 +10,37 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Pin, X } from 'lucide-react';
+import { Star, X } from 'lucide-react';
 import type { Message } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
+import { getAvatarUrl } from '@/lib/utils';
 
-interface PinnedMessagesDialogProps {
+interface StarredMessagesDialogProps {
   messages: Message[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onJumpToMessage: (messageId: number) => void;
-  onUnpinMessage: (messageId: number) => void;
-  isAdmin: boolean;
+  onUnstarMessage: (messageId: number) => void;
 }
 
-export function PinnedMessagesDialog({ 
-    messages, 
-    open, 
-    onOpenChange, 
+export function StarredMessagesDialog({
+    messages,
+    open,
+    onOpenChange,
     onJumpToMessage,
-    onUnpinMessage,
-    isAdmin 
-}: PinnedMessagesDialogProps) {
-    
+    onUnstarMessage,
+}: StarredMessagesDialogProps) {
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Pin className="h-5 w-5" />
-            Pinned Messages
+            <Star className="h-5 w-5 text-amber-400 fill-amber-400" />
+            Starred Messages
           </DialogTitle>
           <DialogDescription>
-            All pinned messages in this chat are shown here.
+            Messages you have starred in this chat.
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-72 w-full mt-4">
@@ -52,7 +51,7 @@ export function PinnedMessagesDialog({
                         <div className="flex justify-between items-start">
                              <div className="flex items-start gap-3">
                                 <Avatar className="h-8 w-8">
-                                    <AvatarImage src={message.profiles?.avatar_url} />
+                                    <AvatarImage src={getAvatarUrl(message.profiles?.avatar_url)} />
                                     <AvatarFallback>{message.profiles?.name?.charAt(0) || 'U'}</AvatarFallback>
                                 </Avatar>
                                 <div>
@@ -60,17 +59,15 @@ export function PinnedMessagesDialog({
                                     <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}</p>
                                 </div>
                             </div>
-                           {isAdmin && (
-                             <button
+                            <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  onUnpinMessage(message.id as number);
+                                  onUnstarMessage(message.id as number);
                                 }}
                                 className="absolute top-1 right-1 h-6 w-6 rounded-full bg-background/50 flex items-center justify-center opacity-0 group-hover:opacity-100"
                             >
                                 <X className="h-4 w-4" />
                             </button>
-                           )}
                         </div>
                         <p className="mt-2 text-foreground/80 line-clamp-3">
                             {typeof message.content === 'string' ? message.content : 'Attachment'}
@@ -79,7 +76,9 @@ export function PinnedMessagesDialog({
                 ))
             ) : (
                 <div className="text-center py-10 text-muted-foreground">
-                    <p>No messages have been pinned yet.</p>
+                    <Star className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p>No starred messages yet.</p>
+                    <p className="text-xs mt-1">Star important messages to find them here.</p>
                 </div>
             )}
           </div>

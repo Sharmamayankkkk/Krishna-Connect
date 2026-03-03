@@ -24,7 +24,7 @@ function ChatPageLoading() {
 // It tells the database exactly which columns we want to fetch for a message,
 // including related data like the sender's profile and the message being replied to.
 const FULL_MESSAGE_SELECT_QUERY = `
-    id, created_at, chat_id, user_id, content, attachment_url, attachment_metadata, is_edited, reactions, read_by, is_pinned, is_starred, reply_to_message_id, 
+    id, created_at, chat_id, user_id, content, attachment_url, attachment_metadata, is_edited, reactions, read_by, is_pinned, is_starred, starred_by, reply_to_message_id, 
     profiles!user_id(*), 
     replied_to_message:reply_to_message_id(*, profiles!user_id(*))
 `;
@@ -34,7 +34,7 @@ export default function ChatPage() {
   const searchParams = useSearchParams()
   const highlightMessageId = searchParams.get("highlight")
   const chatId = Number(params.id)
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   const {
     loggedInUser,
@@ -86,8 +86,6 @@ export default function ChatPage() {
     if (chatId && loggedInUser?.id) {
       const markAsRead = async () => {
         resetUnreadCount(chatId)
-        // This is a remote procedure call (RPC) to a custom database function
-        // that efficiently marks all messages in the chat as read for the current user.
         await supabase.rpc('mark_messages_as_read', { p_chat_id: chatId, p_user_id: loggedInUser.id });
       }
       markAsRead()
@@ -96,8 +94,7 @@ export default function ChatPage() {
     }
   }, [chatId, loggedInUser?.id, resetUnreadCount, supabase])
 
-  // *** THIS IS THE CORE OF THE REAL-TIME FIX ***
-  // This `useEffect` hook sets up the real-time subscription for the current chat.
+  // Real-time subscription for the current chat.
   useEffect(() => {
     if (!chatId || !supabase) return;
 

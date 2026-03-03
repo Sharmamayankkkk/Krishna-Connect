@@ -51,7 +51,7 @@ export default function StarredMessagesPage() {
   const router = useRouter();
   const [starredMessages, setStarredMessages] = React.useState<StarredMessage[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
-  const supabase = createClient();
+  const supabase = React.useMemo(() => createClient(), []);
 
   React.useEffect(() => {
     if (!isReady) return;
@@ -81,16 +81,28 @@ export default function StarredMessagesPage() {
         return;
       }
 
-      // Then, fetch starred messages from those chats
+      // Then, fetch starred messages from those chats (per-user via starred_by array)
       const { data, error } = await supabase
         .from('messages')
         .select('*, profiles:user_id(*), chat:chat_id(*)')
-        .eq('is_starred', true)
+        .contains('starred_by', [loggedInUser.id])
         .in('chat_id', chatIds)
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error("Error fetching starred messages:", error);
+        // Fall back to global is_starred if starred_by column doesn't exist yet
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('messages')
+          .select('*, profiles:user_id(*), chat:chat_id(*)')
+          .eq('is_starred', true)
+          .in('chat_id', chatIds)
+          .order('created_at', { ascending: false });
+
+        if (fallbackError) {
+          console.error("Error fetching starred messages:", fallbackError);
+        } else {
+          setStarredMessages(fallbackData as any as StarredMessage[]);
+        }
       } else {
         setStarredMessages(data as any as StarredMessage[]);
       }
@@ -125,11 +137,11 @@ export default function StarredMessagesPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-9 w-9">
-                        <AvatarImage src={message.profiles.avatar_url} alt={message.profiles.name} data-ai-hint="avatar" />
-                        <AvatarFallback>{message.profiles.name.charAt(0)}</AvatarFallback>
+                        <AvatarImage src={message.profiles?.avatar_url} alt={message.profiles?.name} data-ai-hint="avatar" />
+                        <AvatarFallback>{message.profiles?.name?.charAt(0) || 'U'}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-semibold">{message.profiles.name}</p>
+                        <p className="font-semibold">{message.profiles?.name || 'Unknown'}</p>
                         <p className="text-xs text-muted-foreground">
                           in <Link href={`/chat/${message.chat_id}`} className="font-medium hover:underline">{message.chat.name || 'DM'}</Link>
                         </p>
@@ -141,7 +153,7 @@ export default function StarredMessagesPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="whitespace-pre-wrap text-foreground/90">{message.content}</p>
+                  <p className="whitespace-pre-wrap text-foreground/90">{typeof message.content === 'string' ? message.content : 'Attachment'}</p>
                   <div className="mt-4 flex justify-end">
                     <Button variant="outline" size="sm" onClick={() => handleGoToMessage(message.chat_id, message.id)}>
                       <MessageSquare className="mr-2 h-4 w-4" />

@@ -15,6 +15,7 @@ import { formatDistanceToNow } from 'date-fns'
 import Link from 'next/link'
 import Image from 'next/image'
 import { GoogleAd } from '@/components/ads/google-ad'
+import { LikeAnimation } from '@/components/shared/like-animation'
 
 type LeelaVideo = {
   id: string
@@ -77,6 +78,7 @@ function VideoPlayer({
   const [isMuted, setIsMuted] = React.useState(false)
   const [progress, setProgress] = React.useState(0)
   const [showControls, setShowControls] = React.useState(false)
+  const [showLikeAnim, setShowLikeAnim] = React.useState(false)
   const controlsTimeout = React.useRef<NodeJS.Timeout | null>(null)
 
   React.useEffect(() => {
@@ -128,7 +130,11 @@ function VideoPlayer({
 
   const handleDoubleTap = (e: React.MouseEvent) => {
     e.preventDefault()
-    onLike(video.id)
+    if (!video.is_liked) {
+      onLike(video.id)
+    }
+    setShowLikeAnim(true)
+    setTimeout(() => setShowLikeAnim(false), 800)
   }
 
   return (
@@ -137,6 +143,7 @@ function VideoPlayer({
       onClick={handleTap}
       onDoubleClick={handleDoubleTap}
     >
+      <LikeAnimation show={showLikeAnim} />
       <video
         ref={videoRef}
         src={video.video_url}

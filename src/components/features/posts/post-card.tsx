@@ -61,6 +61,7 @@ import { LikedByDialog } from './dialogs/liked-by-dialog';
 import { VerificationBadge } from "@/components/shared/verification-badge";
 import { AutoLinkPreview } from './auto-link-preview';
 import { QrCodeOverlay } from '../media/qr-code-overlay';
+import { LikeAnimation } from '@/components/shared/like-animation';
 
 interface PostCardProps {
     post: PostType;
@@ -522,7 +523,7 @@ const VotersList = ({ voterIds }: { voterIds: string[] }) => {
 
 
 // --- MAIN POST CARD COMPONENT ---
-export function PostCard({
+export const PostCard = React.memo(function PostCard({
     post,
     onComment,
     onDelete,
@@ -561,6 +562,8 @@ export function PostCard({
 
     const [isLikedByDialogOpen, setIsLikedByDialogOpen] = React.useState(false);
     const [isAddToCollectionOpen, setIsAddToCollectionOpen] = React.useState(false);
+    const [showLikeAnimation, setShowLikeAnimation] = React.useState(false);
+    const lastTapRef = React.useRef(0);
 
     // Truncation settings for Read More feature
     const MAX_CONTENT_LENGTH = 280;
@@ -633,8 +636,29 @@ export function PostCard({
         requireAuth(() => onSaveToggle(post.id), "Log in to bookmark");
     };
 
+    const DOUBLE_TAP_THRESHOLD_MS = 300;
+    const LIKE_ANIMATION_DURATION_MS = 800;
+
     const handleLike = () => {
-        requireAuth(() => onLikeToggle(post.id), "Log in to like");
+        requireAuth(() => {
+            onLikeToggle(post.id);
+            if (!isLiked) {
+                setShowLikeAnimation(true);
+                setTimeout(() => setShowLikeAnimation(false), LIKE_ANIMATION_DURATION_MS);
+            }
+        }, "Log in to like");
+    };
+
+    const handleDoubleTapLike = () => {
+        const now = Date.now();
+        if (now - lastTapRef.current < DOUBLE_TAP_THRESHOLD_MS) {
+            if (!isLiked) {
+                handleLike();
+            }
+            setShowLikeAnimation(true);
+            setTimeout(() => setShowLikeAnimation(false), LIKE_ANIMATION_DURATION_MS);
+        }
+        lastTapRef.current = now;
     };
 
     const handleRepost = () => {
@@ -904,6 +928,10 @@ export function PostCard({
                             </DropdownMenu>
                         </div>
 
+                        {/* Post Content + Media (with double-tap to like) */}
+                        <div className="relative" onClick={handleDoubleTapLike}>
+                        <LikeAnimation show={showLikeAnimation} />
+
                         {/* Post Content */}
                         <div className="mt-1 text-[15px] sm:text-base text-foreground/90 whitespace-pre-wrap break-words leading-relaxed">
                             {content && content.length > MAX_CONTENT_LENGTH && !isExpanded ? (
@@ -951,6 +979,7 @@ export function PostCard({
                         {/* Media Grid */}
                         <div className="mt-3">
                             <MediaGrid media={media || []} onMediaClick={handleMediaClick} />
+                        </div>
                         </div>
 
                         {/* Embedded Post */}
@@ -1137,7 +1166,7 @@ export function PostCard({
             />
         </>
     );
-}
+});
 
 export function PostSkeleton() {
     return (
