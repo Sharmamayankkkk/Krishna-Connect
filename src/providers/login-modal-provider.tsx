@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, ReactNode, useCallback } from "react"
+import { createContext, useContext, useState, ReactNode, useCallback, useMemo } from "react"
 import { LoginModal } from "@/components/login-modal"
 import { usePathname } from "next/navigation"
 
@@ -33,8 +33,12 @@ export function LoginModalProvider({ children }: { children: ReactNode }) {
         }, 300)
     }, [])
 
+    const loginModalValue = useMemo(() => ({
+        openLoginModal, closeLoginModal, isOpen,
+    }), [openLoginModal, closeLoginModal, isOpen])
+
     return (
-        <LoginModalContext.Provider value={{ openLoginModal, closeLoginModal, isOpen }}>
+        <LoginModalContext.Provider value={loginModalValue}>
             {children}
             <LoginModal
                 open={isOpen}

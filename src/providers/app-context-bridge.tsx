@@ -10,12 +10,14 @@
 
 "use client"
 
-import type { ReactNode } from "react"
+import { useMemo, type ReactNode } from "react"
 import { AppContext } from "./app-context"
 import { useAuthContext } from "./auth-context"
 import { useChatActions } from "./chat-actions-context"
 import { useUserActions } from "./user-actions-context"
 import { useThemeActions } from "./theme-actions-context"
+
+const EMPTY_USERS: never[] = []
 
 export function AppContextBridge({ children }: { children: ReactNode }) {
     const auth = useAuthContext()
@@ -23,7 +25,7 @@ export function AppContextBridge({ children }: { children: ReactNode }) {
     const userActions = useUserActions()
     const themeActions = useThemeActions()
 
-    const value = {
+    const value = useMemo(() => ({
         // Auth
         loggedInUser: auth.loggedInUser,
         isReady: auth.isReady,
@@ -50,8 +52,16 @@ export function AppContextBridge({ children }: { children: ReactNode }) {
         updateSettings: themeActions.updateSettings,
         // allUsers removed — was causing full profiles table fetch on every login.
         // Components that needed allUsers for chat sender lookup now fetch on demand.
-        allUsers: [], // kept for type compatibility; always empty now
-    }
+        allUsers: EMPTY_USERS,
+    }), [
+        auth.loggedInUser, auth.isReady, auth.refreshProfile,
+        auth.chats, auth.dmRequests, auth.blockedUsers,
+        chatActions.addChat, chatActions.leaveGroup, chatActions.deleteGroup,
+        chatActions.resetUnreadCount, chatActions.forwardMessage,
+        userActions.updateUser, userActions.blockUser, userActions.unblockUser,
+        userActions.reportUser, userActions.sendDmRequest,
+        themeActions.themeSettings, themeActions.setThemeSettings, themeActions.updateSettings,
+    ])
 
     return (
         <AppContext.Provider value={value}>

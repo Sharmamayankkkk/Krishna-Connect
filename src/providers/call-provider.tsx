@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useCallback, useRef, useEffect, type ReactNode } from "react"
+import { createContext, useContext, useState, useCallback, useRef, useEffect, useMemo, type ReactNode } from "react"
 import type { CallRecord, CallSignal, CallType, ActiveCall, User } from "@/lib/types"
 import { createClient } from "@/lib/utils"
 import { useWebRTC } from "@/hooks/use-webrtc"
@@ -750,7 +750,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
     }
   }, [activeCall, incomingCall, cleanupCall])
 
-  const value: CallContextType = {
+  const value = useMemo<CallContextType>(() => ({
     activeCall,
     incomingCall,
     callStatus,
@@ -771,7 +771,11 @@ export function CallProvider({ children }: { children: ReactNode }) {
     toggleAudio: webrtc.toggleAudio,
     toggleVideo: webrtc.toggleVideo,
     toggleScreenShare: webrtc.toggleScreenShare,
-  }
+  }), [
+    activeCall, incomingCall, callStatus, isInCall,
+    webrtc.state, webrtc.toggleAudio, webrtc.toggleVideo, webrtc.toggleScreenShare,
+    startCall, startGroupCall, joinCall, acceptCall, declineCall, endCall,
+  ])
 
   return <CallContext.Provider value={value}>{children}</CallContext.Provider>
 }

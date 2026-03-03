@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { StreamVideo, StreamVideoClient } from '@stream-io/video-react-sdk'
 import { useAppContext } from './app-provider'
 import { createStreamClient, disconnectStreamClient } from '@/lib/stream-config'
@@ -84,10 +84,10 @@ export function StreamVideoProvider({ children }: { children: ReactNode }) {
     }
   }, [loggedInUser?.id]) // Only re-run if user ID changes
 
-  const value: StreamVideoContextType = {
+  const value = useMemo<StreamVideoContextType>(() => ({
     client,
     isLoading,
-  }
+  }), [client, isLoading])
 
   return (
     <StreamVideoContext.Provider value={value}>

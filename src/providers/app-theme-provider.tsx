@@ -5,7 +5,7 @@
 
 "use client"
 
-import { useState, useCallback, useEffect, type ReactNode } from "react"
+import { useState, useCallback, useEffect, useMemo, type ReactNode } from "react"
 import type { ThemeSettings, UserSettings } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { useTheme } from "next-themes"
@@ -78,8 +78,12 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
         }
     }, [loggedInUser, setLoggedInUser, supabaseRef, setTheme, toast])
 
+    const themeContextValue = useMemo(() => ({
+        themeSettings, setThemeSettings, updateSettings,
+    }), [themeSettings, setThemeSettings, updateSettings])
+
     return (
-        <ThemeActionsContext.Provider value={{ themeSettings, setThemeSettings, updateSettings }}>
+        <ThemeActionsContext.Provider value={themeContextValue}>
             {children}
         </ThemeActionsContext.Provider>
     )

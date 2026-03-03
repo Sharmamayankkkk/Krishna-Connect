@@ -84,6 +84,20 @@ export const PollMessage = ({ pollId, loggedInUserId, chatParticipants }: PollMe
         }
     };
 
+    // Hooks must be called unconditionally (Rules of Hooks) — keep above early returns
+    const options: PollOption[] = poll?.options || [];
+
+    const votesByOption = useMemo(() => {
+        const map = new Map<string, any[]>();
+        for (const v of votes) {
+            const arr = map.get(v.option_id) || [];
+            arr.push(v);
+            map.set(v.option_id, arr);
+        }
+        return map;
+    }, [votes]);
+    const maxVoteCount = useMemo(() => Math.max(0, ...options.map(o => (votesByOption.get(o.id) || []).length)), [options, votesByOption]);
+
     if (isLoading) {
         return (
             <div className="w-[280px] sm:w-[320px] rounded-xl overflow-hidden my-1 border border-border bg-card">
@@ -110,22 +124,9 @@ export const PollMessage = ({ pollId, loggedInUserId, chatParticipants }: PollMe
     }
 
     const totalVotes = votes.length;
-    const options: PollOption[] = poll.options || [];
     const hasUserVoted = votes.some(v => v.user_id === loggedInUserId);
     const uniqueVoterCount = new Set(votes.map(v => v.user_id)).size;
     const isMultiple = poll.allows_multiple;
-
-    // Pre-compute vote counts per option to avoid O(n²) in render
-    const votesByOption = useMemo(() => {
-        const map = new Map<string, any[]>();
-        for (const v of votes) {
-            const arr = map.get(v.option_id) || [];
-            arr.push(v);
-            map.set(v.option_id, arr);
-        }
-        return map;
-    }, [votes]);
-    const maxVoteCount = useMemo(() => Math.max(0, ...options.map(o => (votesByOption.get(o.id) || []).length)), [options, votesByOption]);
 
     return (
         <div className="w-[280px] sm:w-[320px] rounded-xl overflow-hidden my-1 border-2 border-primary/25 bg-card shadow-md">

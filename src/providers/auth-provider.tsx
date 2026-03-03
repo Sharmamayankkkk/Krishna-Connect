@@ -9,7 +9,7 @@
 
 "use client"
 
-import { useState, useCallback, useEffect, useRef, type ReactNode } from "react"
+import { useState, useCallback, useEffect, useRef, useMemo, type ReactNode } from "react"
 import type { User, Chat, DmRequest } from "@/lib/types"
 import { createClient } from "@/lib/utils"
 import { Icons } from "@/components/icons"
@@ -189,14 +189,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (!isReady) return <AppLoading />
 
+    const authContextValue = useMemo(() => ({
+        session, loggedInUser, setLoggedInUser,
+        chats, setChats, sortChats,
+        dmRequests, setDmRequests,
+        blockedUsers, setBlockedUsers,
+        supabaseRef, isReady, refreshProfile, fetchInitialData,
+    }), [session, loggedInUser, chats, dmRequests, blockedUsers, isReady, refreshProfile, fetchInitialData])
+
     return (
-        <AuthContext.Provider value={{
-            session, loggedInUser, setLoggedInUser,
-            chats, setChats, sortChats,
-            dmRequests, setDmRequests,
-            blockedUsers, setBlockedUsers,
-            supabaseRef, isReady, refreshProfile, fetchInitialData,
-        }}>
+        <AuthContext.Provider value={authContextValue}>
             {children}
             <PrivacySetupModal open={showPrivacyModal} onOpenChange={setShowPrivacyModal} />
             <PhoneCollectionDialog

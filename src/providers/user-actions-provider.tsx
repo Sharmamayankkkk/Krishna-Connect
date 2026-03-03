@@ -5,7 +5,7 @@
 
 "use client"
 
-import { useCallback, type ReactNode } from "react"
+import { useCallback, useMemo, type ReactNode } from "react"
 import type { User } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { useAuthContext } from "./auth-context"
@@ -79,8 +79,12 @@ export function UserActionsProvider({ children }: { children: ReactNode }) {
         }
     }, [loggedInUser, supabaseRef, toast])
 
+    const userActionsValue = useMemo(() => ({
+        updateUser, blockUser, unblockUser, reportUser, sendDmRequest,
+    }), [updateUser, blockUser, unblockUser, reportUser, sendDmRequest])
+
     return (
-        <UserActionsContext.Provider value={{ updateUser, blockUser, unblockUser, reportUser, sendDmRequest }}>
+        <UserActionsContext.Provider value={userActionsValue}>
             {children}
         </UserActionsContext.Provider>
     )

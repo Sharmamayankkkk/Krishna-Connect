@@ -5,7 +5,7 @@
 
 "use client"
 
-import { useCallback, type ReactNode } from "react"
+import { useCallback, useMemo, type ReactNode } from "react"
 import type { Chat, Message } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { useAuthContext } from "./auth-context"
@@ -78,8 +78,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         }
     }, [loggedInUser, supabaseRef, toast])
 
+    const chatContextValue = useMemo(() => ({
+        addChat, leaveGroup, deleteGroup, resetUnreadCount, forwardMessage,
+    }), [addChat, leaveGroup, deleteGroup, resetUnreadCount, forwardMessage])
+
     return (
-        <ChatActionsContext.Provider value={{ addChat, leaveGroup, deleteGroup, resetUnreadCount, forwardMessage }}>
+        <ChatActionsContext.Provider value={chatContextValue}>
             {children}
         </ChatActionsContext.Provider>
     )
