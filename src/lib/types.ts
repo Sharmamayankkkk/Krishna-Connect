@@ -124,6 +124,7 @@ export type Participant = {
   chat_id: number;
   is_admin: boolean;
   profiles: User;
+  tag?: string; // Member tag (max 25 chars) shown next to name in group messages
 }
 
 // Matches public.chats table, with participants joined
@@ -142,6 +143,11 @@ export type Chat = {
   is_public: boolean;
   history_visible: boolean;
   invite_code: string | null;
+  disable_sharing?: boolean;         // Prevents message forwarding
+  settings?: {                       // JSONB settings (group permissions etc)
+    members_can_set_tag?: boolean;
+    [key: string]: unknown;
+  };
 
   // UI-only fields
   unreadCount?: number;

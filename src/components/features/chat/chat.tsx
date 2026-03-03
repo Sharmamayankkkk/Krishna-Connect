@@ -1,732 +1,109 @@
 'use client';
 
-import React, { useMemo, useState, useRef, useEffect, useCallback } from 'react';
-import Image from 'next/image';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { useSwipeable } from 'react-swipeable';
 import { useRouter } from 'next/navigation';
-import { MoreVertical, Phone, Video, Check, CheckCheck, Pencil, Trash2, SmilePlus, X, FileIcon, Download, Copy, Star, Share2, Shield, Loader2, Pause, Play, Users, UserX, ShieldAlert, Pin, PinOff, Reply, Clock, CircleSlash, ArrowDown, AtSign, Info, Languages, ArrowLeft } from 'lucide-react';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-    DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Phone, Video, MoreVertical, Pin, Star, AtSign, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+    DropdownMenuTrigger, DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import type { Chat, User, Message, AttachmentMetadata } from '@/lib/types';
-import { cn, getContrastingTextColor, createClient, getAvatarUrl } from '@/lib/utils';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { format, isSameDay, isToday, isYesterday } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAppContext } from '@/providers/app-provider';
-import EmojiPicker, { EmojiClickData, SkinTones } from 'emoji-picker-react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { VoiceNotePlayer } from '../media/voice-note-player';
-import { format, formatDistanceToNow, isSameDay, isToday, isYesterday } from 'date-fns';
+import { useCallContext } from '@/providers/call-provider';
+import { cn, getContrastingTextColor, createClient, getAvatarUrl } from '@/lib/utils';
+import type { Chat, User, Message } from '@/lib/types';
+
+// Split-out modules
+import { SYSTEM_MESSAGE_PREFIX, PIN_MESSAGE_MARKER } from './chat-constants';
+import type { ChatProps, MessageBubbleContext } from './chat-types';
+import { MessageBubble } from './message-bubble';
+import { useParseContent } from './message-content/parse-markdown';
+import { createRenderMessageContent } from './message-content/render-message-content';
+import { createRenderReactions } from './message-content/render-reactions';
+import { useChatActions } from './hooks/use-chat-actions';
+import { useChatScroll } from './hooks/use-chat-scroll';
+
+// Dialog imports
 import { RequestDmDialog } from '../../dialogs/request-dm-dialog';
-import { Badge } from '@/components/ui/badge';
 import { ForwardMessageDialog } from './dialogs/forward-message-dialog';
 import { ReportDialog } from '../../dialogs/report-dialog';
 import { PinnedMessagesDialog } from './dialogs/pinned-messages-dialog';
 import { StarredMessagesDialog } from './dialogs/starred-messages-dialog';
-import { LinkPreview } from '../posts/link-preview';
 import { ImageViewerDialog } from '../media/image-viewer';
 import { MessageInfoDialog } from './dialogs/message-info-dialog';
 import { ChatInput } from './chat-input';
 import { TranslateDialog } from '../../dialogs/translate-dialog';
-import { useCallContext } from '@/providers/call-provider';
-
-interface ChatProps {
-    chat: Chat;
-    loggedInUser: User;
-    setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
-    highlightMessageId?: number | null;
-    isLoadingMore: boolean;
-    hasMoreMessages: boolean;
-    topMessageSentinelRef: React.RefObject<HTMLDivElement>;
-    scrollContainerRef: React.RefObject<HTMLDivElement>;
-    initialUnreadCount?: number;
-}
 
 // ---------------------------------------------------------------------------
-// Types shared by the module-level sub-components below
+// Small pure separator components — no hooks, safe to keep inline
 // ---------------------------------------------------------------------------
+const DateSeparator = ({ date }: { date: string }) => (
+    <div className="relative my-4">
+        <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
+        <div className="relative flex justify-center">
+            <span className="bg-muted px-3 text-xs font-medium text-muted-foreground rounded-full">{date}</span>
+        </div>
+    </div>
+);
 
-interface MessageBubbleContext {
-    loggedInUser: User;
-    isGroup: boolean;
-    isGroupAdmin: boolean;
-    themeSettings: any;
-    outgoingBubbleStyle: React.CSSProperties;
-    incomingBubbleStyle: React.CSSProperties;
-    editingMessage: { id: number; content: string } | null;
-    highlightMessageId?: number | null;
-    reactionPickerCustomEmojis: { id: string; names: string[]; imgUrl: string }[];
-    chatParticipants: any[];
-    loggedInUserId: string;
-    startCall?: ((userId: string, type: 'voice' | 'video') => void) | null;
-    joinCall?: ((callId: string) => void) | null;
-    handleStartReply: (message: Message) => void;
-    handleDeleteForEveryone: (messageId: number) => void;
-    handleCopy: (text: string) => void;
-    handleStartEdit: (message: Message) => void;
-    onReact: (emojiData: EmojiClickData, message: Message) => void;
-    onCustomReact: (emojiUrl: string, message: Message) => void;
-    handleToggleStar: (message: Message) => Promise<void>;
-    handleTogglePin: (message: Message) => Promise<void>;
-    setMessageToForward: React.Dispatch<React.SetStateAction<Message | null>>;
-    setMessageToReport: React.Dispatch<React.SetStateAction<Message | null>>;
-    setIsReportDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    setMessageInfo: React.Dispatch<React.SetStateAction<Message | null>>;
-    setMessageToTranslate: React.Dispatch<React.SetStateAction<Message | null>>;
-    jumpToMessage: (messageId: number) => void;
-    getMessageStatus: (message: Message) => 'pending' | 'sent' | 'read' | null;
-    renderMessageContent: (message: Message) => React.ReactNode;
-    renderReactions: (message: Message) => React.ReactNode;
-    chatName: string | null | undefined;
-}
+const UnreadSeparator = () => (
+    <div className="relative my-4">
+        <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-red-500" /></div>
+        <div className="relative flex justify-center">
+            <span className="bg-red-500 px-3 text-xs font-medium text-white rounded-full">Unread Messages</span>
+        </div>
+    </div>
+);
 
 // ---------------------------------------------------------------------------
-// Module-level sub-components (defined OUTSIDE Chat so their references are
-// stable across renders — otherwise React unmounts/remounts on every render,
-// breaking useEffect hooks in children such as VoiceNotePlayer → error #310)
+// Chat component
 // ---------------------------------------------------------------------------
-
-const SystemMessage = ({ content }: { content: string }) => {
-    const parsedContent = content.replace(SYSTEM_MESSAGE_PREFIX, '').replace(']]', '');
-    const isPinMessage = parsedContent.startsWith(PIN_MESSAGE_MARKER);
-    const displayText = parsedContent.replace(`${PIN_MESSAGE_MARKER} `, '');
-    return (
-        <div className="text-center text-xs text-muted-foreground my-3">
-            <span className="bg-muted px-2.5 py-1.5 rounded-full">
-                {isPinMessage && <Pin className="inline-block h-3 w-3 mr-1.5" />}
-                {displayText}
-            </span>
-        </div>
-    );
-};
-
-const CallMessage = ({
-    content,
-    message,
-    loggedInUserId,
-    chatParticipants,
-    startCall,
-    joinCall,
-}: {
-    content: string;
-    message: Message;
-    loggedInUserId: string;
-    chatParticipants: any[];
-    startCall?: ((userId: string, type: 'voice' | 'video') => void) | null;
-    joinCall?: ((callId: string) => void) | null;
-}) => {
-    const callData = content.replace(CALL_MESSAGE_PREFIX, '').replace(']]', '');
-    const [callType, callStatus, durationStr, , callId] = callData.split('|');
-    const duration = parseInt(durationStr) || 0;
-    const isMyCall = message.user_id === loggedInUserId;
-    const isMissed = callStatus === 'missed' || callStatus === 'declined';
-    const isVideo = callType === 'video';
-    const isGroupCall = callStatus === 'started';
-    const canJoin = isGroupCall;
-
-    const formatDuration = (s: number) => {
-        if (s < 60) return `${s}s`;
-        const m = Math.floor(s / 60);
-        const remaining = s % 60;
-        return remaining > 0 ? `${m}m ${remaining}s` : `${m}m`;
-    };
-
-    return (
-        <div className="flex items-center justify-center my-3">
-            <div className={cn(
-                "flex items-center gap-3 px-4 py-2.5 rounded-xl border",
-                isMissed ? "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900/30" : "bg-muted/50 border-border"
-            )}>
-                <div className={cn(
-                    "h-8 w-8 rounded-full flex items-center justify-center",
-                    isMissed ? "bg-red-100 dark:bg-red-900/30" : "bg-green-100 dark:bg-green-900/30"
-                )}>
-                    {isVideo ? (
-                        <Video className={cn("h-4 w-4", isMissed ? "text-red-500" : "text-green-600")} />
-                    ) : (
-                        <Phone className={cn("h-4 w-4", isMissed ? "text-red-500" : "text-green-600")} />
-                    )}
-                </div>
-                <div className="flex flex-col">
-                    <span className={cn("text-sm font-medium", isMissed && "text-red-600 dark:text-red-400")}>
-                        {isMissed
-                            ? `Missed ${isVideo ? 'Video' : 'Voice'} Call`
-                            : isGroupCall ? `Group ${isVideo ? 'Video' : 'Voice'} Call`
-                                : `${isVideo ? 'Video' : 'Voice'} Call`}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                        {isMissed
-                            ? (isMyCall ? 'No answer' : 'Tap to call back')
-                            : isGroupCall ? 'Tap to join'
-                                : formatDuration(duration)}
-                    </span>
-                </div>
-                {isMissed && !isMyCall && startCall && (
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="ml-2 h-7 text-xs text-primary"
-                        onClick={() => {
-                            const otherUser = chatParticipants?.find((p: any) => p.user_id !== loggedInUserId);
-                            if (otherUser) startCall(otherUser.user_id, isVideo ? 'video' : 'voice');
-                        }}
-                    >
-                        Call Back
-                    </Button>
-                )}
-                {canJoin && joinCall && callId && (
-                    <Button
-                        variant="default"
-                        size="sm"
-                        className="ml-2 h-7 text-xs"
-                        onClick={() => joinCall(callId)}
-                    >
-                        Join
-                    </Button>
-                )}
-            </div>
-        </div>
-    );
-};
-
-const StoryReplyMessage = ({ content, message }: { content: string; message: Message }) => {
-    const isMyMessage = message.user_id === (message as any)._loggedInUserId;
-    const match = content.match(/\[\[STORY_REPLY:(.*?)\]\]\s*([\s\S]*)/);
-    const mediaUrl = match?.[1] || '';
-    const replyText = match?.[2] || content;
-    const isVideoStory = mediaUrl.includes('.mp4') || mediaUrl.includes('.webm') || mediaUrl.includes('.mov');
-    // isMyMessage is derived from a hidden field; the actual caller passes it directly:
-    return null; // replaced by StoryReplyMessageWithCtx below
-};
-
-const StoryReplyMessageWithCtx = ({
-    content,
-    message,
-    loggedInUserId,
-}: {
-    content: string;
-    message: Message;
-    loggedInUserId: string;
-}) => {
-    const isMyMessage = message.user_id === loggedInUserId;
-    const match = content.match(/\[\[STORY_REPLY:(.*?)\]\]\s*([\s\S]*)/);
-    const mediaUrl = match?.[1] || '';
-    const replyText = match?.[2] || content;
-    const isVideoStory = mediaUrl.includes('.mp4') || mediaUrl.includes('.webm') || mediaUrl.includes('.mov');
-    return (
-        <div className={cn("flex items-end gap-1.5 sm:gap-2 group/message", isMyMessage ? "justify-end" : "justify-start")}>
-            {!isMyMessage && <div className="w-6 sm:w-8 shrink-0" />}
-            <div className={cn("relative max-w-[85%] sm:max-w-md rounded-xl overflow-hidden", isMyMessage ? "bg-primary text-primary-foreground" : "bg-muted")}>
-                <div className="px-3 pt-2 pb-1">
-                    <p className="text-[10px] uppercase tracking-wide opacity-60 font-medium">
-                        {isMyMessage ? 'Replied to story' : 'Replied to your story'}
-                    </p>
-                </div>
-                {mediaUrl && (
-                    <div className="mx-3 mb-1 h-16 w-16 rounded-lg overflow-hidden bg-black/20 relative">
-                        {isVideoStory ? (
-                            <video src={mediaUrl} className="w-full h-full object-cover" muted playsInline />
-                        ) : (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={mediaUrl} alt="Story" className="w-full h-full object-cover" />
-                        )}
-                    </div>
-                )}
-                <div className="px-3 pb-2">
-                    <p className="text-sm">{replyText}</p>
-                    <p className={cn("text-[10px] mt-1", isMyMessage ? "text-primary-foreground/60" : "text-muted-foreground")}>
-                        {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
-                    </p>
-                </div>
-            </div>
-            {isMyMessage && <div className="w-6 sm:w-8 shrink-0" />}
-        </div>
-    );
-};
-
-const MessageBubble = React.memo(function MessageBubble({
-    message,
-    ctx,
-}: {
-    message: Message;
-    ctx: MessageBubbleContext;
-}) {
-    const {
-        loggedInUser, isGroup, isGroupAdmin, themeSettings, outgoingBubbleStyle, incomingBubbleStyle,
-        editingMessage, highlightMessageId, reactionPickerCustomEmojis, chatParticipants,
-        loggedInUserId, startCall, joinCall, chatName,
-        handleStartReply, handleDeleteForEveryone, handleCopy, handleStartEdit,
-        onReact, onCustomReact, handleToggleStar, handleTogglePin,
-        setMessageToForward, setMessageToReport, setIsReportDialogOpen,
-        setMessageInfo, setMessageToTranslate, jumpToMessage,
-        getMessageStatus, renderMessageContent, renderReactions,
-    } = ctx;
-
-    // ⚠️ RULES OF HOOKS: always called before any early returns
-    const isMyMessage = message.user_id === loggedInUserId;
-    const isOptimistic = typeof message.id === 'string';
-
-    const swipeHandlers = useSwipeable({
-        onSwipedRight: () => { if (!isMyMessage && !isOptimistic) handleStartReply(message); },
-        onSwipedLeft: () => { if (isMyMessage && !isOptimistic) handleStartReply(message); },
-        trackMouse: true,
-        preventScrollOnSwipe: true,
-    });
-
-    if (message.content && message.content.startsWith(SYSTEM_MESSAGE_PREFIX)) {
-        return <SystemMessage content={message.content} />;
-    }
-    if (message.content && message.content.startsWith(CALL_MESSAGE_PREFIX)) {
-        return (
-            <CallMessage
-                content={message.content}
-                message={message}
-                loggedInUserId={loggedInUserId}
-                chatParticipants={chatParticipants}
-                startCall={startCall}
-                joinCall={joinCall}
-            />
-        );
-    }
-    if (message.content && message.content.startsWith(STORY_REPLY_PREFIX)) {
-        return (
-            <StoryReplyMessageWithCtx
-                content={message.content}
-                message={message}
-                loggedInUserId={loggedInUserId}
-            />
-        );
-    }
-    if (message.content === DELETED_MESSAGE_MARKER) {
-        const bubbleStyle = isMyMessage ? outgoingBubbleStyle : incomingBubbleStyle;
-        return (
-            <div className={cn("flex items-end gap-1.5 sm:gap-2 group/message", isMyMessage ? "justify-end" : "justify-start")}>
-                {!isMyMessage && <div className="w-6 sm:w-8 shrink-0" />}
-                <div
-                    className="relative max-w-[85%] sm:max-w-md lg:max-w-lg rounded-lg text-sm px-2 sm:px-3 py-2"
-                    style={bubbleStyle}
-                >
-                    <div className="flex items-center gap-2 italic text-current/70">
-                        <CircleSlash className="h-4 w-4" />
-                        <span>This message was deleted</span>
-                    </div>
-                </div>
-                {isMyMessage && <div className="w-6 sm:w-8 shrink-0" />}
-            </div>
-        );
-    }
-
-    const sender = message.profiles;
-    const isEditing = editingMessage?.id === message.id;
-    const messageStatus = getMessageStatus(message);
-
-    if (!sender) {
-        return <div>Loading message...</div>;
-    }
-
-    const bubbleStyle = isMyMessage ? outgoingBubbleStyle : incomingBubbleStyle;
-    const senderName = isGroup && sender.role === 'gurudev' ? chatName : sender.name;
-    const senderAvatar = getAvatarUrl(sender.avatar_url);
-    const senderFallback = (senderName || 'U').charAt(0);
-
-    const ReplyPreview = ({ repliedTo }: { repliedTo: Message }) => (
-        <div
-            className="flex items-center gap-2 p-2 mb-2 rounded-md cursor-pointer border-l-2 bg-foreground/[.07] dark:bg-foreground/[.1] hover:bg-foreground/[.1] dark:hover:bg-foreground/[.15] transition-colors"
-            style={{ borderColor: themeSettings.usernameColor }}
-            onClick={() => jumpToMessage(repliedTo.id as number)}
-        >
-            <div className="flex-1 overflow-hidden">
-                <p className="font-semibold text-sm truncate" style={{ color: themeSettings.usernameColor }}>
-                    {repliedTo.profiles?.name || 'Unknown'}
-                </p>
-                <p className="text-xs truncate opacity-80" style={{ color: 'inherit', opacity: 0.8 }}>
-                    {typeof repliedTo.content === 'string' ? repliedTo.content : (repliedTo.attachment_metadata?.name || 'Attachment')}
-                </p>
-            </div>
-        </div>
-    );
-
-    return (
-        <div key={message.id} id={`message-${message.id}`} className={cn(
-            "flex w-full items-end gap-1.5 sm:gap-2 group/message",
-            isMyMessage ? "justify-end" : "justify-start",
-            message.id === highlightMessageId && "rounded-lg"
-        )}>
-            {!isMyMessage && (
-                <Avatar className="h-6 w-6 sm:h-8 sm:w-8 self-end shrink-0">
-                    <AvatarImage src={senderAvatar} alt={senderName ?? undefined} data-ai-hint="avatar" />
-                    <AvatarFallback className="text-[10px] sm:text-xs">{senderFallback}</AvatarFallback>
-                </Avatar>
-            )}
-            <div {...swipeHandlers} className={cn("relative transition-transform duration-200 ease-out min-w-0", isMyMessage ? "group-data-[swiped=true]/message:translate-x-[-2rem]" : "group-data-[swiped=true]/message:translate-x-[2rem]")}>
-                <div
-                    className={cn("group/bubble relative rounded-lg text-sm px-2 sm:px-3 py-2 break-words max-w-[80vw] sm:max-w-md md:max-w-lg")}
-                    style={bubbleStyle}
-                >
-                    {isEditing ? (
-                        <div className="w-full">
-                            <p className="text-xs font-semibold text-primary mb-2">Editing...</p>
-                        </div>
-                    ) : (
-                        <>
-                            {isGroup && !isMyMessage && (
-                                <div className="flex items-center gap-2 font-semibold mb-1 text-sm">
-                                    <span style={{ color: themeSettings.usernameColor }}>{senderName}</span>
-                                    {sender.role === 'gurudev' && (
-                                        <Badge variant="destructive" className="text-xs px-1.5 py-0 leading-none">Gurudev</Badge>
-                                    )}
-                                </div>
-                            )}
-                            {message.replied_to_message && <ReplyPreview repliedTo={message.replied_to_message} />}
-                            {renderMessageContent(message)}
-                            <div className="text-xs mt-1 flex items-center gap-1.5 opacity-70" style={{ justifyContent: isMyMessage ? 'flex-end' : 'flex-start' }}>
-                                {message.is_pinned && <Pin className="h-3 w-3 text-current mr-1" />}
-                                {message.is_edited && <span className="text-xs italic">Edited</span>}
-                                {(message.starred_by?.includes(loggedInUserId) ?? message.is_starred) && <Star className="h-3 w-3 text-amber-400 fill-amber-400 mr-1" />}
-                                <span>{format(new Date(message.created_at), 'p')}</span>
-                                {isMyMessage && messageStatus === 'pending' && <Clock className="h-4 w-4" />}
-                                {isMyMessage && messageStatus === 'sent' && <Check className="h-4 w-4" />}
-                                {isMyMessage && messageStatus === 'read' && <CheckCheck className="h-4 w-4 text-primary" />}
-                            </div>
-                        </>
-                    )}
-
-                    {!isEditing && (
-                        <div className={cn(
-                            "absolute -top-4 flex items-center gap-1 opacity-0 group-hover/bubble:opacity-100 transition-opacity",
-                            isMyMessage ? "left-[-8px]" : "right-[-8px]"
-                        )}>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full bg-background/80 hover:bg-background">
-                                        <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-auto p-1">
-                                    <DropdownMenuItem onClick={() => handleStartReply(message)} disabled={isOptimistic}>
-                                        <Reply className="mr-2 h-4 w-4" /><span>Reply</span>
-                                    </DropdownMenuItem>
-                                    {message.content && !isMyMessage && (
-                                        <DropdownMenuItem onClick={() => setMessageToTranslate(message)}>
-                                            <Languages className="mr-2 h-4 w-4" /><span>Translate</span>
-                                        </DropdownMenuItem>
-                                    )}
-                                    <DropdownMenuItem onClick={() => setMessageToForward(message)} disabled={isOptimistic}>
-                                        <Share2 className="mr-2 h-4 w-4" /><span>Forward</span>
-                                    </DropdownMenuItem>
-                                    {message.content && (
-                                        <DropdownMenuItem onClick={() => handleCopy(message.content as string)}>
-                                            <Copy className="mr-2 h-4 w-4" /><span>Copy</span>
-                                        </DropdownMenuItem>
-                                    )}
-                                    {(() => {
-                                        const isMessageStarred = message.starred_by?.includes(loggedInUserId) ?? message.is_starred;
-                                        return isGroup && !isGroupAdmin ? (
-                                            <DropdownMenuItem onClick={() => handleToggleStar(message)} disabled={isOptimistic}>
-                                                {isMessageStarred ? <PinOff className="mr-2 h-4 w-4" /> : <Pin className="mr-2 h-4 w-4" />}
-                                                <span>{isMessageStarred ? 'Unpin for me' : 'Pin for me'}</span>
-                                            </DropdownMenuItem>
-                                        ) : (
-                                            <>
-                                                <DropdownMenuItem onClick={() => handleToggleStar(message)} disabled={isOptimistic}>
-                                                    <Star className={cn("mr-2 h-4 w-4", isMessageStarred && "text-amber-400 fill-amber-400")} />
-                                                    <span>{isMessageStarred ? 'Unstar' : 'Star'}</span>
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => handleTogglePin(message)} disabled={isOptimistic}>
-                                                    {message.is_pinned ? <PinOff className="mr-2 h-4 w-4" /> : <Pin className="mr-2 h-4 w-4" />}
-                                                    <span>{message.is_pinned ? 'Unpin' : (isGroup ? 'Pin for everyone' : 'Pin')}</span>
-                                                </DropdownMenuItem>
-                                            </>
-                                        );
-                                    })()}
-                                    {isMyMessage && isGroup && !isOptimistic && (
-                                        <DropdownMenuItem onClick={() => setMessageInfo(message)}>
-                                            <Info className="mr-2 h-4 w-4" /><span>Message Info</span>
-                                        </DropdownMenuItem>
-                                    )}
-                                    {!isMyMessage && (
-                                        <DropdownMenuItem onClick={() => { setMessageToReport(message); setIsReportDialogOpen(true); }} disabled={isOptimistic}>
-                                            <ShieldAlert className="mr-2 h-4 w-4" /><span>Report Message</span>
-                                        </DropdownMenuItem>
-                                    )}
-                                    {isMyMessage && !isOptimistic && (
-                                        <>
-                                            <DropdownMenuSeparator />
-                                            {message.content && (
-                                                <DropdownMenuItem onClick={() => handleStartEdit(message)}>
-                                                    <Pencil className="mr-2 h-4 w-4" /><span>Edit</span>
-                                                </DropdownMenuItem>
-                                            )}
-                                            <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteForEveryone(message.id as number)}>
-                                                <Trash2 className="mr-2 h-4 w-4" /><span>Delete for everyone</span>
-                                            </DropdownMenuItem>
-                                        </>
-                                    )}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full bg-background/80 hover:bg-background" disabled={isOptimistic}>
-                                        <SmilePlus className="h-4 w-4" />
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0 border-none">
-                                    <EmojiPicker
-                                        customEmojis={reactionPickerCustomEmojis}
-                                        onEmojiClick={(emojiData) => {
-                                            if (emojiData.isCustom) {
-                                                onCustomReact(emojiData.imageUrl, message);
-                                            } else {
-                                                onReact(emojiData, message);
-                                            }
-                                        }}
-                                        defaultSkinTone={SkinTones.NEUTRAL}
-                                        getEmojiUrl={(unified, style) => `https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/${style}/64/${unified}.png`}
-                                    />
-                                </PopoverContent>
-                            </Popover>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full bg-background/80 hover:bg-background" onClick={() => handleStartReply(message)} disabled={isOptimistic}>
-                                <Reply className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    )}
-                    {renderReactions(message)}
-                </div>
-            </div>
-            {isMyMessage && (
-                <Avatar className="h-6 w-6 sm:h-8 sm:w-8 self-end shrink-0">
-                    <AvatarImage src={getAvatarUrl(loggedInUser.avatar_url)} alt={loggedInUser.name} data-ai-hint="avatar" />
-                    <AvatarFallback className="text-[10px] sm:text-xs">{loggedInUser.name?.charAt(0)}</AvatarFallback>
-                </Avatar>
-            )}
-        </div>
-    );
-});
-
-const formatBytes = (bytes: number, decimals = 2) => {
-    if (!+bytes) return '0 Bytes'
-    const k = 1024
-    const dm = decimals < 0 ? 0 : decimals
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
-}
-
-const DELETED_MESSAGE_MARKER = '[[MSG_DELETED]]';
-const SYSTEM_MESSAGE_PREFIX = '[[SYS:';
-const CALL_MESSAGE_PREFIX = '[[CALL:';
-const STORY_REPLY_PREFIX = '[[STORY_REPLY:';
-const PIN_MESSAGE_MARKER = '[PIN]';
-
-const Spoiler = ({ content }: { content: string }) => {
-    const [revealed, setRevealed] = useState(false);
-    return (
-        <span
-            className="spoiler"
-            data-revealed={revealed}
-            onClick={() => setRevealed(true)}
-            title="Click to reveal"
-        >
-            {content}
-        </span>
-    );
-};
-
-const parseMarkdown = (text: string | null) => {
-    if (!text) return [];
-
-    const elements: (string | React.ReactNode)[] = [];
-    let lastIndex = 0;
-
-    const regex = /(\*\*.*?\*\*|_.*?_|~~.*?~~|`.*?`|\|\|.*?\|\|)/g;
-
-    text.replace(regex, (match, content, offset) => {
-        if (offset > lastIndex) {
-            elements.push(text.substring(lastIndex, offset));
-        }
-
-        if (match.startsWith('**') && match.endsWith('**')) {
-            elements.push(<strong key={offset}>{match.slice(2, -2)}</strong>);
-        } else if (match.startsWith('_') && match.endsWith('_')) {
-            elements.push(<em key={offset}>{match.slice(1, -1)}</em>);
-        } else if (match.startsWith('~~') && match.endsWith('~~')) {
-            elements.push(<s key={offset}>{match.slice(2, -2)}</s>);
-        } else if (match.startsWith('`') && match.endsWith('`')) {
-            elements.push(<code key={offset} className="bg-muted text-muted-foreground font-mono text-sm px-1.5 py-1 rounded-md">{match.slice(1, -1)}</code>);
-        } else if (match.startsWith('||') && match.endsWith('||')) {
-            elements.push(<Spoiler key={offset} content={match.slice(2, -2)} />);
-        } else {
-            elements.push(match);
-        }
-
-        lastIndex = offset + match.length;
-        return match;
-    });
-
-    if (lastIndex < text.length) {
-        elements.push(text.substring(lastIndex));
-    }
-
-    return elements;
-};
-
-export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLoadingMore, hasMoreMessages, topMessageSentinelRef, scrollContainerRef, initialUnreadCount = 0 }: ChatProps) {
-    // This is a "hook" from a small library we use for showing pop-up notifications (like "Message copied!").
+export function Chat({
+    chat, loggedInUser, setMessages,
+    highlightMessageId, isLoadingMore, hasMoreMessages,
+    topMessageSentinelRef, scrollContainerRef, initialUnreadCount = 0,
+}: ChatProps) {
     const { toast } = useToast();
-
-    // This is our custom "hook" to access shared application data and functions,
-    // like the theme settings, the list of all users, and functions to block a user or leave a group.
-    const {
-        themeSettings,
-        dmRequests,
-        leaveGroup,
-        deleteGroup,
-        sendDmRequest,
-        unblockUser,
-        blockedUsers,
-        forwardMessage,
-    } = useAppContext();
-
+    const { themeSettings, dmRequests, leaveGroup, deleteGroup, sendDmRequest, unblockUser, blockedUsers, forwardMessage } = useAppContext();
     const { startCall, startGroupCall, joinCall } = useCallContext();
     const router = useRouter();
 
-    // These are "state" variables. They hold data that can change and cause the component to re-render.
-    // `useState` is a fundamental React hook for managing component state.
+    // -------------------------------------------------------------------------
+    // State
+    // -------------------------------------------------------------------------
     const [editingMessage, setEditingMessage] = useState<{ id: number; content: string } | null>(null);
     const [replyingTo, setReplyingTo] = useState<Message | null>(null);
     const [isRequestDmOpen, setIsRequestDmOpen] = useState(false);
     const [messageToTranslate, setMessageToTranslate] = useState<Message | null>(null);
-
-    // `useRef` is a React hook that lets us hold a reference to a DOM element,
-    // like a div, so we can interact with it directly (e.g., to scroll it).
-    // It's like `document.getElementById` but integrated with React.
-    const messagesEndRef = useRef<HTMLDivElement>(null);
-
     const [customEmojiList, setCustomEmojiList] = useState<string[]>([]);
-
     const [messageToForward, setMessageToForward] = useState<Message | null>(null);
-
     const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
     const [messageToReport, setMessageToReport] = useState<Message | null>(null);
-
     const [isPinnedDialogOpen, setIsPinnedDialogOpen] = useState(false);
     const [isStarredDialogOpen, setIsStarredDialogOpen] = useState(false);
-
-    const [showScrollToBottom, setShowScrollToBottom] = useState(false);
-    const [firstUnreadMentionId, setFirstUnreadMentionId] = useState<number | null>(null);
-
     const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
     const [imageViewerSrc, setImageViewerSrc] = useState('');
-
     const [messageInfo, setMessageInfo] = useState<Message | null>(null);
+    const [firstUnreadMentionId, setFirstUnreadMentionId] = useState<number | null>(null);
 
-    const hasScrolledOnLoad = useRef(false);
-
-    // The `useEffect` hook runs code after the component has rendered.
-    // This one sets up a scroll listener to show or hide the "scroll to bottom" button.
-    useEffect(() => {
-        const scrollContainer = scrollContainerRef.current;
-        if (!scrollContainer) return;
-
-        const handleScroll = () => {
-            const isAtBottom = scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight < 400;
-            setShowScrollToBottom(!isAtBottom);
-        };
-
-        scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
-        // The return function is a "cleanup" function. React runs it when the component is removed
-        // to prevent memory leaks, like removing the event listener.
-        return () => scrollContainer.removeEventListener('scroll', handleScroll);
-    }, [scrollContainerRef]);
-
-    // This effect checks for the first unread mention and stores its ID.
-    useEffect(() => {
-        if (initialUnreadCount > 0 && chat.messages && chat.messages.length > 0 && loggedInUser?.username) {
-            const unreadMessages = chat.messages.slice(-initialUnreadCount);
-            const mentionRegex = new RegExp(`@${loggedInUser.username}|@everyone`, 'i');
-
-            const firstMention = unreadMessages.find(m => m.content && mentionRegex.test(m.content));
-
-            if (firstMention) {
-                setFirstUnreadMentionId(firstMention.id as number);
-            }
-        }
-    }, [initialUnreadCount, chat.messages, loggedInUser?.username]);
-
-    // This effect fetches our custom emoji and sticker assets from the server when the component loads.
-    useEffect(() => {
-        fetch('/api/assets')
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error(`Failed to fetch assets: ${res.statusText}`);
-                }
-                return res.json();
-            })
-            .then(data => {
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-                setCustomEmojiList(data.emojis || []);
-            })
-            .catch(err => console.error("Failed to load assets:", err));
-    }, []);
-
-    // We create a Supabase client instance to interact with our database.
-    // Memoized to prevent re-creation on every render which would cause infinite useEffect loops.
+    // -------------------------------------------------------------------------
+    // Derived values
+    // -------------------------------------------------------------------------
     const supabase = useMemo(() => createClient(), []);
+    const isGroup = chat.type === 'group' || chat.type === 'channel';
+    const isChannel = chat.type === 'channel';
 
-    // Listen for real-time message updates (e.g., edited messages, call status changes)
-    useEffect(() => {
-        const channel = supabase.channel(`chat-messages-updates-${chat.id}`)
-            .on(
-                'postgres_changes',
-                {
-                    event: 'UPDATE',
-                    schema: 'public',
-                    table: 'messages',
-                    filter: `chat_id=eq.${chat.id}`
-                },
-                (payload) => {
-                    const updatedMessage = payload.new as Message;
-                    setMessages((currentMessages) =>
-                        currentMessages.map((msg) =>
-                            msg.id === updatedMessage.id
-                                ? { ...msg, ...updatedMessage, profiles: msg.profiles } // Keep the profile data
-                                : msg
-                        )
-                    );
-                }
-            )
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, [chat.id, supabase, setMessages]);
-
-    // `useMemo` is a performance optimization hook. It calculates a value and "memoizes" (remembers) it.
-    // The value is only recalculated if one of the dependencies (the array at the end) changes.
-    // This prevents expensive calculations on every single render.
     const chatPartner = useMemo(() => {
         if (chat.type !== 'dm' || !chat.participants) return null;
         const partnerRecord = chat.participants.find(p => p.user_id !== loggedInUser.id);
         return partnerRecord?.profiles ?? null;
     }, [chat, loggedInUser.id]);
 
-    const isGroup = chat.type === 'group' || chat.type === 'channel';
-
-    const isChannel = chat.type === 'channel';
     const canPostInChannel = useMemo(() =>
         isChannel && chat.participants.find(p => p.user_id === loggedInUser.id)?.is_admin,
         [chat, loggedInUser.id, isChannel]);
@@ -741,257 +118,38 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
         [chat, loggedInUser.id, isGroup]);
 
     const pinnedMessages = useMemo(() => (chat.messages || []).filter(m => m.is_pinned), [chat.messages]);
-    const starredMessages = useMemo(() => (chat.messages || []).filter(m =>
-        m.starred_by?.includes(loggedInUser.id) ?? m.is_starred
-    ), [chat.messages, loggedInUser.id]);
+    const starredMessages = useMemo(() =>
+        (chat.messages || []).filter(m => m.starred_by?.includes(loggedInUser.id) ?? m.is_starred),
+        [chat.messages, loggedInUser.id]);
 
     const isDmRestricted = useMemo(() => {
-        if (chat.type !== 'dm' || !chatPartner || !dmRequests || loggedInUser.is_admin || chatPartner.is_admin) {
-            return false;
-        }
-
-        if (!(loggedInUser.gender && chatPartner.gender && loggedInUser.gender !== chatPartner.gender)) {
-            return false;
-        }
-
+        if (chat.type !== 'dm' || !chatPartner || !dmRequests || loggedInUser.is_admin || chatPartner.is_admin) return false;
+        if (!(loggedInUser.gender && chatPartner.gender && loggedInUser.gender !== chatPartner.gender)) return false;
         const hasPermission = dmRequests.some(req =>
             req.status === 'approved' &&
             ((req.from_user_id === loggedInUser.id && req.to_user_id === chatPartner.id) ||
                 (req.from_user_id === chatPartner.id && req.to_user_id === loggedInUser.id))
         );
-
-        const isChatWithGurudev = chatPartner?.role === 'gurudev';
-        if (isChatWithGurudev && !loggedInUser.is_admin) {
+        if (chatPartner?.role === 'gurudev' && !loggedInUser.is_admin) {
             if ((chat.messages || []).length > 0) return false;
             return !hasPermission;
         }
-
         if (hasPermission) return false;
-
         if ((chat.messages || []).length === 0 && !hasPermission) return true;
-
         return !hasPermission;
-
     }, [chat.type, loggedInUser, chatPartner, dmRequests, chat.messages]);
 
     const existingRequest = useMemo(() => {
         if (!chatPartner || !dmRequests) return null;
         return dmRequests.find(req =>
-        ((req.from_user_id === loggedInUser.id && req.to_user_id === chatPartner.id) ||
-            (req.from_user_id === chatPartner.id && req.to_user_id === loggedInUser.id))
+            (req.from_user_id === loggedInUser.id && req.to_user_id === chatPartner.id) ||
+            (req.from_user_id === chatPartner.id && req.to_user_id === loggedInUser.id)
         );
     }, [dmRequests, loggedInUser, chatPartner]);
 
-    // `useCallback` is another performance hook, similar to `useMemo`.
-    // It memoizes a function, so it isn't recreated on every render.
-    // This is important when passing functions down to child components to prevent unnecessary re-renders.
-    const jumpToMessage = useCallback((messageId: number) => {
-        setIsPinnedDialogOpen(false);
-        const messageElement = document.getElementById(`message-${messageId}`);
-        if (messageElement) {
-            messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-            messageElement.classList.add('animate-highlight');
-            setTimeout(() => {
-                messageElement.classList.remove('animate-highlight');
-            }, 1500);
-        } else {
-            toast({ variant: 'destructive', title: 'Message not found', description: 'The original message may not be loaded.' });
-        }
-    }, [toast]);
-
-    // This effect handles scrolling when the chat loads.
-    // It tries to scroll to a highlighted message if there is one, otherwise it scrolls to the bottom.
-    useEffect(() => {
-        const scrollContainer = scrollContainerRef.current;
-        if (!scrollContainer || !messagesEndRef.current) return;
-
-        const highlightedElement = highlightMessageId ? document.getElementById(`message-${highlightMessageId}`) : null;
-
-        if (highlightedElement) {
-            jumpToMessage(highlightMessageId as number);
-            hasScrolledOnLoad.current = true; // prevent scrolling to bottom
-            return;
-        }
-
-        if (!hasScrolledOnLoad.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: 'auto' });
-            hasScrolledOnLoad.current = true;
-        }
-    }, [chat.messages, highlightMessageId, jumpToMessage, scrollContainerRef]);
-
-    // This effect smoothly scrolls to the bottom when new messages are added,
-    // but only if the user is already near the bottom. This prevents auto-scrolling
-    // when the user is reading older messages.
-    useEffect(() => {
-        const scrollContainer = scrollContainerRef.current;
-        if (!scrollContainer) return;
-
-        const isNearBottom = scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight < 200;
-        if (isNearBottom) {
-            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-        }
-    }, [chat.messages?.length, scrollContainerRef]);
-
-    // This function handles saving an edited message.
-    const handleSaveEdit = async () => {
-        if (!editingMessage) return;
-        const { error } = await supabase
-            .from('messages')
-            .update({ content: editingMessage.content, is_edited: true })
-            .eq('id', editingMessage.id);
-
-        if (error) {
-            toast({ variant: 'destructive', title: "Error editing message", description: error.message });
-        } else {
-            setEditingMessage(null);
-        }
-    };
-
-    // This function handles deleting a message for everyone in the chat.
-    // It first updates the UI optimistically (shows it as deleted immediately)
-    // and then makes the actual request to the server.
-    const handleDeleteForEveryone = async (messageId: number) => {
-        const originalMessages = chat.messages || [];
-        const newMessages = originalMessages.map(m =>
-            m.id === messageId
-                ? { ...m, content: DELETED_MESSAGE_MARKER, attachment_url: null, attachment_metadata: null, reactions: null, is_edited: false }
-                : m
-        );
-        setMessages(newMessages);
-
-        const { error } = await supabase
-            .from('messages')
-            .update({
-                content: DELETED_MESSAGE_MARKER,
-                attachment_url: null,
-                attachment_metadata: null,
-                reactions: null,
-                is_edited: false
-            })
-            .eq('id', messageId);
-
-        if (error) {
-            // If the server request fails, we revert the UI back to its original state.
-            toast({ variant: 'destructive', title: "Error deleting message", description: error.message });
-            setMessages(originalMessages);
-        }
-    };
-
-    // Simple utility function to copy text to the clipboard.
-    const handleCopy = (text: string) => {
-        navigator.clipboard.writeText(text);
-        toast({ title: 'Copied to clipboard' });
-    };
-
-    // Functions to set the component's state for editing or replying to a message.
-    const handleStartEdit = (message: Message) => {
-        setReplyingTo(null);
-        setEditingMessage({ id: message.id as number, content: message.content || '' });
-    };
-
-    const handleStartReply = (message: Message) => {
-        setEditingMessage(null);
-        setReplyingTo(message);
-    };
-
-    // This function handles adding or removing a reaction from a message.
-    // It calls a custom database function (RPC) on Supabase to handle the logic.
-    const handleReaction = async (message: Message, emoji: string) => {
-        if (typeof message.id === 'string') {
-            toast({ variant: 'destructive', title: 'Cannot react yet', description: 'Please wait for the message to be sent.' });
-            return;
-        }
-        const { error } = await supabase.rpc('toggle_reaction', {
-            p_emoji: emoji,
-            p_message_id: message.id,
-            p_user_id: loggedInUser.id,
-        });
-
-        if (error) {
-            toast({ variant: 'destructive', title: 'Error updating reaction', description: error.message });
-        }
-    };
-
-    const onReact = (emojiData: EmojiClickData, message: Message) => {
-        handleReaction(message, emojiData.emoji);
-    };
-
-    const onCustomReact = (emojiUrl: string, message: Message) => {
-        handleReaction(message, emojiUrl);
-    };
-
-    // A function to send a special "system" message, like "User pinned a message".
-    const sendSystemMessage = async (text: string) => {
-        const { error } = await supabase.from('messages').insert({
-            chat_id: chat.id,
-            user_id: loggedInUser.id,
-            content: `${SYSTEM_MESSAGE_PREFIX}${text}]]`
-        });
-        if (error) {
-            toast({ variant: 'destructive', title: "Error sending system message", description: error.message });
-        }
-    };
-
-    // Functions to toggle the "starred" or "pinned" state of a message.
-    // Uses per-user starred_by array via RPC, falls back to direct update if RPC unavailable.
-    const handleToggleStar = async (messageToStar: Message) => {
-        if (typeof messageToStar.id === 'string') return;
-        const isCurrentlyStarred = messageToStar.starred_by?.includes(loggedInUser.id) ?? messageToStar.is_starred;
-
-        // Try using the per-user RPC function first
-        const { data, error: rpcError } = await supabase.rpc('toggle_star_message', {
-            p_message_id: messageToStar.id,
-            p_user_id: loggedInUser.id,
-        });
-
-        if (rpcError) {
-            // Fall back to the simple boolean toggle if the RPC doesn't exist yet
-            const { error } = await supabase
-                .from('messages')
-                .update({ is_starred: !isCurrentlyStarred })
-                .eq('id', messageToStar.id);
-
-            if (error) {
-                toast({ variant: 'destructive', title: 'Error starring message', description: error.message });
-            }
-        }
-    };
-
-    const handleTogglePin = async (messageToPin: Message) => {
-        if (isGroup && !isGroupAdmin) return;
-        if (typeof messageToPin.id === 'string') return;
-
-        const newIsPinned = !messageToPin.is_pinned;
-
-        const { error } = await supabase
-            .from('messages')
-            .update({ is_pinned: newIsPinned })
-            .eq('id', messageToPin.id);
-
-        if (error) {
-            toast({ variant: 'destructive', title: 'Error pinning message', description: error.message });
-        } else {
-            if (newIsPinned) {
-                sendSystemMessage(`${PIN_MESSAGE_MARKER} ${loggedInUser.name} pinned a message.`);
-            }
-            toast({ title: newIsPinned ? 'Message pinned' : 'Message unpinned' });
-        }
-    };
-
-    // Functions to scroll to the bottom of the chat or to the first unread mention.
-    const handleScrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    };
-
-    const handleJumpToMention = () => {
-        if (firstUnreadMentionId) {
-            jumpToMessage(firstUnreadMentionId);
-            setFirstUnreadMentionId(null);
-        }
-    };
-
-    // These are dynamic styles based on the user's theme settings.
+    // -------------------------------------------------------------------------
+    // Theme styles
+    // -------------------------------------------------------------------------
     const wallpaperStyle = {
         backgroundImage: themeSettings.chatWallpaper ? `url(${themeSettings.chatWallpaper})` : `url('/chat-bg.png')`,
         backgroundSize: 'cover',
@@ -1010,430 +168,126 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
         color: getContrastingTextColor(themeSettings.incomingBubbleColor),
     };
 
-    // Determines the status of a message (pending, sent, or read).
-    const getMessageStatus = (message: Message) => {
-        const isMyMessage = message.user_id === loggedInUser.id;
-        if (!isMyMessage) return null;
+    // -------------------------------------------------------------------------
+    // Custom hooks
+    // -------------------------------------------------------------------------
+    const { messagesEndRef, showScrollToBottom, jumpToMessage, handleScrollToBottom } = useChatScroll({
+        messages: chat.messages,
+        highlightMessageId,
+        scrollContainerRef,
+        setIsPinnedDialogOpen,
+    });
 
-        if (typeof message.id === 'string' && message.id.startsWith('temp-')) {
-            return 'pending';
+    const {
+        handleSaveEdit, handleDeleteForEveryone, handleCopy,
+        handleStartEdit, handleStartReply, handleReaction,
+        onReact, onCustomReact, handleToggleStar, handleTogglePin,
+        handleClearChat,
+    } = useChatActions({
+        chat, loggedInUser, setMessages,
+        setEditingMessage, setReplyingTo,
+        isGroup, isGroupAdmin: !!isGroupAdmin, supabase,
+    });
+
+    // -------------------------------------------------------------------------
+    // Effects
+    // -------------------------------------------------------------------------
+    // Load custom emoji/stickers
+    useEffect(() => {
+        fetch('/api/assets')
+            .then(res => { if (!res.ok) throw new Error(res.statusText); return res.json(); })
+            .then(data => { if (!data.error) setCustomEmojiList(data.emojis || []); })
+            .catch(err => console.error('Failed to load assets:', err));
+    }, []);
+
+    // Find first unread mention
+    useEffect(() => {
+        if (initialUnreadCount > 0 && chat.messages?.length && loggedInUser?.username) {
+            const mentionRegex = new RegExp(`@${loggedInUser.username}|@everyone`, 'i');
+            const firstMention = chat.messages.slice(-initialUnreadCount).find(m => m.content && mentionRegex.test(m.content));
+            if (firstMention) setFirstUnreadMentionId(firstMention.id as number);
         }
+    }, [initialUnreadCount, chat.messages, loggedInUser?.username]);
 
-        const otherParticipants = chat.participants.filter(p => p.user_id !== loggedInUser.id);
-        if (otherParticipants.length === 0) return 'sent';
-
-        const allRead = otherParticipants.every(p => message.read_by?.includes(p.user_id));
-
-        return allRead ? 'read' : 'sent';
-    }
-
-    // This function is the heart of our message rendering. It parses the message content
-    // for special formatting like mentions, custom emojis, and links, and replaces them
-    // with the appropriate React components.
-    const parseContent = useCallback((content: string | null): (string | React.ReactNode)[] => {
-        if (!content || typeof content !== 'string') return [];
-
-        let processedContent = content;
-
-        if (processedContent.startsWith('Forwarded from')) {
-            const parts = processedContent.split('\n');
-            const forwardLine = parts[0];
-            const restOfContent = parts.slice(1).join('\n');
-            return [
-                <span key="forwarded-line" className="block text-xs italic opacity-80 font-semibold mb-2">
-                    {forwardLine.replace(/\*\*/g, '')}
-                </span>,
-                ...parseMarkdown(restOfContent)
-            ];
-        }
-
-        const elements: (string | React.ReactNode)[] = [];
-
-        const emojiMap = new Map(customEmojiList.map(url => {
-            const name = url.split('/').pop()?.split('.')[0] || 'custom_emoji';
-            return [name, url];
-        }));
-
-        const combinedRegex = /(https?:\/\/[^\s]+)|(@[\w\d_]+)|(:[a-zA-Z0-9_]+:)/g;
-
-        const parsedWithMarkdown = parseMarkdown(content);
-
-        const processNode = (node: string | React.ReactNode): (string | React.ReactNode)[] => {
-            if (typeof node !== 'string') return [node];
-
-            const subElements: (string | React.ReactNode)[] = [];
-            let subLastIndex = 0;
-
-            node.replace(combinedRegex, (match, url, mention, emoji, offset) => {
-                if (offset > subLastIndex) {
-                    subElements.push(node.substring(subLastIndex, offset));
+    // Real-time message updates
+    useEffect(() => {
+        const channel = supabase.channel(`chat-messages-updates-${chat.id}`)
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages', filter: `chat_id=eq.${chat.id}` },
+                (payload) => {
+                    const updatedMessage = payload.new as Message;
+                    setMessages(current => current.map(msg =>
+                        msg.id === updatedMessage.id ? { ...msg, ...updatedMessage, profiles: msg.profiles } : msg
+                    ));
                 }
+            ).subscribe();
+        return () => { supabase.removeChannel(channel); };
+    }, [chat.id, supabase, setMessages]);
 
-                if (mention) {
-                    const username = mention.substring(1);
-                    const isEveryone = username === 'everyone';
-                    // Use chat.participants instead of global allUsers
-                    const participantProfiles = chat.participants?.map(p => p.profiles).filter(Boolean) || [];
-                    const mentionedUser = participantProfiles.find((u: any) => u?.username === username);
-                    if (isEveryone || mentionedUser) {
-                        const isMe = mentionedUser && loggedInUser && (mentionedUser as any).id === loggedInUser.id;
-                        subElements.push(
-                            <span key={`mention-${offset}`} className={cn("font-semibold rounded-sm px-1", isMe ? "bg-amber-400/30 text-amber-800 dark:text-amber-200" : "bg-primary/20 text-primary")}>
-                                {match}
-                            </span>
-                        );
-                    } else {
-                        subElements.push(match);
-                    }
-                } else if (emoji) {
-                    const emojiName = emoji.substring(1, emoji.length - 1);
-                    const emojiUrl = emojiMap.get(emojiName);
-                    if (emojiUrl) {
-                        subElements.push(
-                            <Image key={`emoji-${offset}`} src={emojiUrl} alt={emojiName} width={28} height={28} className="inline-block align-text-bottom mx-0.5" />
-                        );
-                    } else {
-                        subElements.push(match);
-                    }
-                } else if (url) {
-                    const metadata = { type: 'link_preview', url, name: url, size: 0 };
-                    subElements.push(
-                        <LinkPreview key={`url-${offset}`} metadata={metadata} />
-                    );
-                }
+    // -------------------------------------------------------------------------
+    // Render helpers (built once per render via factories / hooks)
+    // -------------------------------------------------------------------------
+    const parseContent = useParseContent(customEmojiList, chat.participants, loggedInUser.id);
 
-                subLastIndex = offset + match.length;
-                return match;
-            });
+    const getMessageStatus = useCallback((message: Message): 'pending' | 'sent' | 'read' | null => {
+        if (message.user_id !== loggedInUser.id) return null;
+        if (typeof message.id === 'string' && message.id.startsWith('temp-')) return 'pending';
+        const others = chat.participants.filter(p => p.user_id !== loggedInUser.id);
+        if (others.length === 0) return 'sent';
+        return others.every(p => message.read_by?.includes(p.user_id)) ? 'read' : 'sent';
+    }, [chat.participants, loggedInUser.id]);
 
-            if (subLastIndex < node.length) {
-                subElements.push(node.substring(subLastIndex));
-            }
+    const renderMessageContent = useMemo(() =>
+        createRenderMessageContent({ parseContent, loggedInUserId: loggedInUser.id, setImageViewerSrc, setIsImageViewerOpen, chatParticipants: chat.participants }),
+        [parseContent, loggedInUser.id, chat.participants]);
 
-            return subElements;
-        }
+    const renderReactions = useMemo(() =>
+        createRenderReactions({ loggedInUserId: loggedInUser.id, handleReaction, chatParticipants: chat.participants }),
+        [loggedInUser.id, handleReaction, chat.participants]);
 
-        parsedWithMarkdown.forEach(node => {
-            elements.push(...processNode(node));
-        });
+    const reactionPickerCustomEmojis = useMemo(() =>
+        customEmojiList.map(url => ({ id: url, names: [url.split('/').pop()?.split('.')[0] || 'custom'], imgUrl: url })),
+        [customEmojiList]);
 
-        return elements;
-
-    }, [customEmojiList, chat.participants, loggedInUser?.id]);
-
-    // This function determines how to display a message based on its content,
-    // especially whether it's a text message or an attachment (image, file, event).
-    const renderMessageContent = (message: Message) => {
-        const mainContent = message.content;
-
-        if (message.attachment_url) {
-            const { type = '', name = 'attachment', size = 0 } = message.attachment_metadata || {};
-
-            if (type === 'event_share' && message.attachment_metadata?.eventId) {
-                const metadata = message.attachment_metadata;
-                return (
-                    <Link href={`/events/${metadata.eventId}`} className="block">
-                        <Card className="bg-background/20 backdrop-blur-sm overflow-hidden hover:bg-background/30 transition-colors">
-                            <div className="relative aspect-video w-full">
-                                <Image
-                                    src={metadata.eventThumbnail || 'https://placehold.co/600x400.png'}
-                                    alt={name}
-                                    fill
-                                    className="object-cover"
-                                    data-ai-hint="event"
-                                    sizes="(max-width: 768px) 80vw, 320px"
-                                />
-                            </div>
-                            <CardHeader className="p-3">
-                                <CardTitle className="text-base line-clamp-2" style={{ color: 'inherit' }}>{name}</CardTitle>
-                                {metadata.eventDate && (
-                                    <CardDescription className="text-xs" style={{ color: 'inherit', opacity: 0.8 }}>{format(new Date(metadata.eventDate), 'eeee, MMM d, yyyy @ p')}</CardDescription>
-                                )}
-                            </CardHeader>
-                        </Card>
-                    </Link>
-                );
-            }
-
-            if (type === 'post_share') {
-                const metadata = message.attachment_metadata;
-                const authorName = metadata?.postAuthor || metadata?.description?.replace('@', '') || 'Unknown';
-                const authorAvatar = metadata?.postAuthorAvatar || metadata?.image;
-                const postContent = metadata?.postContent || metadata?.title;
-                const hasMedia = metadata?.image && metadata.image !== metadata.postAuthorAvatar;
-
-                return (
-                    <Link href={metadata?.url || '#'} className="block max-w-sm w-full group/card">
-                        <Card className="bg-muted/40 hover:bg-muted/60 transition-all duration-200 overflow-hidden border-primary/10 shadow-sm group-hover/card:shadow-md">
-                            {/* Header */}
-                            <div className="flex items-center justify-between p-3 border-b border-border/50 bg-background/50 backdrop-blur-sm">
-                                <div className="flex items-center gap-2.5 overflow-hidden">
-                                    <Avatar className="h-6 w-6 border border-border/50 shrink-0">
-                                        <AvatarImage src={getAvatarUrl(authorAvatar)} className="object-cover" />
-                                        <AvatarFallback className="text-[10px]">{authorName[0]?.toUpperCase()}</AvatarFallback>
-                                    </Avatar>
-                                    <span className="text-sm font-semibold truncate opacity-90">{authorName}</span>
-                                </div>
-                                <ArrowDown className="w-3 h-3 -rotate-90 text-muted-foreground/50 opacity-0 group-hover/card:opacity-100 transition-opacity" />
-                            </div>
-
-                            {/* Media (If it's an image post) */}
-                            {hasMedia && (
-                                <div className="relative aspect-square w-full bg-black/5">
-                                    <Image
-                                        src={metadata.image!}
-                                        alt="Post content"
-                                        fill
-                                        className="object-cover"
-                                        sizes="(max-width: 768px) 100vw, 300px"
-                                    />
-                                </div>
-                            )}
-
-                            {/* Caption/Content */}
-                            <div className="p-3 bg-background/30">
-                                <p className="text-sm line-clamp-3 text-foreground/90 leading-relaxed font-normal">
-                                    {typeof postContent === 'string' ? postContent : 'Shared post'}
-                                </p>
-                            </div>
-                        </Card>
-                    </Link>
-                );
-            }
-
-            const isSticker = name === 'sticker.webp';
-
-            const attachmentElement = () => {
-                if (isSticker) {
-                    return (
-                        <Image
-                            src={message.attachment_url!}
-                            alt="Sticker"
-                            width={160}
-                            height={160}
-                            className="object-contain"
-                        />
-                    );
-                }
-                if (type.startsWith('image/')) {
-                    return (
-                        <button
-                            className="relative block w-full max-w-xs cursor-pointer overflow-hidden rounded-lg border bg-muted"
-                            onClick={() => {
-                                setImageViewerSrc(message.attachment_url!);
-                                setIsImageViewerOpen(true);
-                            }}
-                        >
-                            <Image
-                                src={message.attachment_url!}
-                                alt={name || 'Attached image'}
-                                width={320}
-                                height={240}
-                                className="h-auto w-full object-cover transition-transform group-hover/bubble:scale-105"
-                                sizes="(max-width: 768px) 80vw, 320px"
-                            />
-                        </button>
-                    );
-                }
-                if (type.startsWith('audio/')) {
-                    return <VoiceNotePlayer src={message.attachment_url!} isMyMessage={message.user_id === loggedInUser.id} metadata={message.attachment_metadata} />;
-                }
-
-                const truncateFileName = (fileName: string, maxLength: number = 25) => {
-                    if (fileName.length <= maxLength) return fileName;
-                    const extension = fileName.split('.').pop() || '';
-                    const nameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.')) || fileName;
-                    const truncatedName = nameWithoutExt.substring(0, maxLength - extension.length - 4);
-                    return `${truncatedName}...${extension ? `.${extension}` : ''}`;
-                };
-
-                return (
-                    <div className="flex w-full max-w-full items-center gap-2 sm:gap-3 rounded-md border bg-background/20 p-2 sm:p-3 backdrop-blur-sm min-w-0">
-                        <FileIcon className="h-6 w-6 sm:h-8 sm:w-8 shrink-0 text-current/80" />
-                        <div className="flex-grow min-w-0 overflow-hidden">
-                            <p className="font-semibold text-sm sm:text-base truncate break-all" title={name}>
-                                <span className="sm:hidden">{truncateFileName(name, 15)}</span>
-                                <span className="hidden sm:inline">{truncateFileName(name, 30)}</span>
-                            </p>
-                            <p className="text-xs opacity-80">{formatBytes(size)}</p>
-                        </div>
-                        <a
-                            href={message.attachment_url!}
-                            download={name}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="shrink-0"
-                        >
-                            <Button variant="ghost" size="icon" className="h-6 w-6 sm:h-8 sm:w-8">
-                                <Download className="h-4 w-4 sm:h-5 sm:w-5" />
-                            </Button>
-                        </a>
-                    </div>
-                );
-            };
-
-            const showCaption = mainContent && !type.startsWith('audio/') && !isSticker;
-
-            return (
-                <div className="space-y-2 break-words min-w-0">
-                    {attachmentElement()}
-                    {showCaption && <div className="whitespace-pre-wrap break-words">{parseContent(mainContent)}</div>}
-                </div>
-            );
-        }
-        return <div className="whitespace-pre-wrap break-words">{parseContent(mainContent)}</div>;
-    }
-
-    // Prepares custom emojis for the reaction picker.
-    const reactionPickerCustomEmojis = useMemo(() => {
-        return customEmojiList.map(url => ({
-            id: url,
-            names: [url.split('/').pop()?.split('.')[0] || 'custom'],
-            imgUrl: url,
-        }));
-    }, [customEmojiList]);
-
-    // Renders the little reaction buttons below a message.
-    const renderReactions = (message: Message) => {
-        if (!message.reactions || Object.keys(message.reactions).length === 0) return null;
-
-        const isOptimistic = typeof message.id === 'string';
-
-        return (
-            <div className="absolute -bottom-4 -right-2 flex gap-1">
-                {Object.entries(message.reactions).map(([emoji, userIds]) => {
-                    const hasReacted = userIds.includes(loggedInUser.id);
-                    const isCustom = emoji.startsWith('/');
-                    return (
-                        <TooltipProvider key={emoji}>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <button
-                                        onClick={() => handleReaction(message, emoji)}
-                                        disabled={isOptimistic}
-                                        className={cn(
-                                            "px-2 py-0.5 rounded-full text-xs flex items-center gap-1 transition-colors",
-                                            hasReacted ? "bg-primary/20 border border-primary" : "bg-background/80 border"
-                                        )}
-                                    >
-                                        {isCustom ? (
-                                            <Image src={emoji} alt="reaction" width={16} height={16} />
-                                        ) : (
-                                            <span>{emoji}</span>
-                                        )}
-                                        <span>{userIds.length}</span>
-                                    </button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p className="max-w-xs text-sm">
-                                        {userIds.map(id => chat.participants?.find(p => p.user_id === id)?.profiles?.name || '...').join(', ')}
-                                    </p>
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
-                    )
-                })}
-            </div>
-        )
-    }
-
-    // This function processes the list of messages to insert date separators ("Today", "Yesterday")
-    // and an "Unread Messages" separator where needed.
+    // -------------------------------------------------------------------------
+    // Messages list with separators
+    // -------------------------------------------------------------------------
     const messagesWithSeparators = useMemo(() => {
         if (!chat.messages || chat.messages.length === 0) return [];
-
         const items: (Message | { type: 'separator' | 'unread_separator'; id: string; date: string })[] = [];
         let lastDate: Date | null = null;
-
         const unreadIndex = initialUnreadCount > 0 && initialUnreadCount < chat.messages.length
-            ? chat.messages.length - initialUnreadCount
-            : -1;
+            ? chat.messages.length - initialUnreadCount : -1;
 
         chat.messages.forEach((message, index) => {
             const messageDate = new Date(message.created_at);
             if (!lastDate || !isSameDay(messageDate, lastDate)) {
-                let label = '';
-                if (isToday(messageDate)) {
-                    label = 'Today';
-                } else if (isYesterday(messageDate)) {
-                    label = 'Yesterday';
-                } else {
-                    label = format(messageDate, 'MMMM d, yyyy');
-                }
+                const label = isToday(messageDate) ? 'Today' : isYesterday(messageDate) ? 'Yesterday' : format(messageDate, 'MMMM d, yyyy');
                 items.push({ type: 'separator', id: `sep-${message.id}`, date: label });
             }
-            if (index === unreadIndex) {
-                items.push({ type: 'unread_separator', id: 'unread-separator', date: '' });
-            }
+            if (index === unreadIndex) items.push({ type: 'unread_separator', id: 'unread-separator', date: '' });
             items.push(message);
             lastDate = messageDate;
         });
-
         return items;
     }, [chat.messages, initialUnreadCount]);
 
-    // Simple separator components (no hooks — these stay inline because they have no state)
-    const DateSeparator = ({ date }: { date: string }) => (
-        <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center">
-                <span className="bg-muted px-3 text-xs font-medium text-muted-foreground rounded-full">
-                    {date}
-                </span>
-            </div>
-        </div>
-    );
-
-    const UnreadSeparator = () => (
-        <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-red-500" />
-            </div>
-            <div className="relative flex justify-center">
-                <span className="bg-red-500 px-3 text-xs font-medium text-white rounded-full">
-                    Unread Messages
-                </span>
-            </div>
-        </div>
-    );
-
-    // Build the context object that the module-level MessageBubble needs.
-    // useMemo keeps the reference stable so MessageBubble (React.memo) doesn't re-render
-    // unless something it actually uses changes.
+    // -------------------------------------------------------------------------
+    // Stable bubble context (memoized so MessageBubble (React.memo) skips re-renders)
+    // -------------------------------------------------------------------------
     const bubbleCtx: MessageBubbleContext = useMemo(() => ({
-        loggedInUser,
-        isGroup,
-        isGroupAdmin: !!isGroupAdmin,
-        themeSettings,
-        outgoingBubbleStyle,
-        incomingBubbleStyle,
-        editingMessage,
-        highlightMessageId,
-        reactionPickerCustomEmojis,
+        loggedInUser, isGroup, isGroupAdmin: !!isGroupAdmin, themeSettings,
+        outgoingBubbleStyle, incomingBubbleStyle,
+        editingMessage, highlightMessageId, reactionPickerCustomEmojis,
         chatParticipants: chat.participants,
         loggedInUserId: loggedInUser.id,
         chatName: chat.name,
-        startCall,
-        joinCall,
-        handleStartReply,
-        handleDeleteForEveryone,
-        handleCopy,
-        handleStartEdit,
-        onReact,
-        onCustomReact,
-        handleToggleStar,
-        handleTogglePin,
-        setMessageToForward,
-        setMessageToReport,
-        setIsReportDialogOpen,
-        setMessageInfo,
-        setMessageToTranslate,
-        jumpToMessage,
-        getMessageStatus,
-        renderMessageContent,
-        renderReactions,
+        disableSharing: !!chat.disable_sharing,
+        startCall, joinCall,
+        handleStartReply, handleDeleteForEveryone, handleCopy, handleStartEdit,
+        onReact, onCustomReact, handleToggleStar, handleTogglePin,
+        setMessageToForward, setMessageToReport, setIsReportDialogOpen,
+        setMessageInfo, setMessageToTranslate, jumpToMessage,
+        getMessageStatus, renderMessageContent, renderReactions,
     }), [
         loggedInUser, isGroup, isGroupAdmin, themeSettings, outgoingBubbleStyle, incomingBubbleStyle,
         editingMessage, highlightMessageId, reactionPickerCustomEmojis, chat.participants, chat.name,
@@ -1444,15 +298,15 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
         renderMessageContent, renderReactions,
     ]);
 
-    // This is the main return statement for the Chat component.
-    // It lays out the entire chat interface, using all the pieces and logic defined above.
+    // -------------------------------------------------------------------------
+    // Render
+    // -------------------------------------------------------------------------
     return (
         <div className="flex h-dvh flex-col">
-            {/* These are Dialog components. They are modals that pop up over the screen. */}
+            {/* Dialogs */}
             <TranslateDialog open={!!messageToTranslate} onOpenChange={() => setMessageToTranslate(null)} message={messageToTranslate} />
             <ImageViewerDialog
-                open={isImageViewerOpen}
-                onOpenChange={setIsImageViewerOpen}
+                open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}
                 media={imageViewerSrc ? [{ url: imageViewerSrc, type: 'image' }] : []}
                 startIndex={0}
             />
@@ -1461,38 +315,23 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
             {messageInfo && <MessageInfoDialog message={messageInfo} chat={chat} open={!!messageInfo} onOpenChange={() => setMessageInfo(null)} />}
             {chatPartner && <ReportDialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen} userToReport={chatPartner} messageToReport={messageToReport} />}
             <PinnedMessagesDialog
-                open={isPinnedDialogOpen}
-                onOpenChange={setIsPinnedDialogOpen}
-                messages={pinnedMessages}
-                onJumpToMessage={jumpToMessage}
-                onUnpinMessage={(id) => {
-                    const msg = chat.messages?.find(m => m.id === id);
-                    if (msg) handleTogglePin(msg);
-                }}
-                isAdmin={isGroupAdmin || false}
+                open={isPinnedDialogOpen} onOpenChange={setIsPinnedDialogOpen}
+                messages={pinnedMessages} onJumpToMessage={jumpToMessage}
+                onUnpinMessage={(id) => { const msg = chat.messages?.find(m => m.id === id); if (msg) handleTogglePin(msg); }}
+                isAdmin={!!isGroupAdmin}
             />
             <StarredMessagesDialog
-                open={isStarredDialogOpen}
-                onOpenChange={setIsStarredDialogOpen}
-                messages={starredMessages}
-                onJumpToMessage={jumpToMessage}
-                onUnstarMessage={(id) => {
-                    const msg = chat.messages?.find(m => m.id === id);
-                    if (msg) handleToggleStar(msg);
-                }}
+                open={isStarredDialogOpen} onOpenChange={setIsStarredDialogOpen}
+                messages={starredMessages} onJumpToMessage={jumpToMessage}
+                onUnstarMessage={(id) => { const msg = chat.messages?.find(m => m.id === id); if (msg) handleToggleStar(msg); }}
             />
 
-            {/* This is the header of the chat window. */}
+            {/* Header */}
             <header className="flex items-center justify-between p-2 border-b gap-1 sm:gap-2 shrink-0">
                 <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
                     <div className="md:hidden">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => router.push('/chat')}
-                            className="h-8 w-8 sm:h-9 sm:w-9 shrink-0"
-                        >
-                            <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+                        <Button variant="ghost" size="icon" onClick={() => router.push('/chat')} className="h-8 w-8 sm:h-9 sm:w-9 shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
                         </Button>
                     </div>
                     <Link href={isGroup ? `/group/${chat.id}` : `/profile/${chatPartner?.username || ''}`} className="flex-shrink-0">
@@ -1512,57 +351,33 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                 </div>
                 <div className="flex items-center shrink-0">
                     {pinnedMessages.length > 0 && (
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" onClick={() => setIsPinnedDialogOpen(true)}>
-                                        <Pin className="h-4 w-4 sm:h-5 sm:w-5" />
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>View Pinned Messages</TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
+                        <TooltipProvider><Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" onClick={() => setIsPinnedDialogOpen(true)}>
+                                    <Pin className="h-4 w-4 sm:h-5 sm:w-5" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>View Pinned Messages</TooltipContent>
+                        </Tooltip></TooltipProvider>
                     )}
                     {starredMessages.length > 0 && (
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" onClick={() => setIsStarredDialogOpen(true)}>
-                                        <Star className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400 fill-amber-400" />
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>View Starred Messages</TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
+                        <TooltipProvider><Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" onClick={() => setIsStarredDialogOpen(true)}>
+                                    <Star className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400 fill-amber-400" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>View Starred Messages</TooltipContent>
+                        </Tooltip></TooltipProvider>
                     )}
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="hidden sm:inline-flex h-8 w-8 sm:h-9 sm:w-9"
-                        onClick={() => {
-                            if (isGroup) {
-                                startGroupCall(chat.id.toString(), 'voice'); // Ensure chat.id is string if expected
-                            } else if (chatPartner) {
-                                startCall(chatPartner.id, 'voice');
-                            }
-                        }}
-                        disabled={!isGroup && !chatPartner}
-                    >
+                    <Button variant="ghost" size="icon" className="hidden sm:inline-flex h-8 w-8 sm:h-9 sm:w-9"
+                        onClick={() => isGroup ? startGroupCall(chat.id.toString(), 'voice') : chatPartner && startCall(chatPartner.id, 'voice')}
+                        disabled={!isGroup && !chatPartner}>
                         <Phone className="h-4 w-4 sm:h-5 sm:w-5" />
                     </Button>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 sm:h-9 sm:w-9"
-                        onClick={() => {
-                            if (isGroup) {
-                                startGroupCall(chat.id.toString(), 'video');
-                            } else if (chatPartner) {
-                                startCall(chatPartner.id, 'video');
-                            }
-                        }}
-                        disabled={!isGroup && !chatPartner}
-                    >
+                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9"
+                        onClick={() => isGroup ? startGroupCall(chat.id.toString(), 'video') : chatPartner && startCall(chatPartner.id, 'video')}
+                        disabled={!isGroup && !chatPartner}>
                         <Video className="h-4 w-4 sm:h-5 sm:w-5" />
                     </Button>
                     <DropdownMenu>
@@ -1575,111 +390,71 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                             <DropdownMenuItem asChild><Link href={isGroup ? `/group/${chat.id}` : `/profile/${chatPartner?.username || ''}`}>View Info</Link></DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => setIsStarredDialogOpen(true)}>
-                                <Star className="mr-2 h-4 w-4" />
-                                <span>Starred Messages</span>
+                                <Star className="mr-2 h-4 w-4" /><span>Starred Messages</span>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                                onClick={() => {
-                                    if (isGroup) {
-                                        startGroupCall(chat.id.toString(), 'voice');
-                                    } else if (chatPartner) {
-                                        startCall(chatPartner.id, 'voice');
-                                    }
-                                }}
-                                className="sm:hidden"
-                            >
-                                <Phone className="mr-2 h-4 w-4" />
-                                <span>Voice Call</span>
+                            <DropdownMenuItem onClick={() => isGroup ? startGroupCall(chat.id.toString(), 'voice') : chatPartner && startCall(chatPartner.id, 'voice')} className="sm:hidden">
+                                <Phone className="mr-2 h-4 w-4" /><span>Voice Call</span>
                             </DropdownMenuItem>
-                            <DropdownMenuItem disabled>Clear chat</DropdownMenuItem>
+                            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => {
+                                if (window.confirm('Are you sure you want to clear this chat? This will remove all messages from your view.')) {
+                                    handleClearChat();
+                                }
+                            }}>
+                                Clear chat
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
             </header>
 
-            {/* This is the main message area. */}
-            <div className="flex-1 relative min-h-0">
-                <div className="absolute inset-0 z-0" style={wallpaperStyle} />
-                <ScrollArea viewportRef={scrollContainerRef} className="absolute inset-0 h-full w-full">
-                    <div className="p-4 space-y-6">
-                        <div ref={topMessageSentinelRef} className="h-px">
-                            {isLoadingMore && (
-                                <div className="flex justify-center py-4">
-                                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                                </div>
-                            )}
-                            {!hasMoreMessages && (chat.messages || []).length > 0 && (
-                                <div className="text-center text-xs text-muted-foreground py-4">
-                                    You've reached the beginning of this chat.
-                                </div>
-                            )}
+            {/* Message area */}
+            <div className="relative flex-1 min-h-0">
+                <div className="absolute inset-0" style={wallpaperStyle} />
+                <div ref={scrollContainerRef as React.RefObject<HTMLDivElement>} className="relative h-full overflow-y-auto px-2 sm:px-4 py-4 space-y-1">
+                    {isLoadingMore && (
+                        <div className="flex justify-center py-2">
+                            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                         </div>
-                        {(messagesWithSeparators || [])
-                            .filter(item => {
-                                // This makes sure we don't show messages from users the current user has blocked.
-                                if (!('user_id' in item) || !item.user_id) return true;
-                                if (!blockedUsers) return true;
-                                return !blockedUsers.includes(item.user_id);
-                            })
-                            .map((item) => {
-                                // Check if 'type' exists in the item before accessing it
-                                if ('type' in item && item.type === 'separator') {
-                                    return <DateSeparator key={item.id} date={item.date} />;
-                                }
-                                if ('type' in item && item.type === 'unread_separator') {
-                                    return <UnreadSeparator key="unread-separator" />;
-                                }
-                                const message = item as Message;
-                                return <MessageBubble key={message.id} message={message} ctx={bubbleCtx} />
-                            })}
-                        {/* This is an invisible div at the end of the message list that we use as a target to scroll to. */}
-                        <div ref={messagesEndRef} />
-                    </div>
-                </ScrollArea>
-                {/* These are the floating buttons for scrolling down or jumping to a mention. */}
-                <div className="absolute bottom-4 right-4 z-10 flex flex-col items-end gap-2">
-                    {firstUnreadMentionId && (
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button size="icon" className="rounded-full shadow-lg h-10 w-10" onClick={handleJumpToMention}>
-                                        <AtSign className="h-5 w-5" />
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent><p>Jump to unread mention</p></TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
                     )}
-                    {showScrollToBottom && (
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button size="icon" className="rounded-full shadow-lg h-10 w-10 relative" onClick={handleScrollToBottom}>
-                                        <ArrowDown className="h-5 w-5" />
-                                        {initialUnreadCount && initialUnreadCount > 0 && (
-                                            <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
-                                                {initialUnreadCount > 9 ? "9+" : initialUnreadCount}
-                                            </Badge>
-                                        )}
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent><p>Scroll to bottom</p></TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
-                    )}
+                    <div ref={topMessageSentinelRef} className="h-1" />
+                    {messagesWithSeparators.map((item) => {
+                        if ('type' in item) {
+                            if (item.type === 'separator') return <DateSeparator key={item.id} date={item.date} />;
+                            if (item.type === 'unread_separator') return <UnreadSeparator key={item.id} />;
+                        }
+                        return <MessageBubble key={(item as Message).id} message={item as Message} ctx={bubbleCtx} />;
+                    })}
+                    <div ref={messagesEndRef} />
                 </div>
+
+                {/* Scroll to bottom / mention jump buttons */}
+                {(showScrollToBottom || firstUnreadMentionId) && (
+                    <div className="absolute bottom-4 right-4 flex flex-col gap-2 z-10">
+                        {firstUnreadMentionId && (
+                            <Button size="icon" variant="secondary" className="h-9 w-9 rounded-full shadow-lg"
+                                onClick={() => { jumpToMessage(firstUnreadMentionId); setFirstUnreadMentionId(null); }}>
+                                <AtSign className="h-4 w-4" />
+                            </Button>
+                        )}
+                        {showScrollToBottom && (
+                            <Button size="icon" variant="secondary" className="h-9 w-9 rounded-full shadow-lg" onClick={handleScrollToBottom}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m7 11 5 5 5-5"/><path d="M12 4v12"/></svg>
+                            </Button>
+                        )}
+                    </div>
+                )}
             </div>
-            {/* This is our newly created ChatInput component. */}
+
+            {/* Input — ChatInput handles its own blocked/restricted banners internally */}
             <ChatInput
                 chat={chat}
                 loggedInUser={loggedInUser}
-                setMessages={setMessages}
                 replyingTo={replyingTo}
                 setReplyingTo={setReplyingTo}
                 editingMessage={editingMessage}
                 setEditingMessage={setEditingMessage}
-                onSaveEdit={handleSaveEdit}
+                onSaveEdit={() => handleSaveEdit(editingMessage)}
                 messagesEndRef={messagesEndRef}
                 isChannel={isChannel}
                 canPostInChannel={canPostInChannel}
@@ -1688,6 +463,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                 existingRequest={existingRequest}
                 onUnblockUser={() => chatPartner && unblockUser(chatPartner.id)}
                 onRequestDm={() => setIsRequestDmOpen(true)}
+                setMessages={setMessages}
             />
         </div>
     );

@@ -7,7 +7,7 @@
 
 import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { MoreVertical, Paperclip, Phone, Send, Smile, Video, Mic, Check, CheckCheck, Pencil, Trash2, SmilePlus, X, FileIcon, Download, StopCircle, Copy, Star, Share2, Shield, Loader2, Pause, Play, StickyNote, Users, UserX, ShieldAlert, Pin, PinOff, Reply, Clock, CircleSlash, ArrowDown, AtSign, Image as ImageIcon, Info, Bold, Italic, Strikethrough, Code, Sparkles, Lock } from 'lucide-react';
+import { MoreVertical, Paperclip, Phone, Send, Smile, Video, Mic, Check, CheckCheck, Pencil, Trash2, SmilePlus, X, FileIcon, Download, StopCircle, Copy, Star, Share2, Shield, Loader2, Pause, Play, StickyNote, Users, UserX, ShieldAlert, Pin, PinOff, Reply, Clock, CircleSlash, ArrowDown, AtSign, Image as ImageIcon, Info, Bold, Italic, Strikethrough, Code, Sparkles, Lock, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import TextareaAutosize from 'react-textarea-autosize';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -31,8 +31,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Image from 'next/image';
 import { useAppContext } from '@/providers/app-provider';
-// FIX 1: Add missing imports for Avatar components
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { CreatePollDialog } from './dialogs/create-poll-dialog';
+import { BarChart3 } from 'lucide-react';
 // This is a constant string used in our Supabase database queries.
 // It tells the database exactly which columns we want to fetch for a message,
 // including related data like the sender's profile and the message being replied to.
@@ -115,6 +116,8 @@ export function ChatInput({
     const [mentionQuery, setMentionQuery] = useState<string | null>(null);
     const [activeMentionIndex, setActiveMentionIndex] = useState(0);
 
+    const [isPollDialogOpen, setIsPollDialogOpen] = useState(false);
+
     // State for the text formatting toolbar.
     const [selection, setSelection] = useState<{ start: number; end: number } | null>(null);
     const [toolbarPosition, setToolbarPosition] = useState<{ top: number; left: number } | null>(null);
@@ -177,7 +180,7 @@ export function ChatInput({
     };
 
     // The main function for sending a message. It handles both text and attachments.
-    const handleSendMessage = async ({ content, contentToSave, attachment }: { content: string, contentToSave?: string, attachment?: { file: File, url: string, waveform?: number[], duration?: number } }) => {
+    const handleSendMessage = async ({ content, contentToSave, attachment }: { content: string, contentToSave?: string, attachment?: { type?: string, pollId?: number, file?: File, url?: string, waveform?: number[], duration?: number } }) => {
         if (isSending || (content.trim() === '' && !attachment)) return;
 
         setIsSending(true);
@@ -185,14 +188,18 @@ export function ChatInput({
         // instantly while the real message is being sent to the server. This is called "optimistic UI".
         const tempId = `temp-${uuidv4()}`;
 
-        const attachmentMetadata = attachment
-            ? {
-                name: attachment.file.name,
-                type: attachment.file.type,
-                size: attachment.file.size,
-                waveform: attachment.waveform,
-                duration: attachment.duration,
-            }
+        const attachmentMetadata: AttachmentMetadata | null = attachment
+            ? attachment.type === 'poll' && attachment.pollId
+                ? { type: 'poll', pollId: attachment.pollId, name: 'poll' } as unknown as AttachmentMetadata
+                : attachment.file 
+                    ? {
+                        name: attachment.file.name,
+                        type: attachment.type || attachment.file.type,
+                        size: attachment.file.size,
+                        waveform: attachment.waveform,
+                        duration: attachment.duration,
+                      }
+                    : null
             : null;
 
         const optimisticMessage: Message = {
@@ -201,7 +208,7 @@ export function ChatInput({
             chat_id: chat.id,
             user_id: loggedInUser.id,
             content: content.trim(),
-            attachment_url: attachment ? attachment.url : null,
+            attachment_url: attachment?.url ?? null,
             attachment_metadata: attachmentMetadata,
             reply_to_message_id: typeof replyingTo?.id === 'number' ? replyingTo.id : null, profiles: loggedInUser,
             replied_to_message: replyingTo,
@@ -222,7 +229,7 @@ export function ChatInput({
         try {
             // If there's an attachment, upload it to Supabase Storage first.
             let attachmentUrl: string | null = null;
-            if (attachment) {
+            if (attachment && attachment.file && attachment.type !== 'poll') {
                 const file = attachment.file;
                 const fileExt = file.name.split('.').pop();
                 const filePath = `${uuidv4()}.${fileExt}`;
@@ -615,6 +622,40 @@ export function ChatInput({
         }, 10);
     };
 
+    // This function inserts a [[date:...]] token when the user picks a date
+    const applyDateFormatting = (localDateTimeString: string) => {
+        if (!selection || !textareaRef.current || !localDateTimeString) return;
+
+        const { start, end } = selection;
+        const currentMessage = editingMessage ? editingMessage.content : message;
+        
+        // Parse the local datetime string to a proper ISO string with timezone
+        const dateObj = new Date(localDateTimeString);
+        if (isNaN(dateObj.getTime())) return;
+        const formattedIso = dateObj.toISOString();
+
+        const replacement = `[[date:${formattedIso}]]`;
+
+        const newText =
+            currentMessage.substring(0, start) +
+            replacement +
+            currentMessage.substring(end);
+
+        if (editingMessage) {
+            setEditingMessage({ ...editingMessage, content: newText });
+        } else {
+            setMessage(newText);
+        }
+
+        const newCursorPos = start + replacement.length;
+        setTimeout(() => {
+            textareaRef.current?.focus();
+            textareaRef.current?.setSelectionRange(newCursorPos, newCursorPos);
+            setSelection(null);
+            setToolbarPosition(null);
+        }, 10);
+    };
+
     // This function replaces the mention query (e.g., @joh) with the selected username.
     const handleMentionSelect = (username: string) => {
         const textarea = textareaRef.current;
@@ -772,6 +813,19 @@ export function ChatInput({
                 </DialogContent>
             </Dialog>
 
+            <CreatePollDialog 
+                open={isPollDialogOpen} 
+                onOpenChange={setIsPollDialogOpen} 
+                chatId={chat.id as number} 
+                loggedInUser={loggedInUser} 
+                onPollCreated={(pollId, question) => {
+                    handleSendMessage({
+                        content: `📊 Poll: ${question}`, // Fallback text for push notifications
+                        attachment: { type: 'poll', pollId }
+                    });
+                }} 
+            />
+
             {/* These are the "replying to" and "editing" banners that appear above the input. */}
             {replyingTo && (
                 <div className="flex items-center justify-between p-2 pl-3 mb-2 rounded-t-md bg-muted text-sm border-b">
@@ -801,6 +855,14 @@ export function ChatInput({
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => applyFormatting('italic')}><Italic className="h-4 w-4" /></Button>
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => applyFormatting('strikethrough')}><Strikethrough className="h-4 w-4" /></Button>
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => applyFormatting('code')}><Code className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 relative overflow-hidden">
+                            <Calendar className="h-4 w-4" />
+                            <input
+                                type="datetime-local"
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                onChange={(e) => applyDateFormatting(e.target.value)}
+                            />
+                        </Button>
                     </div>
                 )}
                 {mentionQuery !== null && (
@@ -835,88 +897,97 @@ export function ChatInput({
                         </ScrollArea>
                     </Card>
                 )}
-                {/* The main text input area. */}
-                <TextareaAutosize
-                    ref={textareaRef}
-                    placeholder={isGroup ? "Type @ to mention users..." : "Type a message..."}
-                    className={cn("pr-36 min-h-[40px] max-h-40 resize-none w-full border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-md", (replyingTo || editingMessage) && "rounded-t-none")}
-                    minRows={1}
-                    maxRows={5}
-                    value={currentMessageValue}
-                    onChange={handleMessageChange}
-                    onKeyDown={handleKeyDown}
-                    onSelect={handleTextSelection}
-                    onBlur={() => { setTimeout(() => { if (!toolbarRef.current?.contains(document.activeElement)) { setSelection(null); setToolbarPosition(null); } }, 150); }}
-                />
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
-                    {/* The emoji picker and other action buttons. */}
-                    <Popover open={isEmojiOpen} onOpenChange={setIsEmojiOpen}>
-                        <PopoverTrigger asChild>
-                            <Button variant="ghost" size="icon"><Smile className="h-5 w-5" /></Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-full max-w-sm sm:max-w-sm p-0 border-none mb-2" side="top" align="end">
-                            <Tabs defaultValue="emoji" className="w-full">
-                                <TabsList className="grid w-full grid-cols-3">
-                                    {(loggedInUser.is_verified === 'verified' || loggedInUser.is_verified === 'kcs') ? (
-                                        <TabsTrigger value="custom-emoji"><ImageIcon className="mr-2 h-4 w-4" />Official <Sparkles className="ml-1 h-3 w-3" /></TabsTrigger>
-                                    ) : (
-                                        <TabsTrigger value="custom-emoji" disabled className="opacity-50" aria-label="Official emojis - Premium feature"><ImageIcon className="mr-2 h-4 w-4" />Official <Lock className="ml-1 h-3 w-3" /></TabsTrigger>
-                                    )}
-                                    <TabsTrigger value="emoji"><Smile className="mr-2 h-4 w-4" />Emojis</TabsTrigger>
-                                    <TabsTrigger value="stickers"><StickyNote className="mr-2 h-4 w-4" />Stickers</TabsTrigger>
-                                </TabsList>
-                                <TabsContent value="custom-emoji">
-                                    {(loggedInUser.is_verified === 'verified' || loggedInUser.is_verified === 'kcs') ? (
+                {/* Main input row: textarea grows, buttons stay pinned to bottom-right */}
+                <div className="flex items-end gap-1">
+                    {/* Textarea */}
+                    <TextareaAutosize
+                        ref={textareaRef}
+                        placeholder={isGroup ? "Type @ to mention users..." : "Type a message..."}
+                        className={cn(
+                            "flex-1 min-h-[40px] max-h-40 resize-none w-full border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-md",
+                            (replyingTo || editingMessage) && "rounded-t-none"
+                        )}
+                        minRows={1}
+                        maxRows={5}
+                        value={currentMessageValue}
+                        onChange={handleMessageChange}
+                        onKeyDown={handleKeyDown}
+                        onSelect={handleTextSelection}
+                        onBlur={() => { setTimeout(() => { if (!toolbarRef.current?.contains(document.activeElement)) { setSelection(null); setToolbarPosition(null); } }, 150); }}
+                    />
+                    {/* Action buttons — always at the bottom of the row */}
+                    <div className="flex items-center shrink-0 pb-0.5">
+                        <Popover open={isEmojiOpen} onOpenChange={setIsEmojiOpen}>
+                            <PopoverTrigger asChild>
+                                <Button variant="ghost" size="icon"><Smile className="h-5 w-5" /></Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-full max-w-sm sm:max-w-sm p-0 border-none mb-2" side="top" align="end">
+                                <Tabs defaultValue="emoji" className="w-full">
+                                    <TabsList className="grid w-full grid-cols-3">
+                                        {(loggedInUser.is_verified === 'verified' || loggedInUser.is_verified === 'kcs') ? (
+                                            <TabsTrigger value="custom-emoji"><ImageIcon className="mr-2 h-4 w-4" />Official <Sparkles className="ml-1 h-3 w-3" /></TabsTrigger>
+                                        ) : (
+                                            <TabsTrigger value="custom-emoji" disabled className="opacity-50" aria-label="Official emojis - Premium feature"><ImageIcon className="mr-2 h-4 w-4" />Official <Lock className="ml-1 h-3 w-3" /></TabsTrigger>
+                                        )}
+                                        <TabsTrigger value="emoji"><Smile className="mr-2 h-4 w-4" />Emojis</TabsTrigger>
+                                        <TabsTrigger value="stickers"><StickyNote className="mr-2 h-4 w-4" />Stickers</TabsTrigger>
+                                    </TabsList>
+                                    <TabsContent value="custom-emoji">
+                                        {(loggedInUser.is_verified === 'verified' || loggedInUser.is_verified === 'kcs') ? (
+                                            <ScrollArea className="h-[350px]">
+                                                <div className="p-2 grid grid-cols-8 gap-2">
+                                                    {customEmojiList.map(emojiUrl => (
+                                                        <button
+                                                            key={emojiUrl}
+                                                            onClick={() => handleCustomEmojiMessage(emojiUrl)}
+                                                            className="aspect-square flex items-center justify-center rounded-md hover:bg-accent"
+                                                        >
+                                                            <Image src={emojiUrl} alt={emojiUrl.split('/').pop() || ''} width={32} height={32} />
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </ScrollArea>
+                                        ) : (
+                                            <div className="p-6 text-center space-y-3">
+                                                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                                                    <ImageIcon className="h-6 w-6 text-primary" />
+                                                </div>
+                                                <p className="text-sm font-medium">Official Emojis are a premium feature</p>
+                                                <p className="text-xs text-muted-foreground">Get verified to unlock exclusive emojis &amp; stickers</p>
+                                                <a href="/get-verified" className="inline-block text-xs text-primary font-medium hover:underline">Get Verified →</a>
+                                            </div>
+                                        )}
+                                    </TabsContent>
+                                    <TabsContent value="emoji"><EmojiPicker onEmojiClick={handleEmojiClick} height={350} width="100%" defaultSkinTone={SkinTones.NEUTRAL} /></TabsContent>
+                                    <TabsContent value="stickers">
                                         <ScrollArea className="h-[350px]">
-                                            <div className="p-2 grid grid-cols-8 gap-2">
-                                                {customEmojiList.map(emojiUrl => (
+                                            <div className="p-2 grid grid-cols-3 gap-2">
+                                                {stickerList.map(stickerUrl => (
                                                     <button
-                                                        key={emojiUrl}
-                                                        onClick={() => handleCustomEmojiMessage(emojiUrl)}
+                                                        key={stickerUrl}
+                                                        onClick={() => handleCustomEmojiMessage(stickerUrl)}
                                                         className="aspect-square flex items-center justify-center rounded-md hover:bg-accent"
                                                     >
-                                                        <Image src={emojiUrl} alt={emojiUrl.split('/').pop() || ''} width={32} height={32} />
+                                                        <Image src={stickerUrl} alt={stickerUrl.split('/').pop() || ''} width={96} height={96} />
                                                     </button>
                                                 ))}
                                             </div>
                                         </ScrollArea>
-                                    ) : (
-                                        <div className="p-6 text-center space-y-3">
-                                            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                                                <ImageIcon className="h-6 w-6 text-primary" />
-                                            </div>
-                                            <p className="text-sm font-medium">Official Emojis are a premium feature</p>
-                                            <p className="text-xs text-muted-foreground">Get verified to unlock exclusive emojis & stickers</p>
-                                            <a href="/get-verified" className="inline-block text-xs text-primary font-medium hover:underline">Get Verified →</a>
-                                        </div>
-                                    )}
-                                </TabsContent>
-                                <TabsContent value="emoji"><EmojiPicker onEmojiClick={handleEmojiClick} height={350} width="100%" defaultSkinTone={SkinTones.NEUTRAL} /></TabsContent>
-                                <TabsContent value="stickers">
-                                    <ScrollArea className="h-[350px]">
-                                        <div className="p-2 grid grid-cols-3 gap-2">
-                                            {stickerList.map(stickerUrl => (
-                                                <button
-                                                    key={stickerUrl}
-                                                    onClick={() => handleCustomEmojiMessage(stickerUrl)}
-                                                    className="aspect-square flex items-center justify-center rounded-md hover:bg-accent"
-                                                >
-                                                    <Image src={stickerUrl} alt={stickerUrl.split('/').pop() || ''} width={96} height={96} />
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </ScrollArea>
-                                </TabsContent>
-                            </Tabs>
-                        </PopoverContent>
-                    </Popover>
-                    <TooltipProvider>
-                        <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={handleAttachmentClick}><Paperclip className="h-5 w-5" /></Button></TooltipTrigger><TooltipContent>Attach file</TooltipContent></Tooltip>
-                        <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={handleStartRecording}><Mic className="h-5 w-5" /></Button></TooltipTrigger><TooltipContent>Voice message</TooltipContent></Tooltip>
-                    </TooltipProvider>
-                    <Button size="icon" className="ml-2 h-8 w-8" onClick={() => editingMessage ? onSaveEdit() : handleSendMessage({ content: message })} disabled={isSending || !currentMessageValue.trim()}>
-                        {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : editingMessage ? <Check className="h-4 w-4" /> : <Send className="h-4 w-4" />}
-                    </Button>
+                                    </TabsContent>
+                                </Tabs>
+                            </PopoverContent>
+                        </Popover>
+                        <TooltipProvider>
+                            <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={handleAttachmentClick}><Paperclip className="h-5 w-5" /></Button></TooltipTrigger><TooltipContent>Attach file</TooltipContent></Tooltip>
+                            {isGroup && (
+                                <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={() => setIsPollDialogOpen(true)}><BarChart3 className="h-5 w-5" /></Button></TooltipTrigger><TooltipContent>Create Poll</TooltipContent></Tooltip>
+                            )}
+                            <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={handleStartRecording}><Mic className="h-5 w-5" /></Button></TooltipTrigger><TooltipContent>Voice message</TooltipContent></Tooltip>
+                        </TooltipProvider>
+                        <Button size="icon" className="ml-1 h-8 w-8 shrink-0" onClick={() => editingMessage ? onSaveEdit() : handleSendMessage({ content: message })} disabled={isSending || !currentMessageValue.trim()}>
+                            {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : editingMessage ? <Check className="h-4 w-4" /> : <Send className="h-4 w-4" />}
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>

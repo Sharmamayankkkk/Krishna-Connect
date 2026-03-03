@@ -189,6 +189,13 @@ html {
   border-width: 1px;
 }
 
+/* Jump-to-message highlight pulse */
+@keyframes highlight-message {
+  0%   { background-color: hsl(var(--primary) / 0.28); box-shadow: 0 0 0 3px hsl(var(--primary) / 0.15); }
+  60%  { background-color: hsl(var(--primary) / 0.12); box-shadow: 0 0 0 1px hsl(var(--primary) / 0.06); }
+  100% { background-color: transparent; box-shadow: none; }
+}
+
 /* Shimmer animation for skeleton loaders */
 @keyframes shimmer {
   0% { transform: translateX(-100%); }

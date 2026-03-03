@@ -47,6 +47,8 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
   const [isPublic, setIsPublic] = React.useState(group.is_public);
   const [historyVisible, setHistoryVisible] = React.useState(group.history_visible);
   const [inviteCode, setInviteCode] = React.useState(group.invite_code);
+  const [disableSharing, setDisableSharing] = React.useState(!!group.disable_sharing);
+  const [membersCanSetTag, setMembersCanSetTag] = React.useState(!!group.settings?.members_can_set_tag);
 
   React.useEffect(() => {
     if (open) {
@@ -57,6 +59,8 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
       setIsPublic(group.is_public);
       setHistoryVisible(group.history_visible);
       setInviteCode(group.invite_code);
+      setDisableSharing(!!group.disable_sharing);
+      setMembersCanSetTag(!!group.settings?.members_can_set_tag);
       setAvatarFile(null);
       setMemberSearch('');
       setSearchResults([]);
@@ -138,7 +142,9 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
           avatar_url,
           is_public: isPublic,
           history_visible: historyVisible,
-          invite_code: inviteCode
+          invite_code: inviteCode,
+          disable_sharing: disableSharing,
+          settings: { ...group.settings, members_can_set_tag: membersCanSetTag }
         })
         .eq('id', group.id);
       if (chatUpdateError) throw chatUpdateError;
@@ -239,6 +245,20 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
                 <p className="text-xs text-muted-foreground">Allow new members to see past messages.</p>
               </div>
               <Switch checked={historyVisible} onCheckedChange={setHistoryVisible} />
+            </div>
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div>
+                <Label>Disable Sharing</Label>
+                <p className="text-xs text-muted-foreground">Prevent members from forwarding messages from this group.</p>
+              </div>
+              <Switch checked={disableSharing} onCheckedChange={setDisableSharing} />
+            </div>
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div>
+                <Label>Member Tags</Label>
+                <p className="text-xs text-muted-foreground">Allow members to set their own tags.</p>
+              </div>
+              <Switch checked={membersCanSetTag} onCheckedChange={setMembersCanSetTag} />
             </div>
             <div className="space-y-2">
               <Label>Invite Link</Label>

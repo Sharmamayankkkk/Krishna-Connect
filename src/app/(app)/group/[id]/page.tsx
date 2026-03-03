@@ -186,6 +186,14 @@ export default function GroupInfoPage() {
                   <p className="font-medium">History for New Members</p>
                   <Badge variant="secondary" className="capitalize">{group.history_visible ? 'Visible' : 'Hidden'}</Badge>
                 </div>
+                <div className="flex items-center justify-between">
+                  <p className="font-medium">Disable Sharing</p>
+                  <Badge variant="secondary" className="capitalize">{group.disable_sharing ? 'Yes' : 'No'}</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="font-medium">Self-Assign Member Tags</p>
+                  <Badge variant="secondary" className="capitalize">{group.settings?.members_can_set_tag ? 'Yes' : 'No'}</Badge>
+                </div>
                 {isAdmin && group.invite_code && (
                   <div className="space-y-2">
                     <Label>Invite Link</Label>
