@@ -261,11 +261,14 @@ CREATE TABLE IF NOT EXISTS public.comments (
     updated_at        TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
 
--- Auto-update updated_at whenever a comment is edited
+-- Auto-update updated_at only when comment content is edited
+-- (pin/hide/other metadata changes must NOT advance updated_at)
 CREATE OR REPLACE FUNCTION public.set_comments_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.updated_at = NOW();
+    IF NEW.content IS DISTINCT FROM OLD.content THEN
+        NEW.updated_at = NOW();
+    END IF;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;

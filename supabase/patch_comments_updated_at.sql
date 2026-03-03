@@ -16,11 +16,14 @@
 ALTER TABLE public.comments
     ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL;
 
--- Keep updated_at in sync automatically on every UPDATE
+-- Keep updated_at in sync when comment content is edited
+-- (does NOT fire for pin/hide/other metadata changes)
 CREATE OR REPLACE FUNCTION public.set_comments_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.updated_at = NOW();
+    IF NEW.content IS DISTINCT FROM OLD.content THEN
+        NEW.updated_at = NOW();
+    END IF;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
