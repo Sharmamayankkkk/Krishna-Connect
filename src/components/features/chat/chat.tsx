@@ -280,7 +280,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
         [chat, loggedInUser.id, isGroup]);
 
     const pinnedMessages = useMemo(() => (chat.messages || []).filter(m => m.is_pinned), [chat.messages]);
-    const starredMessages = useMemo(() => (chat.messages || []).filter(m => 
+    const starredMessages = useMemo(() => (chat.messages || []).filter(m =>
         m.starred_by?.includes(loggedInUser.id) ?? m.is_starred
     ), [chat.messages, loggedInUser.id]);
 
@@ -816,11 +816,11 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
             return (
                 <div className="space-y-2 break-words min-w-0">
                     {attachmentElement()}
-                    {showCaption && <p className="whitespace-pre-wrap break-words">{parseContent(mainContent)}</p>}
+                    {showCaption && <div className="whitespace-pre-wrap break-words">{parseContent(mainContent)}</div>}
                 </div>
             );
         }
-        return <p className="whitespace-pre-wrap break-words">{parseContent(mainContent)}</p>;
+        return <div className="whitespace-pre-wrap break-words">{parseContent(mainContent)}</div>;
     }
 
     // Prepares custom emojis for the reaction picker.
