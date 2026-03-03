@@ -16,7 +16,7 @@ import { Switch } from "@/components/ui/switch"
 import { useToast } from "@/hooks/use-toast"
 import { useAppContext } from "@/providers/app-provider"
 import type { Chat, User, Participant } from '@/lib/types'
-import { UserPlus, UserX, Loader2, Upload, RefreshCcw, Copy, Tag } from 'lucide-react'
+import { UserPlus, UserX, Loader2, Upload, RefreshCcw, Copy, Tag, Globe, Eye, Lock } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { createClient } from '@/lib/utils'
@@ -235,32 +235,52 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
             </div>
           </TabsContent>
 
-          <TabsContent value="settings" className="space-y-6 py-4">
+          <TabsContent value="settings" className="space-y-4 py-4">
             <div className="flex items-center justify-between rounded-lg border p-4">
-              <div>
-                <Label>Public Group</Label>
-                <p className="text-xs text-muted-foreground">Allow anyone with the link to join.</p>
+              <div className="flex items-center gap-3">
+                <div className="rounded-full bg-primary/10 p-2">
+                  <Globe className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <Label>Public Group</Label>
+                  <p className="text-xs text-muted-foreground">Allow anyone with the link to join.</p>
+                </div>
               </div>
               <Switch checked={isPublic} onCheckedChange={setIsPublic} />
             </div>
             <div className="flex items-center justify-between rounded-lg border p-4">
-              <div>
-                <Label>Chat History</Label>
-                <p className="text-xs text-muted-foreground">Allow new members to see past messages.</p>
+              <div className="flex items-center gap-3">
+                <div className="rounded-full bg-blue-500/10 p-2">
+                  <Eye className="h-4 w-4 text-blue-500" />
+                </div>
+                <div>
+                  <Label>Chat History</Label>
+                  <p className="text-xs text-muted-foreground">Allow new members to see past messages.</p>
+                </div>
               </div>
               <Switch checked={historyVisible} onCheckedChange={setHistoryVisible} />
             </div>
             <div className="flex items-center justify-between rounded-lg border p-4">
-              <div>
-                <Label>Disable Sharing</Label>
-                <p className="text-xs text-muted-foreground">Prevent members from forwarding messages from this group.</p>
+              <div className="flex items-center gap-3">
+                <div className="rounded-full bg-orange-500/10 p-2">
+                  <Lock className="h-4 w-4 text-orange-500" />
+                </div>
+                <div>
+                  <Label>Disable Sharing</Label>
+                  <p className="text-xs text-muted-foreground">Prevent members from forwarding messages from this group.</p>
+                </div>
               </div>
               <Switch checked={disableSharing} onCheckedChange={setDisableSharing} />
             </div>
             <div className="flex items-center justify-between rounded-lg border p-4">
-              <div>
-                <Label>Member Tags</Label>
-                <p className="text-xs text-muted-foreground">Allow members to set their own tags.</p>
+              <div className="flex items-center gap-3">
+                <div className="rounded-full bg-green-500/10 p-2">
+                  <Tag className="h-4 w-4 text-green-500" />
+                </div>
+                <div>
+                  <Label>Member Tags</Label>
+                  <p className="text-xs text-muted-foreground">Allow members to set their own tags.</p>
+                </div>
               </div>
               <Switch checked={membersCanSetTag} onCheckedChange={setMembersCanSetTag} />
             </div>
@@ -319,6 +339,7 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
                             <Tag className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                             <Input
                               placeholder="Member tag (e.g. Designer)"
+                              aria-label={`Tag for ${p.profiles.name}`}
                               value={p.tag || ''}
                               onChange={e => handleTagChange(p.user_id, e.target.value)}
                               maxLength={25}
