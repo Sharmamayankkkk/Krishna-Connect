@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { createClient } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { Check, BarChart3, Users, Undo2, Circle, CheckCircle2, Square, CheckSquare, Eye, EyeOff, ChevronDown } from 'lucide-react';
+import { BarChart3, Users, Undo2, Circle, CheckCircle2, Square, CheckSquare, Eye, EyeOff } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -44,6 +44,8 @@ export const PollMessage = ({ pollId, loggedInUserId, chatParticipants }: PollMe
                     setVotes(prev => [...prev, payload.new]);
                 } else if (payload.eventType === 'DELETE') {
                     setVotes(prev => prev.filter(v => v.id !== payload.old.id));
+                } else if (payload.eventType === 'UPDATE') {
+                    setVotes(prev => prev.map(v => v.id === payload.new.id ? payload.new : v));
                 }
             })
             .subscribe();
@@ -73,14 +75,14 @@ export const PollMessage = ({ pollId, loggedInUserId, chatParticipants }: PollMe
         }
     }, [pollId, loggedInUserId, supabase, toast]);
 
-    const toggleVote = useCallback((optionId: string) => {
+    const toggleVote = (optionId: string) => {
         const myVote = votes.find(v => v.user_id === loggedInUserId && v.option_id === optionId);
         if (myVote) {
             handleRetractVote(optionId);
         } else {
             handleVote(optionId);
         }
-    }, [votes, loggedInUserId, handleRetractVote, handleVote]);
+    };
 
     if (isLoading) {
         return (
@@ -112,6 +114,18 @@ export const PollMessage = ({ pollId, loggedInUserId, chatParticipants }: PollMe
     const hasUserVoted = votes.some(v => v.user_id === loggedInUserId);
     const uniqueVoterCount = new Set(votes.map(v => v.user_id)).size;
     const isMultiple = poll.allows_multiple;
+
+    // Pre-compute vote counts per option to avoid O(n²) in render
+    const votesByOption = useMemo(() => {
+        const map = new Map<string, any[]>();
+        for (const v of votes) {
+            const arr = map.get(v.option_id) || [];
+            arr.push(v);
+            map.set(v.option_id, arr);
+        }
+        return map;
+    }, [votes]);
+    const maxVoteCount = useMemo(() => Math.max(0, ...options.map(o => (votesByOption.get(o.id) || []).length)), [options, votesByOption]);
 
     return (
         <div className="w-[280px] sm:w-[320px] rounded-xl overflow-hidden my-1 border-2 border-primary/25 bg-card shadow-md">
@@ -145,11 +159,11 @@ export const PollMessage = ({ pollId, loggedInUserId, chatParticipants }: PollMe
             {/* ── Options ── */}
             <div className="px-3 py-2.5 space-y-1.5">
                 {options.map((option) => {
-                    const optionVotes = votes.filter(v => v.option_id === option.id);
+                    const optionVotes = votesByOption.get(option.id) || [];
                     const voteCount = optionVotes.length;
                     const percentage = totalVotes === 0 ? 0 : Math.round((voteCount / totalVotes) * 100);
                     const isMyVote = votes.some(v => v.user_id === loggedInUserId && v.option_id === option.id);
-                    const isLeading = hasUserVoted && voteCount > 0 && voteCount === Math.max(...options.map(o => votes.filter(v => v.option_id === o.id).length));
+                    const isLeading = hasUserVoted && voteCount > 0 && voteCount === maxVoteCount;
 
                     return (
                         <div key={option.id}>
@@ -216,7 +230,7 @@ export const PollMessage = ({ pollId, loggedInUserId, chatParticipants }: PollMe
                                             <TooltipProvider key={v.id}>
                                                 <Tooltip delayDuration={200}>
                                                     <TooltipTrigger asChild>
-                                                        <Avatar className="w-5 h-5 border-2 border-card shadow-sm cursor-help ring-1 ring-border/50">
+                                                        <Avatar className="w-5 h-5 border border-border/50 shadow-sm cursor-help">
                                                             <AvatarImage src={profile.avatar_url} />
                                                             <AvatarFallback className="text-[8px] font-bold bg-primary/10 text-primary">{profile.name?.[0]}</AvatarFallback>
                                                         </Avatar>
