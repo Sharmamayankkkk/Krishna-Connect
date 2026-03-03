@@ -40,19 +40,24 @@ const buildCommentTree = (flatComments: any[]): Comment[] => {
   const commentMap = new Map();
   const roots: Comment[] = [];
 
+  // Deduplicate by ID first to prevent any DB-level duplicates from causing UI duplication
+  const uniqueComments = Array.from(
+    new Map(flatComments.map(c => [c.id, c])).values()
+  );
+
   // First pass: create nodes
-  flatComments.forEach(c => {
+  uniqueComments.forEach(c => {
     commentMap.set(c.id, { ...c, replies: [] });
   });
 
   // Second pass: link children to parents
-  flatComments.forEach(c => {
+  uniqueComments.forEach(c => {
     if (c.parent_comment_id) {
       const parent = commentMap.get(c.parent_comment_id);
       if (parent) {
         parent.replies.push(commentMap.get(c.id));
       } else {
-        // Orphaned comment, treat as root or discard? Treat as root for safety.
+        // Orphaned comment, treat as root
         roots.push(commentMap.get(c.id));
       }
     } else {
@@ -295,7 +300,7 @@ export function CommentSheet({ post, open, onOpenChange, onComment }: CommentShe
         id: c.id,
         text: c.content,
         createdAt: c.created_at,
-        editedAt: c.updated_at, // Use updated_at as editedAt
+        editedAt: null, // comments table has no updated_at column
         user: {
           id: c.user_id,
           name: c.user_name,
@@ -304,7 +309,7 @@ export function CommentSheet({ post, open, onOpenChange, onComment }: CommentShe
           verified: (c.user_verified === 'verified' || c.user_verified === 'kcs') ? c.user_verified : 'none'
         },
         likes: c.like_count,
-        likedBy: [], // We use is_liked boolean now, mapping it below if needed or relying on component
+        likedBy: [], // is_liked boolean from RPC is used for current-user liked state
         is_liked: c.is_liked,
         replies: [],
         isPinned: c.is_pinned,
@@ -338,14 +343,11 @@ export function CommentSheet({ post, open, onOpenChange, onComment }: CommentShe
 
       if (error) throw error;
 
-      // Optimistic update is hard with trees, best to refetch or manually insert
-      // For simplicity, refetch.
+      // Refetch to show the newly added comment
       await fetchComments();
       setContent('');
       setReplyingTo(null);
-
-      // Notify parent if needed
-      if (onComment) onComment(post.id, content);
+      toast({ title: 'Comment posted!' });
 
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Error posting comment', description: error.message });

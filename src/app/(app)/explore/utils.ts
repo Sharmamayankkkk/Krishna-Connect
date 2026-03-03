@@ -48,7 +48,7 @@ export const transformPost = (dbPost: any): PostType => {
             comments: transformedComments.length || dbPost.comments?.[0]?.count || dbPost.comment_count || 0,
             reposts: dbPost.reposts?.[0]?.count || dbPost.repost_count || 0,
             reshares: dbPost.share_count || 0,
-            views: dbPost.views?.[0]?.count || dbPost.view_count || 0,
+            views: dbPost.views_count || dbPost.views?.[0]?.count || dbPost.view_count || 0,
             bookmarks: dbPost.bookmark_count || 0
         },
         comments: transformedComments,
