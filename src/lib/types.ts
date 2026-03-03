@@ -92,6 +92,8 @@ export type AttachmentMetadata = {
   postAuthor?: string;
   postAuthorAvatar?: string;
   postContent?: string;
+  hasPoll?: boolean;
+  pollQuestion?: string;
   // Voice Notes
   duration?: number;
   waveform?: number[];
