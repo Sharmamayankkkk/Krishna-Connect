@@ -1022,8 +1022,8 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
         const replyText = match?.[2] || content;
         const isVideoStory = mediaUrl.includes('.mp4') || mediaUrl.includes('.webm') || mediaUrl.includes('.mov');
         return (
-            <div className={cn("flex items-end gap-2 group/message", isMyMessage ? "justify-end" : "justify-start")}>
-                {!isMyMessage && <div className="w-8 shrink-0" />}
+            <div className={cn("flex items-end gap-1.5 sm:gap-2 group/message", isMyMessage ? "justify-end" : "justify-start")}>
+                {!isMyMessage && <div className="w-6 sm:w-8 shrink-0" />}
                 <div className={cn("relative max-w-[85%] sm:max-w-md rounded-xl overflow-hidden", isMyMessage ? "bg-primary text-primary-foreground" : "bg-muted")}>
                     <div className="px-3 pt-2 pb-1">
                         <p className="text-[10px] uppercase tracking-wide opacity-60 font-medium">
@@ -1047,7 +1047,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                         </p>
                     </div>
                 </div>
-                {isMyMessage && <div className="w-8 shrink-0" />}
+                {isMyMessage && <div className="w-6 sm:w-8 shrink-0" />}
             </div>
         );
     };
@@ -1074,8 +1074,8 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
             const isMyMessage = message.user_id === loggedInUser.id;
             const bubbleStyle = isMyMessage ? outgoingBubbleStyle : incomingBubbleStyle;
             return (
-                <div className={cn("flex items-end gap-2 group/message", isMyMessage ? "justify-end" : "justify-start")}>
-                    {!isMyMessage && <div className="w-8 shrink-0" />}
+                <div className={cn("flex items-end gap-1.5 sm:gap-2 group/message", isMyMessage ? "justify-end" : "justify-start")}>
+                    {!isMyMessage && <div className="w-6 sm:w-8 shrink-0" />}
                     <div
                         className="relative max-w-[85%] sm:max-w-md lg:max-w-lg rounded-lg text-sm px-2 sm:px-3 py-2"
                         style={bubbleStyle}
@@ -1085,7 +1085,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                             <span>This message was deleted</span>
                         </div>
                     </div>
-                    {isMyMessage && <div className="w-8 shrink-0" />}
+                    {isMyMessage && <div className="w-6 sm:w-8 shrink-0" />}
                 </div>
             );
         }
@@ -1114,7 +1114,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
 
         const bubbleStyle = isMyMessage ? outgoingBubbleStyle : incomingBubbleStyle;
         const senderName = isGroup && sender.role === 'gurudev' ? chat.name : sender.name;
-        const senderAvatar = sender.avatar_url;
+        const senderAvatar = getAvatarUrl(sender.avatar_url);
         const senderFallback = (senderName || 'U').charAt(0);
 
         const ReplyPreview = ({ repliedTo }: { repliedTo: Message }) => (
@@ -1125,7 +1125,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
             >
                 <div className="flex-1 overflow-hidden">
                     <p className="font-semibold text-sm truncate" style={{ color: themeSettings.usernameColor }}>
-                        {repliedTo.profiles.name}
+                        {repliedTo.profiles?.name || 'Unknown'}
                     </p>
                     <p className="text-xs truncate opacity-80" style={{ color: 'inherit', opacity: 0.8 }}>
                         {repliedTo.content || (repliedTo.attachment_metadata?.name || 'Attachment')}
@@ -1136,14 +1136,14 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
 
         return (
             <div key={message.id} id={`message-${message.id}`} className={cn(
-                "flex w-full items-end gap-2 group/message",
+                "flex w-full items-end gap-1.5 sm:gap-2 group/message",
                 isMyMessage ? "justify-end" : "justify-start",
                 message.id === highlightMessageId && "rounded-lg"
             )}>
                 {!isMyMessage && (
-                    <Avatar className="h-8 w-8 self-end shrink-0">
+                    <Avatar className="h-6 w-6 sm:h-8 sm:w-8 self-end shrink-0">
                         <AvatarImage src={senderAvatar} alt={senderName} data-ai-hint="avatar" />
-                        <AvatarFallback>{senderFallback}</AvatarFallback>
+                        <AvatarFallback className="text-[10px] sm:text-xs">{senderFallback}</AvatarFallback>
                     </Avatar>
                 )}
                 <div {...swipeHandlers} className={cn("relative transition-transform duration-200 ease-out min-w-0", isMyMessage ? "group-data-[swiped=true]/message:translate-x-[-2rem]" : "group-data-[swiped=true]/message:translate-x-[2rem]")}>
@@ -1284,9 +1284,9 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                     </div>
                 </div>
                 {isMyMessage && (
-                    <Avatar className="h-8 w-8 self-end shrink-0">
-                        <AvatarImage src={loggedInUser.avatar_url} alt={loggedInUser.name} data-ai-hint="avatar" />
-                        <AvatarFallback>{loggedInUser.name?.charAt(0)}</AvatarFallback>
+                    <Avatar className="h-6 w-6 sm:h-8 sm:w-8 self-end shrink-0">
+                        <AvatarImage src={getAvatarUrl(loggedInUser.avatar_url)} alt={loggedInUser.name} data-ai-hint="avatar" />
+                        <AvatarFallback className="text-[10px] sm:text-xs">{loggedInUser.name?.charAt(0)}</AvatarFallback>
                     </Avatar>
                 )}
             </div>
@@ -1322,40 +1322,40 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
             />
 
             {/* This is the header of the chat window. */}
-            <header className="flex items-center justify-between p-2 border-b gap-2 shrink-0">
-                <div className="flex items-center gap-2 min-w-0">
+            <header className="flex items-center justify-between p-2 border-b gap-1 sm:gap-2 shrink-0">
+                <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
                     <div className="md:hidden">
                         <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => router.push('/chat')}
-                            className="h-9 w-9"
+                            className="h-8 w-8 sm:h-9 sm:w-9 shrink-0"
                         >
-                            <ArrowLeft className="h-5 w-5" />
+                            <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
                         </Button>
                     </div>
                     <Link href={isGroup ? `/group/${chat.id}` : `/profile/${chatPartner?.username || ''}`} className="flex-shrink-0">
-                        <Avatar className="h-10 w-10">
-                            <AvatarImage src={isGroup ? chat.avatar_url : chatPartner?.avatar_url} alt={isGroup ? chat.name : chatPartner?.name} data-ai-hint={isGroup ? 'group symbol' : 'avatar'} />
-                            <AvatarFallback>{(isGroup ? chat.name : chatPartner?.name)?.charAt(0).toUpperCase()}</AvatarFallback>
+                        <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
+                            <AvatarImage src={getAvatarUrl(isGroup ? chat.avatar_url : chatPartner?.avatar_url)} alt={isGroup ? chat.name : chatPartner?.name} data-ai-hint={isGroup ? 'group symbol' : 'avatar'} />
+                            <AvatarFallback className="text-xs sm:text-sm">{(isGroup ? chat.name : chatPartner?.name)?.charAt(0).toUpperCase()}</AvatarFallback>
                         </Avatar>
                     </Link>
-                    <div className="flex flex-col truncate">
+                    <div className="flex flex-col min-w-0">
                         <Link href={isGroup ? `/group/${chat.id}` : `/profile/${chatPartner?.username || ''}`}>
-                            <span className="font-semibold hover:underline truncate">{isGroup ? chat.name : chatPartner?.name}</span>
+                            <span className="font-semibold hover:underline truncate block text-sm sm:text-base">{isGroup ? chat.name : chatPartner?.name}</span>
                         </Link>
-                        <span className="text-xs text-muted-foreground truncate">
+                        <span className="text-[10px] sm:text-xs text-muted-foreground truncate block">
                             {isGroup ? `${chat.participants?.length} members` : chatPartner ? `@${chatPartner.username}` : ''}
                         </span>
                     </div>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center shrink-0">
                     {pinnedMessages.length > 0 && (
                         <TooltipProvider>
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" onClick={() => setIsPinnedDialogOpen(true)}>
-                                        <Pin className="h-5 w-5" />
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" onClick={() => setIsPinnedDialogOpen(true)}>
+                                        <Pin className="h-4 w-4 sm:h-5 sm:w-5" />
                                     </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>View Pinned Messages</TooltipContent>
@@ -1365,6 +1365,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                     <Button
                         variant="ghost"
                         size="icon"
+                        className="hidden sm:inline-flex h-8 w-8 sm:h-9 sm:w-9"
                         onClick={() => {
                             if (isGroup) {
                                 startGroupCall(chat.id.toString(), 'voice'); // Ensure chat.id is string if expected
@@ -1374,11 +1375,12 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                         }}
                         disabled={!isGroup && !chatPartner}
                     >
-                        <Phone className="h-5 w-5" />
+                        <Phone className="h-4 w-4 sm:h-5 sm:w-5" />
                     </Button>
                     <Button
                         variant="ghost"
                         size="icon"
+                        className="h-8 w-8 sm:h-9 sm:w-9"
                         onClick={() => {
                             if (isGroup) {
                                 startGroupCall(chat.id.toString(), 'video');
@@ -1388,17 +1390,30 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                         }}
                         disabled={!isGroup && !chatPartner}
                     >
-                        <Video className="h-5 w-5" />
+                        <Video className="h-4 w-4 sm:h-5 sm:w-5" />
                     </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                                <MoreVertical />
+                            <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9">
+                                <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuItem asChild><Link href={isGroup ? `/group/${chat.id}` : `/profile/${chatPartner?.username || ''}`}>View Info</Link></DropdownMenuItem>
                             <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    if (isGroup) {
+                                        startGroupCall(chat.id.toString(), 'voice');
+                                    } else if (chatPartner) {
+                                        startCall(chatPartner.id, 'voice');
+                                    }
+                                }}
+                                className="sm:hidden"
+                            >
+                                <Phone className="mr-2 h-4 w-4" />
+                                <span>Voice Call</span>
+                            </DropdownMenuItem>
                             <DropdownMenuItem disabled>Clear chat</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>

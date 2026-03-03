@@ -61,6 +61,8 @@ import { LikedByDialog } from './dialogs/liked-by-dialog';
 import { VerificationBadge } from "@/components/shared/verification-badge";
 import { AutoLinkPreview } from './auto-link-preview';
 import { QrCodeOverlay } from '../media/qr-code-overlay';
+import { LikeAnimation } from '@/components/shared/like-animation';
+import { AddToCollectionDialog } from './dialogs/add-to-collection-dialog';
 
 interface PostCardProps {
     post: PostType;
@@ -561,6 +563,8 @@ export function PostCard({
 
     const [isLikedByDialogOpen, setIsLikedByDialogOpen] = React.useState(false);
     const [isAddToCollectionOpen, setIsAddToCollectionOpen] = React.useState(false);
+    const [showLikeAnimation, setShowLikeAnimation] = React.useState(false);
+    const lastTapRef = React.useRef(0);
 
     // Truncation settings for Read More feature
     const MAX_CONTENT_LENGTH = 280;
@@ -635,6 +639,18 @@ export function PostCard({
 
     const handleLike = () => {
         requireAuth(() => onLikeToggle(post.id), "Log in to like");
+    };
+
+    const handleDoubleTapLike = () => {
+        const now = Date.now();
+        if (now - lastTapRef.current < 300) {
+            if (!isLiked) {
+                handleLike();
+            }
+            setShowLikeAnimation(true);
+            setTimeout(() => setShowLikeAnimation(false), 800);
+        }
+        lastTapRef.current = now;
     };
 
     const handleRepost = () => {
