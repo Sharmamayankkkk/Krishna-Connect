@@ -1074,6 +1074,23 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
 
     // This is the component for a single message bubble.
     const MessageBubble = ({ message }: { message: Message }) => {
+        // ⚠️ RULES OF HOOKS: useSwipeable must be called unconditionally at the top,
+        // before any early returns, so React always sees the same hook call order.
+        const isMyMessage = message.user_id === loggedInUser.id;
+        const isOptimistic = typeof message.id === 'string';
+
+        // This adds the "swipe to reply" functionality.
+        const swipeHandlers = useSwipeable({
+            onSwipedRight: () => {
+                if (!isMyMessage && !isOptimistic) handleStartReply(message);
+            },
+            onSwipedLeft: () => {
+                if (isMyMessage && !isOptimistic) handleStartReply(message);
+            },
+            trackMouse: true,
+            preventScrollOnSwipe: true,
+        });
+
         // Handle system messages (e.g., "User pinned a message").
         if (message.content && message.content.startsWith(SYSTEM_MESSAGE_PREFIX)) {
             return <SystemMessage content={message.content} />;
@@ -1091,7 +1108,6 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
 
         // Handle deleted messages.
         if (message.content === DELETED_MESSAGE_MARKER) {
-            const isMyMessage = message.user_id === loggedInUser.id;
             const bubbleStyle = isMyMessage ? outgoingBubbleStyle : incomingBubbleStyle;
             return (
                 <div className={cn("flex items-end gap-1.5 sm:gap-2 group/message", isMyMessage ? "justify-end" : "justify-start")}>
@@ -1110,23 +1126,9 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
             );
         }
 
-        const isMyMessage = message.user_id === loggedInUser.id;
         const sender = message.profiles;
         const isEditing = editingMessage?.id === message.id;
         const messageStatus = getMessageStatus(message);
-        const isOptimistic = typeof message.id === 'string';
-
-        // This adds the "swipe to reply" functionality.
-        const swipeHandlers = useSwipeable({
-            onSwipedRight: () => {
-                if (!isMyMessage && !isOptimistic) handleStartReply(message);
-            },
-            onSwipedLeft: () => {
-                if (isMyMessage && !isOptimistic) handleStartReply(message);
-            },
-            trackMouse: true,
-            preventScrollOnSwipe: true,
-        });
 
         if (!sender) {
             return <div key={message.id}>Loading message...</div>;
