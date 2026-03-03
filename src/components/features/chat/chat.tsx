@@ -33,6 +33,7 @@ import { Badge } from '@/components/ui/badge';
 import { ForwardMessageDialog } from './dialogs/forward-message-dialog';
 import { ReportDialog } from '../../dialogs/report-dialog';
 import { PinnedMessagesDialog } from './dialogs/pinned-messages-dialog';
+import { StarredMessagesDialog } from './dialogs/starred-messages-dialog';
 import { LinkPreview } from '../posts/link-preview';
 import { ImageViewerDialog } from '../media/image-viewer';
 import { MessageInfoDialog } from './dialogs/message-info-dialog';
@@ -158,6 +159,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
     const [messageToReport, setMessageToReport] = useState<Message | null>(null);
 
     const [isPinnedDialogOpen, setIsPinnedDialogOpen] = useState(false);
+    const [isStarredDialogOpen, setIsStarredDialogOpen] = useState(false);
 
     const [showScrollToBottom, setShowScrollToBottom] = useState(false);
     const [firstUnreadMentionId, setFirstUnreadMentionId] = useState<number | null>(null);
@@ -276,6 +278,9 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
         [chat, loggedInUser.id, isGroup]);
 
     const pinnedMessages = useMemo(() => (chat.messages || []).filter(m => m.is_pinned), [chat.messages]);
+    const starredMessages = useMemo(() => (chat.messages || []).filter(m => 
+        m.starred_by?.includes(loggedInUser.id) ?? m.is_starred
+    ), [chat.messages, loggedInUser.id]);
 
     const isDmRestricted = useMemo(() => {
         if (chat.type !== 'dm' || !chatPartner || !dmRequests || loggedInUser.is_admin || chatPartner.is_admin) {
@@ -466,15 +471,27 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
     };
 
     // Functions to toggle the "starred" or "pinned" state of a message.
+    // Uses per-user starred_by array via RPC, falls back to direct update if RPC unavailable.
     const handleToggleStar = async (messageToStar: Message) => {
         if (typeof messageToStar.id === 'string') return;
-        const { error } = await supabase
-            .from('messages')
-            .update({ is_starred: !messageToStar.is_starred })
-            .eq('id', messageToStar.id);
+        const isCurrentlyStarred = messageToStar.starred_by?.includes(loggedInUser.id) ?? messageToStar.is_starred;
 
-        if (error) {
-            toast({ variant: 'destructive', title: 'Error starring message', description: error.message });
+        // Try using the per-user RPC function first
+        const { data, error: rpcError } = await supabase.rpc('toggle_star_message', {
+            p_message_id: messageToStar.id,
+            p_user_id: loggedInUser.id,
+        });
+
+        if (rpcError) {
+            // Fall back to the simple boolean toggle if the RPC doesn't exist yet
+            const { error } = await supabase
+                .from('messages')
+                .update({ is_starred: !isCurrentlyStarred })
+                .eq('id', messageToStar.id);
+
+            if (error) {
+                toast({ variant: 'destructive', title: 'Error starring message', description: error.message });
+            }
         }
     };
 
@@ -493,7 +510,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
             toast({ variant: 'destructive', title: 'Error pinning message', description: error.message });
         } else {
             if (newIsPinned) {
-                sendSystemMessage(`📌 ${loggedInUser.name} pinned a message.`);
+                sendSystemMessage(`[PIN] ${loggedInUser.name} pinned a message.`);
             }
             toast({ title: newIsPinned ? 'Message pinned' : 'Message unpinned' });
         }
@@ -713,7 +730,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                             {/* Caption/Content */}
                             <div className="p-3 bg-background/30">
                                 <p className="text-sm line-clamp-3 text-foreground/90 leading-relaxed font-normal">
-                                    {postContent}
+                                    {typeof postContent === 'string' ? postContent : 'Shared post'}
                                 </p>
                             </div>
                         </Card>
@@ -921,13 +938,14 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
 
     const SystemMessage = ({ content }: { content: string }) => {
         const parsedContent = content.replace(SYSTEM_MESSAGE_PREFIX, '').replace(']]', '');
-        const icon = parsedContent.startsWith('📌') ? <Pin className="inline-block h-3 w-3 mr-1.5" /> : null;
+        const isPinMessage = parsedContent.startsWith('[PIN]');
+        const displayText = parsedContent.replace('[PIN] ', '');
 
         return (
             <div className="text-center text-xs text-muted-foreground my-3">
                 <span className="bg-muted px-2.5 py-1.5 rounded-full">
-                    {icon}
-                    {parsedContent.replace('📌 ', '')}
+                    {isPinMessage && <Pin className="inline-block h-3 w-3 mr-1.5" />}
+                    {displayText}
                 </span>
             </div>
         );
@@ -1128,7 +1146,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                         {repliedTo.profiles?.name || 'Unknown'}
                     </p>
                     <p className="text-xs truncate opacity-80" style={{ color: 'inherit', opacity: 0.8 }}>
-                        {repliedTo.content || (repliedTo.attachment_metadata?.name || 'Attachment')}
+                        {typeof repliedTo.content === 'string' ? repliedTo.content : (repliedTo.attachment_metadata?.name || 'Attachment')}
                     </p>
                 </div>
             </div>
@@ -1174,7 +1192,7 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                                 <div className="text-xs mt-1 flex items-center gap-1.5 opacity-70" style={{ justifyContent: isMyMessage ? 'flex-end' : 'flex-start' }}>
                                     {message.is_pinned && <Pin className="h-3 w-3 text-current mr-1" />}
                                     {message.is_edited && <span className="text-xs italic">Edited</span>}
-                                    {message.is_starred && <Star className="h-3 w-3 text-amber-400 fill-amber-400 mr-1" />}
+                                    {(message.starred_by?.includes(loggedInUser.id) ?? message.is_starred) && <Star className="h-3 w-3 text-amber-400 fill-amber-400 mr-1" />}
                                     <span>{format(new Date(message.created_at), 'p')}</span>
                                     {isMyMessage && messageStatus === 'pending' && <Clock className="h-4 w-4" />}
                                     {isMyMessage && messageStatus === 'sent' && <Check className="h-4 w-4" />}
@@ -1217,23 +1235,26 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                                             </DropdownMenuItem>
                                         )}
                                         {/* "Pin for me" uses the star/bookmark mechanism for non-admin group users */}
-                                        {isGroup && !isGroupAdmin ? (
-                                            <DropdownMenuItem onClick={() => handleToggleStar(message)} disabled={isOptimistic}>
-                                                {message.is_starred ? <PinOff className="mr-2 h-4 w-4" /> : <Pin className="mr-2 h-4 w-4" />}
-                                                <span>{message.is_starred ? 'Unpin for me' : 'Pin for me'}</span>
-                                            </DropdownMenuItem>
-                                        ) : (
-                                            <>
+                                        {(() => {
+                                            const isMessageStarred = message.starred_by?.includes(loggedInUser.id) ?? message.is_starred;
+                                            return isGroup && !isGroupAdmin ? (
                                                 <DropdownMenuItem onClick={() => handleToggleStar(message)} disabled={isOptimistic}>
-                                                    <Star className={cn("mr-2 h-4 w-4", message.is_starred && "text-amber-400 fill-amber-400")} />
-                                                    <span>{message.is_starred ? 'Unstar' : 'Star'}</span>
+                                                    {isMessageStarred ? <PinOff className="mr-2 h-4 w-4" /> : <Pin className="mr-2 h-4 w-4" />}
+                                                    <span>{isMessageStarred ? 'Unpin for me' : 'Pin for me'}</span>
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => handleTogglePin(message)} disabled={isOptimistic}>
-                                                    {message.is_pinned ? <PinOff className="mr-2 h-4 w-4" /> : <Pin className="mr-2 h-4 w-4" />}
-                                                    <span>{message.is_pinned ? 'Unpin' : (isGroup ? 'Pin for everyone' : 'Pin')}</span>
-                                                </DropdownMenuItem>
-                                            </>
-                                        )}
+                                            ) : (
+                                                <>
+                                                    <DropdownMenuItem onClick={() => handleToggleStar(message)} disabled={isOptimistic}>
+                                                        <Star className={cn("mr-2 h-4 w-4", isMessageStarred && "text-amber-400 fill-amber-400")} />
+                                                        <span>{isMessageStarred ? 'Unstar' : 'Star'}</span>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => handleTogglePin(message)} disabled={isOptimistic}>
+                                                        {message.is_pinned ? <PinOff className="mr-2 h-4 w-4" /> : <Pin className="mr-2 h-4 w-4" />}
+                                                        <span>{message.is_pinned ? 'Unpin' : (isGroup ? 'Pin for everyone' : 'Pin')}</span>
+                                                    </DropdownMenuItem>
+                                                </>
+                                            );
+                                        })()}
                                         {isMyMessage && isGroup && !isOptimistic && (
                                             <DropdownMenuItem onClick={() => setMessageInfo(message)}>
                                                 <Info className="mr-2 h-4 w-4" />
@@ -1330,6 +1351,16 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                 }}
                 isAdmin={isGroupAdmin || false}
             />
+            <StarredMessagesDialog
+                open={isStarredDialogOpen}
+                onOpenChange={setIsStarredDialogOpen}
+                messages={starredMessages}
+                onJumpToMessage={jumpToMessage}
+                onUnstarMessage={(id) => {
+                    const msg = chat.messages?.find(m => m.id === id);
+                    if (msg) handleToggleStar(msg);
+                }}
+            />
 
             {/* This is the header of the chat window. */}
             <header className="flex items-center justify-between p-2 border-b gap-1 sm:gap-2 shrink-0">
@@ -1372,6 +1403,18 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                             </Tooltip>
                         </TooltipProvider>
                     )}
+                    {starredMessages.length > 0 && (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" onClick={() => setIsStarredDialogOpen(true)}>
+                                        <Star className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400 fill-amber-400" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>View Starred Messages</TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
                     <Button
                         variant="ghost"
                         size="icon"
@@ -1410,6 +1453,17 @@ export function Chat({ chat, loggedInUser, setMessages, highlightMessageId, isLo
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuItem asChild><Link href={isGroup ? `/group/${chat.id}` : `/profile/${chatPartner?.username || ''}`}>View Info</Link></DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => setIsStarredDialogOpen(true)}>
+                                <Star className="mr-2 h-4 w-4" />
+                                <span>Starred Messages</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Link href="/starred">
+                                    <Star className="mr-2 h-4 w-4" />
+                                    <span>All Starred Messages</span>
+                                </Link>
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                                 onClick={() => {

@@ -112,6 +112,7 @@ export type Message = {
   read_by: string[] | null;
   deleted_for?: string[];
   is_starred?: boolean;
+  starred_by?: string[];
   is_pinned?: boolean;
   reply_to_message_id?: number | null;
   replied_to_message?: Message | null; // Joined reply data

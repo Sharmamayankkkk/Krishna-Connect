@@ -428,7 +428,7 @@ export function usePostInteractions({ loggedInUser, updatePost, onDeletePost }: 
                 return;
             }
 
-            toastRef.current({ title: data.is_pinned ? "📌 Post pinned to profile" : "Post unpinned" });
+            toastRef.current({ title: data.is_pinned ? "Post pinned to profile" : "Post unpinned" });
         } catch (error) {
             console.error('Error toggling pin:', error);
             updatePostRef.current(post);

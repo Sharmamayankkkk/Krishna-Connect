@@ -393,7 +393,8 @@ CREATE TABLE IF NOT EXISTS public.messages (
     deleted_for          UUID[],
     is_pinned            BOOLEAN DEFAULT FALSE,
     reply_to_message_id  BIGINT REFERENCES public.messages(id),
-    is_starred           BOOLEAN NOT NULL DEFAULT FALSE
+    is_starred           BOOLEAN NOT NULL DEFAULT FALSE,
+    starred_by           UUID[] DEFAULT ARRAY[]::UUID[]
 );
 
 -- ── DM Requests ──────────────────────────────────────────────────────────────
