@@ -18,7 +18,7 @@ import { useAppContext } from '@/providers/app-provider';
 import type { PostType as Post, CommentType as Comment } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
 import { Loader2, Heart, MessageSquareReply, Send, MoreHorizontal, Pin, EyeOff, Trash2, Edit2, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, getAvatarUrl } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthGuard } from '@/hooks/use-auth-guard';
 import {
@@ -144,7 +144,7 @@ function CommentCard({
       <div className={cn("flex flex-col sm:flex-row gap-2 sm:gap-3 group", comment.isHidden && "opacity-60")}>
         <Link href={`/profile/${comment.user.username}`} className="hidden sm:block">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={comment.user.avatar} alt={comment.user.name} />
+            <AvatarImage src={getAvatarUrl(comment.user.avatar)} alt={comment.user.name} />
             <AvatarFallback>{comment.user.name.charAt(0)}</AvatarFallback>
           </Avatar>
         </Link>
@@ -153,7 +153,7 @@ function CommentCard({
             <div className="flex items-center gap-2 overflow-hidden min-w-0">
               <Link href={`/profile/${comment.user.username}`} className="block sm:hidden flex-shrink-0">
                 <Avatar className="h-6 w-6">
-                  <AvatarImage src={comment.user.avatar} alt={comment.user.name} />
+                  <AvatarImage src={getAvatarUrl(comment.user.avatar)} alt={comment.user.name} />
                   <AvatarFallback>{comment.user.name.charAt(0)}</AvatarFallback>
                 </Avatar>
               </Link>
@@ -175,10 +175,10 @@ function CommentCard({
             </div>
 
             {/* Actions Dropdown */}
-            {loggedInUser && (
+            {loggedInUser && showActions && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button variant="ghost" size="icon" className="h-6 w-6 opacity-60 hover:opacity-100 transition-opacity">
                     <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -303,7 +303,7 @@ export function CommentSheet({ post, open, onOpenChange, onComment }: CommentShe
         id: c.id,
         text: c.content,
         createdAt: c.created_at,
-        editedAt: null, // comments table has no updated_at column
+        editedAt: c.updated_at !== c.created_at ? c.updated_at : null,
         user: {
           id: c.user_id,
           name: c.user_name,

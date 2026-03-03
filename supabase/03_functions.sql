@@ -641,23 +641,29 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- SECTION 5: POST HELPERS
 -- ============================================================================
 
--- Get Post Comments (final — verified TEXT, with hidden/pinned)
+-- Get Post Comments (final — verified TEXT, with hidden/pinned/updated_at/is_liked)
 DROP FUNCTION IF EXISTS public.get_post_comments(BIGINT);
 CREATE OR REPLACE FUNCTION public.get_post_comments(p_post_id BIGINT)
 RETURNS TABLE (
-    id             BIGINT, user_id UUID, post_id BIGINT,
+    id                BIGINT, user_id UUID, post_id BIGINT,
     parent_comment_id BIGINT, content TEXT, created_at TIMESTAMPTZ,
-    user_name      TEXT, user_username TEXT, user_avatar_url TEXT,
-    user_verified  TEXT, like_count BIGINT,
-    is_pinned      BOOLEAN, is_hidden BOOLEAN
+    updated_at        TIMESTAMPTZ,
+    user_name         TEXT, user_username TEXT, user_avatar_url TEXT,
+    user_verified     TEXT, like_count BIGINT,
+    is_pinned         BOOLEAN, is_hidden BOOLEAN, is_liked BOOLEAN
 ) AS $$
 BEGIN
     RETURN QUERY
     SELECT
         c.id, c.user_id, c.post_id, c.parent_comment_id, c.content, c.created_at,
+        c.updated_at,
         p.name, p.username, p.avatar_url, p.verified,
-        COALESCE(COUNT(cl.user_id), 0),
-        c.is_pinned, c.is_hidden
+        COALESCE(COUNT(cl.user_id), 0)::BIGINT,
+        c.is_pinned, c.is_hidden,
+        EXISTS(
+            SELECT 1 FROM public.comment_likes cl2
+            WHERE cl2.comment_id = c.id AND cl2.user_id = auth.uid()
+        )
     FROM public.comments c
     LEFT JOIN public.profiles     p  ON c.user_id    = p.id
     LEFT JOIN public.comment_likes cl ON c.id         = cl.comment_id
