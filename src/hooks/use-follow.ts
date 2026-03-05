@@ -41,7 +41,7 @@ export function useFollow(options?: UseFollowOptions) {
       }
 
       const newStatus = data?.status as FollowStatus || 'approved';
-      
+
       if (newStatus === 'pending') {
         toast({ title: 'Follow Requested', description: 'Your request has been sent.' });
       } else {
@@ -54,6 +54,39 @@ export function useFollow(options?: UseFollowOptions) {
       console.error('Error following user:', err);
       options?.onError?.(err);
       return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [supabase, toast, options]);
+
+  /**
+   * Remove a follower from YOUR followers list.
+   * Calls remove_follower RPC (SECURITY DEFINER) so the followee can delete the row.
+   */
+  const removeFollower = useCallback(async (followerUserId: string): Promise<boolean> => {
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.rpc('remove_follower', {
+        follower_user_id: followerUserId,
+      });
+
+      if (error) {
+        console.error('Error removing follower:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Failed to remove follower.',
+        });
+        options?.onError?.(new Error(error.message));
+        return false;
+      }
+
+      toast({ title: 'Follower removed' });
+      return true;
+    } catch (err: any) {
+      console.error('Error removing follower:', err);
+      options?.onError?.(err);
+      return false;
     } finally {
       setIsLoading(false);
     }
@@ -119,6 +152,7 @@ export function useFollow(options?: UseFollowOptions) {
   return {
     follow,
     unfollow,
+    removeFollower,
     getFollowStatus,
     isLoading,
   };

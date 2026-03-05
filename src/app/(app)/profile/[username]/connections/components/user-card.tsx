@@ -1,16 +1,12 @@
 'use client';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, UserMinus } from 'lucide-react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { FollowButtonSimple } from '../../components/follow-button';
-import { getAvatarUrl } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
-import { createClient } from '@/lib/utils';
+import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
+import { useFollow } from '@/hooks/use-follow';
+import { FollowButtonSimple } from '../../components/follow-button';
 import UserIdentity from '@/components/shared/user-identity';
 
 interface UserCardProps {
@@ -26,46 +22,44 @@ interface UserCardProps {
         follow_status?: 'none' | 'pending' | 'approved';
     };
     currentUserId: string;
-    isOwnProfile?: boolean; // If true, we are viewing the logged-in user's profile lists
+    isOwnProfile?: boolean;
     listType?: 'followers' | 'following';
-    onRemove?: (userId: string) => void; // Callback to remove from UI after removing follower
+    onRemove?: (userId: string) => void;
 }
 
 export function UserCard({ user, currentUserId, isOwnProfile, listType, onRemove }: UserCardProps) {
-    const { toast } = useToast();
-    const supabase = createClient();
     const router = useRouter();
+    const { toast } = useToast();
+    const { removeFollower, unfollow, isLoading } = useFollow();
+    const [removed, setRemoved] = useState(false);
 
-    const handleRemoveFollower = async () => {
-        try {
-            // Logic: remove logic where user is failing to follow me.
-            // relationships: user_one_id (me, the follower) -> user_two_id (target, the followee)
-            // IF I am viewing MY FOLLOWERS list:
-            // The follower is `user.id` (user_one). The followee is `currentUserId` (me, user_two).
-            // We need to delete the relationship where user_one_id = user.id AND user_two_id = currentUserId.
+    // Hide the card once removed (optimistic)
+    if (removed) return null;
 
-            const { error } = await supabase
-                .from('relationships')
-                .delete()
-                .eq('user_one_id', user.id)
-                .eq('user_two_id', currentUserId);
-
-            if (error) throw error;
-
-            toast({ title: "Follower removed" });
+    const handleRemoveFollower = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const success = await removeFollower(user.id);
+        if (success) {
+            setRemoved(true);
             if (onRemove) onRemove(user.id);
-            router.refresh();
-
-        } catch (error) {
-            console.error('Error removing follower:', error);
-            toast({ variant: "destructive", title: "Error", description: "Failed to remove follower." });
         }
     };
 
-    const displayName = user.name || user.full_name || user.username;
+    const handleUnfollow = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const success = await unfollow(user.id);
+        if (success) {
+            setRemoved(true);
+            if (onRemove) onRemove(user.id);
+        }
+    };
 
     return (
-        <div className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => router.push(`/profile/${user.username}`)}>
+        <div
+            className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+            onClick={() => router.push(`/profile/${user.username}`)}
+        >
+            {/* Left: avatar + name + bio */}
             <div className="flex-1 min-w-0">
                 <UserIdentity
                     user={user}
@@ -77,26 +71,36 @@ export function UserCard({ user, currentUserId, isOwnProfile, listType, onRemove
                 )}
             </div>
 
+            {/* Right: action button */}
             <div className="flex items-center gap-2 pl-2" onClick={(e) => e.stopPropagation()}>
-                {/* If viewing my OWN followers, I can remove them */}
+                {/* My FOLLOWERS list → show "Remove" button */}
                 {listType === 'followers' && isOwnProfile && (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={handleRemoveFollower} className="text-destructive">
-                                <UserMinus className="mr-2 h-4 w-4" />
-                                Remove this follower
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-shrink-0"
+                        onClick={handleRemoveFollower}
+                        disabled={isLoading}
+                    >
+                        {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Remove'}
+                    </Button>
                 )}
 
-                {/* Follow/Following Button - Only show if not me */}
-                {user.id !== currentUserId && (
+                {/* My FOLLOWING list → show unfollow-capable button (only if not viewing someone else's list) */}
+                {listType === 'following' && isOwnProfile && user.id !== currentUserId && (
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-shrink-0 hover:bg-red-500/10 hover:text-red-500 hover:border-red-500 transition-colors"
+                        onClick={handleUnfollow}
+                        disabled={isLoading}
+                    >
+                        {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Following'}
+                    </Button>
+                )}
+
+                {/* Someone else's connections list → normal follow button */}
+                {!isOwnProfile && user.id !== currentUserId && (
                     <FollowButtonSimple
                         profileId={user.id}
                         currentUserId={currentUserId}
