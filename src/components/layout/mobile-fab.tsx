@@ -13,7 +13,6 @@ import { useToast } from '@/hooks/use-toast'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
-import { getMaxFileSize, getMaxFileSizeMB } from '@/lib/utils'
 
 export function MobileFab() {
     const [isOpen, setIsOpen] = useState(false)
@@ -40,8 +39,8 @@ export function MobileFab() {
             toast({ title: 'Only video files are allowed', variant: 'destructive' })
             return
         }
-        if (file.size > getMaxFileSize(loggedInUser?.is_verified)) {
-            toast({ title: `Video must be under ${getMaxFileSizeMB(loggedInUser?.is_verified)}MB`, variant: 'destructive' })
+        if (file.size > 50 * 1024 * 1024) {
+            toast({ title: 'Video must be under 50MB', variant: 'destructive' })
             return
         }
 
@@ -82,10 +81,14 @@ export function MobileFab() {
         }
     }
 
+    // Hide FAB on certain routes like chats or full-screen players
+    const hideOnRoutes = /^(\/chat\/\d+|\/live\/.+)/
+    if (hideOnRoutes.test(pathname)) return null
+
     const toggleOpen = () => setIsOpen(!isOpen)
     const closeMenu = () => setIsOpen(false)
 
-    // Close menu when clicking outside — must be before any early returns (Rules of Hooks)
+    // Close menu when clicking outside
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
             if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -95,10 +98,6 @@ export function MobileFab() {
         document.addEventListener('mousedown', handleClickOutside)
         return () => document.removeEventListener('mousedown', handleClickOutside)
     }, [])
-
-    // Hide FAB on certain routes like chats or full-screen players
-    const hideOnRoutes = /^(\/chat\/\d+|\/live\/.+)/
-    if (hideOnRoutes.test(pathname)) return null
 
     const actions = [
         {
@@ -159,9 +158,6 @@ export function MobileFab() {
                             <Image src="/icons/leela.png" alt="Leela" width={20} height={20} />
                             Upload Leela
                         </DialogTitle>
-                        <DialogDescription className="sr-only">
-                            Upload a new Leela video and add an optional caption
-                        </DialogDescription>
                     </DialogHeader>
 
                     {selectedLeelaFile && (

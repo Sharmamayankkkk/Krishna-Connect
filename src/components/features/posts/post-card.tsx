@@ -282,40 +282,47 @@ const AddToCollectionDialog = ({ post, open, onOpenChange }: { post: PostType; o
 const MediaGrid = ({ media, onMediaClick }: { media: MediaType[], onMediaClick: (index: number) => void }) => {
     if (!media || media.length === 0) return null;
 
+    const renderItem = (m: MediaType, index: number, className?: string) => (
+        <div key={index} className={cn("relative bg-muted aspect-video", className)}>
+            {m.type === 'image' || m.type === 'gif' ? (
+                <div
+                    className="w-full h-full cursor-pointer overflow-hidden group/image relative"
+                    onClick={(e) => { e.stopPropagation(); onMediaClick(index); }}
+                >
+                    <Image
+                        src={getOptimizedImageUrl(m.url, { width: 1080, quality: 75 }) || m.url}
+                        alt={m.alt || 'Post media'}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover/image:scale-105"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
+                    {m.type === 'image' && <QrCodeOverlay imageUrl={m.url} />}
+                </div>
+            ) : (
+                <VideoPlayer src={m.url} poster={m.thumbnailUrl} />
+            )}
+        </div>
+    );
+
+    // Special layout for exactly 3 items: first item full-width, next two side-by-side
+    if (media.length === 3) {
+        return (
+            <div className="flex flex-col gap-1 mt-3 rounded-lg overflow-hidden border">
+                {renderItem(media[0], 0)}
+                <div className="grid grid-cols-2 gap-1">
+                    {renderItem(media[1], 1)}
+                    {renderItem(media[2], 2)}
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className={cn(
             "grid gap-1 mt-3 rounded-lg overflow-hidden border",
             media.length === 1 ? "grid-cols-1" : "grid-cols-2",
-            media.length >= 3 && "grid-rows-2"
         )}>
-            {media.map((m, index) => (
-                <div
-                    key={index}
-                    className={cn(
-                        "relative bg-muted",
-                        media.length === 3 && index === 0 ? "row-span-2" : "",
-                        "aspect-video"
-                    )}
-                >
-                    {m.type === 'image' ? (
-                        <div
-                            className="w-full h-full cursor-pointer overflow-hidden group/image relative"
-                            onClick={(e) => { e.stopPropagation(); onMediaClick(index); }}
-                        >
-                            <Image
-                                src={getOptimizedImageUrl(m.url, { width: 1080, quality: 75 }) || m.url}
-                                alt={m.alt || 'Post media'}
-                                fill
-                                className="object-cover transition-transform duration-500 group-hover/image:scale-105"
-                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                            />
-                            <QrCodeOverlay imageUrl={m.url} />
-                        </div>
-                    ) : (
-                        <VideoPlayer src={m.url} poster={m.thumbnailUrl} />
-                    )}
-                </div>
-            ))}
+            {media.map((m, index) => renderItem(m, index))}
         </div>
     );
 };

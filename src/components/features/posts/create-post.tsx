@@ -116,7 +116,6 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     const [errors, setErrors] = React.useState<string[]>([]);
 
     const fileInputRef = React.useRef<HTMLInputElement>(null);
-    const videoInputRef = React.useRef<HTMLInputElement>(null);
     const leelaInputRef = React.useRef<HTMLInputElement>(null);
     const textareaRef = React.useRef<HTMLTextAreaElement>(null);
     const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -246,16 +245,17 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             .catch(() => { });
     }, []);
 
-    // Image upload
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Unified media upload — accepts images and videos in the same post
+    const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
 
         if (mediaPreviews.length + files.length > MAX_MEDIA) {
             toast({
                 title: "Too many files",
-                description: `You can only upload up to ${MAX_MEDIA} images or videos.`,
+                description: `You can only upload up to ${MAX_MEDIA} media items.`,
                 variant: "destructive"
             });
+            e.target.value = '';
             return;
         }
 
@@ -263,91 +263,40 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
         const maxSizeMB = getMaxFileSizeMB(loggedInUser?.is_verified);
 
         files.forEach(file => {
-            if (file.size > MAX_FILE_SIZE) {
+            const isImage = file.type.startsWith('image/');
+            const isVideo = file.type.startsWith('video/');
+
+            if (!isImage && !isVideo) {
                 toast({
-                    title: "File too large",
-                    description: `File ${file.name} exceeds the ${maxSizeMB}MB limit.`,
+                    title: "Invalid file type",
+                    description: `${file.name} is not a supported image or video file.`,
                     variant: "destructive"
                 });
                 return;
             }
 
-            if (!file.type.startsWith('image/')) {
+            if (file.size > MAX_FILE_SIZE) {
                 toast({
-                    title: "Invalid file type",
-                    description: "Please upload only image files.",
+                    title: "File too large",
+                    description: `${file.name} exceeds the ${maxSizeMB}MB limit.`,
                     variant: "destructive"
                 });
                 return;
             }
 
             const reader = new FileReader();
-            reader.onload = (e) => {
+            reader.onload = (ev) => {
                 setMediaPreviews(prev => [...prev, {
-                    type: 'image',
-                    url: e.target?.result as string,
+                    type: isImage ? 'image' : 'video',
+                    url: ev.target?.result as string,
                     alt: file.name,
-                    file: file // Store original file for upload
+                    file: file
                 } as MediaType & { file?: File }]);
             };
             reader.readAsDataURL(file);
         });
 
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-        }
-    };
-
-    // Video upload
-    const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = Array.from(e.target.files || []);
-
-        if (mediaPreviews.length + files.length > MAX_MEDIA) {
-            toast({
-                title: "Too many files",
-                description: `You can only upload up to ${MAX_MEDIA} videos.`,
-                variant: "destructive"
-            });
-            return;
-        }
-
-        const MAX_FILE_SIZE = getMaxFileSize(loggedInUser?.is_verified);
-        const maxSizeMB = getMaxFileSizeMB(loggedInUser?.is_verified);
-
-        files.forEach(file => {
-            if (file.size > MAX_FILE_SIZE) {
-                toast({
-                    title: "File too large",
-                    description: `File ${file.name} exceeds the ${maxSizeMB}MB limit.`,
-                    variant: "destructive"
-                });
-                return;
-            }
-
-            if (!file.type.startsWith('video/')) {
-                toast({
-                    title: "Invalid file type",
-                    description: "Please upload only video files.",
-                    variant: "destructive"
-                });
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                setMediaPreviews(prev => [...prev, {
-                    type: 'video',
-                    url: e.target?.result as string,
-                    alt: file.name,
-                    file: file // Store original file for upload
-                } as MediaType & { file?: File }]);
-            };
-            reader.readAsDataURL(file);
-        });
-
-        if (videoInputRef.current) {
-            videoInputRef.current.value = '';
-        }
+        e.target.value = '';
     };
 
     // Leela (short video) upload
@@ -488,14 +437,6 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             setIsQuizMode(false);
             setCorrectAnswerIndex(-1);
         } else {
-            if (mediaPreviews.length > 0) {
-                toast({
-                    title: "Cannot add poll",
-                    description: "Remove media to add a poll",
-                    variant: "destructive"
-                });
-                return;
-            }
             setIsPollMode(true);
         }
     };
@@ -1050,16 +991,14 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                     )}
 
                     {/* Action Bar */}
-                    {(!isPollMode || mediaPreviews.length === 0) && (
-                        <div className="flex items-center justify-between pt-3 mt-2">
-                            <input type="file" ref={fileInputRef} className="hidden" multiple accept="image/*" onChange={handleImageUpload} disabled={isPosting || isPollMode} />
-                            <input type="file" ref={videoInputRef} className="hidden" multiple accept="video/*" onChange={handleVideoUpload} disabled={isPosting || isPollMode} />
-                            <input type="file" ref={leelaInputRef} className="hidden" accept="video/*" onChange={handleLeelaSelect} disabled={isPosting || isUploadingLeela} />
+                    <div className="flex items-center justify-between pt-3 mt-2">
+                        <input type="file" ref={fileInputRef} className="hidden" multiple accept="image/*,video/*" onChange={handleMediaUpload} disabled={isPosting} />
+                        <input type="file" ref={leelaInputRef} className="hidden" accept="video/*" onChange={handleLeelaSelect} disabled={isPosting || isUploadingLeela} />
 
                             <div className="flex items-center gap-1 -ml-2">
                                 {/* Primary Actions */}
-                                <ActionTooltip label="Image">
-                                    <Button variant="ghost" size="icon" className="h-9 w-9 text-primary/80 hover:text-primary hover:bg-primary/10 rounded-full transition-colors" onClick={() => fileInputRef.current?.click()} disabled={isPosting || isPollMode || mediaPreviews.length >= MAX_MEDIA}>
+                                <ActionTooltip label="Photo / Video">
+                                    <Button variant="ghost" size="icon" className="h-9 w-9 text-primary/80 hover:text-primary hover:bg-primary/10 rounded-full transition-colors" onClick={() => fileInputRef.current?.click()} disabled={isPosting || mediaPreviews.length >= MAX_MEDIA}>
                                         <ImageIcon className="h-5 w-5" />
                                     </Button>
                                 </ActionTooltip>
@@ -1134,7 +1073,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                     <ActionTooltip label="GIF">
                                         <Popover open={isGifPickerOpen} onOpenChange={setIsGifPickerOpen}>
                                             <PopoverTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-9 w-9 text-primary/80 hover:text-primary hover:bg-primary/10 rounded-full transition-colors" disabled={isPosting || isPollMode || mediaPreviews.length >= MAX_MEDIA}>
+                                                <Button variant="ghost" size="icon" className="h-9 w-9 text-primary/80 hover:text-primary hover:bg-primary/10 rounded-full transition-colors" disabled={isPosting || mediaPreviews.length >= MAX_MEDIA}>
                                                     <Sparkles className="h-5 w-5" />
                                                 </Button>
                                             </PopoverTrigger>
@@ -1161,10 +1100,10 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="start" className="w-56">
-                                        <DropdownMenuItem onClick={() => videoInputRef.current?.click()} disabled={isPosting || isPollMode || mediaPreviews.length >= MAX_MEDIA}>
-                                            <Video className="mr-2 h-4 w-4" /> Video
+                                        <DropdownMenuItem onClick={() => fileInputRef.current?.click()} disabled={isPosting || mediaPreviews.length >= MAX_MEDIA}>
+                                            <Video className="mr-2 h-4 w-4" /> Photo / Video
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={togglePollMode} disabled={isPosting || mediaPreviews.length > 0}>
+                                        <DropdownMenuItem onClick={togglePollMode} disabled={isPosting}>
                                             <BarChart3 className="mr-2 h-4 w-4" /> Poll
                                         </DropdownMenuItem>
                                         <DropdownMenuItem onClick={() => setIsCollaboratorDialogOpen(true)} disabled={isPosting}>
@@ -1181,7 +1120,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                         <DropdownMenuItem className="sm:hidden" onClick={() => setShowEmojiPicker(!showEmojiPicker)} disabled={isPosting}>
                                             <Smile className="mr-2 h-4 w-4" /> Emoji
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem className="sm:hidden" onClick={() => setIsGifPickerOpen(true)} disabled={isPosting || isPollMode || mediaPreviews.length >= MAX_MEDIA}>
+                                        <DropdownMenuItem className="sm:hidden" onClick={() => setIsGifPickerOpen(true)} disabled={isPosting || mediaPreviews.length >= MAX_MEDIA}>
                                             <Sparkles className="mr-2 h-4 w-4" /> GIF
                                         </DropdownMenuItem>
                                         <DropdownMenuItem className="sm:hidden" onClick={() => setShowDraftDialog(true)}>
@@ -1228,7 +1167,6 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                 </Button>
                             </div>
                         </div>
-                    )}
                 </div>
             </div>
 

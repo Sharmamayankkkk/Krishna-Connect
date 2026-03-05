@@ -1,6 +1,6 @@
 {
   "name": "krishna-connect",
-  "version": "2.1.0",
+  "version": "2.1.",
   "private": true,
   "scripts": {
     "dev": "set NODE_OPTIONS=--max-http-header-size=65536 && next dev",
