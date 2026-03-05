@@ -81,14 +81,10 @@ export function MobileFab() {
         }
     }
 
-    // Hide FAB on certain routes like chats or full-screen players
-    const hideOnRoutes = /^(\/chat\/\d+|\/live\/.+)/
-    if (hideOnRoutes.test(pathname)) return null
-
     const toggleOpen = () => setIsOpen(!isOpen)
     const closeMenu = () => setIsOpen(false)
 
-    // Close menu when clicking outside
+    // Close menu when clicking outside — must be ABOVE the early return to satisfy Rules of Hooks
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
             if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -98,6 +94,10 @@ export function MobileFab() {
         document.addEventListener('mousedown', handleClickOutside)
         return () => document.removeEventListener('mousedown', handleClickOutside)
     }, [])
+
+    // Hide FAB on certain routes like chats or full-screen players
+    const hideOnRoutes = /^(\/chat\/\d+|\/live\/.+)/
+    if (hideOnRoutes.test(pathname)) return null
 
     const actions = [
         {
