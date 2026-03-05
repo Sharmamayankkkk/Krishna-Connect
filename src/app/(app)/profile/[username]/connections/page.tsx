@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { createClient } from '@/lib/utils';
+import { createClient } from '@/lib/supabase/server';
 import { ConnectionsView } from './components/connections-view';
 import { notFound, redirect } from 'next/navigation';
 import { Lock } from 'lucide-react';
