@@ -98,11 +98,16 @@ export default function LoginPage() {
 
   const handleOAuthLogin = async (provider: 'google' | 'facebook') => {
     const next = searchParams.get('next');
+    // Use custom URL scheme when running inside the Median native app
+    const isNativeApp =
+      typeof window !== 'undefined' &&
+      /median|gonative/i.test(window.navigator.userAgent);
+    const redirectTo = isNativeApp
+      ? `krishnaconnect://auth/callback${next ? `?next=${encodeURIComponent(next)}` : ''}`
+      : `${window.location.origin}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ''}`;
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ''}`,
-      },
+      options: { redirectTo },
     });
     if (error) {
       setError(error.message);

@@ -5,12 +5,39 @@
 User-agent: *
 Allow: /
 
+# Specifically allow major search engines and AI crawlers
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
 # Public pages - explicitly allow for better crawling
 Allow: /explore
 Allow: /feed
 Allow: /get-verified
 Allow: /events
 Allow: /groups
+Allow: /about
+Allow: /contact
+
+# Policies & Legal - ensure search engines and AI can understand the rules
+Allow: /privacy-policy
+Allow: /terms-and-conditions
+Allow: /p/acceptable-use-policy
+Allow: /faq
 
 # Private/Protected Routes - Disallow
 Disallow: /chat
