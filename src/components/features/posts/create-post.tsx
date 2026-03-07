@@ -682,19 +682,19 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                     </div>
                 </div>
                 <div className="border-t border-slate-100 bg-slate-50/70 px-4 py-3">
-                    <div className="flex items-start gap-1 overflow-x-auto scrollbar-hide">
+                    <div className="grid grid-cols-4 gap-y-1">
                         {[
-                            { icon: <ImageIcon className="h-5 w-5" />, label: 'Photo /\nVideo' },
-                            { icon: <BarChart3 className="h-5 w-5" />, label: 'Poll' },
-                            { icon: <Users className="h-5 w-5" />, label: 'Collaborate' },
-                            { icon: <Clock className="h-5 w-5" />, label: 'Schedule' },
-                            { icon: <Smile className="h-5 w-5" />, label: 'Emoji' },
-                            { icon: <Sparkles className="h-5 w-5" />, label: 'GIF' },
-                            { icon: <List className="h-5 w-5" />, label: 'Drafts' },
+                            { icon: <ImageIcon className="h-4 w-4" />, label: 'Photo/Video' },
+                            { icon: <BarChart3 className="h-4 w-4" />, label: 'Poll' },
+                            { icon: <Users className="h-4 w-4" />, label: 'Collaborate' },
+                            { icon: <Clock className="h-4 w-4" />, label: 'Schedule' },
+                            { icon: <Smile className="h-4 w-4" />, label: 'Emoji' },
+                            { icon: <Sparkles className="h-4 w-4" />, label: 'GIF' },
+                            { icon: <List className="h-4 w-4" />, label: 'Drafts' },
                         ].map(({ icon, label }, i) => (
-                            <div key={i} className="flex flex-col items-center gap-1.5 px-3 py-1.5 rounded-xl min-w-fit opacity-50">
-                                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500">{icon}</div>
-                                <span className="text-[11px] text-slate-400 whitespace-pre text-center leading-tight">{label}</span>
+                            <div key={i} className="flex flex-col items-center gap-1 py-2 rounded-xl opacity-50 w-full">
+                                <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500">{icon}</div>
+                                <span className="text-[10px] text-slate-400 text-center leading-tight w-full px-1 truncate">{label}</span>
                             </div>
                         ))}
                     </div>
@@ -786,7 +786,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                             </Avatar>
                         </Link>
 
-                        <div className="flex-1 min-w-0 pt-1">
+                        <div className="flex-1 min-w-0 pt-1 overflow-hidden">
                             {/* Validation Errors */}
                             {errors.length > 0 && (
                                 <Alert variant="destructive" className="mb-4 animate-in slide-in-from-top-2">
@@ -912,7 +912,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
 
                             {/* Poll Creator */}
                             {isPollMode && (
-                                <div className="mt-4 border rounded-xl p-4 space-y-4 bg-background/50 animate-in fade-in slide-in-from-top-2">
+                                <div className="mt-4 border rounded-xl p-4 space-y-4 bg-background/50 animate-in fade-in slide-in-from-top-2 overflow-hidden min-w-0">
                                     <div className="flex justify-between items-center">
                                         <h3 className="font-medium flex items-center gap-2 text-primary">
                                             {isQuizMode ? <HelpCircle className="h-4 w-4" /> : <BarChart3 className="h-4 w-4" />}
@@ -935,7 +935,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                         placeholder={isQuizMode ? "Ask a quiz question..." : "Ask a question..."}
                                         value={pollQuestion}
                                         onChange={(e) => setPollQuestion(e.target.value)}
-                                        className="text-lg font-medium border-x-0 border-t-0 border-b-2 rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary bg-transparent"
+                                        className="font-medium border-x-0 border-t-0 border-b-2 rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary bg-transparent w-full min-w-0"
                                     />
 
                                     {isQuizMode && (
@@ -1045,19 +1045,19 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                 </div>{/* close p-4 sm:p-5 (top card section) */}
 
                 {/* ── Bottom Icon Toolbar ── */}
-                <div className="border-t border-slate-100 bg-slate-50/60 px-2 sm:px-3 py-3">
-                    <div className="flex items-start gap-0 overflow-x-auto scrollbar-hide">
+                <div className="border-t border-slate-100 bg-slate-50/60 px-2 py-2">
+                    <div className="grid grid-cols-4 gap-y-1">
 
                         {/* Photo / Video */}
                         <button
                             onClick={() => fileInputRef.current?.click()}
                             disabled={isPosting || mediaPreviews.length >= MAX_MEDIA}
-                            className="flex flex-col items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-40 min-w-fit"
+                            className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-40 w-full"
                         >
-                            <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600">
-                                <ImageIcon className="h-5 w-5" />
+                            <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600">
+                                <ImageIcon className="h-4 w-4" />
                             </div>
-                            <span className="text-[11px] text-slate-500 whitespace-pre text-center leading-tight">{"Photo /\nVideo"}</span>
+                            <span className="text-[10px] text-slate-500 text-center leading-tight w-full px-1 truncate">Photo/Video</span>
                         </button>
 
                         {/* Poll */}
@@ -1065,68 +1065,68 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                             onClick={togglePollMode}
                             disabled={isPosting}
                             className={cn(
-                                "flex flex-col items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-40 min-w-fit",
+                                "flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-40 w-full",
                                 isPollMode && "bg-blue-50"
                             )}
                         >
                             <div className={cn(
-                                "w-10 h-10 rounded-xl border shadow-sm flex items-center justify-center transition-colors",
+                                "w-9 h-9 rounded-xl border shadow-sm flex items-center justify-center transition-colors",
                                 isPollMode ? "bg-blue-500 border-blue-400 text-white" : "bg-white border-slate-200 text-slate-600"
                             )}>
-                                <BarChart3 className="h-5 w-5" />
+                                <BarChart3 className="h-4 w-4" />
                             </div>
-                            <span className="text-[11px] text-slate-500 whitespace-nowrap">Poll</span>
+                            <span className="text-[10px] text-slate-500 text-center leading-tight w-full px-1 truncate">Poll</span>
                         </button>
 
                         {/* Collaborate */}
                         <button
                             onClick={() => setIsCollaboratorDialogOpen(true)}
                             disabled={isPosting}
-                            className="flex flex-col items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-40 min-w-fit"
+                            className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-40 w-full"
                         >
-                            <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600">
-                                <Users className="h-5 w-5" />
+                            <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600">
+                                <Users className="h-4 w-4" />
                             </div>
-                            <span className="text-[11px] text-slate-500 whitespace-nowrap">Collaborate</span>
+                            <span className="text-[10px] text-slate-500 text-center leading-tight w-full px-1 truncate">Collaborate</span>
                         </button>
 
                         {/* Schedule */}
                         <button
                             onClick={() => setIsScheduleMode(true)}
                             disabled={isPosting}
-                            className="flex flex-col items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-40 min-w-fit"
+                            className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-40 w-full"
                         >
-                            <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600">
-                                <Clock className="h-5 w-5" />
+                            <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600">
+                                <Clock className="h-4 w-4" />
                             </div>
-                            <span className="text-[11px] text-slate-500 whitespace-nowrap">Schedule</span>
+                            <span className="text-[10px] text-slate-500 text-center leading-tight w-full px-1 truncate">Schedule</span>
                         </button>
 
                         {/* Leela */}
                         <button
                             onClick={() => leelaInputRef.current?.click()}
                             disabled={isPosting || isUploadingLeela}
-                            className="flex flex-col items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl hover:bg-sky-50 transition-colors disabled:opacity-40 min-w-fit"
+                            className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-sky-50 transition-colors disabled:opacity-40 w-full"
                         >
-                            <div className="w-10 h-10 rounded-xl bg-white border border-sky-200 shadow-sm flex items-center justify-center ring-1 ring-sky-100">
-                                <Image src="/icons/leela.png" alt="Leela" width={22} height={22} className="object-contain" />
+                            <div className="w-9 h-9 rounded-xl bg-white border border-sky-200 shadow-sm flex items-center justify-center ring-1 ring-sky-100">
+                                <Image src="/icons/leela.png" alt="Leela" width={20} height={20} className="object-contain" />
                             </div>
-                            <span className="text-[11px] font-semibold text-sky-500 whitespace-nowrap">
-                                {isUploadingLeela ? 'Uploading...' : 'Leela'}
+                            <span className="text-[10px] font-semibold text-sky-500 text-center leading-tight w-full px-1 truncate">
+                                {isUploadingLeela ? 'Uploading…' : 'Leela'}
                             </span>
                         </button>
 
                         {/* Emoji */}
-                        <div className="relative">
+                        <div className="relative w-full">
                             <button
                                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                                 disabled={isPosting}
-                                className="flex flex-col items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-40 min-w-fit"
+                                className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-40 w-full"
                             >
-                                <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600">
-                                    <Smile className="h-5 w-5" />
+                                <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600">
+                                    <Smile className="h-4 w-4" />
                                 </div>
-                                <span className="text-[11px] text-slate-500 whitespace-nowrap">Emoji</span>
+                                <span className="text-[10px] text-slate-500 text-center leading-tight w-full px-1 truncate">Emoji</span>
                             </button>
                             {showEmojiPicker && (
                                 <div className="absolute bottom-16 left-0 z-50 animate-in fade-in zoom-in-95 duration-200">
@@ -1186,12 +1186,12 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                             <PopoverTrigger asChild>
                                 <button
                                     disabled={isPosting || mediaPreviews.length >= MAX_MEDIA}
-                                    className="flex flex-col items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-40 min-w-fit"
+                                    className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-40 w-full"
                                 >
-                                    <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600">
-                                        <span className="text-[11px] font-bold tracking-tight">GIF</span>
+                                    <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600">
+                                        <span className="text-[10px] font-bold tracking-tight">GIF</span>
                                     </div>
-                                    <span className="text-[11px] text-slate-500 whitespace-nowrap">GIF</span>
+                                    <span className="text-[10px] text-slate-500 text-center leading-tight w-full px-1 truncate">GIF</span>
                                 </button>
                             </PopoverTrigger>
                             <PopoverContent className="w-[320px] p-0" align="start" side="top">
@@ -1210,12 +1210,12 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                         {/* Drafts */}
                         <button
                             onClick={() => setShowDraftDialog(true)}
-                            className="flex flex-col items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl hover:bg-slate-100 transition-colors min-w-fit"
+                            className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-slate-100 transition-colors w-full"
                         >
-                            <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600">
-                                <List className="h-5 w-5" />
+                            <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600">
+                                <List className="h-4 w-4" />
                             </div>
-                            <span className="text-[11px] text-slate-500 whitespace-nowrap">Drafts</span>
+                            <span className="text-[10px] text-slate-500 text-center leading-tight w-full px-1 truncate">Drafts</span>
                         </button>
 
                     </div>
