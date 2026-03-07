@@ -666,24 +666,37 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     if (!loggedInUser) {
         return (
             <div
-                className="flex w-full gap-3 sm:gap-4 p-3 sm:p-4 border-b bg-background cursor-pointer hover:bg-muted/50 transition-colors"
+                className="w-full rounded-2xl bg-white shadow-lg border border-slate-100/80 overflow-hidden cursor-pointer hover:shadow-xl transition-shadow duration-300"
                 onClick={() => requireAuth(() => { }, "Log in to post")}
             >
-                <Avatar className="h-10 w-10 sm:h-11 sm:w-11 flex-shrink-0">
-                    <AvatarFallback>G</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 space-y-3">
-                    <div className="w-full h-12 rounded-md border border-input bg-transparent px-3 py-2 text-sm text-muted-foreground flex items-center">
-                        What is happening?!
+                <div className="p-4 sm:p-5">
+                    <div className="flex gap-3 sm:gap-4 items-center">
+                        <Avatar className="h-11 w-11 sm:h-12 sm:w-12 flex-shrink-0 ring-2 ring-primary/10">
+                            <AvatarFallback>G</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 text-muted-foreground/60 text-lg">What is happening?!</div>
                     </div>
-                    <div className="flex items-center gap-4 text-muted-foreground">
-                        <ImageIcon className="h-5 w-5" />
-                        <Video className="h-5 w-5" />
-                        <BarChart3 className="h-5 w-5" />
-                        <Smile className="h-5 w-5" />
-                        <div className="ml-auto">
-                            <Button size="sm" disabled className="opacity-50">Post</Button>
-                        </div>
+                    <div className="border-t border-slate-100 mt-4 mb-3" />
+                    <div className="flex justify-end">
+                        <Button size="sm" disabled className="rounded-full px-6 opacity-50 bg-gradient-to-r from-blue-400 to-blue-500 text-white border-0">Post</Button>
+                    </div>
+                </div>
+                <div className="border-t border-slate-100 bg-slate-50/70 px-4 py-3">
+                    <div className="flex items-start gap-1 overflow-x-auto scrollbar-hide">
+                        {[
+                            { icon: <ImageIcon className="h-5 w-5" />, label: 'Photo /\nVideo' },
+                            { icon: <BarChart3 className="h-5 w-5" />, label: 'Poll' },
+                            { icon: <Users className="h-5 w-5" />, label: 'Collaborate' },
+                            { icon: <Clock className="h-5 w-5" />, label: 'Schedule' },
+                            { icon: <Smile className="h-5 w-5" />, label: 'Emoji' },
+                            { icon: <Sparkles className="h-5 w-5" />, label: 'GIF' },
+                            { icon: <List className="h-5 w-5" />, label: 'Drafts' },
+                        ].map(({ icon, label }, i) => (
+                            <div key={i} className="flex flex-col items-center gap-1.5 px-3 py-1.5 rounded-xl min-w-fit opacity-50">
+                                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500">{icon}</div>
+                                <span className="text-[11px] text-slate-400 whitespace-pre text-center leading-tight">{label}</span>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
@@ -755,394 +768,256 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             </Dialog>
 
             {/* Main Create Post UI */}
-            <div className="flex w-full gap-3 sm:gap-4 p-4 sm:p-5 border-b border-border/40 bg-background/50 backdrop-blur-sm transition-colors focus-within:bg-background/80 group/create-post">
+            <div className="w-full rounded-2xl bg-white shadow-lg border border-slate-100/80 overflow-hidden group/create-post transition-shadow duration-300 hover:shadow-xl focus-within:shadow-xl">
                 <CollaborativePostDialog
                     open={isCollaboratorDialogOpen}
                     onOpenChange={setIsCollaboratorDialogOpen}
                     initialCollaborators={collaborators}
                     onSelectCollaborators={setCollaborators}
                 />
-                <Link href={`/profile/${encodeURIComponent(loggedInUser?.username || '')}`} className="flex-shrink-0 pt-1">
-                    <Avatar className="h-10 w-10 ring-2 ring-background transition-transform duration-300 group-focus-within/create-post:scale-105">
-                        <AvatarImage src={getAvatarUrl(loggedInUser.avatar_url)} alt={loggedInUser.name} />
-                        <AvatarFallback>{loggedInUser.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                </Link>
 
-                <div className="flex-1 min-w-0 py-1">
-                    {/* Validation Errors */}
-                    {errors.length > 0 && (
-                        <Alert variant="destructive" className="mb-4 animate-in slide-in-from-top-2">
-                            <AlertCircle className="h-4 w-4" />
-                            <AlertDescription>
-                                {errors[0]}
-                            </AlertDescription>
-                        </Alert>
-                    )}
+                {/* Top card section */}
+                <div className="p-4 sm:p-5">
+                    <div className="flex gap-3 sm:gap-4">
+                        <Link href={`/profile/${encodeURIComponent(loggedInUser?.username || '')}`} className="flex-shrink-0">
+                            <Avatar className="h-11 w-11 sm:h-12 sm:w-12 ring-2 ring-primary/10 transition-transform duration-300 group-focus-within/create-post:scale-105">
+                                <AvatarImage src={getAvatarUrl(loggedInUser.avatar_url)} alt={loggedInUser.name} />
+                                <AvatarFallback>{loggedInUser.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                        </Link>
 
-                    {!isPollMode && (
-                        <div className="relative">
-                            <SmartTextarea
-                                ref={textareaRef}
-                                placeholder="What is happening?!"
-                                className={cn(
-                                    "w-full resize-none border-none bg-transparent text-lg placeholder:text-muted-foreground/50 focus:outline-none focus:ring-0 focus-visible:ring-0 min-h-[3rem] leading-relaxed tracking-wide",
-                                    isOverLimit && !isVerified && "text-destructive"
-                                )}
-                                minRows={1}
-                                maxRows={15}
-                                autosize
-                                value={content}
-                                onChange={(e) => setContent(e.target.value)}
-                                onKeyDown={handleKeyDown}
-                                disabled={isPosting}
-                                maxLength={isVerified ? undefined : MAX_CHARACTERS + 10}
-                            />
-
-                            {/* Formatting Toolbar - Show on focus or if content exists */}
-                            {(content.length > 0 || isPollMode) && (
-                                <div className="flex items-center gap-1 mt-1 opacity-0 group-focus-within/create-post:opacity-100 transition-opacity duration-300 pointer-events-none group-focus-within/create-post:pointer-events-auto">
-                                    <Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground" onClick={formatBold}><Bold className="h-3 w-3" /></Button>
-                                    <Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground" onClick={formatItalic}><Italic className="h-3 w-3" /></Button>
-                                    <div className="w-px h-3 bg-border mx-1" />
-                                    <Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground" onClick={formatHeading}><Heading2 className="h-3 w-3" /></Button>
-                                    <Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground" onClick={formatBulletList}><List className="h-3 w-3" /></Button>
-                                </div>
+                        <div className="flex-1 min-w-0 pt-1">
+                            {/* Validation Errors */}
+                            {errors.length > 0 && (
+                                <Alert variant="destructive" className="mb-4 animate-in slide-in-from-top-2">
+                                    <AlertCircle className="h-4 w-4" />
+                                    <AlertDescription>
+                                        {errors[0]}
+                                    </AlertDescription>
+                                </Alert>
                             )}
-                        </div>
-                    )}
 
-                    {/* Collaborators Display */}
-                    {collaborators.length > 0 && (
-                        <div className="border rounded-xl p-3 mt-3 space-y-2 bg-muted/20 animate-in fade-in">
-                            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                                <Users className="h-3 w-3" />
-                                Collaborators
-                            </h4>
-                            <div className="flex items-center gap-2 flex-wrap">
-                                {collaborators.map((collaborator) => (
-                                    <div key={collaborator.id} className="flex items-center gap-2 bg-background/80 px-2 py-1 rounded-full border shadow-sm">
-                                        <Avatar className="h-5 w-5">
-                                            <AvatarImage src={collaborator.avatar} />
-                                            <AvatarFallback>{collaborator.name[0]}</AvatarFallback>
-                                        </Avatar>
-                                        <span className="text-xs font-medium">{collaborator.name}</span>
-                                        <button
-                                            onClick={() => setCollaborators(prev => prev.filter(c => c.id !== collaborator.id))}
-                                            className="text-muted-foreground hover:text-destructive transition-colors ml-1"
-                                        >
-                                            <X className="h-3 w-3" />
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+                            {!isPollMode && (
+                                <div className="relative">
+                                    <SmartTextarea
+                                        ref={textareaRef}
+                                        placeholder="What is happening?!"
+                                        className={cn(
+                                            "w-full resize-none border-none bg-transparent text-lg placeholder:text-muted-foreground/50 focus:outline-none focus:ring-0 focus-visible:ring-0 min-h-[3rem] leading-relaxed tracking-wide",
+                                            isOverLimit && !isVerified && "text-destructive"
+                                        )}
+                                        minRows={1}
+                                        maxRows={15}
+                                        autosize
+                                        value={content}
+                                        onChange={(e) => setContent(e.target.value)}
+                                        onKeyDown={handleKeyDown}
+                                        disabled={isPosting}
+                                        maxLength={isVerified ? undefined : MAX_CHARACTERS + 10}
+                                    />
 
-                    {/* Media Previews */}
-                    {mediaPreviews.length > 0 && (
-                        <div className={cn(
-                            "mt-4 gap-3 grid",
-                            mediaPreviews.length === 1 ? "grid-cols-1" : "grid-cols-2"
-                        )}>
-                            {mediaPreviews.map((media, index) => (
-                                <div key={index} className="relative group rounded-xl overflow-hidden border bg-black/5 shadow-sm ring-1 ring-border/10">
-                                    <button
-                                        onClick={() => removeMedia(index)}
-                                        className="absolute top-2 right-2 bg-black/60 text-white p-1.5 rounded-full z-10 hover:bg-black/80 transition-colors opacity-0 group-hover:opacity-100"
-                                    >
-                                        <X className="h-4 w-4" />
-                                    </button>
-
-                                    {media.type === 'image' && (
-                                        <>
-                                            <div className="relative aspect-video">
-                                                <Image
-                                                    src={media.url}
-                                                    alt={media.alt || 'Upload preview'}
-                                                    fill
-                                                    className="object-cover"
-                                                />
-                                            </div>
-                                            {/* Edit button */}
-                                            <button
-                                                onClick={() => {
-                                                    setEditingImage({ index, url: media.url });
-                                                    setIsImageEditorOpen(true);
-                                                }}
-                                                className="absolute bottom-2 right-2 bg-black/60 text-white p-1.5 rounded-full z-10 hover:bg-black/80 transition-colors opacity-0 group-hover:opacity-100"
-                                            >
-                                                <Pencil className="h-4 w-4" />
-                                            </button>
-                                        </>
-                                    )}
-
-                                    {media.type === 'video' && (
-                                        <video src={media.url} controls className="w-full h-full object-cover max-h-[300px]" />
-                                    )}
-
-                                    {media.type === 'gif' && (
-                                        <div className="relative w-full h-full min-h-[200px]">
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img src={media.url} alt={media.alt} className="w-full h-full object-cover" />
-                                            <div className="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1 rounded">GIF</div>
+                                    {/* Formatting Toolbar - Show on focus or if content exists */}
+                                    {(content.length > 0 || isPollMode) && (
+                                        <div className="flex items-center gap-1 mt-1 opacity-0 group-focus-within/create-post:opacity-100 transition-opacity duration-300 pointer-events-none group-focus-within/create-post:pointer-events-auto">
+                                            <Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground" onClick={formatBold}><Bold className="h-3 w-3" /></Button>
+                                            <Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground" onClick={formatItalic}><Italic className="h-3 w-3" /></Button>
+                                            <div className="w-px h-3 bg-border mx-1" />
+                                            <Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground" onClick={formatHeading}><Heading2 className="h-3 w-3" /></Button>
+                                            <Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground" onClick={formatBulletList}><List className="h-3 w-3" /></Button>
                                         </div>
                                     )}
                                 </div>
-                            ))}
-                        </div>
-                    )}
-
-                    {/* Poll Creator */}
-                    {isPollMode && (
-                        <div className="mt-4 border rounded-xl p-4 space-y-4 bg-background/50 animate-in fade-in slide-in-from-top-2">
-                            <div className="flex justify-between items-center">
-                                <h3 className="font-medium flex items-center gap-2 text-primary">
-                                    {isQuizMode ? <HelpCircle className="h-4 w-4" /> : <BarChart3 className="h-4 w-4" />}
-                                    {isQuizMode ? 'Create Quiz' : 'Create Poll'}
-                                </h3>
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={() => { setIsQuizMode(!isQuizMode); setCorrectAnswerIndex(-1); }}
-                                        className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${isQuizMode ? 'bg-green-500/10 border-green-500/30 text-green-600' : 'border-border text-muted-foreground hover:text-foreground'}`}
-                                    >
-                                        {isQuizMode ? <><CheckCircle2 className="h-3 w-3 inline mr-0.5" /> Quiz Mode</> : 'Quiz Mode'}
-                                    </button>
-                                    <Button variant="ghost" size="icon" onClick={togglePollMode} className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive">
-                                        <X className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            </div>
-
-                            <Input
-                                placeholder={isQuizMode ? "Ask a quiz question..." : "Ask a question..."}
-                                value={pollQuestion}
-                                onChange={(e) => setPollQuestion(e.target.value)}
-                                className="text-lg font-medium border-x-0 border-t-0 border-b-2 rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary bg-transparent"
-                            />
-
-                            {isQuizMode && (
-                                <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                                    <CheckCircle2 className="h-3 w-3 text-green-500" />
-                                    Click the circle next to an option to mark it as the correct answer
-                                </p>
                             )}
 
-                            <div className="space-y-3">
-                                {pollOptions.map((option, index) => (
-                                    <div key={index} className="flex items-center gap-2">
-                                        {isQuizMode && (
+                            {/* Collaborators Display */}
+                            {collaborators.length > 0 && (
+                                <div className="border rounded-xl p-3 mt-3 space-y-2 bg-muted/20 animate-in fade-in">
+                                    <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                                        <Users className="h-3 w-3" />
+                                        Collaborators
+                                    </h4>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        {collaborators.map((collaborator) => (
+                                            <div key={collaborator.id} className="flex items-center gap-2 bg-background/80 px-2 py-1 rounded-full border shadow-sm">
+                                                <Avatar className="h-5 w-5">
+                                                    <AvatarImage src={collaborator.avatar} />
+                                                    <AvatarFallback>{collaborator.name[0]}</AvatarFallback>
+                                                </Avatar>
+                                                <span className="text-xs font-medium">{collaborator.name}</span>
+                                                <button
+                                                    onClick={() => setCollaborators(prev => prev.filter(c => c.id !== collaborator.id))}
+                                                    className="text-muted-foreground hover:text-destructive transition-colors ml-1"
+                                                >
+                                                    <X className="h-3 w-3" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Media Previews */}
+                            {mediaPreviews.length > 0 && (
+                                <div className={cn(
+                                    "mt-4 gap-3 grid",
+                                    mediaPreviews.length === 1 ? "grid-cols-1" : "grid-cols-2"
+                                )}>
+                                    {mediaPreviews.map((media, index) => (
+                                        <div key={index} className="relative group rounded-xl overflow-hidden border bg-black/5 shadow-sm ring-1 ring-border/10">
                                             <button
-                                                type="button"
-                                                onClick={() => setCorrectAnswerIndex(index)}
-                                                className={`flex-shrink-0 h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all ${correctAnswerIndex === index
-                                                    ? 'border-green-500 bg-green-500 text-white'
-                                                    : 'border-muted-foreground/30 hover:border-green-500/50'
-                                                    }`}
-                                                title={correctAnswerIndex === index ? 'Correct answer' : 'Mark as correct answer'}
+                                                onClick={() => removeMedia(index)}
+                                                className="absolute top-2 right-2 bg-black/60 text-white p-1.5 rounded-full z-10 hover:bg-black/80 transition-colors opacity-0 group-hover:opacity-100"
                                             >
-                                                {correctAnswerIndex === index && <CheckCircle2 className="h-3.5 w-3.5" />}
-                                            </button>
-                                        )}
-                                        <Input
-                                            placeholder={`Option ${index + 1}`}
-                                            value={option}
-                                            onChange={(e) => updatePollOption(index, e.target.value)}
-                                            className={`flex-1 ${isQuizMode && correctAnswerIndex === index ? 'border-green-500/30 bg-green-500/5' : ''}`}
-                                        />
-                                        {pollOptions.length > 2 && (
-                                            <Button variant="ghost" size="icon" onClick={() => removePollOption(index)} className="text-muted-foreground hover:text-destructive">
                                                 <X className="h-4 w-4" />
+                                            </button>
+
+                                            {media.type === 'image' && (
+                                                <>
+                                                    <div className="relative aspect-video">
+                                                        <Image
+                                                            src={media.url}
+                                                            alt={media.alt || 'Upload preview'}
+                                                            fill
+                                                            className="object-cover"
+                                                        />
+                                                    </div>
+                                                    {/* Edit button */}
+                                                    <button
+                                                        onClick={() => {
+                                                            setEditingImage({ index, url: media.url });
+                                                            setIsImageEditorOpen(true);
+                                                        }}
+                                                        className="absolute bottom-2 right-2 bg-black/60 text-white p-1.5 rounded-full z-10 hover:bg-black/80 transition-colors opacity-0 group-hover:opacity-100"
+                                                    >
+                                                        <Pencil className="h-4 w-4" />
+                                                    </button>
+                                                </>
+                                            )}
+
+                                            {media.type === 'video' && (
+                                                <video src={media.url} controls className="w-full h-full object-cover max-h-[300px]" />
+                                            )}
+
+                                            {media.type === 'gif' && (
+                                                <div className="relative w-full h-full min-h-[200px]">
+                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                    <img src={media.url} alt={media.alt} className="w-full h-full object-cover" />
+                                                    <div className="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1 rounded">GIF</div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Poll Creator */}
+                            {isPollMode && (
+                                <div className="mt-4 border rounded-xl p-4 space-y-4 bg-background/50 animate-in fade-in slide-in-from-top-2">
+                                    <div className="flex justify-between items-center">
+                                        <h3 className="font-medium flex items-center gap-2 text-primary">
+                                            {isQuizMode ? <HelpCircle className="h-4 w-4" /> : <BarChart3 className="h-4 w-4" />}
+                                            {isQuizMode ? 'Create Quiz' : 'Create Poll'}
+                                        </h3>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => { setIsQuizMode(!isQuizMode); setCorrectAnswerIndex(-1); }}
+                                                className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${isQuizMode ? 'bg-green-500/10 border-green-500/30 text-green-600' : 'border-border text-muted-foreground hover:text-foreground'}`}
+                                            >
+                                                {isQuizMode ? <><CheckCircle2 className="h-3 w-3 inline mr-0.5" /> Quiz Mode</> : 'Quiz Mode'}
+                                            </button>
+                                            <Button variant="ghost" size="icon" onClick={togglePollMode} className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive">
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    <Input
+                                        placeholder={isQuizMode ? "Ask a quiz question..." : "Ask a question..."}
+                                        value={pollQuestion}
+                                        onChange={(e) => setPollQuestion(e.target.value)}
+                                        className="text-lg font-medium border-x-0 border-t-0 border-b-2 rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary bg-transparent"
+                                    />
+
+                                    {isQuizMode && (
+                                        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                                            <CheckCircle2 className="h-3 w-3 text-green-500" />
+                                            Click the circle next to an option to mark it as the correct answer
+                                        </p>
+                                    )}
+
+                                    <div className="space-y-3">
+                                        {pollOptions.map((option, index) => (
+                                            <div key={index} className="flex items-center gap-2">
+                                                {isQuizMode && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setCorrectAnswerIndex(index)}
+                                                        className={`flex-shrink-0 h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all ${correctAnswerIndex === index
+                                                            ? 'border-green-500 bg-green-500 text-white'
+                                                            : 'border-muted-foreground/30 hover:border-green-500/50'
+                                                            }`}
+                                                        title={correctAnswerIndex === index ? 'Correct answer' : 'Mark as correct answer'}
+                                                    >
+                                                        {correctAnswerIndex === index && <CheckCircle2 className="h-3.5 w-3.5" />}
+                                                    </button>
+                                                )}
+                                                <Input
+                                                    placeholder={`Option ${index + 1}`}
+                                                    value={option}
+                                                    onChange={(e) => updatePollOption(index, e.target.value)}
+                                                    className={`flex-1 ${isQuizMode && correctAnswerIndex === index ? 'border-green-500/30 bg-green-500/5' : ''}`}
+                                                />
+                                                {pollOptions.length > 2 && (
+                                                    <Button variant="ghost" size="icon" onClick={() => removePollOption(index)} className="text-muted-foreground hover:text-destructive">
+                                                        <X className="h-4 w-4" />
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        ))}
+                                        {pollOptions.length < MAX_POLL_OPTIONS && (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={addPollOption}
+                                                className="w-full border-dashed text-muted-foreground hover:text-primary hover:border-primary hover:bg-primary/5"
+                                            >
+                                                <Plus className="mr-2 h-4 w-4" />
+                                                Add Option
                                             </Button>
                                         )}
                                     </div>
-                                ))}
-                                {pollOptions.length < MAX_POLL_OPTIONS && (
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={addPollOption}
-                                        className="w-full border-dashed text-muted-foreground hover:text-primary hover:border-primary hover:bg-primary/5"
-                                    >
-                                        <Plus className="mr-2 h-4 w-4" />
-                                        Add Option
-                                    </Button>
-                                )}
-                            </div>
 
-                            <div className="flex items-center gap-4 pt-2 border-t">
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <Clock className="h-4 w-4" />
-                                    <select
-                                        value={pollDuration}
-                                        onChange={(e) => setPollDuration(Number(e.target.value))}
-                                        className="bg-transparent border-none focus:ring-0 cursor-pointer font-medium text-foreground"
-                                    >
-                                        <option value={1}>1 hour</option>
-                                        <option value={6}>6 hours</option>
-                                        <option value={12}>12 hours</option>
-                                        <option value={24}>1 day</option>
-                                        <option value={72}>3 days</option>
-                                        <option value={168}>7 days</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Action Bar */}
-                    <div className="flex items-center justify-between pt-3 mt-2">
-                        <input type="file" ref={fileInputRef} className="hidden" multiple accept="image/*,video/*" onChange={handleMediaUpload} disabled={isPosting} />
-                        <input type="file" ref={leelaInputRef} className="hidden" accept="video/*" onChange={handleLeelaSelect} disabled={isPosting || isUploadingLeela} />
-
-                            <div className="flex items-center gap-1 -ml-2">
-                                {/* Primary Actions */}
-                                <ActionTooltip label="Photo / Video">
-                                    <Button variant="ghost" size="icon" className="h-9 w-9 text-primary/80 hover:text-primary hover:bg-primary/10 rounded-full transition-colors" onClick={() => fileInputRef.current?.click()} disabled={isPosting || mediaPreviews.length >= MAX_MEDIA}>
-                                        <ImageIcon className="h-5 w-5" />
-                                    </Button>
-                                </ActionTooltip>
-
-                                <div className="relative hidden sm:block">
-                                    <ActionTooltip label="Emoji">
-                                        <Button variant="ghost" size="icon" className="h-9 w-9 text-primary/80 hover:text-primary hover:bg-primary/10 rounded-full transition-colors" onClick={() => setShowEmojiPicker(!showEmojiPicker)} disabled={isPosting}>
-                                            <Smile className="h-5 w-5" />
-                                        </Button>
-                                    </ActionTooltip>
-                                    {showEmojiPicker && (
-                                        <div className="absolute top-10 left-0 z-50 animate-in fade-in zoom-in-95 duration-200">
-                                            <div className="fixed inset-0 z-40" onClick={() => setShowEmojiPicker(false)} />
-                                            <div className="relative z-50 shadow-2xl rounded-xl overflow-hidden border bg-background">
-                                                <Tabs defaultValue="emojis" className="w-[320px]">
-                                                    <TabsList className="w-full rounded-none bg-muted/50 h-9">
-                                                        {customEmojiList.length > 0 && isVerified && (
-                                                            <TabsTrigger value="official" className="flex-1 text-xs gap-1">Official <Sparkles className="h-3 w-3" /></TabsTrigger>
-                                                        )}
-                                                        <TabsTrigger value="emojis" className="flex-1 text-xs">Emojis</TabsTrigger>
-                                                        {stickerList.length > 0 && (
-                                                            <TabsTrigger value="stickers" className="flex-1 text-xs">Stickers</TabsTrigger>
-                                                        )}
-                                                    </TabsList>
-                                                    {customEmojiList.length > 0 && isVerified && (
-                                                        <TabsContent value="official" className="mt-0">
-                                                            <div className="grid grid-cols-6 gap-2 p-3 max-h-[300px] overflow-y-auto">
-                                                                {customEmojiList.map((url, i) => (
-                                                                    <button
-                                                                        key={i}
-                                                                        onClick={() => handleCustomEmojiClick(url)}
-                                                                        className="h-12 w-12 rounded-lg hover:bg-muted/80 flex items-center justify-center transition-colors p-1"
-                                                                    >
-                                                                        <Image src={url} alt="emoji" width={36} height={36} className="object-contain" unoptimized />
-                                                                    </button>
-                                                                ))}
-                                                            </div>
-                                                        </TabsContent>
-                                                    )}
-                                                    <TabsContent value="emojis" className="mt-0">
-                                                        <EmojiPicker onEmojiClick={handleEmojiClick} width={320} height={350} theme={Theme.AUTO} />
-                                                    </TabsContent>
-                                                    {stickerList.length > 0 && (
-                                                        <TabsContent value="stickers" className="mt-0">
-                                                            <div className="grid grid-cols-4 gap-2 p-3 max-h-[300px] overflow-y-auto">
-                                                                {stickerList.map((url, i) => (
-                                                                    <button
-                                                                        key={i}
-                                                                        onClick={() => handleCustomEmojiClick(url)}
-                                                                        className="rounded-lg hover:bg-muted/80 flex items-center justify-center transition-colors p-1"
-                                                                    >
-                                                                        <Image src={url} alt="sticker" width={64} height={64} className="object-contain" unoptimized />
-                                                                    </button>
-                                                                ))}
-                                                            </div>
-                                                        </TabsContent>
-                                                    )}
-                                                    {!isVerified && customEmojiList.length > 0 && (
-                                                        <div className="px-3 py-2 bg-muted/30 border-t text-center">
-                                                            <p className="text-xs text-muted-foreground">
-                                                                <Sparkles className="h-3 w-3 inline mr-1" /><a href="/get-verified" className="text-primary hover:underline font-medium">Get Verified</a> to unlock Official Emojis
-                                                            </p>
-                                                        </div>
-                                                    )}
-                                                </Tabs>
-                                            </div>
+                                    <div className="flex items-center gap-4 pt-2 border-t">
+                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                            <Clock className="h-4 w-4" />
+                                            <select
+                                                value={pollDuration}
+                                                onChange={(e) => setPollDuration(Number(e.target.value))}
+                                                className="bg-transparent border-none focus:ring-0 cursor-pointer font-medium text-foreground"
+                                            >
+                                                <option value={1}>1 hour</option>
+                                                <option value={6}>6 hours</option>
+                                                <option value={12}>12 hours</option>
+                                                <option value={24}>1 day</option>
+                                                <option value={72}>3 days</option>
+                                                <option value={168}>7 days</option>
+                                            </select>
                                         </div>
-                                    )}
+                                    </div>
                                 </div>
+                            )}
 
-                                <div className="hidden sm:block">
-                                    <ActionTooltip label="GIF">
-                                        <Popover open={isGifPickerOpen} onOpenChange={setIsGifPickerOpen}>
-                                            <PopoverTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-9 w-9 text-primary/80 hover:text-primary hover:bg-primary/10 rounded-full transition-colors" disabled={isPosting || mediaPreviews.length >= MAX_MEDIA}>
-                                                    <Sparkles className="h-5 w-5" />
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-[320px] p-0" align="start">
-                                                <div className="p-2">
-                                                    <div className="relative mb-2">
-                                                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                                                        <Input placeholder="Search GIFs..." className="pl-8" value={gifSearchQuery} onChange={(e) => setGifSearchQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleGifSearch()} />
-                                                    </div>
-                                                    <div className="h-[300px] overflow-y-auto">
-                                                        <Grid key={gifSearchKey} width={300} columns={2} fetchGifs={fetchGifs} onGifClick={handleGifSelect} noLink />
-                                                    </div>
-                                                </div>
-                                            </PopoverContent>
-                                        </Popover>
-                                    </ActionTooltip>
-                                </div>
+                            {/* Hidden file inputs */}
+                            <input type="file" ref={fileInputRef} className="hidden" multiple accept="image/*,video/*" onChange={handleMediaUpload} disabled={isPosting} />
+                            <input type="file" ref={leelaInputRef} className="hidden" accept="video/*" onChange={handleLeelaSelect} disabled={isPosting || isUploadingLeela} />
 
-                                {/* More Actions Menu */}
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="h-9 w-9 text-primary/80 hover:text-primary hover:bg-primary/10 rounded-full transition-colors">
-                                            <Plus className="h-5 w-5" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="start" className="w-56">
-                                        <DropdownMenuItem onClick={() => fileInputRef.current?.click()} disabled={isPosting || mediaPreviews.length >= MAX_MEDIA}>
-                                            <Video className="mr-2 h-4 w-4" /> Photo / Video
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={togglePollMode} disabled={isPosting}>
-                                            <BarChart3 className="mr-2 h-4 w-4" /> Poll
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => setIsCollaboratorDialogOpen(true)} disabled={isPosting}>
-                                            <Users className="mr-2 h-4 w-4" /> Collaborate
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => setIsScheduleMode(true)} disabled={isPosting}>
-                                            <Clock className="mr-2 h-4 w-4" /> Schedule
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => leelaInputRef.current?.click()} disabled={isPosting || isUploadingLeela}>
-                                            <Image src="/icons/leela.png" alt="Leela" width={16} height={16} className="mr-2" /> {isUploadingLeela ? 'Uploading Leela...' : 'Leela (Short Video)'}
-                                        </DropdownMenuItem>
+                            {/* Divider */}
+                            <div className="border-t border-slate-100 mt-4 -mx-4 sm:-mx-5" />
 
-                                        {/* Mobile Only Options */}
-                                        <DropdownMenuItem className="sm:hidden" onClick={() => setShowEmojiPicker(!showEmojiPicker)} disabled={isPosting}>
-                                            <Smile className="mr-2 h-4 w-4" /> Emoji
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem className="sm:hidden" onClick={() => setIsGifPickerOpen(true)} disabled={isPosting || mediaPreviews.length >= MAX_MEDIA}>
-                                            <Sparkles className="mr-2 h-4 w-4" /> GIF
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem className="sm:hidden" onClick={() => setShowDraftDialog(true)}>
-                                            <List className="mr-2 h-4 w-4" /> Drafts
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-
-                                {/* Quick Drafts Access */}
-                                <div className="hidden sm:block">
-                                    <ActionTooltip label="Drafts">
-                                        <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground rounded-full" onClick={() => setShowDraftDialog(true)}>
-                                            <List className="h-5 w-5" />
-                                        </Button>
-                                    </ActionTooltip>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-3">
-                                {/* Character Count */}
+                            {/* Post button row */}
+                            <div className="flex items-center justify-end pt-3">
                                 {content.length > 0 && (
-                                    <div className="flex items-center gap-2 animate-in fade-in">
+                                    <div className="flex items-center gap-2 mr-3 animate-in fade-in">
                                         <span className={cn("text-xs font-bold transition-colors", getCharacterColor())}>
                                             {remainingChars}
                                         </span>
@@ -1152,23 +1027,201 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                         </svg>
                                     </div>
                                 )}
-
                                 <Button
                                     onClick={handlePost}
                                     disabled={!canPost || isPosting}
                                     className={cn(
-                                        "rounded-full px-4 sm:px-6 py-0 font-bold transition-all duration-300 shadow-md hover:shadow-lg",
+                                        "rounded-full px-7 py-2 font-bold text-base transition-all duration-300 shadow-md hover:shadow-lg border-0",
                                         isPosting ? "opacity-80" : "hover:scale-105 active:scale-95",
-                                        "bg-gradient-to-r from-primary to-primary/90 text-primary-foreground"
+                                        "bg-gradient-to-r from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 text-white"
                                     )}
-                                    size="sm"
+                                    size="default"
                                 >
                                     {isPosting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (isScheduleMode && scheduleDate ? 'Schedule' : 'Post')}
                                 </Button>
                             </div>
+                        </div>{/* close flex-1 */}
+                    </div>{/* close flex gap (avatar + content) */}
+                </div>{/* close p-4 sm:p-5 (top card section) */}
+
+                {/* ── Bottom Icon Toolbar ── */}
+                <div className="border-t border-slate-100 bg-slate-50/60 px-2 sm:px-3 py-3">
+                    <div className="flex items-start gap-0 overflow-x-auto scrollbar-hide">
+
+                        {/* Photo / Video */}
+                        <button
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={isPosting || mediaPreviews.length >= MAX_MEDIA}
+                            className="flex flex-col items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-40 min-w-fit"
+                        >
+                            <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600">
+                                <ImageIcon className="h-5 w-5" />
+                            </div>
+                            <span className="text-[11px] text-slate-500 whitespace-pre text-center leading-tight">{"Photo /\nVideo"}</span>
+                        </button>
+
+                        {/* Poll */}
+                        <button
+                            onClick={togglePollMode}
+                            disabled={isPosting}
+                            className={cn(
+                                "flex flex-col items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-40 min-w-fit",
+                                isPollMode && "bg-blue-50"
+                            )}
+                        >
+                            <div className={cn(
+                                "w-10 h-10 rounded-xl border shadow-sm flex items-center justify-center transition-colors",
+                                isPollMode ? "bg-blue-500 border-blue-400 text-white" : "bg-white border-slate-200 text-slate-600"
+                            )}>
+                                <BarChart3 className="h-5 w-5" />
+                            </div>
+                            <span className="text-[11px] text-slate-500 whitespace-nowrap">Poll</span>
+                        </button>
+
+                        {/* Collaborate */}
+                        <button
+                            onClick={() => setIsCollaboratorDialogOpen(true)}
+                            disabled={isPosting}
+                            className="flex flex-col items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-40 min-w-fit"
+                        >
+                            <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600">
+                                <Users className="h-5 w-5" />
+                            </div>
+                            <span className="text-[11px] text-slate-500 whitespace-nowrap">Collaborate</span>
+                        </button>
+
+                        {/* Schedule */}
+                        <button
+                            onClick={() => setIsScheduleMode(true)}
+                            disabled={isPosting}
+                            className="flex flex-col items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-40 min-w-fit"
+                        >
+                            <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600">
+                                <Clock className="h-5 w-5" />
+                            </div>
+                            <span className="text-[11px] text-slate-500 whitespace-nowrap">Schedule</span>
+                        </button>
+
+                        {/* Leela */}
+                        <button
+                            onClick={() => leelaInputRef.current?.click()}
+                            disabled={isPosting || isUploadingLeela}
+                            className="flex flex-col items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl hover:bg-sky-50 transition-colors disabled:opacity-40 min-w-fit"
+                        >
+                            <div className="w-10 h-10 rounded-xl bg-white border border-sky-200 shadow-sm flex items-center justify-center ring-1 ring-sky-100">
+                                <Image src="/icons/leela.png" alt="Leela" width={22} height={22} className="object-contain" />
+                            </div>
+                            <span className="text-[11px] font-semibold text-sky-500 whitespace-nowrap">
+                                {isUploadingLeela ? 'Uploading...' : 'Leela'}
+                            </span>
+                        </button>
+
+                        {/* Emoji */}
+                        <div className="relative">
+                            <button
+                                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                                disabled={isPosting}
+                                className="flex flex-col items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-40 min-w-fit"
+                            >
+                                <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600">
+                                    <Smile className="h-5 w-5" />
+                                </div>
+                                <span className="text-[11px] text-slate-500 whitespace-nowrap">Emoji</span>
+                            </button>
+                            {showEmojiPicker && (
+                                <div className="absolute bottom-16 left-0 z-50 animate-in fade-in zoom-in-95 duration-200">
+                                    <div className="fixed inset-0 z-40" onClick={() => setShowEmojiPicker(false)} />
+                                    <div className="relative z-50 shadow-2xl rounded-xl overflow-hidden border bg-background">
+                                        <Tabs defaultValue="emojis" className="w-[320px]">
+                                            <TabsList className="w-full rounded-none bg-muted/50 h-9">
+                                                {customEmojiList.length > 0 && isVerified && (
+                                                    <TabsTrigger value="official" className="flex-1 text-xs gap-1">Official <Sparkles className="h-3 w-3" /></TabsTrigger>
+                                                )}
+                                                <TabsTrigger value="emojis" className="flex-1 text-xs">Emojis</TabsTrigger>
+                                                {stickerList.length > 0 && (
+                                                    <TabsTrigger value="stickers" className="flex-1 text-xs">Stickers</TabsTrigger>
+                                                )}
+                                            </TabsList>
+                                            {customEmojiList.length > 0 && isVerified && (
+                                                <TabsContent value="official" className="mt-0">
+                                                    <div className="grid grid-cols-6 gap-2 p-3 max-h-[300px] overflow-y-auto">
+                                                        {customEmojiList.map((url, i) => (
+                                                            <button key={i} onClick={() => handleCustomEmojiClick(url)} className="h-12 w-12 rounded-lg hover:bg-muted/80 flex items-center justify-center transition-colors p-1">
+                                                                <Image src={url} alt="emoji" width={36} height={36} className="object-contain" unoptimized />
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </TabsContent>
+                                            )}
+                                            <TabsContent value="emojis" className="mt-0">
+                                                <EmojiPicker onEmojiClick={handleEmojiClick} width={320} height={350} theme={Theme.AUTO} />
+                                            </TabsContent>
+                                            {stickerList.length > 0 && (
+                                                <TabsContent value="stickers" className="mt-0">
+                                                    <div className="grid grid-cols-4 gap-2 p-3 max-h-[300px] overflow-y-auto">
+                                                        {stickerList.map((url, i) => (
+                                                            <button key={i} onClick={() => handleCustomEmojiClick(url)} className="rounded-lg hover:bg-muted/80 flex items-center justify-center transition-colors p-1">
+                                                                <Image src={url} alt="sticker" width={64} height={64} className="object-contain" unoptimized />
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </TabsContent>
+                                            )}
+                                            {!isVerified && customEmojiList.length > 0 && (
+                                                <div className="px-3 py-2 bg-muted/30 border-t text-center">
+                                                    <p className="text-xs text-muted-foreground">
+                                                        <Sparkles className="h-3 w-3 inline mr-1" />
+                                                        <a href="/get-verified" className="text-primary hover:underline font-medium">Get Verified</a> to unlock Official Emojis
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </Tabs>
+                                    </div>
+                                </div>
+                            )}
                         </div>
+
+                        {/* GIF */}
+                        <Popover open={isGifPickerOpen} onOpenChange={setIsGifPickerOpen}>
+                            <PopoverTrigger asChild>
+                                <button
+                                    disabled={isPosting || mediaPreviews.length >= MAX_MEDIA}
+                                    className="flex flex-col items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-40 min-w-fit"
+                                >
+                                    <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600">
+                                        <span className="text-[11px] font-bold tracking-tight">GIF</span>
+                                    </div>
+                                    <span className="text-[11px] text-slate-500 whitespace-nowrap">GIF</span>
+                                </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[320px] p-0" align="start" side="top">
+                                <div className="p-2">
+                                    <div className="relative mb-2">
+                                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                                        <Input placeholder="Search GIFs..." className="pl-8" value={gifSearchQuery} onChange={(e) => setGifSearchQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleGifSearch()} />
+                                    </div>
+                                    <div className="h-[300px] overflow-y-auto">
+                                        <Grid key={gifSearchKey} width={300} columns={2} fetchGifs={fetchGifs} onGifClick={handleGifSelect} noLink />
+                                    </div>
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+
+                        {/* Drafts */}
+                        <button
+                            onClick={() => setShowDraftDialog(true)}
+                            className="flex flex-col items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl hover:bg-slate-100 transition-colors min-w-fit"
+                        >
+                            <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600">
+                                <List className="h-5 w-5" />
+                            </div>
+                            <span className="text-[11px] text-slate-500 whitespace-nowrap">Drafts</span>
+                        </button>
+
+                    </div>
                 </div>
-            </div>
+
+            </div>{/* close main card */}
 
             {/* Schedule Dialog (Separate to keep UI clean) */}
             <Dialog open={isScheduleMode} onOpenChange={setIsScheduleMode}>

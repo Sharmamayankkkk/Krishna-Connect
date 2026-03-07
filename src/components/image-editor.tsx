@@ -23,20 +23,24 @@ import {
   ZoomIn,
   ZoomOut,
   AlertCircle,
+  Maximize2,
+  Square,
+  Monitor,
+  Tv2,
+  Smartphone,
+  RefreshCw,
+  Sun,
+  Contrast,
+  Droplets,
+  Loader2,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ImageEditorProps {
   open: boolean;
   onClose: () => void;
   image: string;
   onSave: (newImage: string) => void;
-}
-
-interface CropArea {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
 }
 
 interface FlipState {
@@ -52,7 +56,6 @@ interface Adjustments {
 }
 
 interface EditorState {
-  cropArea: CropArea;
   rotation: number;
   zoom: number;
   flip: FlipState;
@@ -65,13 +68,12 @@ interface EditorState {
 interface AspectRatio {
   name: string;
   value: number | null;
-  icon: string;
+  icon: React.ReactNode;
 }
 
 interface FilterPreset {
   name: string;
   filter: string;
-  preview: string;
 }
 
 // Image processing utilities
@@ -86,524 +88,392 @@ const createImage = (url: string): Promise<HTMLImageElement> =>
 
 const getCroppedImg = async (
   imageSrc: string,
-  cropArea: CropArea,
   rotation: number = 0,
   flip: FlipState = { horizontal: false, vertical: false },
   adjustments: Adjustments = { brightness: 100, contrast: 100, saturation: 100, filter: '' }
 ): Promise<string> => {
-  try {
-    const image = await createImage(imageSrc);
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+  const image = await createImage(imageSrc);
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Failed to get 2D context');
 
-    if (!ctx) {
-      throw new Error('Failed to get 2D context');
-    }
+  const nw = image.naturalWidth;
+  const nh = image.naturalHeight;
 
-    const { brightness, contrast, saturation, filter } = adjustments;
+  // Compute the axis-aligned bounding box of the rotated image so nothing gets clipped
+  const rad = (rotation * Math.PI) / 180;
+  const absCos = Math.abs(Math.cos(rad));
+  const absSin = Math.abs(Math.sin(rad));
+  const canvasW = Math.round(nw * absCos + nh * absSin);
+  const canvasH = Math.round(nw * absSin + nh * absCos);
 
-    // Calculate dimensions
-    const scaleX = image.naturalWidth / image.width;
-    const scaleY = image.naturalHeight / image.height;
-    
-    const cropWidth = cropArea.width * scaleX;
-    const cropHeight = cropArea.height * scaleY;
+  canvas.width = canvasW;
+  canvas.height = canvasH;
 
-    canvas.width = cropWidth;
-    canvas.height = cropHeight;
+  const { brightness, contrast, saturation, filter } = adjustments;
+  ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)${filter ? ` ${filter}` : ''}`;
 
-    // Apply rotation
-    const rotRad = (rotation * Math.PI) / 180;
-    ctx.translate(cropWidth / 2, cropHeight / 2);
-    ctx.rotate(rotRad);
-    ctx.scale(flip.horizontal ? -1 : 1, flip.vertical ? -1 : 1);
-    ctx.translate(-cropWidth / 2, -cropHeight / 2);
+  // Rotate & flip around the canvas centre, then draw image centred
+  ctx.translate(canvasW / 2, canvasH / 2);
+  ctx.rotate(rad);
+  ctx.scale(flip.horizontal ? -1 : 1, flip.vertical ? -1 : 1);
+  ctx.drawImage(image, -nw / 2, -nh / 2, nw, nh);
 
-    // Apply filters
-    ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) ${filter}`;
-
-    // Draw image
-    ctx.drawImage(
-      image,
-      cropArea.x * scaleX,
-      cropArea.y * scaleY,
-      cropWidth,
-      cropHeight,
-      0,
-      0,
-      cropWidth,
-      cropHeight
-    );
-
-    return canvas.toDataURL('image/jpeg', 0.95);
-  } catch (error) {
-    console.error('Error cropping image:', error);
-    throw error;
-  }
+  return canvas.toDataURL('image/jpeg', 0.95);
 };
 
-// Filter presets
+// Filter presets — no emojis
 const filterPresets: FilterPreset[] = [
-  { name: 'None', filter: '', preview: '🎨' },
-  { name: 'Grayscale', filter: 'grayscale(100%)', preview: '⚫' },
-  { name: 'Sepia', filter: 'sepia(100%)', preview: '🟤' },
-  { name: 'Vintage', filter: 'sepia(50%) contrast(110%) brightness(90%)', preview: '📷' },
-  { name: 'Cool', filter: 'hue-rotate(180deg) saturate(150%)', preview: '🧊' },
-  { name: 'Warm', filter: 'sepia(30%) saturate(150%) hue-rotate(-10deg)', preview: '🔥' },
-  { name: 'Dramatic', filter: 'contrast(160%) saturate(120%) brightness(90%)', preview: '⚡' },
-  { name: 'Fade', filter: 'contrast(85%) brightness(110%) saturate(80%)', preview: '🌫️' },
+  { name: 'None', filter: '' },
+  { name: 'Grayscale', filter: 'grayscale(100%)' },
+  { name: 'Sepia', filter: 'sepia(100%)' },
+  { name: 'Vintage', filter: 'sepia(50%) contrast(110%) brightness(90%)' },
+  { name: 'Cool', filter: 'hue-rotate(180deg) saturate(150%)' },
+  { name: 'Warm', filter: 'sepia(30%) saturate(150%) hue-rotate(-10deg)' },
+  { name: 'Dramatic', filter: 'contrast(160%) saturate(120%) brightness(90%)' },
+  { name: 'Fade', filter: 'contrast(85%) brightness(110%) saturate(80%)' },
 ];
 
-// Aspect ratio presets
+// Aspect ratios — Lucide icons
 const aspectRatios: AspectRatio[] = [
-  { name: 'Free', value: null, icon: '🆓' },
-  { name: 'Square', value: 1, icon: '⬛' },
-  { name: '4:3', value: 4/3, icon: '📺' },
-  { name: '16:9', value: 16/9, icon: '🖥️' },
-  { name: '9:16', value: 9/16, icon: '📱' },
+  { name: 'Free', value: null, icon: <Maximize2 className="h-4 w-4" /> },
+  { name: '1:1', value: 1, icon: <Square className="h-4 w-4" /> },
+  { name: '4:3', value: 4 / 3, icon: <Monitor className="h-4 w-4" /> },
+  { name: '16:9', value: 16 / 9, icon: <Tv2 className="h-4 w-4" /> },
+  { name: '9:16', value: 9 / 16, icon: <Smartphone className="h-4 w-4" /> },
 ];
 
 export function ImageEditor({ open, onClose, image, onSave }: ImageEditorProps) {
-  // Crop state
-  const [cropArea, setCropArea] = useState<CropArea>({ x: 0, y: 0, width: 100, height: 100 });
-  const [aspectRatio, setAspectRatio] = useState<number | null>(null);
-  
-  // Transform state
   const [rotation, setRotation] = useState<number>(0);
+  const [aspectRatio, setAspectRatio] = useState<number | null>(null); // UI selection only
   const [zoom, setZoom] = useState<number>(1);
   const [flip, setFlip] = useState<FlipState>({ horizontal: false, vertical: false });
-  
-  // Adjustment state
   const [brightness, setBrightness] = useState<number>(100);
   const [contrast, setContrast] = useState<number>(100);
   const [saturation, setSaturation] = useState<number>(100);
   const [activeFilter, setActiveFilter] = useState<string>('');
-  
-  // UI state
   const [activeTab, setActiveTab] = useState<string>('crop');
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [history, setHistory] = useState<EditorState[]>([]);
   const [historyIndex, setHistoryIndex] = useState<number>(-1);
-  
+
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Save state to history
   const saveToHistory = useCallback(() => {
-    const state: EditorState = {
-      cropArea,
-      rotation,
-      zoom,
-      flip,
-      brightness,
-      contrast,
-      saturation,
-      activeFilter
-    };
-    
+    const state: EditorState = { rotation, zoom, flip, brightness, contrast, saturation, activeFilter };
     const newHistory = history.slice(0, historyIndex + 1);
     newHistory.push(state);
     setHistory(newHistory);
     setHistoryIndex(newHistory.length - 1);
-  }, [cropArea, rotation, zoom, flip, brightness, contrast, saturation, activeFilter, history, historyIndex]);
+  }, [rotation, zoom, flip, brightness, contrast, saturation, activeFilter, history, historyIndex]);
 
-  // Undo/Redo
   const undo = () => {
     if (historyIndex > 0) {
-      const prevState = history[historyIndex - 1];
-      setCropArea(prevState.cropArea);
-      setRotation(prevState.rotation);
-      setZoom(prevState.zoom);
-      setFlip(prevState.flip);
-      setBrightness(prevState.brightness);
-      setContrast(prevState.contrast);
-      setSaturation(prevState.saturation);
-      setActiveFilter(prevState.activeFilter);
+      const prev = history[historyIndex - 1];
+      setRotation(prev.rotation); setZoom(prev.zoom);
+      setFlip(prev.flip); setBrightness(prev.brightness); setContrast(prev.contrast);
+      setSaturation(prev.saturation); setActiveFilter(prev.activeFilter);
       setHistoryIndex(historyIndex - 1);
     }
   };
 
   const redo = () => {
     if (historyIndex < history.length - 1) {
-      const nextState = history[historyIndex + 1];
-      setCropArea(nextState.cropArea);
-      setRotation(nextState.rotation);
-      setZoom(nextState.zoom);
-      setFlip(nextState.flip);
-      setBrightness(nextState.brightness);
-      setContrast(nextState.contrast);
-      setSaturation(nextState.saturation);
-      setActiveFilter(nextState.activeFilter);
+      const next = history[historyIndex + 1];
+      setRotation(next.rotation); setZoom(next.zoom);
+      setFlip(next.flip); setBrightness(next.brightness); setContrast(next.contrast);
+      setSaturation(next.saturation); setActiveFilter(next.activeFilter);
       setHistoryIndex(historyIndex + 1);
     }
   };
 
-  // Reset all
   const handleReset = () => {
-    setCropArea({ x: 0, y: 0, width: 100, height: 100 });
-    setRotation(0);
-    setZoom(1);
+    setRotation(0); setZoom(1);
     setFlip({ horizontal: false, vertical: false });
-    setBrightness(100);
-    setContrast(100);
-    setSaturation(100);
-    setActiveFilter('');
-    setAspectRatio(null);
+    setBrightness(100); setContrast(100); setSaturation(100);
+    setActiveFilter(''); setAspectRatio(null);
   };
 
-  // Save edited image
   const handleSave = async () => {
     try {
-      setIsProcessing(true);
-      setError('');
-
-      const adjustments: Adjustments = {
-        brightness,
-        contrast,
-        saturation,
-        filter: activeFilter
-      };
-
-      const croppedImage = await getCroppedImg(
-        image,
-        cropArea,
-        rotation,
-        flip,
-        adjustments
-      );
-
-      onSave(croppedImage);
-      onClose();
-    } catch (err) {
+      setIsProcessing(true); setError('');
+      const adj: Adjustments = { brightness, contrast, saturation, filter: activeFilter };
+      const result = await getCroppedImg(image, rotation, flip, adj);
+      onSave(result); onClose();
+    } catch {
       setError('Failed to process image. Please try again.');
-      console.error('Error saving image:', err);
     } finally {
       setIsProcessing(false);
     }
   };
 
-  // Download image
   const handleDownload = async () => {
     try {
       setIsProcessing(true);
-      const adjustments: Adjustments = {
-        brightness,
-        contrast,
-        saturation,
-        filter: activeFilter
-      };
-
-      const croppedImage = await getCroppedImg(
-        image,
-        cropArea,
-        rotation,
-        flip,
-        adjustments
-      );
-
+      const adj: Adjustments = { brightness, contrast, saturation, filter: activeFilter };
+      const result = await getCroppedImg(image, rotation, flip, adj);
       const link = document.createElement('a');
       link.download = `edited-image-${Date.now()}.jpg`;
-      link.href = croppedImage;
+      link.href = result;
       link.click();
-    } catch (err) {
+    } catch {
       setError('Failed to download image.');
     } finally {
       setIsProcessing(false);
     }
   };
 
-  // Transform image style
-  const getImageStyle = (): React.CSSProperties => {
-    return {
-      transform: `scale(${zoom}) rotate(${rotation}deg) scaleX(${flip.horizontal ? -1 : 1}) scaleY(${flip.vertical ? -1 : 1})`,
-      filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) ${activeFilter}`,
-      transition: 'transform 0.2s ease, filter 0.2s ease'
-    };
-  };
+  const getImageStyle = (): React.CSSProperties => ({
+    transform: `scale(${zoom}) rotate(${rotation}deg) scaleX(${flip.horizontal ? -1 : 1}) scaleY(${flip.vertical ? -1 : 1})`,
+    filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) ${activeFilter}`,
+    transition: 'transform 0.2s ease, filter 0.2s ease',
+  });
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl h-[90vh] flex flex-col p-0">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b">
-          <div className="flex items-center justify-between">
-            <DialogTitle>Image Editor</DialogTitle>
+      <DialogContent className="w-full max-w-full sm:max-w-6xl h-[100dvh] sm:h-[90vh] flex flex-col p-0 gap-0 rounded-none sm:rounded-xl overflow-hidden">
+
+        {/* Header */}
+        <DialogHeader className="flex-shrink-0 px-4 sm:px-6 pt-4 pb-3 border-b">
+          <div className="flex items-center justify-between gap-3">
+            <DialogTitle className="text-base sm:text-lg font-semibold">Edit Image</DialogTitle>
             <DialogDescription className="sr-only">Editor to crop, adjust, and apply filters to images.</DialogDescription>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={undo}
-                disabled={historyIndex <= 0}
-                title="Undo"
-              >
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={undo} disabled={historyIndex <= 0} title="Undo">
                 <Undo className="h-4 w-4" />
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={redo}
-                disabled={historyIndex >= history.length - 1}
-                title="Redo"
-              >
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={redo} disabled={historyIndex >= history.length - 1} title="Redo">
                 <Redo className="h-4 w-4" />
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleReset}
-                title="Reset All"
-              >
-                Reset
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleReset} title="Reset all">
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8 sm:hidden" onClick={onClose}>
+                <X className="h-4 w-4" />
               </Button>
             </div>
           </div>
         </DialogHeader>
 
+        {/* Error */}
         {error && (
-          <Alert variant="destructive" className="mx-6 mt-4">
+          <Alert variant="destructive" className="mx-4 sm:mx-6 mt-3 flex-shrink-0">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
-        <div className="flex-1 flex min-h-0">
-          {/* Preview Area */}
-          <div className="flex-1 bg-muted/30 p-6 flex items-center justify-center overflow-hidden" ref={containerRef}>
-            <div className="relative max-w-full max-h-full flex items-center justify-center">
-              <img
-                ref={imageRef}
-                src={image}
-                alt="Edit preview"
-                style={getImageStyle()}
-                className="max-w-full max-h-[calc(90vh-300px)] object-contain"
-              />
-            </div>
+        {/* Body */}
+        <div className="flex-1 flex flex-col sm:flex-row min-h-0 overflow-hidden">
+
+          {/* Preview */}
+          <div
+            ref={containerRef}
+            className="h-52 sm:h-auto sm:flex-1 bg-muted/30 flex items-center justify-center overflow-hidden border-b sm:border-b-0 sm:border-r"
+          >
+            <img
+              ref={imageRef}
+              src={image}
+              alt="Edit preview"
+              style={getImageStyle()}
+              className="max-w-full max-h-full object-contain"
+            />
           </div>
 
-          {/* Controls Panel */}
-          <div className="w-80 border-l bg-background overflow-y-auto">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
-              <TabsList className="w-full grid grid-cols-3 rounded-none">
-                <TabsTrigger value="crop" className="gap-2">
-                  <Crop className="h-4 w-4" />
+          {/* Controls */}
+          <div className="w-full sm:w-80 flex flex-col min-h-0 bg-background overflow-hidden">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0">
+
+              <TabsList className="flex-shrink-0 w-full grid grid-cols-3 rounded-none h-11 border-b">
+                <TabsTrigger value="crop" className="gap-1.5 text-xs sm:text-sm">
+                  <Crop className="h-3.5 w-3.5" />
                   Crop
                 </TabsTrigger>
-                <TabsTrigger value="adjust" className="gap-2">
-                  <Sliders className="h-4 w-4" />
+                <TabsTrigger value="adjust" className="gap-1.5 text-xs sm:text-sm">
+                  <Sliders className="h-3.5 w-3.5" />
                   Adjust
                 </TabsTrigger>
-                <TabsTrigger value="filters" className="gap-2">
-                  <Sparkles className="h-4 w-4" />
+                <TabsTrigger value="filters" className="gap-1.5 text-xs sm:text-sm">
+                  <Sparkles className="h-3.5 w-3.5" />
                   Filters
                 </TabsTrigger>
               </TabsList>
 
-              <div className="p-4 space-y-6">
-                <TabsContent value="crop" className="mt-0 space-y-4">
-                  <div className="space-y-3">
-                    <Label>Aspect Ratio</Label>
-                    <div className="grid grid-cols-5 gap-2">
-                      {aspectRatios.map((ratio) => (
-                        <Button
-                          key={ratio.name}
-                          variant={aspectRatio === ratio.value ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => setAspectRatio(ratio.value)}
-                          className="flex flex-col h-auto p-2"
-                        >
-                          <span className="text-lg">{ratio.icon}</span>
-                          <span className="text-xs mt-1">{ratio.name}</span>
+              <div className="flex-1 overflow-y-auto">
+                <div className="p-4 space-y-5">
+
+                  {/* CROP */}
+                  <TabsContent value="crop" className="mt-0 space-y-5">
+
+                    <div className="space-y-2">
+                      <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Aspect Ratio</Label>
+                      <div className="grid grid-cols-5 gap-1.5">
+                        {aspectRatios.map((ratio) => (
+                          <Button
+                            key={ratio.name}
+                            variant={aspectRatio === ratio.value ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setAspectRatio(ratio.value)}
+                            className="flex flex-col h-auto py-2 px-1 gap-1"
+                          >
+                            {ratio.icon}
+                            <span className="text-[10px] leading-none">{ratio.name}</span>
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Zoom</Label>
+                        <span className="text-xs tabular-nums text-muted-foreground">{zoom.toFixed(1)}×</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="icon" className="h-8 w-8 flex-shrink-0"
+                          onClick={() => setZoom(Math.max(0.5, parseFloat((zoom - 0.1).toFixed(1))))}>
+                          <ZoomOut className="h-3.5 w-3.5" />
                         </Button>
+                        <Slider value={[zoom]} min={0.5} max={3} step={0.1}
+                          onValueChange={(val) => setZoom(val[0])} className="flex-1" />
+                        <Button variant="outline" size="icon" className="h-8 w-8 flex-shrink-0"
+                          onClick={() => setZoom(Math.min(3, parseFloat((zoom + 0.1).toFixed(1))))}>
+                          <ZoomIn className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Rotation</Label>
+                        <span className="text-xs tabular-nums text-muted-foreground">{rotation}°</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="icon" className="h-8 w-8 flex-shrink-0"
+                          onClick={() => setRotation((rotation - 90) % 360)} title="Rotate left 90°">
+                          <RotateCcw className="h-3.5 w-3.5" />
+                        </Button>
+                        <Slider value={[rotation]} min={-180} max={180} step={1}
+                          onValueChange={(val) => setRotation(val[0])} className="flex-1" />
+                        <Button variant="outline" size="icon" className="h-8 w-8 flex-shrink-0"
+                          onClick={() => setRotation((rotation + 90) % 360)} title="Rotate right 90°">
+                          <RotateCw className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Flip</Label>
+                      <div className="flex gap-2">
+                        <Button
+                          variant={flip.horizontal ? 'default' : 'outline'}
+                          className="flex-1 gap-2 h-9 text-sm"
+                          onClick={() => setFlip(prev => ({ ...prev, horizontal: !prev.horizontal }))}
+                        >
+                          <FlipHorizontal className="h-4 w-4" />
+                          Horizontal
+                        </Button>
+                        <Button
+                          variant={flip.vertical ? 'default' : 'outline'}
+                          className="flex-1 gap-2 h-9 text-sm"
+                          onClick={() => setFlip(prev => ({ ...prev, vertical: !prev.vertical }))}
+                        >
+                          <FlipVertical className="h-4 w-4" />
+                          Vertical
+                        </Button>
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  {/* ADJUST */}
+                  <TabsContent value="adjust" className="mt-0 space-y-5">
+
+                    {[
+                      { label: 'Brightness', icon: <Sun className="h-3.5 w-3.5 text-muted-foreground" />, value: brightness, min: 50, max: 200, onChange: setBrightness },
+                      { label: 'Contrast', icon: <Contrast className="h-3.5 w-3.5 text-muted-foreground" />, value: contrast, min: 50, max: 200, onChange: setContrast },
+                      { label: 'Saturation', icon: <Droplets className="h-3.5 w-3.5 text-muted-foreground" />, value: saturation, min: 0, max: 200, onChange: setSaturation },
+                    ].map(({ label, icon, value, min, max, onChange }) => (
+                      <div key={label} className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            {icon}
+                            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</Label>
+                          </div>
+                          <span className="text-xs tabular-nums text-muted-foreground">{value}%</span>
+                        </div>
+                        <Slider value={[value]} min={min} max={max} step={1}
+                          onValueChange={(val) => onChange(val[0])} />
+                      </div>
+                    ))}
+
+                    <Button variant="outline" size="sm" className="w-full gap-2"
+                      onClick={() => { setBrightness(100); setContrast(100); setSaturation(100); }}>
+                      <RefreshCw className="h-3.5 w-3.5" />
+                      Reset Adjustments
+                    </Button>
+                  </TabsContent>
+
+                  {/* FILTERS */}
+                  <TabsContent value="filters" className="mt-0">
+                    <div className="grid grid-cols-2 gap-2">
+                      {filterPresets.map((preset) => (
+                        <button
+                          key={preset.name}
+                          onClick={() => setActiveFilter(preset.filter)}
+                          className={cn(
+                            "flex flex-col rounded-lg overflow-hidden border-2 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                            activeFilter === preset.filter
+                              ? "border-primary ring-1 ring-primary/30"
+                              : "border-transparent hover:border-border"
+                          )}
+                        >
+                          <div
+                            className="w-full aspect-video bg-cover bg-center"
+                            style={{ backgroundImage: `url(${image})`, filter: preset.filter || 'none' }}
+                          />
+                          <div className={cn(
+                            "px-2 py-1.5 text-xs font-medium text-center transition-colors",
+                            activeFilter === preset.filter
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted/40 text-muted-foreground"
+                          )}>
+                            {preset.name}
+                          </div>
+                        </button>
                       ))}
                     </div>
-                  </div>
+                  </TabsContent>
 
-                  <div className="space-y-2">
-                    <Label>Zoom ({zoom.toFixed(1)}x)</Label>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => setZoom(Math.max(0.5, zoom - 0.1))}
-                      >
-                        <ZoomOut className="h-4 w-4" />
-                      </Button>
-                      <Slider
-                        value={[zoom]}
-                        min={0.5}
-                        max={3}
-                        step={0.1}
-                        onValueChange={(val) => setZoom(val[0])}
-                        className="flex-1"
-                      />
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => setZoom(Math.min(3, zoom + 0.1))}
-                      >
-                        <ZoomIn className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Rotation ({rotation}°)</Label>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => setRotation((rotation - 90) % 360)}
-                      >
-                        <RotateCcw className="h-4 w-4" />
-                      </Button>
-                      <Slider
-                        value={[rotation]}
-                        min={-180}
-                        max={180}
-                        step={1}
-                        onValueChange={(val) => setRotation(val[0])}
-                        className="flex-1"
-                      />
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => setRotation((rotation + 90) % 360)}
-                      >
-                        <RotateCw className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Flip</Label>
-                    <div className="flex gap-2">
-                      <Button
-                        variant={flip.horizontal ? 'default' : 'outline'}
-                        className="flex-1"
-                        onClick={() => setFlip(prev => ({ ...prev, horizontal: !prev.horizontal }))}
-                      >
-                        <FlipHorizontal className="h-4 w-4 mr-2" />
-                        Horizontal
-                      </Button>
-                      <Button
-                        variant={flip.vertical ? 'default' : 'outline'}
-                        className="flex-1"
-                        onClick={() => setFlip(prev => ({ ...prev, vertical: !prev.vertical }))}
-                      >
-                        <FlipVertical className="h-4 w-4 mr-2" />
-                        Vertical
-                      </Button>
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="adjust" className="mt-0 space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <Label>Brightness</Label>
-                      <span className="text-sm text-muted-foreground">{brightness}%</span>
-                    </div>
-                    <Slider
-                      value={[brightness]}
-                      min={50}
-                      max={200}
-                      step={1}
-                      onValueChange={(val) => setBrightness(val[0])}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <Label>Contrast</Label>
-                      <span className="text-sm text-muted-foreground">{contrast}%</span>
-                    </div>
-                    <Slider
-                      value={[contrast]}
-                      min={50}
-                      max={200}
-                      step={1}
-                      onValueChange={(val) => setContrast(val[0])}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <Label>Saturation</Label>
-                      <span className="text-sm text-muted-foreground">{saturation}%</span>
-                    </div>
-                    <Slider
-                      value={[saturation]}
-                      min={0}
-                      max={200}
-                      step={1}
-                      onValueChange={(val) => setSaturation(val[0])}
-                    />
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => {
-                      setBrightness(100);
-                      setContrast(100);
-                      setSaturation(100);
-                    }}
-                  >
-                    Reset Adjustments
-                  </Button>
-                </TabsContent>
-
-                <TabsContent value="filters" className="mt-0 space-y-4">
-                  <div className="grid grid-cols-2 gap-2">
-                    {filterPresets.map((preset) => (
-                      <Button
-                        key={preset.name}
-                        variant={activeFilter === preset.filter ? 'default' : 'outline'}
-                        className="h-auto flex flex-col p-3"
-                        onClick={() => setActiveFilter(preset.filter)}
-                      >
-                        <div
-                          className="w-full h-16 rounded mb-2 bg-cover bg-center border"
-                          style={{
-                            backgroundImage: `url(${image})`,
-                            filter: preset.filter,
-                          }}
-                        />
-                        <span className="text-xs">{preset.preview} {preset.name}</span>
-                      </Button>
-                    ))}
-                  </div>
-                </TabsContent>
+                </div>
               </div>
             </Tabs>
           </div>
         </div>
 
-        <DialogFooter className="px-6 py-4 border-t">
-          <div className="flex items-center justify-between w-full">
-            <Button variant="outline" onClick={handleDownload} disabled={isProcessing}>
-              <Download className="h-4 w-4 mr-2" />
+        {/* Footer */}
+        <DialogFooter className="flex-shrink-0 px-4 sm:px-6 py-3 border-t bg-background">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between w-full gap-2">
+            <Button variant="outline" size="sm" className="gap-2" onClick={handleDownload} disabled={isProcessing}>
+              <Download className="h-4 w-4" />
               Download
             </Button>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={onClose} disabled={isProcessing}>
-                <X className="h-4 w-4 mr-2" />
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="flex-1 sm:flex-none gap-2" onClick={onClose} disabled={isProcessing}>
+                <X className="h-4 w-4" />
                 Cancel
               </Button>
-              <Button onClick={handleSave} disabled={isProcessing}>
+              <Button size="sm" className="flex-1 sm:flex-none gap-2" onClick={handleSave} disabled={isProcessing}>
                 {isProcessing ? (
-                  <>Processing...</>
+                  <><Loader2 className="h-4 w-4 animate-spin" />Processing…</>
                 ) : (
-                  <>
-                    <Check className="h-4 w-4 mr-2" />
-                    Apply & Save
-                  </>
+                  <><Check className="h-4 w-4" />Apply & Save</>
                 )}
               </Button>
             </div>
           </div>
         </DialogFooter>
+
       </DialogContent>
     </Dialog>
   );
