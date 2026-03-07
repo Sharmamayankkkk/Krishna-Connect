@@ -108,6 +108,7 @@
     "ajv": "^8.17.1",
     "workbox-build": {
       "glob": "^10.0.0"
-    }
+    },
+    "next": "$next"
   }
 }
