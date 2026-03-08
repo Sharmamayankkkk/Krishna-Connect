@@ -233,7 +233,7 @@ class _LeelaVideoCardState extends State<_LeelaVideoCard> {
                             ),
                             if (widget.video.user?.username != null)
                               Text(
-                                '@${widget.video.user!.username}',
+                                '@${widget.video.user?.username ?? ''}',
                                 style: const TextStyle(color: Colors.white70, fontSize: 12),
                               ),
                           ],

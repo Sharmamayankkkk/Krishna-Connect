@@ -87,11 +87,12 @@ class ChatService {
     final msg = await _client.from('messages').select('reactions').eq('id', int.parse(messageId)).single();
     final reactions = Map<String, List<dynamic>>.from(msg['reactions'] ?? {});
     
-    if (reactions[emoji]?.contains(_userId) ?? false) {
-      reactions[emoji]!.remove(_userId);
-      if (reactions[emoji]!.isEmpty) reactions.remove(emoji);
+    final emojiReactions = reactions[emoji];
+    if (emojiReactions != null && emojiReactions.contains(_userId)) {
+      emojiReactions.remove(_userId);
+      if (emojiReactions.isEmpty) reactions.remove(emoji);
     } else {
-      reactions[emoji] = [...(reactions[emoji] ?? []), _userId!];
+      reactions[emoji] = [...(emojiReactions ?? []), _userId!];
     }
 
     await _client.from('messages').update({'reactions': reactions}).eq('id', int.parse(messageId));

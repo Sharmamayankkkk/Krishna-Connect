@@ -17,7 +17,6 @@ import '../screens/events/events_screen.dart';
 import '../screens/search/search_screen.dart';
 import '../screens/settings/settings_screen.dart';
 import '../screens/stories/create_story_screen.dart';
-import '../screens/stories/story_viewer_screen.dart';
 import '../screens/challenges/challenge_detail_screen.dart';
 import '../screens/challenges/create_challenge_screen.dart';
 import '../screens/challenges/challenges_screen.dart';

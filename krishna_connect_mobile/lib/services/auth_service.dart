@@ -62,6 +62,7 @@ class AuthService {
 
   Future<bool> isProfileComplete() async {
     final profile = await getProfile();
-    return profile?.username != null && profile!.username!.isNotEmpty;
+    final username = profile?.username;
+    return username != null && username.isNotEmpty;
   }
 }
