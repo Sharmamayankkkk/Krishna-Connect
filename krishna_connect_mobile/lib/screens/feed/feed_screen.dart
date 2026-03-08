@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import '../../config/assets.dart';
+import '../../config/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/app_provider.dart';
 import '../../widgets/post_card.dart';
@@ -49,16 +49,12 @@ class _FeedScreenState extends State<FeedScreen> {
             snap: true,
             title: Row(
               children: [
-                Image.asset(
-                  AppAssets.logoLight,
-                  height: 28,
-                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                ),
+                Icon(Icons.auto_awesome, size: 20, color: colorScheme.primary),
                 const SizedBox(width: 8),
                 Text(
-                  'Krishna Connect',
+                  'For You',
                   style: TextStyle(
-                    color: colorScheme.primary,
+                    color: colorScheme.onSurface,
                     fontWeight: FontWeight.w700,
                     fontSize: 20,
                   ),
@@ -108,29 +104,53 @@ class _FeedScreenState extends State<FeedScreen> {
                   onTap: () => context.push('/create-post'),
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: colorScheme.surface,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
                     ),
-                    child: Row(
+                    child: Column(
                       children: [
-                        UserAvatar(imageUrl: user?.avatarUrlOrDefault, size: 34, fallbackName: user?.displayName),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            "What's on your mind?",
-                            style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 14),
-                          ),
+                        Row(
+                          children: [
+                            UserAvatar(imageUrl: user?.avatarUrlOrDefault, size: 34, fallbackName: user?.displayName),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                "What's on your mind?",
+                                style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 14),
+                              ),
+                            ),
+                          ],
                         ),
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: colorScheme.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(Icons.edit, size: 18, color: colorScheme.primary),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            _buildToolIcon(context, Icons.image_outlined, colorScheme.primary),
+                            const SizedBox(width: 16),
+                            _buildToolIcon(context, Icons.videocam_outlined, AppTheme.successColor),
+                            const SizedBox(width: 16),
+                            _buildToolIcon(context, Icons.emoji_emotions_outlined, AppTheme.warningColor),
+                            const SizedBox(width: 16),
+                            _buildToolIcon(context, Icons.bar_chart, colorScheme.primary),
+                            const Spacer(),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: colorScheme.primary,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                'Post',
+                                style: TextStyle(
+                                  color: colorScheme.onPrimary,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -197,6 +217,10 @@ class _FeedScreenState extends State<FeedScreen> {
         child: Icon(Icons.edit, color: colorScheme.onPrimary),
       ),
     );
+  }
+
+  Widget _buildToolIcon(BuildContext context, IconData icon, Color color) {
+    return Icon(icon, size: 20, color: color.withValues(alpha: 0.7));
   }
 
   @override

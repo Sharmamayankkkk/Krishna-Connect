@@ -360,6 +360,21 @@ flutter pub get
 flutter run
 ```
 
+**ADB error: "Can't find service: package" during install**
+This is an Android emulator issue, not a code problem. The emulator's Package Manager service hasn't fully started yet. To fix:
+```bash
+# 1. Restart ADB
+adb kill-server
+adb start-server
+
+# 2. Wait for the emulator to fully boot, then retry
+adb wait-for-device
+flutter run
+
+# 3. If that doesn't work, cold boot the emulator from AVD Manager
+#    (Android Studio → Device Manager → Cold Boot Now)
+```
+
 **Images not loading / broken network images**
 - Ensure your device/emulator has internet access
 - Check that the Supabase Storage bucket is set to public (for avatar/media URLs)

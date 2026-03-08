@@ -318,13 +318,6 @@ class PostCard extends StatelessWidget {
     return Row(
       children: [
         _actionButton(
-          icon: isLiked ? Icons.favorite : Icons.favorite_border,
-          color: isLiked ? Colors.red : mutedColor,
-          label: _formatCount(post.likesCount),
-          onTap: onLike,
-        ),
-        const SizedBox(width: 16),
-        _actionButton(
           icon: Icons.chat_bubble_outline,
           color: mutedColor,
           label: _formatCount(post.commentsCount),
@@ -336,6 +329,19 @@ class PostCard extends StatelessWidget {
           color: isReposted ? AppTheme.successColor : mutedColor,
           label: _formatCount(post.repostsCount),
           onTap: onRepost,
+        ),
+        const SizedBox(width: 16),
+        _actionButton(
+          icon: isLiked ? Icons.favorite : Icons.favorite_border,
+          color: isLiked ? const Color(0xFFEC4899) : mutedColor,
+          label: _formatCount(post.likesCount),
+          onTap: onLike,
+        ),
+        const SizedBox(width: 16),
+        _actionButton(
+          icon: Icons.bar_chart_rounded,
+          color: mutedColor,
+          label: _formatCount(post.viewsCount),
         ),
         const Spacer(),
         _actionButton(

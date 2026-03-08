@@ -33,8 +33,8 @@ class StoryCircle extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: isViewed
                     ? null
-                    : LinearGradient(
-                        colors: [colorScheme.primary, colorScheme.primary.withValues(alpha: 0.6)],
+                    : const LinearGradient(
+                        colors: [Color(0xFFFACC15), Color(0xFFEC4899), Color(0xFF9333EA)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
