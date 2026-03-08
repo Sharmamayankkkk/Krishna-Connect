@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/models.dart';
 
@@ -40,13 +41,17 @@ class EventService {
     // Notify event creator about the RSVP
     final event = await _client.from('events').select('creator_id').eq('id', eventId).maybeSingle();
     if (event != null && event['creator_id'] != _userId) {
-      await _client.from('notifications').insert({
-        'user_id': event['creator_id'],
-        'actor_id': _userId,
-        'type': 'event_rsvp',
-        'entity_id': eventId,
-        'entity_type': 'event',
-      }).onError((error, stackTrace) => null); // Ignore if type not in enum
+      try {
+        await _client.from('notifications').insert({
+          'user_id': event['creator_id'],
+          'actor_id': _userId,
+          'type': 'event_rsvp',
+          'entity_id': eventId,
+          'entity_type': 'event',
+        });
+      } catch (e) {
+        debugPrint('Failed to create event RSVP notification: $e');
+      }
     }
   }
 
@@ -129,13 +134,17 @@ class StoryService {
     // Notify story owner
     final story = await _client.from('statuses').select('user_id').eq('id', int.parse(storyId)).maybeSingle();
     if (story != null && story['user_id'] != _userId) {
-      await _client.from('notifications').insert({
-        'user_id': story['user_id'],
-        'actor_id': _userId,
-        'type': 'story_reaction',
-        'entity_id': int.parse(storyId),
-        'entity_type': 'story',
-      }).onError((error, stackTrace) => null); // Ignore if type not in enum
+      try {
+        await _client.from('notifications').insert({
+          'user_id': story['user_id'],
+          'actor_id': _userId,
+          'type': 'story_reaction',
+          'entity_id': int.parse(storyId),
+          'entity_type': 'story',
+        });
+      } catch (e) {
+        debugPrint('Failed to create story reaction notification: $e');
+      }
     }
   }
 
@@ -178,13 +187,17 @@ class ChallengeService {
     // Notify challenge creator
     final challenge = await _client.from('challenges').select('created_by').eq('id', challengeId).maybeSingle();
     if (challenge != null && challenge['created_by'] != _userId) {
-      await _client.from('notifications').insert({
-        'user_id': challenge['created_by'],
-        'actor_id': _userId,
-        'type': 'challenge_joined',
-        'entity_id': challengeId,
-        'entity_type': 'challenge',
-      }).onError((error, stackTrace) => null); // Ignore if type not in enum
+      try {
+        await _client.from('notifications').insert({
+          'user_id': challenge['created_by'],
+          'actor_id': _userId,
+          'type': 'challenge_joined',
+          'entity_id': challengeId,
+          'entity_type': 'challenge',
+        });
+      } catch (e) {
+        debugPrint('Failed to create challenge joined notification: $e');
+      }
     }
   }
 

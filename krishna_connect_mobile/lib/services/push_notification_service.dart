@@ -11,6 +11,7 @@ class PushNotificationService {
   final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
   final List<RealtimeChannel> _channels = [];
   String? _currentUserId;
+  int _notificationIdCounter = 0;
 
   // Notification channel IDs
   static const String _channelGeneral = 'krishna_connect_general';
@@ -22,6 +23,8 @@ class PushNotificationService {
   void Function(String? payload)? onNotificationTap;
 
   PushNotificationService(this._client);
+
+  int _nextNotificationId() => _notificationIdCounter++;
 
   /// Initialize the notification plugin and set up channels.
   Future<void> initialize() async {
@@ -149,7 +152,9 @@ class PushNotificationService {
         if (actor != null) {
           actorName = actor['name'] ?? actor['username'] ?? 'Someone';
         }
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('Error fetching actor profile: $e');
+      }
     }
 
     String title;
@@ -221,7 +226,7 @@ class PushNotificationService {
     });
 
     await _showNotification(
-      id: record['id']?.hashCode ?? DateTime.now().millisecondsSinceEpoch,
+      id: _nextNotificationId(),
       title: title,
       body: body,
       channelId: channelId,
@@ -241,7 +246,9 @@ class PushNotificationService {
         if (sender != null) {
           senderName = sender['name'] ?? sender['username'] ?? 'Someone';
         }
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('Error fetching sender profile: $e');
+      }
     }
 
     final body = content?.isNotEmpty == true ? content! : 'Sent an attachment';
@@ -253,7 +260,7 @@ class PushNotificationService {
     });
 
     await _showNotification(
-      id: record['id']?.hashCode ?? DateTime.now().millisecondsSinceEpoch,
+      id: _nextNotificationId(),
       title: senderName,
       body: body,
       channelId: _channelMessages,
@@ -266,7 +273,7 @@ class PushNotificationService {
   /// Show notification when a post is liked.
   Future<void> notifyPostLiked({required String likerName, required String postId}) async {
     await _showNotification(
-      id: 'like_$postId'.hashCode,
+      id: _nextNotificationId(),
       title: 'New Like',
       body: '$likerName liked your post',
       channelId: _channelSocial,
@@ -277,7 +284,7 @@ class PushNotificationService {
   /// Show notification for new comment.
   Future<void> notifyNewComment({required String commenterName, required String postId}) async {
     await _showNotification(
-      id: 'comment_$postId'.hashCode,
+      id: _nextNotificationId(),
       title: 'New Comment',
       body: '$commenterName commented on your post',
       channelId: _channelSocial,
@@ -288,7 +295,7 @@ class PushNotificationService {
   /// Show notification for new follower.
   Future<void> notifyNewFollower({required String followerName, required String followerUsername}) async {
     await _showNotification(
-      id: 'follow_$followerUsername'.hashCode,
+      id: _nextNotificationId(),
       title: 'New Follower',
       body: '$followerName started following you',
       channelId: _channelSocial,
@@ -299,7 +306,7 @@ class PushNotificationService {
   /// Show notification for new message.
   Future<void> notifyNewMessage({required String senderName, required String content, required int chatId}) async {
     await _showNotification(
-      id: 'msg_$chatId'.hashCode,
+      id: _nextNotificationId(),
       title: senderName,
       body: content.isNotEmpty ? content : 'Sent an attachment',
       channelId: _channelMessages,
@@ -310,7 +317,7 @@ class PushNotificationService {
   /// Show notification for event RSVP.
   Future<void> notifyEventRsvp({required String userName, required String eventTitle, required String status}) async {
     await _showNotification(
-      id: 'event_rsvp_$eventTitle'.hashCode,
+      id: _nextNotificationId(),
       title: 'Event RSVP',
       body: '$userName is $status for "$eventTitle"',
       channelId: _channelEvents,
@@ -321,7 +328,7 @@ class PushNotificationService {
   /// Show notification for challenge join.
   Future<void> notifyChallengeJoined({required String userName, required String challengeTitle}) async {
     await _showNotification(
-      id: 'challenge_$challengeTitle'.hashCode,
+      id: _nextNotificationId(),
       title: 'Challenge Joined',
       body: '$userName joined "$challengeTitle"',
       channelId: _channelEvents,
@@ -332,7 +339,7 @@ class PushNotificationService {
   /// Show notification for story reaction.
   Future<void> notifyStoryReaction({required String reactorName, required String emoji}) async {
     await _showNotification(
-      id: 'story_react_$reactorName'.hashCode,
+      id: _nextNotificationId(),
       title: 'Story Reaction',
       body: '$reactorName reacted $emoji to your story',
       channelId: _channelSocial,
@@ -343,7 +350,7 @@ class PushNotificationService {
   /// Show notification for post creation (for followers).
   Future<void> notifyNewPost({required String authorName}) async {
     await _showNotification(
-      id: 'new_post_$authorName'.hashCode,
+      id: _nextNotificationId(),
       title: 'New Post',
       body: '$authorName shared a new post',
       channelId: _channelSocial,

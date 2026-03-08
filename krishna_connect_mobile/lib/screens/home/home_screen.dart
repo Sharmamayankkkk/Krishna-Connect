@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme.dart';
@@ -50,15 +51,15 @@ class _HomeScreenState extends State<HomeScreen> {
   void _handleNotificationTap(String? payload) {
     if (payload == null || !mounted) return;
     try {
-      if (payload.startsWith('{')) {
-        // Navigate based on notification type
-        if (payload.contains('"new_message"')) {
-          setState(() => _currentIndex = 3); // Switch to chats tab
-        } else {
-          setState(() => _currentIndex = 4); // Switch to notifications tab
-        }
+      final data = jsonDecode(payload) as Map<String, dynamic>;
+      final type = data['type'] as String? ?? '';
+      if (type == 'new_message') {
+        setState(() => _currentIndex = 3); // Switch to chats tab
+      } else {
+        setState(() => _currentIndex = 4); // Switch to notifications tab
       }
-    } catch (_) {
+    } catch (e) {
+      debugPrint('Error parsing notification payload: $e');
       setState(() => _currentIndex = 4); // Default to notifications tab
     }
   }

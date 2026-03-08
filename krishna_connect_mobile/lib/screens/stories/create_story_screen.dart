@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
@@ -41,7 +42,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                 ? Stack(
                     fit: StackFit.expand,
                     children: [
-                      Image.asset(_selectedMedia!.path, fit: BoxFit.contain, errorBuilder: (_, __, ___) => const Center(child: Icon(Icons.image, size: 48, color: AppTheme.textMuted))),
+                      Image.file(File(_selectedMedia!.path), fit: BoxFit.contain, errorBuilder: (_, __, ___) => const Center(child: Icon(Icons.image, size: 48, color: AppTheme.textMuted))),
                       Positioned(
                         bottom: 0,
                         left: 0,
