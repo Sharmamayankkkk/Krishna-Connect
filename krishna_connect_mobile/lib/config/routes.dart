@@ -13,11 +13,15 @@ import '../screens/chat/chat_detail_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/profile/edit_profile_screen.dart';
 import '../screens/events/event_detail_screen.dart';
+import '../screens/events/events_screen.dart';
 import '../screens/search/search_screen.dart';
 import '../screens/settings/settings_screen.dart';
 import '../screens/stories/create_story_screen.dart';
+import '../screens/stories/story_viewer_screen.dart';
 import '../screens/challenges/challenge_detail_screen.dart';
 import '../screens/challenges/create_challenge_screen.dart';
+import '../screens/challenges/challenges_screen.dart';
+import '../screens/bookmarks/bookmarks_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -94,7 +98,11 @@ GoRouter createRouter(AuthProvider authProvider) {
         builder: (context, state) => const EditProfileScreen(),
       ),
 
-      // Event detail
+      // Events
+      GoRoute(
+        path: '/events',
+        builder: (context, state) => const EventsScreen(),
+      ),
       GoRoute(
         path: '/event/:id',
         builder: (context, state) => EventDetailScreen(
@@ -122,6 +130,10 @@ GoRouter createRouter(AuthProvider authProvider) {
 
       // Challenges
       GoRoute(
+        path: '/challenges',
+        builder: (context, state) => const ChallengesScreen(),
+      ),
+      GoRoute(
         path: '/challenge/:id',
         builder: (context, state) => ChallengeDetailScreen(
           challengeId: int.parse(state.pathParameters['id']!),
@@ -130,6 +142,12 @@ GoRouter createRouter(AuthProvider authProvider) {
       GoRoute(
         path: '/create-challenge',
         builder: (context, state) => const CreateChallengeScreen(),
+      ),
+
+      // Bookmarks
+      GoRoute(
+        path: '/bookmarks',
+        builder: (context, state) => const BookmarksScreen(),
       ),
     ],
   );

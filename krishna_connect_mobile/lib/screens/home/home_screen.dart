@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/app_provider.dart';
+import '../../services/push_notification_service.dart';
 import '../feed/feed_screen.dart';
 import '../explore/explore_screen.dart';
 import '../leela/leela_screen.dart';
@@ -31,7 +32,35 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AppProvider>().initializeData();
+      _initPushNotifications();
     });
+  }
+
+  void _initPushNotifications() {
+    final userId = context.read<AuthProvider>().userId;
+    if (userId != null) {
+      final pushService = context.read<PushNotificationService>();
+      pushService.startListening(userId);
+      pushService.onNotificationTap = (payload) {
+        _handleNotificationTap(payload);
+      };
+    }
+  }
+
+  void _handleNotificationTap(String? payload) {
+    if (payload == null || !mounted) return;
+    try {
+      if (payload.startsWith('{')) {
+        // Navigate based on notification type
+        if (payload.contains('"new_message"')) {
+          setState(() => _currentIndex = 3); // Switch to chats tab
+        } else {
+          setState(() => _currentIndex = 4); // Switch to notifications tab
+        }
+      }
+    } catch (_) {
+      setState(() => _currentIndex = 4); // Default to notifications tab
+    }
   }
 
   @override

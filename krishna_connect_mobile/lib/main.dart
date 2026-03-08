@@ -8,6 +8,7 @@ import 'services/post_service.dart';
 import 'services/chat_service.dart';
 import 'services/profile_service.dart';
 import 'services/services.dart';
+import 'services/push_notification_service.dart';
 import 'providers/auth_provider.dart';
 import 'providers/app_provider.dart';
 import 'providers/theme_provider.dart';
@@ -41,12 +42,18 @@ void main() async {
   final leelaService = LeelaService(client);
   final bookmarkService = BookmarkService(client);
 
+  // Initialize push notification service
+  final pushService = PushNotificationService(client);
+  await pushService.initialize();
+  await pushService.requestPermission();
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider(authService)),
         Provider.value(value: profileService),
+        Provider.value(value: pushService),
         ChangeNotifierProvider(
           create: (_) => AppProvider(
             postService: postService,
