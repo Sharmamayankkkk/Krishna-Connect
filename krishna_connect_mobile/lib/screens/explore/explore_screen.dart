@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import '../../config/theme.dart';
 import '../../providers/app_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/profile_service.dart';
@@ -40,6 +39,8 @@ class _ExploreScreenState extends State<ExploreScreen> with SingleTickerProvider
   @override
   Widget build(BuildContext context) {
     final app = context.watch<AppProvider>();
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Scaffold(
       body: NestedScrollView(
         headerSliverBuilder: (context, _) => [
@@ -80,16 +81,16 @@ class _ExploreScreenState extends State<ExploreScreen> with SingleTickerProvider
                   contentPadding: EdgeInsets.zero,
                   leading: Container(
                     width: 40, height: 40,
-                    decoration: BoxDecoration(color: AppTheme.primaryColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
-                    child: const Center(child: Text('#', style: TextStyle(color: AppTheme.primaryColor, fontSize: 20, fontWeight: FontWeight.w700))),
+                    decoration: BoxDecoration(color: colorScheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+                    child: Center(child: Text('#', style: TextStyle(color: colorScheme.primary, fontSize: 20, fontWeight: FontWeight.w700))),
                   ),
                   title: Text(t['tag'] ?? '', style: const TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: Text('${t['usage_count'] ?? 0} posts', style: const TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+                  subtitle: Text('${t['usage_count'] ?? 0} posts', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 12)),
                 )),
                 if (_trending.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.all(32),
-                    child: Center(child: Text('No trending topics yet', style: TextStyle(color: AppTheme.textMuted))),
+                  Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Center(child: Text('No trending topics yet', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4)))),
                   ),
               ],
             ),
@@ -103,7 +104,7 @@ class _ExploreScreenState extends State<ExploreScreen> with SingleTickerProvider
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Container(
                     padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: AppTheme.cardDark, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppTheme.borderDark)),
+                    decoration: BoxDecoration(color: colorScheme.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3))),
                     child: Row(
                       children: [
                         UserAvatar(imageUrl: user.avatarUrlOrDefault, size: 44, fallbackName: user.displayName),
@@ -116,7 +117,7 @@ class _ExploreScreenState extends State<ExploreScreen> with SingleTickerProvider
                                 Flexible(child: Text(user.displayName, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14), overflow: TextOverflow.ellipsis)),
                                 if (user.isVerified) ...[const SizedBox(width: 4), VerificationBadge(verified: user.verified, size: 14)],
                               ]),
-                              if (user.username != null) Text('@${user.username}', style: const TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+                              if (user.username != null) Text('@${user.username}', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 12)),
                             ],
                           ),
                         ),

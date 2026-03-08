@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../config/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/profile_service.dart';
 import '../../services/post_service.dart';
@@ -51,6 +50,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   Widget build(BuildContext context) {
     final currentUserId = context.read<AuthProvider>().userId;
     final isOwnProfile = _profile?.id == currentUserId;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       body: _isLoading
@@ -64,10 +65,10 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                       pinned: true,
                       flexibleSpace: FlexibleSpaceBar(
                         background: _profile!.bannerUrl != null
-                            ? CachedNetworkImage(imageUrl: _profile!.bannerUrl!, fit: BoxFit.cover, errorWidget: (_, __, ___) => Container(color: AppTheme.cardDark))
+                            ? CachedNetworkImage(imageUrl: _profile!.bannerUrl!, fit: BoxFit.cover, errorWidget: (_, __, ___) => Container(color: colorScheme.surface))
                             : Container(
                                 decoration: BoxDecoration(
-                                  gradient: LinearGradient(colors: [AppTheme.primaryColor.withValues(alpha: 0.3), AppTheme.surfaceDark]),
+                                  gradient: LinearGradient(colors: [colorScheme.primary.withValues(alpha: 0.3), theme.scaffoldBackgroundColor]),
                                 ),
                               ),
                       ),
@@ -90,7 +91,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                     children: [
                       // Posts
                       _posts.isEmpty
-                          ? const Center(child: Padding(padding: EdgeInsets.all(32), child: Text('No posts yet', style: TextStyle(color: AppTheme.textMuted))))
+                          ? Center(child: Padding(padding: const EdgeInsets.all(32), child: Text('No posts yet', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4)))))
                           : ListView.builder(
                               itemCount: _posts.length,
                               itemBuilder: (context, index) => PostCard(
@@ -99,7 +100,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                               ),
                             ),
                       // Replies placeholder
-                      const Center(child: Text('Replies', style: TextStyle(color: AppTheme.textMuted))),
+                      Center(child: Text('Replies', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4)))),
                       // Media grid
                       _buildMediaGrid(),
                     ],
@@ -109,6 +110,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   }
 
   Widget _buildProfileInfo(BuildContext context, bool isOwnProfile) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -120,7 +123,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Container(
-                  decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppTheme.surfaceDark, width: 4)),
+                  decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: theme.scaffoldBackgroundColor, width: 4)),
                   child: UserAvatar(imageUrl: _profile!.avatarUrlOrDefault, size: 80, fallbackName: _profile!.displayName),
                 ),
                 const Spacer(),
@@ -140,7 +143,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                       }
                       _loadProfile();
                     },
-                    style: _profile!.isFollowing ? OutlinedButton.styleFrom(side: const BorderSide(color: AppTheme.borderDark)) : ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryColor, foregroundColor: Colors.black),
+                    style: _profile!.isFollowing ? OutlinedButton.styleFrom(side: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3))) : ElevatedButton.styleFrom(backgroundColor: colorScheme.primary, foregroundColor: Colors.black),
                     child: Text(_profile!.isFollowing ? 'Following' : (_profile!.followStatus == 'pending' ? 'Requested' : 'Follow')),
                   ),
                   const SizedBox(width: 8),
@@ -159,7 +162,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                   if (_profile!.isVerified) ...[const SizedBox(width: 6), VerificationBadge(verified: _profile!.verified, size: 18)],
                 ]),
                 if (_profile!.username != null)
-                  Text('@${_profile!.username}', style: const TextStyle(color: AppTheme.textMuted, fontSize: 14)),
+                  Text('@${_profile!.username}', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 14)),
                 if (_profile!.bio != null && _profile!.bio!.isNotEmpty) ...[
                   const SizedBox(height: 8),
                   Text(_profile!.bio!, style: const TextStyle(fontSize: 14, height: 1.4)),
@@ -167,15 +170,15 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                 const SizedBox(height: 10),
                 Row(children: [
                   if (_profile!.location != null) ...[
-                    const Icon(Icons.location_on_outlined, size: 14, color: AppTheme.textMuted),
+                    Icon(Icons.location_on_outlined, size: 14, color: colorScheme.onSurface.withValues(alpha: 0.4)),
                     const SizedBox(width: 3),
-                    Text(_profile!.location!, style: const TextStyle(color: AppTheme.textMuted, fontSize: 13)),
+                    Text(_profile!.location!, style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 13)),
                     const SizedBox(width: 14),
                   ],
                   if (_profile!.website != null) ...[
-                    const Icon(Icons.link, size: 14, color: AppTheme.primaryColor),
+                    Icon(Icons.link, size: 14, color: colorScheme.primary),
                     const SizedBox(width: 3),
-                    Text(_profile!.website!, style: const TextStyle(color: AppTheme.primaryColor, fontSize: 13)),
+                    Text(_profile!.website!, style: TextStyle(color: colorScheme.primary, fontSize: 13)),
                   ],
                 ]),
                 const SizedBox(height: 12),
@@ -195,24 +198,26 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   }
 
   Widget _statItem(String count, String label) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(children: [
       Text(count, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
       const SizedBox(width: 4),
-      Text(label, style: const TextStyle(color: AppTheme.textMuted, fontSize: 13)),
+      Text(label, style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 13)),
     ]);
   }
 
   Widget _buildMediaGrid() {
+    final colorScheme = Theme.of(context).colorScheme;
     final mediaPosts = _posts.where((p) => p.media.isNotEmpty).toList();
-    if (mediaPosts.isEmpty) return const Center(child: Text('No media yet', style: TextStyle(color: AppTheme.textMuted)));
+    if (mediaPosts.isEmpty) return Center(child: Text('No media yet', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))));
     return GridView.builder(
       padding: const EdgeInsets.all(2),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 2, mainAxisSpacing: 2),
       itemCount: mediaPosts.length,
       itemBuilder: (context, index) {
         return CachedNetworkImage(imageUrl: mediaPosts[index].media.first.url, fit: BoxFit.cover,
-          placeholder: (_, __) => Container(color: AppTheme.cardDarkElevated),
-          errorWidget: (_, __, ___) => Container(color: AppTheme.cardDarkElevated, child: const Icon(Icons.broken_image)),
+          placeholder: (_, __) => Container(color: colorScheme.surfaceContainerHighest),
+          errorWidget: (_, __, ___) => Container(color: colorScheme.surfaceContainerHighest, child: const Icon(Icons.broken_image)),
         );
       },
     );

@@ -46,6 +46,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final userId = context.read<AuthProvider>().userId ?? '';
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final chatName = _chat?.getChatName(userId) ?? 'Chat';
     final chatAvatar = _chat?.getChatAvatar(userId);
 
@@ -62,7 +64,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 children: [
                   Text(chatName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                   if (_chat?.isGroup == true)
-                    Text('${_chat!.participants.length} members', style: const TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+                    Text('${_chat!.participants.length} members', style: TextStyle(fontSize: 11, color: colorScheme.onSurface.withValues(alpha: 0.4))),
                 ],
               ),
             ),
@@ -80,7 +82,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _messages.isEmpty
-                    ? const Center(child: Text('No messages yet. Say hello!', style: TextStyle(color: AppTheme.textMuted)))
+                    ? Center(child: Text('No messages yet. Say hello!', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))))
                     : ListView.builder(
                         controller: _scrollController,
                         reverse: true,
@@ -105,20 +107,20 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             decoration: BoxDecoration(
-              color: AppTheme.cardDark,
-              border: Border(top: BorderSide(color: AppTheme.borderDark)),
+              color: colorScheme.surface,
+              border: Border(top: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3))),
             ),
             child: SafeArea(
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.add_circle_outline, color: AppTheme.textMuted),
+                    icon: Icon(Icons.add_circle_outline, color: colorScheme.onSurface.withValues(alpha: 0.4)),
                     onPressed: () => _showAttachmentSheet(),
                   ),
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: AppTheme.cardDarkElevated,
+                        color: colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: Row(
@@ -137,7 +139,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.emoji_emotions_outlined, color: AppTheme.textMuted, size: 22),
+                            icon: Icon(Icons.emoji_emotions_outlined, color: colorScheme.onSurface.withValues(alpha: 0.4), size: 22),
                             onPressed: () {},
                           ),
                         ],
@@ -146,7 +148,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   ),
                   const SizedBox(width: 4),
                   Container(
-                    decoration: const BoxDecoration(shape: BoxShape.circle, color: AppTheme.primaryColor),
+                    decoration: BoxDecoration(shape: BoxShape.circle, color: colorScheme.primary),
                     child: IconButton(
                       icon: Icon(_isSending ? Icons.hourglass_empty : Icons.send, color: Colors.black, size: 20),
                       onPressed: _isSending ? null : _sendMessage,
@@ -222,6 +224,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   }
 
   void _showAttachmentSheet() {
+    final colorScheme = Theme.of(context).colorScheme;
     showModalBottomSheet(
       context: context,
       builder: (ctx) => Container(
@@ -232,7 +235,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           alignment: WrapAlignment.center,
           children: [
             _attachOption(Icons.image, 'Gallery', AppTheme.successColor),
-            _attachOption(Icons.camera_alt, 'Camera', AppTheme.primaryColor),
+            _attachOption(Icons.camera_alt, 'Camera', colorScheme.primary),
             _attachOption(Icons.insert_drive_file, 'Document', AppTheme.verifiedColor),
             _attachOption(Icons.mic, 'Voice Note', AppTheme.errorColor),
             _attachOption(Icons.gif_box, 'GIF', AppTheme.accentColor),
@@ -244,6 +247,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   }
 
   Widget _attachOption(IconData icon, String label, Color color) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: () => Navigator.pop(context),
       child: Column(
@@ -255,7 +259,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             child: Icon(icon, color: color, size: 26),
           ),
           const SizedBox(height: 6),
-          Text(label, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+          Text(label, style: TextStyle(fontSize: 12, color: colorScheme.onSurface.withValues(alpha: 0.7))),
         ],
       ),
     );

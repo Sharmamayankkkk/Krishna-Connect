@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../config/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/app_provider.dart';
 import '../../services/push_notification_service.dart';
@@ -67,6 +66,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final unread = context.watch<AppProvider>().unreadNotifications;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       body: IndexedStack(
@@ -75,8 +76,8 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: AppTheme.surfaceDark,
-          border: Border(top: BorderSide(color: AppTheme.borderDark.withValues(alpha: 0.5))),
+          color: theme.scaffoldBackgroundColor,
+          border: Border(top: BorderSide(color: colorScheme.outline.withValues(alpha: 0.2))),
         ),
         child: SafeArea(
           child: SizedBox(
@@ -84,11 +85,11 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavItem(0, Icons.home_outlined, Icons.home, 'Feed'),
-                _buildNavItem(1, Icons.explore_outlined, Icons.explore, 'Explore'),
-                _buildNavItem(2, Icons.play_circle_outline, Icons.play_circle_filled, 'Leela'),
-                _buildNavItem(3, Icons.chat_bubble_outline, Icons.chat_bubble, 'Chats'),
-                _buildNavItem(4, Icons.notifications_outlined, Icons.notifications, 'Alerts', badge: unread),
+                _buildNavItem(context, 0, Icons.home_outlined, Icons.home, 'Feed'),
+                _buildNavItem(context, 1, Icons.explore_outlined, Icons.explore, 'Explore'),
+                _buildNavItem(context, 2, Icons.play_circle_outline, Icons.play_circle_filled, 'Leela'),
+                _buildNavItem(context, 3, Icons.chat_bubble_outline, Icons.chat_bubble, 'Chats'),
+                _buildNavItem(context, 4, Icons.notifications_outlined, Icons.notifications, 'Alerts', badge: unread),
               ],
             ),
           ),
@@ -97,8 +98,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildNavItem(int index, IconData icon, IconData activeIcon, String label, {int badge = 0}) {
+  Widget _buildNavItem(BuildContext context, int index, IconData icon, IconData activeIcon, String label, {int badge = 0}) {
     final isActive = _currentIndex == index;
+    final colorScheme = Theme.of(context).colorScheme;
+    final activeColor = colorScheme.primary;
+    final inactiveColor = colorScheme.onSurface.withValues(alpha: 0.4);
+
     return GestureDetector(
       onTap: () => setState(() => _currentIndex = index),
       behavior: HitTestBehavior.opaque,
@@ -116,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     isActive ? activeIcon : icon,
                     key: ValueKey(isActive),
                     size: 24,
-                    color: isActive ? AppTheme.primaryColor : AppTheme.textMuted,
+                    color: isActive ? activeColor : inactiveColor,
                   ),
                 ),
                 if (badge > 0)
@@ -126,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                       decoration: BoxDecoration(
-                        color: AppTheme.errorColor,
+                        color: colorScheme.error,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       constraints: const BoxConstraints(minWidth: 16),
@@ -145,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-                color: isActive ? AppTheme.primaryColor : AppTheme.textMuted,
+                color: isActive ? activeColor : inactiveColor,
               ),
             ),
           ],

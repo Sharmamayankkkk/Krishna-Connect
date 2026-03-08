@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import '../../config/theme.dart';
+import '../../config/assets.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/app_provider.dart';
 import '../../widgets/post_card.dart';
@@ -37,6 +37,8 @@ class _FeedScreenState extends State<FeedScreen> {
     final auth = context.watch<AuthProvider>();
     final app = context.watch<AppProvider>();
     final user = auth.user;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       body: NestedScrollView(
@@ -45,10 +47,27 @@ class _FeedScreenState extends State<FeedScreen> {
           SliverAppBar(
             floating: true,
             snap: true,
-            title: const Text('Krishna Connect', style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.w700, fontSize: 22)),
+            title: Row(
+              children: [
+                Image.asset(
+                  AppAssets.logoLight,
+                  height: 28,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Krishna Connect',
+                  style: TextStyle(
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 20,
+                  ),
+                ),
+              ],
+            ),
             actions: [
               IconButton(
-                icon: const Icon(Icons.search, color: AppTheme.textSecondary),
+                icon: Icon(Icons.search, color: colorScheme.onSurface.withValues(alpha: 0.6)),
                 onPressed: () => context.push('/search'),
               ),
               if (user != null)
@@ -67,7 +86,7 @@ class _FeedScreenState extends State<FeedScreen> {
             await app.loadFeed(refresh: true);
             await app.loadStories();
           },
-          color: AppTheme.primaryColor,
+          color: colorScheme.primary,
           child: CustomScrollView(
             slivers: [
               // Stories bar
@@ -91,21 +110,27 @@ class _FeedScreenState extends State<FeedScreen> {
                     margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
-                      color: AppTheme.cardDark,
+                      color: colorScheme.surface,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppTheme.borderDark),
+                      border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       children: [
                         UserAvatar(imageUrl: user?.avatarUrlOrDefault, size: 34, fallbackName: user?.displayName),
                         const SizedBox(width: 12),
-                        const Expanded(
-                          child: Text("What's on your mind?", style: TextStyle(color: AppTheme.textMuted, fontSize: 14)),
+                        Expanded(
+                          child: Text(
+                            "What's on your mind?",
+                            style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 14),
+                          ),
                         ),
                         Container(
                           padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(color: AppTheme.primaryColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
-                          child: const Icon(Icons.edit, size: 18, color: AppTheme.primaryColor),
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(Icons.edit, size: 18, color: colorScheme.primary),
                         ),
                       ],
                     ),
@@ -118,22 +143,22 @@ class _FeedScreenState extends State<FeedScreen> {
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.all(40),
-                    child: Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
+                    child: Center(child: CircularProgressIndicator(color: colorScheme.primary)),
                   ),
                 ),
 
               // Empty state
               if (!app.isFeedLoading && app.feedPosts.isEmpty)
-                const SliverToBoxAdapter(
+                SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.all(40),
+                    padding: const EdgeInsets.all(40),
                     child: Column(
                       children: [
-                        Icon(Icons.article_outlined, size: 60, color: AppTheme.textMuted),
-                        SizedBox(height: 16),
-                        Text('No posts yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
-                        SizedBox(height: 6),
-                        Text('Be the first to share something!', style: TextStyle(color: AppTheme.textMuted, fontSize: 14)),
+                        Icon(Icons.article_outlined, size: 60, color: colorScheme.onSurface.withValues(alpha: 0.3)),
+                        const SizedBox(height: 16),
+                        Text('No posts yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: colorScheme.onSurface.withValues(alpha: 0.7))),
+                        const SizedBox(height: 6),
+                        Text('Be the first to share something!', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 14)),
                       ],
                     ),
                   ),
@@ -168,8 +193,8 @@ class _FeedScreenState extends State<FeedScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/create-post'),
-        backgroundColor: AppTheme.primaryColor,
-        child: const Icon(Icons.edit, color: Colors.black),
+        backgroundColor: colorScheme.primary,
+        child: Icon(Icons.edit, color: colorScheme.onPrimary),
       ),
     );
   }

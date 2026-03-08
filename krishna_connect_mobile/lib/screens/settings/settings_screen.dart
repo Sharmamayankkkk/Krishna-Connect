@@ -13,6 +13,8 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final theme = context.watch<ThemeProvider>();
+    final themeData = Theme.of(context);
+    final colorScheme = themeData.colorScheme;
     final user = auth.user;
 
     return Scaffold(
@@ -25,9 +27,9 @@ class SettingsScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               margin: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.cardDark,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.borderDark),
+                border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
@@ -42,12 +44,12 @@ class SettingsScreen extends StatelessWidget {
                           if (user.isVerified) ...[const SizedBox(width: 6), VerificationBadge(verified: user.verified, size: 16)],
                         ]),
                         if (user.username != null)
-                          Text('@${user.username}', style: const TextStyle(color: AppTheme.textMuted, fontSize: 13)),
+                          Text('@${user.username}', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 13)),
                       ],
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.edit_outlined, color: AppTheme.textSecondary),
+                    icon: Icon(Icons.edit_outlined, color: colorScheme.onSurface.withValues(alpha: 0.7)),
                     onPressed: () => context.push('/edit-profile'),
                   ),
                 ],
@@ -56,38 +58,38 @@ class SettingsScreen extends StatelessWidget {
 
           // Account section
           _buildSection('Account', [
-            _buildTile(Icons.person_outline, 'Edit Profile', () => context.push('/edit-profile')),
-            _buildTile(Icons.lock_outline, 'Privacy', () {}),
-            _buildTile(Icons.security_outlined, 'Security', () {}),
-            _buildTile(Icons.verified_outlined, 'Get Verified', () {}),
-          ]),
+            _buildTile(Icons.person_outline, 'Edit Profile', () => context.push('/edit-profile'), colorScheme),
+            _buildTile(Icons.lock_outline, 'Privacy', () {}, colorScheme),
+            _buildTile(Icons.security_outlined, 'Security', () {}, colorScheme),
+            _buildTile(Icons.verified_outlined, 'Get Verified', () {}, colorScheme),
+          ], colorScheme),
 
           // Preferences section
           _buildSection('Preferences', [
             SwitchListTile(
-              secondary: const Icon(Icons.dark_mode_outlined, color: AppTheme.textSecondary),
+              secondary: Icon(Icons.dark_mode_outlined, color: colorScheme.onSurface.withValues(alpha: 0.7)),
               title: const Text('Dark Mode'),
-              subtitle: const Text('Toggle dark/light theme', style: TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+              subtitle: Text('Toggle dark/light theme', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 12)),
               value: theme.isDark,
               onChanged: (_) => theme.toggleTheme(),
-              activeColor: AppTheme.primaryColor,
+              activeColor: colorScheme.primary,
             ),
-            _buildTile(Icons.notifications_outlined, 'Notifications', () {}),
-            _buildTile(Icons.language, 'Language', () {}),
-          ]),
+            _buildTile(Icons.notifications_outlined, 'Notifications', () {}, colorScheme),
+            _buildTile(Icons.language, 'Language', () {}, colorScheme),
+          ], colorScheme),
 
           // Content section
           _buildSection('Content', [
-            _buildTile(Icons.bookmark_outline, 'Bookmarks', () => context.push('/bookmarks')),
-            _buildTile(Icons.event_outlined, 'Events', () => context.push('/events')),
-            _buildTile(Icons.emoji_events_outlined, 'Challenges', () => context.push('/challenges')),
-            _buildTile(Icons.star_outline, 'Starred Messages', () {}),
-            _buildTile(Icons.block_outlined, 'Blocked Users', () {}),
-          ]),
+            _buildTile(Icons.bookmark_outline, 'Bookmarks', () => context.push('/bookmarks'), colorScheme),
+            _buildTile(Icons.event_outlined, 'Events', () => context.push('/events'), colorScheme),
+            _buildTile(Icons.emoji_events_outlined, 'Challenges', () => context.push('/challenges'), colorScheme),
+            _buildTile(Icons.star_outline, 'Starred Messages', () {}, colorScheme),
+            _buildTile(Icons.block_outlined, 'Blocked Users', () {}, colorScheme),
+          ], colorScheme),
 
           // Support section
           _buildSection('Support', [
-            _buildTile(Icons.help_outline, 'Help Center', () {}),
+            _buildTile(Icons.help_outline, 'Help Center', () {}, colorScheme),
             _buildTile(Icons.info_outline, 'About Krishna Connect', () {
               showAboutDialog(
                 context: context,
@@ -101,9 +103,9 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ],
               );
-            }),
-            _buildTile(Icons.feedback_outlined, 'Send Feedback', () {}),
-          ]),
+            }, colorScheme),
+            _buildTile(Icons.feedback_outlined, 'Send Feedback', () {}, colorScheme),
+          ], colorScheme),
 
           // Danger zone
           Padding(
@@ -144,13 +146,13 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSection(String title, List<Widget> children) {
+  Widget _buildSection(String title, List<Widget> children, ColorScheme colorScheme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
-          child: Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textMuted, letterSpacing: 0.5)),
+          child: Text(title, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colorScheme.onSurface.withValues(alpha: 0.4), letterSpacing: 0.5)),
         ),
         ...children,
         const Divider(height: 1),
@@ -158,11 +160,11 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTile(IconData icon, String title, VoidCallback onTap) {
+  Widget _buildTile(IconData icon, String title, VoidCallback onTap, ColorScheme colorScheme) {
     return ListTile(
-      leading: Icon(icon, color: AppTheme.textSecondary),
+      leading: Icon(icon, color: colorScheme.onSurface.withValues(alpha: 0.7)),
       title: Text(title, style: const TextStyle(fontSize: 15)),
-      trailing: const Icon(Icons.chevron_right, size: 20, color: AppTheme.textMuted),
+      trailing: Icon(Icons.chevron_right, size: 20, color: colorScheme.onSurface.withValues(alpha: 0.4)),
       onTap: onTap,
     );
   }

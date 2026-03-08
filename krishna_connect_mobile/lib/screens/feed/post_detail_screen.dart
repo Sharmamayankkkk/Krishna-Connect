@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../config/theme.dart';
 import '../../providers/app_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/post_model.dart';
@@ -37,6 +36,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final userId = context.read<AuthProvider>().userId ?? '';
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Post')),
@@ -63,9 +64,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               },
                             ),
                             if (_comments.isEmpty)
-                              const Padding(
-                                padding: EdgeInsets.all(32),
-                                child: Text('No comments yet', style: TextStyle(color: AppTheme.textMuted)),
+                              Padding(
+                                padding: const EdgeInsets.all(32),
+                                child: Text('No comments yet', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))),
                               ),
                           ],
                         ),
@@ -75,8 +76,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppTheme.cardDark,
-                        border: Border(top: BorderSide(color: AppTheme.borderDark)),
+                        color: colorScheme.surface,
+                        border: Border(top: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3))),
                       ),
                       child: SafeArea(
                         child: Row(
@@ -87,7 +88,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 decoration: InputDecoration(
                                   hintText: 'Add a comment...',
                                   filled: true,
-                                  fillColor: AppTheme.cardDarkElevated,
+                                  fillColor: colorScheme.surfaceContainerHighest,
                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                                 ),
@@ -101,7 +102,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 _commentController.clear();
                                 await _loadPost();
                               },
-                              icon: const Icon(Icons.send, color: AppTheme.primaryColor),
+                              icon: Icon(Icons.send, color: colorScheme.primary),
                             ),
                           ],
                         ),
@@ -113,6 +114,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   }
 
   Widget _buildComment(CommentModel comment) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
@@ -128,7 +130,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   children: [
                     Text(comment.author.displayName, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
                     const SizedBox(width: 6),
-                    Text(timeago.format(DateTime.tryParse(comment.createdAt) ?? DateTime.now()), style: const TextStyle(color: AppTheme.textMuted, fontSize: 11)),
+                    Text(timeago.format(DateTime.tryParse(comment.createdAt) ?? DateTime.now()), style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 11)),
                   ],
                 ),
                 const SizedBox(height: 3),
@@ -136,13 +138,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    GestureDetector(child: const Icon(Icons.favorite_border, size: 16, color: AppTheme.textMuted)),
+                    GestureDetector(child: Icon(Icons.favorite_border, size: 16, color: colorScheme.onSurface.withValues(alpha: 0.4))),
                     if (comment.likesCount > 0) ...[
                       const SizedBox(width: 4),
-                      Text('${comment.likesCount}', style: const TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+                      Text('${comment.likesCount}', style: TextStyle(fontSize: 11, color: colorScheme.onSurface.withValues(alpha: 0.4))),
                     ],
                     const SizedBox(width: 16),
-                    GestureDetector(child: const Text('Reply', style: TextStyle(fontSize: 12, color: AppTheme.textMuted, fontWeight: FontWeight.w600))),
+                    GestureDetector(child: Text('Reply', style: TextStyle(fontSize: 12, color: colorScheme.onSurface.withValues(alpha: 0.4), fontWeight: FontWeight.w600))),
                   ],
                 ),
               ],

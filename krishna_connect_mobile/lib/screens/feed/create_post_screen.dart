@@ -19,6 +19,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   @override
   Widget build(BuildContext context) {
     final user = context.read<AuthProvider>().user;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
@@ -44,7 +46,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 CircleAvatar(
                   radius: 20,
                   backgroundImage: user?.avatarUrl != null ? NetworkImage(user!.avatarUrl!) : null,
-                  backgroundColor: AppTheme.cardDarkElevated,
+                  backgroundColor: colorScheme.surfaceContainerHighest,
                   child: user?.avatarUrl == null ? const Icon(Icons.person, size: 20) : null,
                 ),
                 const SizedBox(width: 12),
@@ -68,11 +70,11 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             // Media buttons
             Container(
               padding: const EdgeInsets.symmetric(vertical: 10),
-              decoration: BoxDecoration(border: Border(top: BorderSide(color: AppTheme.borderDark))),
+              decoration: BoxDecoration(border: Border(top: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3)))),
               child: Row(
                 children: [
                   IconButton(icon: const Icon(Icons.image_outlined, color: AppTheme.successColor), onPressed: () {}),
-                  IconButton(icon: const Icon(Icons.gif_box_outlined, color: AppTheme.primaryColor), onPressed: () {}),
+                  IconButton(icon: Icon(Icons.gif_box_outlined, color: colorScheme.primary), onPressed: () {}),
                   IconButton(icon: const Icon(Icons.poll_outlined, color: AppTheme.accentColor), onPressed: () {}),
                   IconButton(icon: const Icon(Icons.location_on_outlined, color: AppTheme.errorColor), onPressed: () {}),
                 ],

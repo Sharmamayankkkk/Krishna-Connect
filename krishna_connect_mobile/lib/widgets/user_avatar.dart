@@ -23,6 +23,9 @@ class UserAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Stack(
       children: [
         Container(
@@ -31,7 +34,7 @@ class UserAvatar extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: showBorder
-                ? Border.all(color: borderColor ?? AppTheme.primaryColor, width: 2)
+                ? Border.all(color: borderColor ?? colorScheme.primary, width: 2)
                 : null,
           ),
           child: ClipOval(
@@ -41,22 +44,10 @@ class UserAvatar extends StatelessWidget {
                     fit: BoxFit.cover,
                     width: size,
                     height: size,
-                    placeholder: (context, url) => Container(
-                      color: AppTheme.cardDarkElevated,
-                      child: Center(
-                        child: Text(
-                          _getInitials(),
-                          style: TextStyle(
-                            color: AppTheme.primaryColor,
-                            fontSize: size * 0.35,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                    errorWidget: (context, url, error) => _buildFallback(),
+                    placeholder: (context, url) => _buildFallback(context),
+                    errorWidget: (context, url, error) => _buildFallback(context),
                   )
-                : _buildFallback(),
+                : _buildFallback(context),
           ),
         ),
         if (isOnline)
@@ -70,7 +61,7 @@ class UserAvatar extends StatelessWidget {
                 color: AppTheme.successColor,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: Theme.of(context).scaffoldBackgroundColor,
+                  color: theme.scaffoldBackgroundColor,
                   width: 2,
                 ),
               ),
@@ -80,14 +71,15 @@ class UserAvatar extends StatelessWidget {
     );
   }
 
-  Widget _buildFallback() {
+  Widget _buildFallback(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      color: AppTheme.cardDarkElevated,
+      color: colorScheme.surfaceContainerHighest,
       child: Center(
         child: Text(
           _getInitials(),
           style: TextStyle(
-            color: AppTheme.primaryColor,
+            color: colorScheme.primary,
             fontSize: size * 0.35,
             fontWeight: FontWeight.w600,
           ),
@@ -150,6 +142,8 @@ class UserIdentity extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return GestureDetector(
       onTap: onTap,
       child: Row(
@@ -169,9 +163,10 @@ class UserIdentity extends StatelessWidget {
                     Flexible(
                       child: Text(
                         user.displayName,
-                        style: nameStyle ?? const TextStyle(
+                        style: nameStyle ?? TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 15,
+                          color: colorScheme.onSurface,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -186,7 +181,7 @@ class UserIdentity extends StatelessWidget {
                   Text(
                     '@${user.username}',
                     style: usernameStyle ?? TextStyle(
-                      color: AppTheme.textMuted,
+                      color: colorScheme.onSurface.withValues(alpha: 0.5),
                       fontSize: 13,
                     ),
                     overflow: TextOverflow.ellipsis,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../config/theme.dart';
 import '../models/models.dart';
 import 'user_avatar.dart';
 
@@ -19,6 +18,9 @@ class StoryCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return GestureDetector(
       onTap: onTap,
       child: SizedBox(
@@ -31,20 +33,20 @@ class StoryCircle extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: isViewed
                     ? null
-                    : const LinearGradient(
-                        colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                    : LinearGradient(
+                        colors: [colorScheme.primary, colorScheme.primary.withValues(alpha: 0.6)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                 border: isViewed
-                    ? Border.all(color: AppTheme.borderDark, width: 2)
+                    ? Border.all(color: colorScheme.outline.withValues(alpha: 0.3), width: 2)
                     : null,
               ),
               child: Container(
                 padding: const EdgeInsets.all(2),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppTheme.surfaceDark,
+                  color: theme.scaffoldBackgroundColor,
                 ),
                 child: Stack(
                   children: [
@@ -61,11 +63,11 @@ class StoryCircle extends StatelessWidget {
                           width: 20,
                           height: 20,
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryColor,
+                            color: colorScheme.primary,
                             shape: BoxShape.circle,
-                            border: Border.all(color: AppTheme.surfaceDark, width: 2),
+                            border: Border.all(color: theme.scaffoldBackgroundColor, width: 2),
                           ),
-                          child: const Icon(Icons.add, size: 12, color: Colors.black),
+                          child: Icon(Icons.add, size: 12, color: colorScheme.onPrimary),
                         ),
                       ),
                   ],
@@ -75,7 +77,7 @@ class StoryCircle extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               isMine ? 'Your Story' : (story.user?.displayName ?? ''),
-              style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+              style: TextStyle(fontSize: 11, color: colorScheme.onSurface.withValues(alpha: 0.6)),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
@@ -144,6 +146,9 @@ class StoriesBar extends StatelessWidget {
   }
 
   Widget _buildAddStory(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return GestureDetector(
       onTap: onCreateStory,
       child: SizedBox(
@@ -155,15 +160,15 @@ class StoriesBar extends StatelessWidget {
               height: 58,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppTheme.cardDarkElevated,
-                border: Border.all(color: AppTheme.borderDark),
+                color: colorScheme.surfaceContainerHighest,
+                border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
               ),
-              child: const Icon(Icons.add, color: AppTheme.primaryColor, size: 26),
+              child: Icon(Icons.add, color: colorScheme.primary, size: 26),
             ),
             const SizedBox(height: 4),
-            const Text(
+            Text(
               'Add Story',
-              style: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+              style: TextStyle(fontSize: 11, color: colorScheme.onSurface.withValues(alpha: 0.6)),
             ),
           ],
         ),

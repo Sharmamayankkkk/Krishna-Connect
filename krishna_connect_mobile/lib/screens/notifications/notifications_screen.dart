@@ -26,6 +26,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Widget build(BuildContext context) {
     final app = context.watch<AppProvider>();
     final notifications = app.notifications;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -42,15 +44,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ],
       ),
       body: notifications.isEmpty
-          ? const Center(
+          ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.notifications_none, size: 64, color: AppTheme.textMuted),
-                  SizedBox(height: 16),
-                  Text('No notifications yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
-                  SizedBox(height: 6),
-                  Text("You're all caught up!", style: TextStyle(color: AppTheme.textMuted)),
+                  Icon(Icons.notifications_none, size: 64, color: colorScheme.onSurface.withValues(alpha: 0.4)),
+                  const SizedBox(height: 16),
+                  Text('No notifications yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: colorScheme.onSurface.withValues(alpha: 0.7))),
+                  const SizedBox(height: 6),
+                  Text("You're all caught up!", style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))),
                 ],
               ),
             )
@@ -68,6 +70,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Widget _buildNotificationTile(BuildContext context, NotificationModel notif) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final timeStr = timeago.format(DateTime.tryParse(notif.createdAt) ?? DateTime.now());
 
     IconData icon;
@@ -95,7 +99,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         break;
       case 'mention':
         icon = Icons.alternate_email;
-        iconColor = AppTheme.primaryColor;
+        iconColor = colorScheme.primary;
         break;
       case 'collaboration_request':
         icon = Icons.handshake;
@@ -115,7 +119,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         break;
       case 'challenge_joined':
         icon = Icons.emoji_events;
-        iconColor = AppTheme.primaryColor;
+        iconColor = colorScheme.primary;
         break;
       case 'story_reaction':
         icon = Icons.emoji_emotions;
@@ -123,13 +127,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         break;
       default:
         icon = Icons.notifications;
-        iconColor = AppTheme.textMuted;
+        iconColor = colorScheme.onSurface.withValues(alpha: 0.4);
     }
 
     return Container(
       decoration: BoxDecoration(
-        color: notif.isRead ? null : AppTheme.primaryColor.withValues(alpha: 0.05),
-        border: Border(bottom: BorderSide(color: AppTheme.borderDark.withValues(alpha: 0.5))),
+        color: notif.isRead ? null : colorScheme.primary.withValues(alpha: 0.05),
+        border: Border(bottom: BorderSide(color: colorScheme.outline.withValues(alpha: 0.15))),
       ),
       child: ListTile(
         onTap: () {
@@ -155,7 +159,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               child: Container(
                 padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
-                  color: AppTheme.surfaceDark,
+                  color: theme.scaffoldBackgroundColor,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon, size: 14, color: iconColor),
@@ -165,7 +169,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ),
         title: RichText(
           text: TextSpan(
-            style: const TextStyle(fontSize: 14, color: AppTheme.textPrimary),
+            style: TextStyle(fontSize: 14, color: colorScheme.onSurface),
             children: [
               TextSpan(
                 text: notif.actor?.displayName ?? 'Someone',
@@ -175,13 +179,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ],
           ),
         ),
-        subtitle: Text(timeStr, style: const TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+        subtitle: Text(timeStr, style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 12)),
         trailing: !notif.isRead
             ? Container(
                 width: 8,
                 height: 8,
-                decoration: const BoxDecoration(
-                  color: AppTheme.primaryColor,
+                decoration: BoxDecoration(
+                  color: colorScheme.primary,
                   shape: BoxShape.circle,
                 ),
               )

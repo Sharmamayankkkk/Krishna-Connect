@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../config/theme.dart';
 import '../models/chat_model.dart';
 import '../models/user_model.dart';
 import 'user_avatar.dart';
@@ -23,6 +22,8 @@ class MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       child: Row(
@@ -46,7 +47,7 @@ class MessageBubble extends StatelessWidget {
                 constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.72),
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
-                  color: isMe ? AppTheme.primaryColor.withValues(alpha: 0.15) : AppTheme.cardDarkElevated,
+                  color: isMe ? colorScheme.primary.withValues(alpha: 0.15) : colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.only(
                     topLeft: const Radius.circular(16),
                     topRight: const Radius.circular(16),
@@ -54,7 +55,7 @@ class MessageBubble extends StatelessWidget {
                     bottomRight: Radius.circular(isMe ? 4 : 16),
                   ),
                   border: Border.all(
-                    color: isMe ? AppTheme.primaryColor.withValues(alpha: 0.2) : AppTheme.borderDark,
+                    color: isMe ? colorScheme.primary.withValues(alpha: 0.2) : colorScheme.outline.withValues(alpha: 0.3),
                     width: 0.5,
                   ),
                 ),
@@ -62,10 +63,10 @@ class MessageBubble extends StatelessWidget {
                   crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                   children: [
                     // Replied message
-                    if (message.repliedToMessage != null) _buildReplyPreview(),
+                    if (message.repliedToMessage != null) _buildReplyPreview(theme, colorScheme),
                     
                     // Attachment
-                    if (message.hasAttachment) _buildAttachment(),
+                    if (message.hasAttachment) _buildAttachment(theme, colorScheme),
                     
                     // Text content
                     if (message.content != null && message.content!.isNotEmpty)
@@ -73,7 +74,7 @@ class MessageBubble extends StatelessWidget {
                         message.content!,
                         style: TextStyle(
                           fontSize: 14.5,
-                          color: isMe ? AppTheme.textPrimary : AppTheme.textPrimary,
+                          color: isMe ? colorScheme.onSurface : colorScheme.onSurface,
                           height: 1.35,
                         ),
                       ),
@@ -85,18 +86,18 @@ class MessageBubble extends StatelessWidget {
                       children: [
                         Text(
                           _formatTime(message.createdAt),
-                          style: const TextStyle(fontSize: 10, color: AppTheme.textMuted),
+                          style: TextStyle(fontSize: 10, color: colorScheme.onSurface.withValues(alpha: 0.4)),
                         ),
                         if (message.isEdited) ...[
                           const SizedBox(width: 4),
-                          const Text('edited', style: TextStyle(fontSize: 10, color: AppTheme.textMuted, fontStyle: FontStyle.italic)),
+                          Text('edited', style: TextStyle(fontSize: 10, color: colorScheme.onSurface.withValues(alpha: 0.4), fontStyle: FontStyle.italic)),
                         ],
                         if (isMe) ...[
                           const SizedBox(width: 4),
                           Icon(
                             message.readBy.length > 1 ? Icons.done_all : Icons.done,
                             size: 14,
-                            color: message.readBy.length > 1 ? AppTheme.primaryColor : AppTheme.textMuted,
+                            color: message.readBy.length > 1 ? colorScheme.primary : colorScheme.onSurface.withValues(alpha: 0.4),
                           ),
                         ],
                       ],
@@ -104,7 +105,7 @@ class MessageBubble extends StatelessWidget {
 
                     // Reactions
                     if (message.reactions != null && message.reactions!.isNotEmpty)
-                      _buildReactions(),
+                      _buildReactions(theme, colorScheme),
                   ],
                 ),
               ),
@@ -115,25 +116,25 @@ class MessageBubble extends StatelessWidget {
     );
   }
 
-  Widget _buildReplyPreview() {
+  Widget _buildReplyPreview(ThemeData theme, ColorScheme colorScheme) {
     return Container(
       margin: const EdgeInsets.only(bottom: 6),
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceDark.withValues(alpha: 0.5),
+        color: theme.scaffoldBackgroundColor.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(8),
-        border: Border(left: BorderSide(color: AppTheme.primaryColor, width: 3)),
+        border: Border(left: BorderSide(color: colorScheme.primary, width: 3)),
       ),
       child: Text(
         message.repliedToMessage?.content ?? 'Message',
-        style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+        style: TextStyle(fontSize: 12, color: colorScheme.onSurface.withValues(alpha: 0.4)),
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
       ),
     );
   }
 
-  Widget _buildAttachment() {
+  Widget _buildAttachment(ThemeData theme, ColorScheme colorScheme) {
     if (message.isImage) {
       return Padding(
         padding: const EdgeInsets.only(bottom: 6),
@@ -147,7 +148,7 @@ class MessageBubble extends StatelessWidget {
               if (progress == null) return child;
               return Container(
                 height: 150,
-                color: AppTheme.cardDark,
+                color: colorScheme.surface,
                 child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
               );
             },
@@ -160,7 +161,7 @@ class MessageBubble extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 6),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceDark,
+        color: theme.scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -169,7 +170,7 @@ class MessageBubble extends StatelessWidget {
           Icon(
             message.isVoiceNote ? Icons.mic : Icons.attach_file,
             size: 18,
-            color: AppTheme.primaryColor,
+            color: colorScheme.primary,
           ),
           const SizedBox(width: 8),
           Flexible(
@@ -184,7 +185,7 @@ class MessageBubble extends StatelessWidget {
     );
   }
 
-  Widget _buildReactions() {
+  Widget _buildReactions(ThemeData theme, ColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.only(top: 4),
       child: Wrap(
@@ -193,7 +194,7 @@ class MessageBubble extends StatelessWidget {
           return Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
-              color: AppTheme.surfaceDark,
+              color: theme.scaffoldBackgroundColor,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(

@@ -27,6 +27,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
   Widget build(BuildContext context) {
     final app = context.watch<AppProvider>();
     final userId = context.read<AuthProvider>().userId ?? '';
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -51,6 +53,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
   }
 
   Widget _buildChatTile(BuildContext context, ChatModel chat, String userId) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final name = chat.getChatName(userId);
     final avatar = chat.getChatAvatar(userId);
     final lastMsg = chat.messages.isNotEmpty ? chat.messages.first : null;
@@ -74,19 +78,19 @@ class _ChatListScreenState extends State<ChatListScreen> {
           Expanded(
             child: Text(name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15), overflow: TextOverflow.ellipsis),
           ),
-          Text(timeStr, style: const TextStyle(color: AppTheme.textMuted, fontSize: 11)),
+          Text(timeStr, style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 11)),
         ],
       ),
       subtitle: Row(
         children: [
           if (chat.isGroup && lastMsg != null) ...[
-            Text('${lastMsg.sender?.displayName ?? "Someone"}: ', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
+            Text('${lastMsg.sender?.displayName ?? "Someone"}: ', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.7), fontSize: 13, fontWeight: FontWeight.w500)),
           ],
           Expanded(
             child: Text(
               lastMsgText,
               style: TextStyle(
-                color: chat.unreadCount > 0 ? AppTheme.textPrimary : AppTheme.textMuted,
+                color: chat.unreadCount > 0 ? colorScheme.onSurface : colorScheme.onSurface.withValues(alpha: 0.4),
                 fontSize: 13,
                 fontWeight: chat.unreadCount > 0 ? FontWeight.w500 : FontWeight.w400,
               ),
@@ -98,7 +102,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
             Container(
               margin: const EdgeInsets.only(left: 8),
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(color: AppTheme.primaryColor, borderRadius: BorderRadius.circular(10)),
+              decoration: BoxDecoration(color: colorScheme.primary, borderRadius: BorderRadius.circular(10)),
               child: Text('${chat.unreadCount}', style: const TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.w600)),
             ),
         ],
@@ -107,15 +111,17 @@ class _ChatListScreenState extends State<ChatListScreen> {
   }
 
   Widget _buildEmptyState() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.chat_bubble_outline, size: 64, color: AppTheme.textMuted.withValues(alpha: 0.5)),
+          Icon(Icons.chat_bubble_outline, size: 64, color: colorScheme.onSurface.withValues(alpha: 0.5)),
           const SizedBox(height: 16),
-          const Text('No conversations yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
+          Text('No conversations yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: colorScheme.onSurface.withValues(alpha: 0.7))),
           const SizedBox(height: 6),
-          const Text('Start a chat with someone!', style: TextStyle(color: AppTheme.textMuted)),
+          Text('Start a chat with someone!', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))),
         ],
       ),
     );

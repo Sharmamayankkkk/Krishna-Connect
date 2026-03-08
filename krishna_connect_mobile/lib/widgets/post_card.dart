@@ -36,13 +36,15 @@ class PostCard extends StatelessWidget {
     final isLiked = post.isLikedBy(userId);
     final isReposted = post.isRepostedBy(userId);
     final isSaved = post.isSavedBy(userId);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: AppTheme.cardDark,
-          border: Border(bottom: BorderSide(color: AppTheme.borderDark.withValues(alpha: 0.5))),
+          color: colorScheme.surface,
+          border: Border(bottom: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3))),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Column(
@@ -86,6 +88,8 @@ class PostCard extends StatelessWidget {
 
   Widget _buildHeader(BuildContext context) {
     final timeAgo = timeago.format(DateTime.tryParse(post.createdAt) ?? DateTime.now());
+    final theme = Theme.of(context);
+    final mutedColor = theme.colorScheme.onSurface.withValues(alpha: 0.5);
     
     return GestureDetector(
       onTap: onProfileTap,
@@ -106,7 +110,11 @@ class PostCard extends StatelessWidget {
                     Flexible(
                       child: Text(
                         post.author.displayName,
-                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          color: theme.colorScheme.onSurface,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -121,19 +129,19 @@ class PostCard extends StatelessWidget {
                     if (post.author.username != null)
                       Text(
                         '@${post.author.username}',
-                        style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                        style: TextStyle(color: mutedColor, fontSize: 12),
                       ),
-                    const Text(' · ', style: TextStyle(color: AppTheme.textMuted, fontSize: 12)),
-                    Text(timeAgo, style: const TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+                    Text(' · ', style: TextStyle(color: mutedColor, fontSize: 12)),
+                    Text(timeAgo, style: TextStyle(color: mutedColor, fontSize: 12)),
                   ],
                 ),
               ],
             ),
           ),
           if (post.isPinned)
-            const Icon(Icons.push_pin, size: 14, color: AppTheme.primaryColor),
+            Icon(Icons.push_pin, size: 14, color: theme.colorScheme.primary),
           IconButton(
-            icon: const Icon(Icons.more_horiz, size: 20, color: AppTheme.textMuted),
+            icon: Icon(Icons.more_horiz, size: 20, color: mutedColor),
             onPressed: () => _showOptionsSheet(context),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
@@ -146,11 +154,17 @@ class PostCard extends StatelessWidget {
   Widget _buildContent(BuildContext context) {
     return Text(
       post.content!,
-      style: const TextStyle(fontSize: 15, height: 1.4, color: AppTheme.textPrimary),
+      style: TextStyle(
+        fontSize: 15,
+        height: 1.4,
+        color: Theme.of(context).colorScheme.onSurface,
+      ),
     );
   }
 
   Widget _buildMedia(BuildContext context) {
+    final placeholderColor = Theme.of(context).colorScheme.surfaceContainerHighest;
+
     if (post.media.length == 1) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(12),
@@ -160,13 +174,13 @@ class PostCard extends StatelessWidget {
           width: double.infinity,
           placeholder: (_, __) => Container(
             height: 200,
-            color: AppTheme.cardDarkElevated,
+            color: placeholderColor,
             child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
           ),
           errorWidget: (_, __, ___) => Container(
             height: 200,
-            color: AppTheme.cardDarkElevated,
-            child: const Icon(Icons.broken_image, color: AppTheme.textMuted),
+            color: placeholderColor,
+            child: Icon(Icons.broken_image, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4)),
           ),
         ),
       );
@@ -184,10 +198,10 @@ class PostCard extends StatelessWidget {
           return CachedNetworkImage(
             imageUrl: media.url,
             fit: BoxFit.cover,
-            placeholder: (_, __) => Container(color: AppTheme.cardDarkElevated),
+            placeholder: (_, __) => Container(color: placeholderColor),
             errorWidget: (_, __, ___) => Container(
-              color: AppTheme.cardDarkElevated,
-              child: const Icon(Icons.broken_image, size: 24, color: AppTheme.textMuted),
+              color: placeholderColor,
+              child: Icon(Icons.broken_image, size: 24, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4)),
             ),
           );
         }).toList(),
@@ -199,18 +213,20 @@ class PostCard extends StatelessWidget {
     final poll = post.poll!;
     final totalVotes = poll.totalVotes;
     final hasVoted = poll.options.any((o) => o.votedBy.contains(userId));
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppTheme.cardDarkElevated,
+        color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.borderDark),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(poll.question, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+          Text(poll.question, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: colorScheme.onSurface)),
           const SizedBox(height: 10),
           ...poll.options.map((option) {
             final pct = totalVotes > 0 ? (option.votes / totalVotes) : 0.0;
@@ -225,7 +241,7 @@ class PostCard extends StatelessWidget {
                     Container(
                       height: 40,
                       decoration: BoxDecoration(
-                        color: AppTheme.cardDark,
+                        color: colorScheme.surface,
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
@@ -235,7 +251,7 @@ class PostCard extends StatelessWidget {
                         child: Container(
                           height: 40,
                           decoration: BoxDecoration(
-                            color: isSelected ? AppTheme.primaryColor.withValues(alpha: 0.3) : AppTheme.borderDark,
+                            color: isSelected ? colorScheme.primary.withValues(alpha: 0.2) : colorScheme.outline.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
@@ -245,10 +261,10 @@ class PostCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: Row(
                         children: [
-                          Expanded(child: Text(option.text, style: const TextStyle(fontSize: 13))),
+                          Expanded(child: Text(option.text, style: TextStyle(fontSize: 13, color: colorScheme.onSurface))),
                           if (hasVoted)
                             Text('${(pct * 100).round()}%',
-                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colorScheme.onSurface)),
                         ],
                       ),
                     ),
@@ -257,7 +273,7 @@ class PostCard extends StatelessWidget {
               ),
             );
           }),
-          Text('$totalVotes votes', style: const TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+          Text('$totalVotes votes', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 12)),
         ],
       ),
     );
@@ -265,11 +281,12 @@ class PostCard extends StatelessWidget {
 
   Widget _buildQuotedPost(BuildContext context) {
     final q = post.quotedPost!;
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.borderDark),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,7 +295,7 @@ class PostCard extends StatelessWidget {
             children: [
               UserAvatar(imageUrl: q.author.avatarUrlOrDefault, size: 20, fallbackName: q.author.displayName),
               const SizedBox(width: 6),
-              Text(q.author.displayName, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+              Text(q.author.displayName, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: colorScheme.onSurface)),
               if (q.author.isVerified) ...[
                 const SizedBox(width: 3),
                 VerificationBadge(verified: q.author.verified, size: 12),
@@ -287,7 +304,7 @@ class PostCard extends StatelessWidget {
           ),
           if (q.content != null) ...[
             const SizedBox(height: 6),
-            Text(q.content!, style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary), maxLines: 3, overflow: TextOverflow.ellipsis),
+            Text(q.content!, style: TextStyle(fontSize: 13, color: colorScheme.onSurface.withValues(alpha: 0.7)), maxLines: 3, overflow: TextOverflow.ellipsis),
           ],
         ],
       ),
@@ -295,38 +312,41 @@ class PostCard extends StatelessWidget {
   }
 
   Widget _buildActions(BuildContext context, bool isLiked, bool isReposted, bool isSaved) {
+    final mutedColor = Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5);
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
     return Row(
       children: [
         _actionButton(
           icon: isLiked ? Icons.favorite : Icons.favorite_border,
-          color: isLiked ? Colors.red : AppTheme.textMuted,
+          color: isLiked ? Colors.red : mutedColor,
           label: _formatCount(post.likesCount),
           onTap: onLike,
         ),
         const SizedBox(width: 16),
         _actionButton(
           icon: Icons.chat_bubble_outline,
-          color: AppTheme.textMuted,
+          color: mutedColor,
           label: _formatCount(post.commentsCount),
           onTap: onComment,
         ),
         const SizedBox(width: 16),
         _actionButton(
           icon: Icons.repeat,
-          color: isReposted ? AppTheme.successColor : AppTheme.textMuted,
+          color: isReposted ? AppTheme.successColor : mutedColor,
           label: _formatCount(post.repostsCount),
           onTap: onRepost,
         ),
         const Spacer(),
         _actionButton(
           icon: isSaved ? Icons.bookmark : Icons.bookmark_border,
-          color: isSaved ? AppTheme.primaryColor : AppTheme.textMuted,
+          color: isSaved ? primaryColor : mutedColor,
           onTap: onBookmark,
         ),
         const SizedBox(width: 8),
         _actionButton(
           icon: Icons.share_outlined,
-          color: AppTheme.textMuted,
+          color: mutedColor,
           onTap: onShare,
         ),
       ],
