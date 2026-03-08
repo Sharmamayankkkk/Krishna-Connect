@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart';
 import 'app.dart';
@@ -16,16 +17,37 @@ import 'providers/theme_provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Load .env file (falls back gracefully if not found)
+  try {
+    await dotenv.load(fileName: '.env');
+  } catch (_) {
+    // .env file not found — will use --dart-define values or defaults
+  }
+
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.light,
-    systemNavigationBarColor: Color(0xFF0F0F14),
+    statusBarIconBrightness: Brightness.dark,
+    systemNavigationBarColor: Colors.white,
   ));
 
-  // Initialize Supabase - replace with your actual credentials
+  // Resolve Supabase credentials:
+  // 1. --dart-define values take priority (compile-time)
+  // 2. .env file values as fallback (runtime)
+  final supabaseUrl = const String.fromEnvironment('SUPABASE_URL').isNotEmpty
+      ? const String.fromEnvironment('SUPABASE_URL')
+      : dotenv.env['SUPABASE_URL'] ?? '';
+  final supabaseAnonKey = const String.fromEnvironment('SUPABASE_ANON_KEY').isNotEmpty
+      ? const String.fromEnvironment('SUPABASE_ANON_KEY')
+      : dotenv.env['SUPABASE_ANON_KEY'] ?? '';
+
+  if (supabaseUrl.isEmpty || supabaseAnonKey.isEmpty) {
+    runApp(const _SetupErrorApp());
+    return;
+  }
+
   await Supabase.initialize(
-    url: const String.fromEnvironment('SUPABASE_URL', defaultValue: 'YOUR_SUPABASE_URL'),
-    anonKey: const String.fromEnvironment('SUPABASE_ANON_KEY', defaultValue: 'YOUR_SUPABASE_ANON_KEY'),
+    url: supabaseUrl,
+    anonKey: supabaseAnonKey,
   );
 
   final client = Supabase.instance.client;
@@ -70,4 +92,46 @@ void main() async {
       child: const KrishnaConnectApp(),
     ),
   );
+}
+
+/// Shown when Supabase credentials are missing.
+class _SetupErrorApp extends StatelessWidget {
+  const _SetupErrorApp();
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.warning_amber_rounded, size: 64, color: Color(0xFFF59E0B)),
+                const SizedBox(height: 24),
+                const Text(
+                  'Supabase Not Configured',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Create a .env file in the krishna_connect_mobile/ directory with your Supabase credentials:\n\n'
+                  'SUPABASE_URL=https://your-project.supabase.co\n'
+                  'SUPABASE_ANON_KEY=your-anon-key\n\n'
+                  'Or pass them as build arguments:\n'
+                  'flutter run --dart-define=SUPABASE_URL=... --dart-define=SUPABASE_ANON_KEY=...',
+                  style: TextStyle(fontSize: 14, color: Colors.black54, height: 1.6),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

@@ -46,8 +46,8 @@ app.*.map.json
 
 # Environment files (Supabase credentials)
 .env
-.env.*
-*.env
+.env.local
+!.env.example
 
 # Generated plugin files
 .flutter-plugins

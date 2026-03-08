@@ -79,25 +79,35 @@ flutter pub get
 
 This app connects to the same Supabase backend as the web app. You need your Supabase project credentials.
 
-**Option A: Using environment variables (recommended)**
+**Option A: Using a `.env` file (recommended for development)**
 
 ```bash
-# Run with Supabase credentials passed as build arguments
+# Copy the example file
+cp .env.example .env
+
+# Edit .env and fill in your Supabase credentials
+# SUPABASE_URL=https://your-project-id.supabase.co
+# SUPABASE_ANON_KEY=your-anon-key-here
+```
+
+Then simply run:
+```bash
+flutter run
+```
+
+**Option B: Using `--dart-define` flags (recommended for CI/CD)**
+
+```bash
 flutter run \
   --dart-define=SUPABASE_URL=https://your-project.supabase.co \
   --dart-define=SUPABASE_ANON_KEY=your-anon-key-here
 ```
 
-**Option B: Create a `.env.local` launch config**
+> **Note:** `--dart-define` values take priority over `.env` file values.
 
-Create a file `krishna_connect_mobile/.env` (this file is gitignored):
+**Option C: VS Code launch configuration**
 
-```
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key-here
-```
-
-Then use a VS Code launch configuration (`.vscode/launch.json`):
+Create `.vscode/launch.json`:
 
 ```json
 {
@@ -123,20 +133,25 @@ Then use a VS Code launch configuration (`.vscode/launch.json`):
 > 4. Copy `Project URL` → this is your `SUPABASE_URL`
 > 5. Copy `anon/public` key → this is your `SUPABASE_ANON_KEY`
 >
-> These are the **same keys** used by the Next.js web app (check `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in your web app's `.env`).
+> These are the **same keys** used by the Next.js web app (`SUPABASE_URL` and `SUPABASE_ANON_KEY` in your web app's `.env`).
 
 ### 4. Run the App
 
 ```bash
-# Run on connected device/emulator with Supabase credentials
+# If you have a .env file configured:
+flutter run
+
+# Or with explicit credentials:
 flutter run \
   --dart-define=SUPABASE_URL=https://your-project.supabase.co \
   --dart-define=SUPABASE_ANON_KEY=your-anon-key-here
 
-# Or if you just want to test on a specific device
+# Run on a specific device
 flutter devices              # List available devices
 flutter run -d <device-id>   # Run on specific device
 ```
+
+> **If credentials are missing**, the app will show a setup screen explaining what's needed.
 
 ---
 
@@ -203,6 +218,10 @@ krishna_connect_mobile/
 ### Android APK (for testing)
 
 ```bash
+# Using .env file:
+flutter build apk --release
+
+# Or with explicit credentials:
 flutter build apk \
   --release \
   --dart-define=SUPABASE_URL=https://your-project.supabase.co \
@@ -214,6 +233,10 @@ Output: `build/app/outputs/flutter-apk/app-release.apk`
 ### Android App Bundle (for Play Store)
 
 ```bash
+# Using .env file:
+flutter build appbundle --release
+
+# Or with explicit credentials:
 flutter build appbundle \
   --release \
   --dart-define=SUPABASE_URL=https://your-project.supabase.co \
@@ -248,7 +271,10 @@ Output: `build/app/outputs/bundle/release/app-release.aab`
 # Install iOS dependencies
 cd ios && pod install && cd ..
 
-# Build for release
+# Using .env file:
+flutter build ios --release
+
+# Or with explicit credentials:
 flutter build ios \
   --release \
   --dart-define=SUPABASE_URL=https://your-project.supabase.co \
@@ -283,13 +309,14 @@ flutter test test/widget_test.dart
 | Package | Purpose |
 |---------|---------|
 | `supabase_flutter` | Backend (Auth, Database, Realtime, Storage) |
+| `flutter_dotenv` | Load `.env` file for Supabase credentials |
 | `provider` | State management |
 | `go_router` | Declarative routing with auth guards |
 | `cached_network_image` | Image caching and loading |
 | `image_picker` | Camera and gallery access |
 | `video_player` / `chewie` | Video playback |
 | `flutter_local_notifications` | Push notifications |
-| `google_fonts` | DM Sans typography |
+| `google_fonts` | Inter typography (matching webapp) |
 | `timeago` | Relative time formatting |
 | `intl` | Date/number formatting |
 | `url_launcher` | Opening external links |
@@ -303,8 +330,10 @@ flutter test test/widget_test.dart
 
 ### Common Issues
 
-**"Supabase URL is empty" or connection errors**
-- Ensure you pass `--dart-define=SUPABASE_URL=...` and `--dart-define=SUPABASE_ANON_KEY=...` when running or building
+**"Supabase URL is empty" or "No host specified in URI" error**
+- Create a `.env` file in the `krishna_connect_mobile/` directory: `cp .env.example .env`
+- Fill in your `SUPABASE_URL` and `SUPABASE_ANON_KEY`
+- Or pass them via `--dart-define` flags when running
 - Verify the URL starts with `https://` and the key is the `anon` (public) key
 
 **Android build fails with "SDK not found"**
@@ -346,7 +375,7 @@ flutter run
 flutter clean
 flutter pub get
 cd ios && pod install && cd ..  # macOS only
-flutter run --dart-define=SUPABASE_URL=... --dart-define=SUPABASE_ANON_KEY=...
+flutter run
 ```
 
 ---
