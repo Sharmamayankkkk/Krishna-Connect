@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import webpush from 'web-push';
 
 // Configure Web Push with your keys
@@ -15,19 +15,24 @@ if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
 export async function POST(request: Request) {
     try {
         const requestBody = await request.json();
-        const { userId, title, body: notifBody, url, icon, data } = requestBody;
+        const { userId, userIds, title, body: notifBody, url, icon, data } = requestBody;
 
-        if (!userId || !title || !notifBody) {
+        const targetUsers = userIds || (userId ? [userId] : []);
+
+        if (targetUsers.length === 0 || !title || !notifBody) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        const supabase = await createClient(); // Await the promise
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+        // Use SERVICE ROLE KEY to bypass RLS so we can fetch ANY user's push_subscriptions
+        const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+        const supabase = createClient(supabaseUrl, supabaseKey);
 
         // Fetch user's subscriptions
         const { data: subscriptions, error } = await supabase
             .from('push_subscriptions')
             .select('*')
-            .eq('user_id', userId);
+            .in('user_id', targetUsers);
 
         if (error || !subscriptions || subscriptions.length === 0) {
             // No devices to push to
