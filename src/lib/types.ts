@@ -412,7 +412,7 @@ export type NotificationType = {
     name: string;
     username: string;
     avatar: string;
-    verified?: boolean;
+    verified?: boolean | string;
   };
   postId?: string;
   commentId?: string;
@@ -420,10 +420,12 @@ export type NotificationType = {
   createdAt: string;
   read: boolean;
   postContent?: string;
-  postMediaType?: 'image' | 'video' | 'poll';
+  postMediaType?: 'image' | 'video' | 'poll' | string;
   postAuthorUsername?: string;
   status?: 'pending' | 'accepted' | 'declined';
   related_id?: string; // For livestream invites and other related entities
+  referenceId?: string; // Wrapper for entityId
+  metadata?: Record<string, any>; // JSON metadata
 };
 
 export type UserRelationship = {

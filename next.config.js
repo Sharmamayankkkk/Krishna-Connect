@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 
 const nextConfig = {
+  devIndicators: false,
   trailingSlash: false,
   async headers() {
     return [

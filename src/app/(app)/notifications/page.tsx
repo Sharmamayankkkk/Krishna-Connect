@@ -2,300 +2,77 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsTrigger, TabsList } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-    Heart,
-    MessageCircle,
-    Repeat2,
-    UserPlus,
-    AtSign,
-    BarChart3,
-    CheckCheck,
-    Trash2,
-    Settings,
-    Bell,
-    BellOff,
-    Users,
-    Image as ImageIcon,
-    Video,
-    FileText,
-    ChevronDown,
-    Sparkles,
-    Radio,
-    Trophy,
-    CheckCircle,
-    XCircle,
-    Flame
-} from 'lucide-react';
-import { formatDistanceToNow, isToday, isYesterday, isThisWeek } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { formatDistanceToNowStrict, isToday, isYesterday, isThisWeek } from 'date-fns';
+import { cn, getAvatarUrl } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { NotificationType } from '@/lib/types';
-import { PushNotificationManager } from '@/components/layout/push-notification-manager';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import { ChevronRight, Settings, Heart, ImageIcon, PlaySquare, BarChart2, Mic } from 'lucide-react';
 
-type NotificationFilter = 'all' | 'mentions' | 'likes' | 'comments' | 'follows';
+// A resilient thumbnail component that handles broken image links gracefully
+const NotificationThumbnail = ({ url, mediaType }: { url?: string, mediaType?: string }) => {
+    const [imgError, setImgError] = React.useState(false);
 
-// Icon with colored background bubble
-const NotificationIconBubble = ({ type }: { type: NotificationType['type'] }) => {
-    const config: Record<string, { icon: React.ReactNode; bg: string }> = {
-        like: { icon: <Heart className="h-3.5 w-3.5 text-white fill-white" />, bg: 'bg-gradient-to-br from-red-400 to-pink-500' },
-        comment: { icon: <MessageCircle className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-blue-400 to-blue-600' },
-        repost: { icon: <Repeat2 className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-emerald-400 to-green-600' },
-        quote: { icon: <Repeat2 className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-teal-400 to-cyan-600' },
-        follow: { icon: <UserPlus className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-purple-400 to-violet-600' },
-        mention: { icon: <AtSign className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-orange-400 to-amber-600' },
-        poll_vote: { icon: <BarChart3 className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-cyan-400 to-sky-600' },
-        collaboration_request: { icon: <Users className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-indigo-400 to-indigo-600' },
-        livestream_invite: { icon: <Radio className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-red-400 to-rose-600' },
+    if (!url || imgError) {
+        let Icon = ImageIcon;
+        if (mediaType === 'video') Icon = PlaySquare;
+        else if (mediaType === 'poll') Icon = BarChart2;
+        else if (mediaType === 'audio') Icon = Mic;
+        
+        return (
+            <div className="h-11 w-11 flex items-center justify-center rounded bg-muted/60 text-muted-foreground">
+                <Icon className="h-5 w-5 opacity-50" />
+            </div>
+        );
+    }
 
-        // Challenge specific
-        challenge_invite: { icon: <Flame className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-orange-500 to-red-600' },
-        challenge_submission: { icon: <Trophy className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-blue-400 to-indigo-600' },
-        challenge_approved: { icon: <CheckCircle className="h-3.5 w-3.5 text-white fill-white" />, bg: 'bg-gradient-to-br from-green-400 to-emerald-600' },
-        challenge_rejected: { icon: <XCircle className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-red-500 to-rose-700' },
-        challenge_won: { icon: <Trophy className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />, bg: 'bg-gradient-to-br from-yellow-100 to-yellow-300' },
-    };
-    const iconConfig = config[type] || { icon: <Bell className="h-3.5 w-3.5 text-white" />, bg: 'bg-gradient-to-br from-gray-400 to-gray-600' };
     return (
-        <div className={cn("absolute -bottom-1 -right-1 h-6 w-6 rounded-full flex items-center justify-center ring-2 ring-background", iconConfig.bg)} aria-hidden="true">
-            {iconConfig.icon}
-        </div>
+        <Image 
+            src={url} 
+            alt="Preview" 
+            fill 
+            className="object-cover" 
+            onError={() => setImgError(true)} 
+        />
     );
 };
 
-// Action text for notification
-const getActionText = (type: NotificationType['type']) => {
-    const map: Record<string, string> = {
-        like: 'liked your post',
-        comment: 'commented on your post',
-        repost: 'reposted your post',
-        quote: 'quoted your post',
-        follow: 'started following you',
-        mention: 'mentioned you',
-        poll_vote: 'voted on your poll',
-        collaboration_request: 'invited you to collaborate',
-        livestream_invite: 'invited you to join their livestream',
-        challenge_invite: 'invited you to a challenge',
-        challenge_submission: 'submitted an entry to your challenge',
-        challenge_approved: 'approved your challenge entry',
-        challenge_rejected: 'needs revisions on your challenge entry',
-        challenge_won: 'declared you a winner!',
-    };
-    return map[type] || 'sent you a notification';
+// Helpers to format relative time like Instagram ("3d", "2h", "5m")
+const formatInstaTime = (dateStr: string) => {
+    const raw = formatDistanceToNowStrict(new Date(dateStr));
+    const parts = raw.split(' ');
+    if (parts.length !== 2) return raw;
+    const value = parts[0];
+    const unitStr = parts[1];
+    
+    if (unitStr.startsWith('s')) return `${value}s`;
+    if (unitStr.startsWith('mo')) return `${value}mo`;
+    if (unitStr.startsWith('m')) return `${value}m`;
+    if (unitStr.startsWith('h')) return `${value}h`;
+    if (unitStr.startsWith('d')) return `${value}d`;
+    if (unitStr.startsWith('w')) return `${value}w`;
+    if (unitStr.startsWith('y')) return `${value}y`;
+    return raw;
 };
 
-// Media type icon
-const MediaTypeIcon = ({ type }: { type: string }) => {
-    if (type === 'image') return <ImageIcon className="h-3 w-3" />;
-    if (type === 'video') return <Video className="h-3 w-3" />;
-    return <FileText className="h-3 w-3" />;
-};
-
-// Time grouping
 function getTimeGroup(dateStr: string): string {
     const date = new Date(dateStr);
     if (isToday(date)) return 'Today';
-    if (isYesterday(date)) return 'Yesterday';
-    if (isThisWeek(date)) return 'This Week';
+    // If it's not today but within the current week
+    if (isThisWeek(date)) return 'This week';
+    // If it's within the current month, we group it as "This month"
+    const now = new Date();
+    if (date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()) {
+        return 'This month';
+    }
     return 'Earlier';
 }
 
-// Individual Notification Item
-const NotificationItem = React.memo(({
-    notification,
-    onMarkAsRead,
-    onDelete,
-    onAccept,
-    onDecline
-}: {
-    notification: NotificationType;
-    onMarkAsRead: (id: string) => void;
-    onDelete: (id: string) => void;
-    onAccept: (id: string) => void;
-    onDecline: (id: string) => void;
-}) => {
-    const actionText = getActionText(notification.type);
-
-    return (
-        <div
-            className={cn(
-                "flex gap-3 py-3 px-3 sm:px-5 transition-all duration-200 hover:bg-muted/40 relative group rounded-lg mx-2 my-0.5",
-                !notification.read && "bg-primary/[0.04] hover:bg-primary/[0.07]"
-            )}
-        >
-            {/* Unread dot */}
-            {!notification.read && (
-                <div className="absolute left-0.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-primary" aria-hidden="true" />
-            )}
-
-            {/* Avatar with icon overlay */}
-            <Link href={`/profile/${notification.fromUser.username}`} className="flex-shrink-0 relative">
-                <Avatar className="h-11 w-11 sm:h-12 sm:w-12 ring-2 ring-background shadow-sm">
-                    <AvatarImage src={notification.fromUser.avatar} alt={notification.fromUser.name} loading="lazy" />
-                    <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold">
-                        {notification.fromUser.name.charAt(0)}
-                    </AvatarFallback>
-                </Avatar>
-                <NotificationIconBubble type={notification.type} />
-            </Link>
-
-            {/* Content */}
-            <div className="flex-1 min-w-0">
-                <p className="text-sm leading-relaxed">
-                    <Link href={`/profile/${notification.fromUser.username}`} className="font-semibold hover:underline">
-                        {notification.fromUser.name}
-                    </Link>
-                    <span className="text-muted-foreground ml-1">{actionText}</span>
-                    <span className="text-xs text-muted-foreground/70 ml-2">
-                        {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
-                    </span>
-                </p>
-
-                {/* Post preview */}
-                {notification.postId && (notification.postContent || notification.postMediaType) && (
-                    <Link
-                        href={`/profile/${notification.postAuthorUsername || notification.fromUser.username}/post/${notification.postId}`}
-                        className="block mt-1.5"
-                    >
-                        <div className="border rounded-lg px-3 py-2 bg-muted/30 hover:bg-muted/50 transition-colors text-xs sm:text-sm">
-                            {notification.postContent && (
-                                <p className="line-clamp-2 text-muted-foreground italic">
-                                    &ldquo;{notification.postContent}&rdquo;
-                                </p>
-                            )}
-                            {notification.postMediaType && !notification.postContent && (
-                                <p className="text-muted-foreground flex items-center gap-1.5">
-                                    <MediaTypeIcon type={notification.postMediaType} />
-                                    <span className="capitalize">{notification.postMediaType}</span> post
-                                </p>
-                            )}
-                        </div>
-                    </Link>
-                )}
-
-                {/* Challenge Routing Logic */}
-                {notification.type.startsWith('challenge_') && notification.postId && (
-                    <Link
-                        href={notification.type === 'challenge_submission'
-                            ? `/challenges/manage/${notification.postId}`
-                            : `/challenges/${notification.postId}`}
-                        className="block mt-1.5"
-                    >
-                        <div className="border rounded-lg px-3 py-2 bg-primary/5 hover:bg-primary/10 border-primary/20 transition-colors text-xs sm:text-sm font-medium text-primary flex items-center gap-2">
-                            <Trophy className="h-4 w-4" />
-                            View Challenge Detail
-                        </div>
-                    </Link>
-                )}
-
-                {/* Collaboration actions */}
-                {notification.type === 'collaboration_request' && (
-                    <div className="flex items-center gap-2 mt-2">
-                        {notification.status === 'pending' ? (
-                            <>
-                                <Button size="sm" className="h-7 text-xs rounded-full px-4" onClick={() => onAccept(notification.id)}>
-                                    Accept
-                                </Button>
-                                <Button size="sm" variant="outline" className="h-7 text-xs rounded-full px-4" onClick={() => onDecline(notification.id)}>
-                                    Decline
-                                </Button>
-                            </>
-                        ) : notification.status === 'accepted' ? (
-                            <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-green-200">Accepted</Badge>
-                        ) : (
-                            <Badge variant="secondary" className="bg-red-500/10 text-red-600 border-red-200">Declined</Badge>
-                        )}
-                    </div>
-                )}
-
-                {/* Action buttons - show on hover on desktop, always on mobile */}
-                <div className="flex items-center gap-1 mt-1.5 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                    {!notification.read && (
-                        <Button variant="ghost" size="sm" onClick={() => onMarkAsRead(notification.id)} className="h-6 text-[11px] px-2 rounded-full text-muted-foreground hover:text-foreground">
-                            <CheckCheck className="h-3 w-3 mr-1" />
-                            Read
-                        </Button>
-                    )}
-                    <Button variant="ghost" size="sm" onClick={() => onDelete(notification.id)} className="h-6 text-[11px] px-2 rounded-full text-muted-foreground hover:text-red-500 hover:bg-red-500/10">
-                        <Trash2 className="h-3 w-3 mr-1" />
-                        Remove
-                    </Button>
-                </div>
-            </div>
-
-            {/* Follow back CTA */}
-            {notification.type === 'follow' && (
-                <Button variant="default" size="sm" className="flex-shrink-0 h-8 text-xs rounded-full px-4 self-center shadow-sm">
-                    <span className="hidden sm:inline">Follow Back</span>
-                    <span className="sm:hidden">Follow</span>
-                </Button>
-            )}
-
-            {/* Livestream invite CTA */}
-            {notification.type === 'livestream_invite' && notification.related_id && (
-                <Link href={`/live/${notification.related_id}`}>
-                    <Button variant="default" size="sm" className="flex-shrink-0 h-8 text-xs rounded-full px-4 self-center shadow-sm bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700">
-                        <Radio className="h-3 w-3 mr-1.5" />
-                        Join Live
-                    </Button>
-                </Link>
-            )}
-        </div>
-    );
-});
-
-NotificationItem.displayName = 'NotificationItem';
-
-// Skeleton Loader
-function NotificationSkeleton() {
-    return (
-        <div className="flex gap-3 py-3 px-3 sm:px-5 mx-2 my-0.5">
-            <Skeleton className="h-11 w-11 sm:h-12 sm:w-12 rounded-full flex-shrink-0" />
-            <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-4/5" />
-                <Skeleton className="h-3 w-2/5" />
-            </div>
-        </div>
-    );
-}
-
-// Time section header
-function TimeSectionHeader({ label }: { label: string }) {
-    return (
-        <div className="sticky top-0 z-10 px-5 py-2 bg-background/90 backdrop-blur-sm">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
-        </div>
-    );
-}
-
-// Empty state with gradient icon
-function EmptyState({ filter }: { filter: NotificationFilter }) {
-    const configs: Record<string, { icon: React.ReactNode; bg: string; title: string; desc: string }> = {
-        mentions: { icon: <AtSign className="h-8 w-8 text-white" />, bg: 'from-orange-400 to-amber-500', title: 'No mentions yet', desc: "When someone tags you, you'll see it here" },
-        likes: { icon: <Heart className="h-8 w-8 text-white" />, bg: 'from-red-400 to-pink-500', title: 'No likes yet', desc: "When someone likes your posts, you'll see it here" },
-        comments: { icon: <MessageCircle className="h-8 w-8 text-white" />, bg: 'from-blue-400 to-blue-600', title: 'No comments yet', desc: "When someone comments, you'll see it here" },
-        follows: { icon: <UserPlus className="h-8 w-8 text-white" />, bg: 'from-purple-400 to-violet-600', title: 'No new followers', desc: "When someone follows you, you'll see it here" },
-        all: { icon: <Sparkles className="h-8 w-8 text-white" />, bg: 'from-primary/80 to-primary', title: "You're all caught up!", desc: "When you get notifications, they'll show up here" },
-    };
-    const emptyConfig = configs[filter] || configs.all;
-
-    return (
-        <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-            <div className={cn("h-16 w-16 rounded-2xl bg-gradient-to-br flex items-center justify-center mb-5 shadow-lg", emptyConfig.bg)}>
-                {emptyConfig.icon}
-            </div>
-            <h3 className="text-lg font-bold mb-1.5">{emptyConfig.title}</h3>
-            <p className="text-sm text-muted-foreground max-w-xs">{emptyConfig.desc}</p>
-        </div>
-    );
-}
-
-// Map database notification types to UI types
+// Map db notification types to UI types
 const mapNotificationType = (dbType: string): NotificationType['type'] => {
     const typeMap: Record<string, NotificationType['type']> = {
         'new_like': 'like',
@@ -309,30 +86,225 @@ const mapNotificationType = (dbType: string): NotificationType['type'] => {
         'challenge_submission': 'challenge_submission',
         'challenge_approved': 'challenge_approved',
         'challenge_rejected': 'challenge_rejected',
-        'challenge_won': 'challenge_won'
+        'challenge_won': 'challenge_won',
+        'poll_vote': 'poll_vote',
+        'mention': 'mention'
     };
     return typeMap[dbType] || 'follow';
 };
 
-// Main Notifications Page Component
+// Main Instagram-like Notification Item
+const NotificationItem = React.memo(({
+    notification,
+    onAccept,
+    onDecline
+}: {
+    notification: NotificationType;
+    onAccept?: (id: string) => void;
+    onDecline?: (id: string) => void;
+}) => {
+    const { fromUser, type, metadata, referenceId, createdAt } = notification;
+
+    // Build the action phrase
+    let actionHtml = <></>;
+    let rightSideHtml = <></>;
+
+    // Helpers to extract data
+    const hasMedia = metadata?.post_media_url || metadata?.thumbnail_url;
+    // Determine whether to show a right side thumbnail icon based on explicit visual media types
+    const hasVisualType = ['image', 'video', 'poll', 'audio'].includes(metadata?.post_media_type);
+    const showRightSide = hasMedia || hasVisualType;
+    
+    // Extract a snippet text to show inline
+    const inlineSnippet = metadata?.comment_content || metadata?.post_content || '';
+
+    // Determine the correct route. If it's a comment or like-on-comment, we still want to go to the parent post.
+    const targetHref = notification.postId ? `/post/${notification.postId}` : `/post/${referenceId}`;
+
+    switch (type) {
+        case 'like':
+            const likeCount = metadata?.grouped_count ? parseInt(metadata.grouped_count, 10) : 1;
+            const likeTarget = metadata?.comment_content ? 'comment' : 'post';
+            
+            actionHtml = (
+                <span>
+                    {likeCount > 1 ? `and ${likeCount - 1} other${likeCount - 1 > 1 ? 's' : ''} liked your ${likeTarget}` : `liked your ${likeTarget}`}
+                    {inlineSnippet ? <span className="opacity-85">: "{inlineSnippet}"</span> : '.'}
+                </span>
+            );
+            if (showRightSide) {
+                rightSideHtml = (
+                    <Link href={targetHref} className="shrink-0">
+                        <div className="h-11 w-11 overflow-hidden rounded bg-muted/60 relative">
+                            <NotificationThumbnail url={hasMedia} mediaType={metadata?.post_media_type} />
+                        </div>
+                    </Link>
+                );
+            }
+            break;
+
+        case 'comment':
+            actionHtml = (
+                <span>
+                    commented: {inlineSnippet ? <span className="opacity-80">"{inlineSnippet}"</span> : 'on your post.'}
+                </span>
+            );
+            if (showRightSide) {
+                rightSideHtml = (
+                    <Link href={targetHref} className="shrink-0">
+                        <div className="h-11 w-11 overflow-hidden rounded bg-muted/60 relative">
+                            <NotificationThumbnail url={hasMedia} mediaType={metadata?.post_media_type} />
+                        </div>
+                    </Link>
+                );
+            }
+            break;
+
+        case 'mention':
+            actionHtml = (
+                <span>
+                    mentioned you in a {metadata?.post_media_type === 'video' ? 'reel' : 'post'}
+                    {inlineSnippet ? <span className="opacity-85">: "{inlineSnippet}"</span> : '.'}
+                </span>
+            );
+            if (showRightSide) {
+                rightSideHtml = (
+                    <Link href={targetHref} className="shrink-0">
+                        <div className="h-11 w-11 overflow-hidden rounded bg-muted/60 relative">
+                            <NotificationThumbnail url={hasMedia} mediaType={metadata?.post_media_type} />
+                        </div>
+                    </Link>
+                );
+            }
+            break;
+
+        case 'follow':
+            // If it's a follow request
+            if (notification.status === 'pending') {
+                actionHtml = <span>requested to follow you.</span>;
+                rightSideHtml = (
+                    <div className="flex shrink-0 items-center gap-2">
+                        <Button 
+                            className="h-8 rounded-lg bg-[#0064e0] px-4 py-0 text-sm font-semibold hover:bg-[#0052b8] text-white"
+                            onClick={() => onAccept && onAccept(notification.id)}
+                        >
+                            Confirm
+                        </Button>
+                        <Button 
+                            variant="secondary" 
+                            className="h-8 rounded-lg bg-muted px-4 py-0 text-sm font-semibold hover:bg-muted/80 text-foreground"
+                            onClick={() => onDecline && onDecline(notification.id)}
+                        >
+                            Delete
+                        </Button>
+                    </div>
+                );
+            } else {
+                actionHtml = <span>started following you.</span>;
+                rightSideHtml = (
+                    <div className="shrink-0">
+                         {/* Usually this would toggle between follow/following based on relationship */}
+                         {notification.status === 'accepted' ? (
+                             <Button variant="secondary" className="h-8 rounded-lg bg-muted px-4 py-0 text-sm font-semibold hover:bg-muted/80 text-foreground">
+                                Following
+                            </Button>
+                         ) : (
+                             <Button className="h-8 rounded-lg bg-[#0064e0] px-4 py-0 text-sm font-semibold hover:bg-[#0052b8] text-white">
+                                Follow
+                            </Button>
+                         )}
+                    </div>
+                 );
+            }
+            break;
+
+        case 'collaboration_request':
+            actionHtml = <span>invited you to collaborate on a post.</span>;
+            if (showRightSide) {
+                rightSideHtml = (
+                    <Link href={targetHref} className="shrink-0">
+                        <div className="h-11 w-11 overflow-hidden rounded bg-muted/60 relative">
+                            <NotificationThumbnail url={hasMedia} mediaType={metadata?.post_media_type} />
+                        </div>
+                    </Link>
+                );
+            }
+            break;
+
+        case 'repost':
+        case 'quote':
+            const rpCount = metadata?.grouped_count ? parseInt(metadata.grouped_count, 10) : 1;
+            actionHtml = (
+                <span>
+                    {rpCount > 1 ? `and ${rpCount - 1} other${rpCount - 1 > 1 ? 's' : ''} reposted your post` : `reposted your post`}
+                    {inlineSnippet ? <span className="opacity-85">: "{inlineSnippet}"</span> : '.'}
+                </span>
+            );
+            if (showRightSide) {
+                rightSideHtml = (
+                    <Link href={targetHref} className="shrink-0">
+                        <div className="h-11 w-11 overflow-hidden rounded bg-muted/60 relative">
+                            <NotificationThumbnail url={hasMedia} mediaType={metadata?.post_media_type} />
+                        </div>
+                    </Link>
+                );
+            }
+            break;
+
+        default:
+            actionHtml = <span>sent you a notification.</span>;
+            break;
+    }
+
+    return (
+        <div className="flex items-center gap-3 px-4 py-[10px] w-full transition-colors hover:bg-muted/30">
+            {/* Avatar */}
+            <Link href={`/profile/${fromUser.username}`} className="shrink-0">
+                <Avatar className="h-11 w-11 ring-1 ring-border/10">
+                    <AvatarImage src={getAvatarUrl(fromUser.avatar) || fromUser.avatar} alt={fromUser.username} />
+                    <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
+                        {fromUser.name.charAt(0)}
+                    </AvatarFallback>
+                </Avatar>
+            </Link>
+
+            {/* Main Content Area */}
+            <div className="min-w-0 flex-1 flex items-center pr-1">
+                <div className="text-[14px] leading-[18px] text-foreground/90 font-normal">
+                    <Link href={`/profile/${fromUser.username}`} className="font-semibold text-foreground mr-1">
+                        {fromUser.username}
+                    </Link>
+                    {actionHtml}{' '}
+                    <span className="text-muted-foreground whitespace-nowrap opacity-80 font-normal text-[13px] ml-1">
+                        {formatInstaTime(createdAt)}
+                    </span>
+                </div>
+            </div>
+
+            {/* Right Side (Thumbnail / Buttons) */}
+            {rightSideHtml && (
+                <div className="ml-1 flex shrink-0 items-center justify-end">
+                    {rightSideHtml}
+                </div>
+            )}
+        </div>
+    );
+});
+NotificationItem.displayName = 'NotificationItem';
+
 export default function NotificationsPage() {
     const { toast } = useToast();
-
-    // State
     const [notifications, setNotifications] = React.useState<NotificationType[]>([]);
-    const [filter, setFilter] = React.useState<NotificationFilter>('all');
     const [isLoading, setIsLoading] = React.useState(true);
-    const [showSettings, setShowSettings] = React.useState(false);
-    const [hasMore, setHasMore] = React.useState(true);
-    const [isLoadingMore, setIsLoadingMore] = React.useState(false);
-    const PAGE_SIZE = 30;
+    const PAGE_SIZE = 50;
 
-    // Fetch notifications from database
     React.useEffect(() => {
         const fetchNotifications = async () => {
             setIsLoading(true);
-            const supabase = (await import('@/lib/supabase/client')).createClient();
+            const ObjectSupabase = await import('@/lib/supabase/client');
+            const supabase = ObjectSupabase.createClient();
 
+            // Needs the new get_user_notifications RPC that returns metadata
             const { data, error } = await supabase.rpc('get_user_notifications', {
                 p_limit: PAGE_SIZE,
                 p_offset: 0
@@ -340,507 +312,165 @@ export default function NotificationsPage() {
 
             if (error) {
                 console.error('Error fetching notifications:', error);
-                toast({
-                    title: "Error loading notifications",
-                    description: error.message,
-                    variant: "destructive"
-                });
+                // toast({ title: "Error", description: error.message, variant: "destructive" });
                 setIsLoading(false);
                 return;
             }
 
             if (data) {
-                // Transform database notifications to UI format
-                let transformedNotifications: NotificationType[] = data.map((n: any) => ({
+                const transformed: NotificationType[] = data.map((n: any) => ({
                     id: n.id.toString(),
                     type: mapNotificationType(n.type),
                     fromUser: {
                         id: n.actor_id,
-                        name: n.actor_name || 'Unknown User',
+                        name: n.actor_name || n.actor_username || 'Unknown',
                         username: n.actor_username || 'unknown',
                         avatar: n.actor_avatar_url || '/placeholder-user.jpg',
                         verified: n.actor_verified || false
                     },
                     postId: n.entity_id?.toString(),
-                    commentId: undefined,
-                    text: undefined,
+                    referenceId: n.reference_id,
+                    metadata: n.metadata,
                     createdAt: n.created_at,
                     read: n.is_read,
-                    postContent: n.post_content,
-                    postMediaType: n.post_media_type as any,
-                    postAuthorUsername: n.post_author_username // Add this mapped field
+                    status: (n.type === 'follow_request' ? 'pending' : 'none')
                 }));
-
-                // Fetch collaboration statuses
-                const collabRequests = transformedNotifications.filter(n => n.type === 'collaboration_request');
-                if (collabRequests.length > 0) {
-                    const { data: { user } } = await supabase.auth.getUser();
-                    if (user) {
-                        const postIds = collabRequests.map(n => n.postId).filter(Boolean);
-                        const { data: collabs } = await supabase
-                            .from('post_collaborators')
-                            .select('post_id, status')
-                            .in('post_id', postIds)
-                            .eq('user_id', user.id);
-
-                        if (collabs) {
-                            const statusMap = new Map(collabs.map(c => [c.post_id, c.status]));
-                            transformedNotifications = transformedNotifications.map(n => {
-                                if (n.type === 'collaboration_request' && n.postId) {
-                                    const status = statusMap.get(n.postId);
-                                    return { ...n, status: status as any || 'pending' };
-                                }
-                                return n;
-                            });
-                        }
-                    }
-                }
-
-                setNotifications(transformedNotifications);
-                setHasMore(transformedNotifications.length >= PAGE_SIZE);
+                setNotifications(transformed);
+                
+                // Mark as read in background implicitly when visiting the page (Instagram style)
+                supabase.rpc('mark_all_notifications_as_read');
             }
             setIsLoading(false);
         };
 
         fetchNotifications();
-
-        // Set up realtime subscription for new notifications
-        const setupRealtimeSubscription = async () => {
-            const supabase = (await import('@/lib/supabase/client')).createClient();
-
-            // Get current user ID properly
-            const { data: { user } } = await supabase.auth.getUser();
-
-            if (!user) {
-                return null;
-            }
-
-            const channel = supabase
-                .channel('notifications_changes')
-                .on('postgres_changes', {
-                    event: '*',
-                    schema: 'public',
-                    table: 'notifications',
-                    filter: `user_id=eq.${user.id}`
-                }, () => {
-                    // Refresh notifications when any change occurs
-                    fetchNotifications();
-                })
-                .subscribe();
-
-            return { supabase, channel };
-        };
-
-        let realtimeCleanup: { supabase: any; channel: any } | null = null;
-
-        setupRealtimeSubscription().then(result => {
-            realtimeCleanup = result;
-        });
-
-        return () => {
-            if (realtimeCleanup) {
-                realtimeCleanup.supabase.removeChannel(realtimeCleanup.channel);
-            }
-        };
     }, [toast]);
 
-    // Filter notifications
-    const filteredNotifications = React.useMemo(() => {
-        let filtered = notifications;
-
-        switch (filter) {
-            case 'mentions':
-                filtered = notifications.filter(n => n.type === 'mention');
-                break;
-            case 'likes':
-                filtered = notifications.filter(n => n.type === 'like');
-                break;
-            case 'comments':
-                filtered = notifications.filter(n => n.type === 'comment');
-                break;
-            case 'follows':
-                filtered = notifications.filter(n => n.type === 'follow');
-                break;
-        }
-
-        return filtered.sort((a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-    }, [notifications, filter]);
-
-    // Count unread notifications
-    const unreadCount = React.useMemo(() =>
-        notifications.filter(n => !n.read).length,
-        [notifications]
-    );
-
-    // Filter count per category for badges
-    const filterCounts = React.useMemo(() => ({
-        mentions: notifications.filter(n => n.type === 'mention' && !n.read).length,
-        likes: notifications.filter(n => n.type === 'like' && !n.read).length,
-        comments: notifications.filter(n => n.type === 'comment' && !n.read).length,
-        follows: notifications.filter(n => n.type === 'follow' && !n.read).length,
-    }), [notifications]);
-
-    // Group filtered notifications by time
+    // Group Notifications
     const groupedNotifications = React.useMemo(() => {
         const groups: { label: string; items: NotificationType[] }[] = [];
         const groupMap = new Map<string, NotificationType[]>();
+        
+        for (const n of notifications) {
+            // Put pending follow requests at the very top (we will extract these later)
+            if (n.type === 'follow' && n.status === 'pending') continue;
 
-        for (const n of filteredNotifications) {
             const group = getTimeGroup(n.createdAt);
             if (!groupMap.has(group)) groupMap.set(group, []);
             groupMap.get(group)!.push(n);
         }
 
-        const order = ['Today', 'Yesterday', 'This Week', 'Earlier'];
+        const order = ['Today', 'This week', 'This month', 'Earlier'];
         for (const label of order) {
             const items = groupMap.get(label);
             if (items && items.length > 0) groups.push({ label, items });
         }
         return groups;
-    }, [filteredNotifications]);
+    }, [notifications]);
 
-    // Load more handler
-    const handleLoadMore = React.useCallback(async () => {
-        setIsLoadingMore(true);
-        const supabase = (await import('@/lib/supabase/client')).createClient();
-        const { data, error } = await supabase.rpc('get_user_notifications', {
-            p_limit: PAGE_SIZE,
-            p_offset: notifications.length
-        });
+    // Extract follow requests
+    const followRequests = React.useMemo(() => {
+        return notifications.filter(n => n.type === 'follow' && n.status === 'pending');
+    }, [notifications]);
 
-        if (!error && data) {
-            const newNotifs: NotificationType[] = data.map((n: any) => ({
-                id: n.id.toString(),
-                type: mapNotificationType(n.type),
-                fromUser: {
-                    id: n.actor_id,
-                    name: n.actor_name || 'Unknown User',
-                    username: n.actor_username || 'unknown',
-                    avatar: n.actor_avatar_url || '/placeholder-user.jpg',
-                    verified: n.actor_verified || false
-                },
-                postId: n.entity_id?.toString(),
-                commentId: undefined,
-                text: undefined,
-                createdAt: n.created_at,
-                read: n.is_read,
-                postContent: n.post_content,
-                postMediaType: n.post_media_type as any,
-                postAuthorUsername: n.post_author_username
-            }));
-            setNotifications(prev => [...prev, ...newNotifs]);
-            setHasMore(newNotifs.length >= PAGE_SIZE);
-        }
-        setIsLoadingMore(false);
-    }, [notifications.length]);
-
-    // Memoized handlers for better performance
-    const handleMarkAsRead = React.useCallback(async (id: string) => {
-        const supabase = (await import('@/lib/supabase/client')).createClient();
-
-        // Optimistic update
-        setNotifications(prev =>
-            prev.map(n => n.id === id ? { ...n, read: true } : n)
-        );
-
-        const { error } = await supabase.rpc('mark_notification_as_read', {
-            p_notification_id: parseInt(id)
-        });
-
-        if (error) {
-            console.error('Error marking notification as read:', error);
-            // Revert on error
-            setNotifications(prev =>
-                prev.map(n => n.id === id ? { ...n, read: false } : n)
-            );
-        }
-    }, []);
-
-    const handleMarkAllAsRead = React.useCallback(async () => {
-        const supabase = (await import('@/lib/supabase/client')).createClient();
-
-        // Optimistic update
-        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-
-        const { error } = await supabase.rpc('mark_all_notifications_as_read');
-
-        if (error) {
-            console.error('Error marking all as read:', error);
-            toast({
-                title: "Error",
-                description: "Failed to mark all as read",
-                variant: "destructive"
-            });
-            return;
-        }
-
-        toast({
-            title: "All marked as read",
-        });
+    const handleAcceptRequest = React.useCallback(async (id: string) => {
+        setNotifications(prev => prev.map(n => n.id === id ? { ...n, status: 'accepted' } : n));
+        toast({ title: "Follow request accepted" });
+        // TODO: call actual accept RPC
     }, [toast]);
 
-    const handleDelete = React.useCallback(async (id: string) => {
-        const supabase = (await import('@/lib/supabase/client')).createClient();
-
-        // Optimistic update
+    const handleDeclineRequest = React.useCallback(async (id: string) => {
         setNotifications(prev => prev.filter(n => n.id !== id));
-
-        const { error } = await supabase.rpc('delete_notification', {
-            p_notification_id: parseInt(id)
-        });
-
-        if (error) {
-            console.error('Error deleting notification:', error);
-            // Could revert here, but deletion is usually final
-        }
-
-        toast({
-            title: "Notification deleted",
-            variant: 'destructive'
-        });
+        toast({ title: "Request deleted" });
+        // TODO: call actual decline RPC
     }, [toast]);
-
-    const handleAcceptCollaboration = React.useCallback(async (id: string) => {
-        const notification = notifications.find(n => n.id === id);
-        if (!notification || !notification.postId) return;
-
-        const supabase = (await import('@/lib/supabase/client')).createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-        // Optimistic update
-        setNotifications(prev =>
-            prev.map(n => n.id === id ? { ...n, status: 'accepted', read: true } : n)
-        );
-
-        const { error } = await supabase
-            .from('post_collaborators')
-            .update({ status: 'accepted' })
-            .eq('post_id', notification.postId)
-            .eq('user_id', user.id);
-
-        if (error) {
-            console.error('Error accepting collaboration:', error);
-            // Revert
-            setNotifications(prev =>
-                prev.map(n => n.id === id ? { ...n, status: 'pending', read: false } : n)
-            );
-            toast({
-                title: "Error",
-                description: "Failed to accept collaboration",
-                variant: 'destructive'
-            });
-        } else {
-            toast({
-                title: "Collaboration accepted",
-                description: "You are now a collaborator on the post."
-            });
-            // Mark notification as read
-            supabase.rpc('mark_notification_as_read', { p_notification_id: parseInt(id) });
-        }
-    }, [notifications, toast]);
-
-    const handleDeclineCollaboration = React.useCallback(async (id: string) => {
-        const notification = notifications.find(n => n.id === id);
-        if (!notification || !notification.postId) return;
-
-        const supabase = (await import('@/lib/supabase/client')).createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-        // Optimistic update
-        setNotifications(prev =>
-            prev.map(n => n.id === id ? { ...n, status: 'declined', read: true } : n)
-        );
-
-        const { error } = await supabase
-            .from('post_collaborators')
-            .update({ status: 'declined' })
-            .eq('post_id', notification.postId)
-            .eq('user_id', user.id);
-
-        if (error) {
-            console.error('Error declining collaboration:', error);
-            // Revert
-            setNotifications(prev =>
-                prev.map(n => n.id === id ? { ...n, status: 'pending', read: false } : n)
-            );
-            toast({
-                title: "Error",
-                description: "Failed to decline collaboration",
-                variant: 'destructive'
-            });
-        } else {
-            toast({
-                title: "Collaboration declined",
-                variant: 'destructive'
-            });
-            // Mark notification as read
-            supabase.rpc('mark_notification_as_read', { p_notification_id: parseInt(id) });
-        }
-    }, [notifications, toast]);
-
-    const handleClearAll = React.useCallback(async () => {
-        const supabase = (await import('@/lib/supabase/client')).createClient();
-
-        // Optimistic update
-        setNotifications([]);
-
-        const { error } = await supabase.rpc('delete_all_notifications');
-
-        if (error) {
-            console.error('Error clearing notifications:', error);
-            toast({
-                title: "Error",
-                description: "Failed to clear notifications",
-                variant: "destructive"
-            });
-            return;
-        }
-
-        toast({
-            title: "All notifications cleared",
-            description: "Your notification inbox is now empty"
-        });
-    }, [toast]);
-
-    const filterTabClassName = "rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-sm px-3 sm:px-4 py-3 font-medium whitespace-nowrap gap-1.5";
 
     return (
-        <div className="flex flex-col min-h-screen w-full bg-background">
+        <div className="flex bg-background min-h-screen w-full flex-col">
             {/* Header */}
-            <div className="sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-                <div className="flex items-center justify-between py-3 px-4 sm:px-6">
-                    <div className="flex items-center gap-3 min-w-0">
-                        <SidebarTrigger className="md:hidden" />
-                        <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary/80 to-primary flex items-center justify-center">
-                            <Bell className="h-4 w-4 text-primary-foreground" />
-                        </div>
-                        <h1 className="text-lg font-bold">Notifications</h1>
-                        {unreadCount > 0 && (
-                            <Badge variant="default" className="rounded-full px-2 py-0 text-[11px] h-5 min-w-[20px] flex items-center justify-center">
-                                {unreadCount}
-                            </Badge>
-                        )}
-                    </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                        {unreadCount > 0 && !isLoading && (
-                            <Button variant="ghost" size="sm" onClick={handleMarkAllAsRead} className="h-8 text-xs hover:bg-primary/10 rounded-full px-3">
-                                <CheckCheck className="h-3.5 w-3.5 mr-1.5" />
-                                <span className="hidden sm:inline">Mark all read</span>
-                                <span className="sm:hidden">Read all</span>
-                            </Button>
-                        )}
-                        <Button variant="ghost" size="icon" onClick={() => setShowSettings(!showSettings)} className="h-8 w-8 hover:bg-muted rounded-full" aria-expanded={showSettings}>
-                            <Settings className="h-4 w-4" />
-                        </Button>
-                    </div>
+            <div className="sticky top-0 z-30 flex items-center justify-between bg-background px-4 py-3 sm:px-6">
+                <div className="flex items-center gap-4">
+                    <SidebarTrigger className="md:hidden" />
+                    <h1 className="text-xl font-bold tracking-tight">Notifications</h1>
                 </div>
-
-                {/* Filter Tabs with unread counts */}
-                <Tabs value={filter} onValueChange={(v) => setFilter(v as NotificationFilter)} className="w-full">
-                    <TabsList className="w-full justify-start rounded-none border-b-0 bg-transparent h-auto p-0 overflow-x-auto flex-nowrap no-scrollbar">
-                        <TabsTrigger value="all" className={filterTabClassName}>All</TabsTrigger>
-                        <TabsTrigger value="mentions" className={filterTabClassName}>
-                            <AtSign className="h-3.5 w-3.5" />
-                            Mentions
-                            {filterCounts.mentions > 0 && <Badge variant="secondary" className="h-4 px-1 text-[10px] rounded-full ml-0.5">{filterCounts.mentions}</Badge>}
-                        </TabsTrigger>
-                        <TabsTrigger value="likes" className={filterTabClassName}>
-                            <Heart className="h-3.5 w-3.5" />
-                            Likes
-                            {filterCounts.likes > 0 && <Badge variant="secondary" className="h-4 px-1 text-[10px] rounded-full ml-0.5">{filterCounts.likes}</Badge>}
-                        </TabsTrigger>
-                        <TabsTrigger value="comments" className={filterTabClassName}>
-                            <MessageCircle className="h-3.5 w-3.5" />
-                            Comments
-                            {filterCounts.comments > 0 && <Badge variant="secondary" className="h-4 px-1 text-[10px] rounded-full ml-0.5">{filterCounts.comments}</Badge>}
-                        </TabsTrigger>
-                        <TabsTrigger value="follows" className={filterTabClassName}>
-                            <UserPlus className="h-3.5 w-3.5" />
-                            Follows
-                            {filterCounts.follows > 0 && <Badge variant="secondary" className="h-4 px-1 text-[10px] rounded-full ml-0.5">{filterCounts.follows}</Badge>}
-                        </TabsTrigger>
-                    </TabsList>
-                </Tabs>
-
-                {/* Settings Panel */}
-                {showSettings && (
-                    <div className="border-t py-3 px-4 sm:px-6 bg-muted/20 space-y-2.5">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <Bell className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-sm">Push notifications</span>
-                            </div>
-                            <PushNotificationManager />
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <BellOff className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-sm">Pause notifications</span>
-                            </div>
-                            <Button variant="outline" size="sm" className="h-7 text-xs rounded-full">Pause</Button>
-                        </div>
-                        {notifications.length > 0 && (
-                            <Button variant="destructive" size="sm" className="w-full h-8 text-xs rounded-lg" onClick={handleClearAll}>
-                                <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                                Clear all notifications
-                            </Button>
-                        )}
-                    </div>
-                )}
             </div>
 
-            {/* Notifications List */}
-            <div className="flex-grow overflow-y-auto">
+            <div className="w-full max-w-2xl mx-auto flex-1 pb-16">
                 {isLoading ? (
-                    <div className="py-2">
-                        {Array.from({ length: 6 }).map((_, i) => <NotificationSkeleton key={i} />)}
-                    </div>
-                ) : filteredNotifications.length === 0 ? (
-                    <EmptyState filter={filter} />
-                ) : (
-                    <div role="feed" aria-label="Notifications">
-                        {groupedNotifications.map(group => (
-                            <div key={group.label}>
-                                <TimeSectionHeader label={group.label} />
-                                {group.items.map(notification => (
-                                    <NotificationItem
-                                        key={notification.id}
-                                        notification={notification}
-                                        onMarkAsRead={handleMarkAsRead}
-                                        onDelete={handleDelete}
-                                        onAccept={handleAcceptCollaboration}
-                                        onDecline={handleDeclineCollaboration}
-                                    />
-                                ))}
+                    <div className="px-4 py-4 space-y-4">
+                        {Array.from({ length: 15 }).map((_, i) => (
+                            <div key={i} className="flex items-center gap-3">
+                                <Skeleton className="h-11 w-11 rounded-full shrink-0" />
+                                <div className="space-y-2 flex-1">
+                                    <Skeleton className="h-4 w-3/4" />
+                                    <Skeleton className="h-3 w-1/4" />
+                                </div>
+                                <Skeleton className="h-11 w-11 rounded shrink-0" />
                             </div>
                         ))}
+                    </div>
+                ) : (
+                    <div className="w-full pt-1 pb-4">
+                        {/* Follow Requests Banner */}
+                        {followRequests.length > 0 && (
+                            <Link href="/notifications/follow-requests" className="block w-full">
+                                <div className="mx-0 my-1 flex cursor-pointer items-center justify-between px-4 py-3 hover:bg-muted/30">
+                                    <div className="flex items-center gap-4">
+                                        <div className="relative h-12 w-12 flex items-center justify-center">
+                                            {/* Stacked avatars style */}
+                                            {followRequests.slice(0, 1).map((r, i) => (
+                                                <Avatar key={r.id} className="absolute left-0 top-0 h-11 w-11 border-2 border-background z-10">
+                                                    <AvatarImage src={r.fromUser.avatar} />
+                                                    <AvatarFallback>{r.fromUser.username[0]}</AvatarFallback>
+                                                </Avatar>
+                                            ))}
+                                            <div className="absolute right-0 bottom-0 z-20 rounded-full border-2 border-background bg-blue-500 flex h-5 w-5 items-center justify-center">
+                                                <div className="h-2 w-2 rounded-full bg-white" />
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="font-bold text-[15px] leading-tight text-foreground">Follow requests</span>
+                                            <span className="text-[14px] text-muted-foreground">{followRequests[0].fromUser.username} + {followRequests.length - 1} others</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-2 w-2 rounded-full bg-blue-500" />
+                                        <ChevronRight className="h-5 w-5 text-muted-foreground/60" />
+                                    </div>
+                                </div>
+                                <div className="mx-4 my-2 border-b border-border/40" />
+                            </Link>
+                        )}
 
-                        {/* Load more */}
-                        {hasMore && (
-                            <div className="py-4 px-4 text-center">
-                                <Button
-                                    variant="outline"
-                                    className="rounded-full px-6"
-                                    onClick={handleLoadMore}
-                                    disabled={isLoadingMore}
-                                >
-                                    {isLoadingMore ? (
-                                        <span className="flex items-center gap-2">
-                                            <span className="h-3.5 w-3.5 border-2 border-current border-r-transparent rounded-full animate-spin" />
-                                            Loading...
-                                        </span>
-                                    ) : (
-                                        <span className="flex items-center gap-1.5">
-                                            <ChevronDown className="h-3.5 w-3.5" />
-                                            Load more
-                                        </span>
-                                    )}
-                                </Button>
+                        {groupedNotifications.length === 0 && followRequests.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-20 text-center opacity-60">
+                                <div className="mb-4 rounded-full border-2 border-current p-6">
+                                    <Heart className="h-10 w-10" />
+                                </div>
+                                <h3 className="text-xl font-medium">Activity On Your Posts</h3>
+                                <p className="mt-2 text-sm text-muted-foreground max-w-[250px]">
+                                    When someone likes or comments on one of your posts, you'll see it here.
+                                </p>
                             </div>
+                        ) : (
+                            groupedNotifications.map((group) => (
+                                <div key={group.label} className="mt-1 w-full">
+                                    <h3 className="px-4 pb-3 pt-3 text-[16px] font-bold text-foreground">
+                                        {group.label}
+                                    </h3>
+                                    <div className="flex flex-col">
+                                        {group.items.map((notification) => (
+                                            <NotificationItem 
+                                                key={notification.id} 
+                                                notification={notification} 
+                                                onAccept={handleAcceptRequest}
+                                                onDecline={handleDeclineRequest}
+                                            />
+                                        ))}
+                                    </div>
+                                    <div className="mx-4 mt-3 mb-1 border-b border-border/40" />
+                                </div>
+                            ))
                         )}
                     </div>
                 )}
