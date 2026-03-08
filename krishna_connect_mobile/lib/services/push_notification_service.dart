@@ -195,6 +195,20 @@ class PushNotificationService {
         body = '$actorName is calling you';
         channelId = _channelGeneral;
         break;
+      case 'event_rsvp':
+        title = 'Event RSVP';
+        body = '$actorName responded to your event';
+        channelId = _channelEvents;
+        break;
+      case 'challenge_joined':
+        title = 'Challenge Update';
+        body = '$actorName joined your challenge';
+        channelId = _channelEvents;
+        break;
+      case 'story_reaction':
+        title = 'Story Reaction';
+        body = '$actorName reacted to your story';
+        break;
       default:
         title = 'Krishna Connect';
         body = '$actorName ${type.replaceAll('_', ' ')}';

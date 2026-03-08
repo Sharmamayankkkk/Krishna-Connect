@@ -105,6 +105,22 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         icon = Icons.phone_missed;
         iconColor = AppTheme.errorColor;
         break;
+      case 'call_incoming':
+        icon = Icons.phone_callback;
+        iconColor = AppTheme.successColor;
+        break;
+      case 'event_rsvp':
+        icon = Icons.event_available;
+        iconColor = AppTheme.warningColor;
+        break;
+      case 'challenge_joined':
+        icon = Icons.emoji_events;
+        iconColor = AppTheme.primaryColor;
+        break;
+      case 'story_reaction':
+        icon = Icons.emoji_emotions;
+        iconColor = AppTheme.accentColor;
+        break;
       default:
         icon = Icons.notifications;
         iconColor = AppTheme.textMuted;

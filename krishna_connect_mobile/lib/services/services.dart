@@ -37,6 +37,17 @@ class EventService {
     await _client.from('event_rsvps').upsert({
       'event_id': eventId, 'user_id': _userId, 'status': status,
     });
+    // Notify event creator about the RSVP
+    final event = await _client.from('events').select('creator_id').eq('id', eventId).maybeSingle();
+    if (event != null && event['creator_id'] != _userId) {
+      await _client.from('notifications').insert({
+        'user_id': event['creator_id'],
+        'actor_id': _userId,
+        'type': 'event_rsvp',
+        'entity_id': eventId,
+        'entity_type': 'event',
+      }).onError((error, stackTrace) => null); // Ignore if type not in enum
+    }
   }
 
   Future<void> deleteEvent(int eventId) async {
@@ -115,6 +126,17 @@ class StoryService {
     await _client.from('story_reactions').upsert({
       'status_id': int.parse(storyId), 'user_id': _userId, 'emoji': emoji,
     });
+    // Notify story owner
+    final story = await _client.from('statuses').select('user_id').eq('id', int.parse(storyId)).maybeSingle();
+    if (story != null && story['user_id'] != _userId) {
+      await _client.from('notifications').insert({
+        'user_id': story['user_id'],
+        'actor_id': _userId,
+        'type': 'story_reaction',
+        'entity_id': int.parse(storyId),
+        'entity_type': 'story',
+      }).onError((error, stackTrace) => null); // Ignore if type not in enum
+    }
   }
 
   Future<String> uploadStoryMedia(List<int> bytes, String mimeType) async {
@@ -153,6 +175,17 @@ class ChallengeService {
     await _client.from('challenge_participants').insert({
       'challenge_id': challengeId, 'user_id': _userId,
     });
+    // Notify challenge creator
+    final challenge = await _client.from('challenges').select('created_by').eq('id', challengeId).maybeSingle();
+    if (challenge != null && challenge['created_by'] != _userId) {
+      await _client.from('notifications').insert({
+        'user_id': challenge['created_by'],
+        'actor_id': _userId,
+        'type': 'challenge_joined',
+        'entity_id': challengeId,
+        'entity_type': 'challenge',
+      }).onError((error, stackTrace) => null); // Ignore if type not in enum
+    }
   }
 
   Future<void> createChallenge({required String title, String? description, String? rules, String? coverImage, String? endDate}) async {

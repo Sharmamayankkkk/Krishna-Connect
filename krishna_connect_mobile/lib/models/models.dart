@@ -125,6 +125,10 @@ class NotificationModel {
       case 'mention': return 'mentioned you';
       case 'collaboration_request': return 'wants to collaborate';
       case 'call_missed': return 'missed call';
+      case 'call_incoming': return 'is calling you';
+      case 'event_rsvp': return 'responded to your event';
+      case 'challenge_joined': return 'joined your challenge';
+      case 'story_reaction': return 'reacted to your story';
       default: return type.replaceAll('_', ' ');
     }
   }
