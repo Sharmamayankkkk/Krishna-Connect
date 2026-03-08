@@ -1,0 +1,97 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
+import '../../config/theme.dart';
+import '../../providers/app_provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../models/post_model.dart';
+
+class CreatePostScreen extends StatefulWidget {
+  const CreatePostScreen({super.key});
+  @override
+  State<CreatePostScreen> createState() => _CreatePostScreenState();
+}
+
+class _CreatePostScreenState extends State<CreatePostScreen> {
+  final _contentController = TextEditingController();
+  bool _isPosting = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final user = context.read<AuthProvider>().user;
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+        title: const Text('Create Post'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: ElevatedButton(
+              onPressed: _isPosting || _contentController.text.trim().isEmpty ? null : _submitPost,
+              style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8)),
+              child: _isPosting ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Post'),
+            ),
+          ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundImage: user?.avatarUrl != null ? NetworkImage(user!.avatarUrl!) : null,
+                  backgroundColor: AppTheme.cardDarkElevated,
+                  child: user?.avatarUrl == null ? const Icon(Icons.person, size: 20) : null,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    controller: _contentController,
+                    maxLines: null,
+                    autofocus: true,
+                    onChanged: (_) => setState(() {}),
+                    decoration: const InputDecoration(
+                      hintText: "What's on your mind?",
+                      border: InputBorder.none,
+                      filled: false,
+                    ),
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ),
+              ],
+            ),
+            const Spacer(),
+            // Media buttons
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(border: Border(top: BorderSide(color: AppTheme.borderDark))),
+              child: Row(
+                children: [
+                  IconButton(icon: const Icon(Icons.image_outlined, color: AppTheme.successColor), onPressed: () {}),
+                  IconButton(icon: const Icon(Icons.gif_box_outlined, color: AppTheme.primaryColor), onPressed: () {}),
+                  IconButton(icon: const Icon(Icons.poll_outlined, color: AppTheme.accentColor), onPressed: () {}),
+                  IconButton(icon: const Icon(Icons.location_on_outlined, color: AppTheme.errorColor), onPressed: () {}),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _submitPost() async {
+    setState(() => _isPosting = true);
+    try {
+      await context.read<AppProvider>().createPost(_contentController.text.trim());
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
+    setState(() => _isPosting = false);
+  }
+}
