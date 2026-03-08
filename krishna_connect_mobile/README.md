@@ -223,7 +223,7 @@ flutter build appbundle \
 Output: `build/app/outputs/bundle/release/app-release.aab`
 
 > **Before Play Store release**, you need to:
-> 1. Create a signing key: `keytool -genkey -v -keystore ~/krishna-connect.jks -keyalg RSA -keysize 2048 -validity 10000 -alias krishna-connect`
+> 1. Create a signing key: `keytool -genkeypair -v -keystore ~/krishna-connect.jks -keyalg RSA -keysize 2048 -validity 10000 -alias krishna-connect`
 > 2. Configure signing in `android/app/build.gradle.kts` — replace the debug signing config with your release config
 > 3. Update `android/app/build.gradle.kts`:
 >    ```kotlin
