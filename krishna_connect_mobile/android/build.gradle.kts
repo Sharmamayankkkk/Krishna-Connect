@@ -19,11 +19,12 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
-// Suppress "source value 8 is obsolete" warnings from plugin dependencies
+// Suppress "source value 8 is obsolete" warnings from plugin dependencies.
+// Some Flutter plugins still set Java 8 source/target in their own compileOptions;
+// the AGP overrides task-level sourceCompatibility, so we suppress the javac warning instead.
 subprojects {
     tasks.withType<JavaCompile>().configureEach {
-        sourceCompatibility = JavaVersion.VERSION_17.toString()
-        targetCompatibility = JavaVersion.VERSION_17.toString()
+        options.compilerArgs.add("-Xlint:-options")
     }
 }
 

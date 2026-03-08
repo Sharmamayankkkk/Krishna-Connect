@@ -138,6 +138,11 @@ Create `.vscode/launch.json`:
 ### 4. Run the App
 
 ```bash
+# If using an emulator, launch it and wait for the home screen first:
+flutter emulators --launch <emulator_name>
+adb wait-for-device                  # Waits until the emulator is fully booted
+# Or simply wait until you see the Android home screen
+
 # If you have a .env file configured:
 flutter run
 
@@ -152,6 +157,8 @@ flutter run -d <device-id>   # Run on specific device
 ```
 
 > **If credentials are missing**, the app will show a setup screen explaining what's needed.
+>
+> **If you get "Can't find service: package"** during install, the emulator isn't fully booted yet. Run `adb wait-for-device` and try again, or cold-boot the emulator from Android Studio's Device Manager. See [Troubleshooting](#-troubleshooting) below for details.
 
 ---
 
