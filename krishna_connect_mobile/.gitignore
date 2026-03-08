@@ -43,3 +43,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Environment files (Supabase credentials)
+.env
+.env.*
+*.env
+
+# Generated plugin files
+.flutter-plugins

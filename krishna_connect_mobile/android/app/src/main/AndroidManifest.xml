@@ -1,6 +1,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Network access for Supabase -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Push notifications (Android 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Vibrate for notifications -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- Camera and gallery for image_picker -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
     <application
-        android:label="krishna_connect_mobile"
+        android:label="Krishna Connect"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

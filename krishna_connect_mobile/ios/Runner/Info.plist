@@ -66,5 +66,17 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<!-- Camera permission for image_picker and stories -->
+	<key>NSCameraUsageDescription</key>
+	<string>Krishna Connect needs camera access to take photos and videos for posts, stories, and profile pictures.</string>
+	<!-- Photo library permission for image_picker -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Krishna Connect needs photo library access to share images in posts, stories, and messages.</string>
+	<!-- Photo library add permission -->
+	<key>NSPhotoLibraryAddOnlyUsageDescription</key>
+	<string>Krishna Connect needs permission to save images to your photo library.</string>
+	<!-- Microphone permission for video recording and voice notes -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Krishna Connect needs microphone access for voice notes and video recording.</string>
 </dict>
 </plist>
