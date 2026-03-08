@@ -48,3 +48,5 @@ flutter:
     - assets/stickers/
     - assets/backgrounds/
     - assets/chat_bg/
+    - assets/text/
+    - assets/data/
