@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import '../../config/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/profile_service.dart';
 
@@ -33,6 +32,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().user;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Profile'),
@@ -52,8 +54,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           children: [
             Center(
               child: Stack(children: [
-                CircleAvatar(radius: 50, backgroundImage: user?.avatarUrl != null ? NetworkImage(user!.avatarUrl!) : null, backgroundColor: AppTheme.cardDarkElevated),
-                Positioned(bottom: 0, right: 0, child: Container(padding: const EdgeInsets.all(6), decoration: const BoxDecoration(shape: BoxShape.circle, color: AppTheme.primaryColor), child: const Icon(Icons.camera_alt, size: 18, color: Colors.black))),
+                CircleAvatar(radius: 50, backgroundImage: user?.avatarUrl != null ? NetworkImage(user!.avatarUrl!) : null, backgroundColor: colorScheme.surfaceContainerHighest),
+                Positioned(bottom: 0, right: 0, child: Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(shape: BoxShape.circle, color: colorScheme.primary), child: Icon(Icons.camera_alt, size: 18, color: colorScheme.onPrimary))),
               ]),
             ),
             const SizedBox(height: 24),
