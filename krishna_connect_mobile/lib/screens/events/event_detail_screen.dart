@@ -33,6 +33,9 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     final userId = context.read<AuthProvider>().userId ?? '';
 
     return Scaffold(
@@ -52,17 +55,17 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                           width: double.infinity,
                           height: 200,
                           fit: BoxFit.cover,
-                          placeholder: (_, __) => Container(height: 200, color: AppTheme.cardDarkElevated),
-                          errorWidget: (_, __, ___) => Container(height: 200, color: AppTheme.cardDarkElevated, child: const Icon(Icons.event, size: 48, color: AppTheme.textMuted)),
+                          placeholder: (_, __) => Container(height: 200, color: colorScheme.surfaceContainerHighest),
+                          errorWidget: (_, __, ___) => Container(height: 200, color: colorScheme.surfaceContainerHighest, child: Icon(Icons.event, size: 48, color: colorScheme.onSurface.withValues(alpha: 0.4))),
                         )
                       else
                         Container(
                           width: double.infinity,
                           height: 160,
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(colors: [AppTheme.primaryColor.withValues(alpha: 0.3), AppTheme.surfaceDark]),
+                            gradient: LinearGradient(colors: [colorScheme.primary.withValues(alpha: 0.3), theme.scaffoldBackgroundColor]),
                           ),
-                          child: const Center(child: Icon(Icons.event, size: 48, color: AppTheme.primaryColor)),
+                          child: Center(child: Icon(Icons.event, size: 48, color: colorScheme.primary)),
                         ),
 
                       Padding(
@@ -104,7 +107,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                                     await launchUrl(uri, mode: LaunchMode.externalApplication);
                                   }
                                 },
-                                child: _infoRow(Icons.link, _event!.meetLink!, color: AppTheme.primaryColor),
+                                child: _infoRow(Icons.link, _event!.meetLink!, color: colorScheme.primary),
                               ),
                             ],
 
@@ -114,7 +117,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                             if (_event!.description != null && _event!.description!.isNotEmpty) ...[
                               const Text('About', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
                               const SizedBox(height: 8),
-                              Text(_event!.description!, style: const TextStyle(fontSize: 14, height: 1.5, color: AppTheme.textSecondary)),
+                              Text(_event!.description!, style: TextStyle(fontSize: 14, height: 1.5, color: colorScheme.onSurface.withValues(alpha: 0.7))),
                               const SizedBox(height: 16),
                             ],
 
@@ -175,16 +178,19 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
   }
 
   Widget _infoRow(IconData icon, String text, {Color? color}) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Row(
       children: [
-        Icon(icon, size: 18, color: color ?? AppTheme.textMuted),
+        Icon(icon, size: 18, color: color ?? colorScheme.onSurface.withValues(alpha: 0.4)),
         const SizedBox(width: 8),
-        Expanded(child: Text(text, style: TextStyle(fontSize: 14, color: color ?? AppTheme.textSecondary))),
+        Expanded(child: Text(text, style: TextStyle(fontSize: 14, color: color ?? colorScheme.onSurface.withValues(alpha: 0.7)))),
       ],
     );
   }
 
   Widget _rsvpButton(String status, String label, IconData icon, String userId) {
+    final colorScheme = Theme.of(context).colorScheme;
     final currentRsvp = _event!.rsvps.where((r) => r.oderId == userId).firstOrNull;
     final isSelected = currentRsvp?.status == status;
 
@@ -196,9 +202,9 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
       icon: Icon(icon, size: 16),
       label: Text(label, style: const TextStyle(fontSize: 12)),
       style: OutlinedButton.styleFrom(
-        backgroundColor: isSelected ? AppTheme.primaryColor.withValues(alpha: 0.15) : null,
-        foregroundColor: isSelected ? AppTheme.primaryColor : AppTheme.textSecondary,
-        side: BorderSide(color: isSelected ? AppTheme.primaryColor : AppTheme.borderDark),
+        backgroundColor: isSelected ? colorScheme.primary.withValues(alpha: 0.15) : null,
+        foregroundColor: isSelected ? colorScheme.primary : colorScheme.onSurface.withValues(alpha: 0.7),
+        side: BorderSide(color: isSelected ? colorScheme.primary : colorScheme.outline.withValues(alpha: 0.3)),
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),

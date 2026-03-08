@@ -19,11 +19,14 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     final auth = context.watch<AuthProvider>();
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Color(0xFF1A1520), AppTheme.surfaceDark]),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [const Color(0xFF1A1520), theme.scaffoldBackgroundColor]),
         ),
         child: SafeArea(
           child: Center(
@@ -35,14 +38,14 @@ class _SignupScreenState extends State<SignupScreen> {
                     width: 80, height: 80,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: LinearGradient(colors: [AppTheme.primaryColor.withValues(alpha: 0.2), AppTheme.accentColor.withValues(alpha: 0.1)]),
+                      gradient: LinearGradient(colors: [colorScheme.primary.withValues(alpha: 0.2), AppTheme.accentColor.withValues(alpha: 0.1)]),
                     ),
-                    child: const Icon(Icons.person_add_outlined, size: 40, color: AppTheme.primaryColor),
+                    child: Icon(Icons.person_add_outlined, size: 40, color: colorScheme.primary),
                   ),
                   const SizedBox(height: 20),
                   const Text('Create Account', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 6),
-                  const Text('Join the Krishna Connect community', style: TextStyle(color: AppTheme.textMuted, fontSize: 14)),
+                  Text('Join the Krishna Connect community', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 14)),
                   const SizedBox(height: 32),
                   if (auth.error != null)
                     Container(
@@ -86,8 +89,8 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   const SizedBox(height: 24),
                   Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    const Text('Already have an account? ', style: TextStyle(color: AppTheme.textMuted)),
-                    GestureDetector(onTap: () => context.go('/auth/login'), child: const Text('Sign in', style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.w600))),
+                    Text('Already have an account? ', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))),
+                    GestureDetector(onTap: () => context.go('/auth/login'), child: Text('Sign in', style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.w600))),
                   ]),
                 ],
               ),

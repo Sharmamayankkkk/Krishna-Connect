@@ -25,6 +25,9 @@ class _EventsScreenState extends State<EventsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     final app = context.watch<AppProvider>();
 
     return Scaffold(
@@ -35,15 +38,15 @@ class _EventsScreenState extends State<EventsScreen> {
         ],
       ),
       body: app.events.isEmpty
-          ? const Center(
+          ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.event_outlined, size: 64, color: AppTheme.textMuted),
+                  Icon(Icons.event_outlined, size: 64, color: colorScheme.onSurface.withValues(alpha: 0.4)),
                   SizedBox(height: 16),
-                  Text('No events yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
+                  Text('No events yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: colorScheme.onSurface.withValues(alpha: 0.7))),
                   SizedBox(height: 6),
-                  Text('Events will appear here', style: TextStyle(color: AppTheme.textMuted)),
+                  Text('Events will appear here', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))),
                 ],
               ),
             )
@@ -59,6 +62,9 @@ class _EventsScreenState extends State<EventsScreen> {
   }
 
   Widget _buildEventCard(BuildContext context, EventModel event) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     final date = DateTime.tryParse(event.dateTime);
     final dateStr = date != null ? DateFormat('EEE, MMM d · h:mm a').format(date) : event.dateTime;
     final isPast = date != null && date.isBefore(DateTime.now());
@@ -68,9 +74,9 @@ class _EventsScreenState extends State<EventsScreen> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: AppTheme.cardDark,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppTheme.borderDark),
+          border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,7 +89,7 @@ class _EventsScreenState extends State<EventsScreen> {
                   width: double.infinity,
                   height: 140,
                   fit: BoxFit.cover,
-                  placeholder: (_, __) => Container(height: 140, color: AppTheme.cardDarkElevated),
+                  placeholder: (_, __) => Container(height: 140, color: colorScheme.surfaceContainerHighest),
                 ),
               ),
             Padding(
@@ -96,23 +102,23 @@ class _EventsScreenState extends State<EventsScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: isPast ? AppTheme.textMuted.withValues(alpha: 0.2) : AppTheme.primaryColor.withValues(alpha: 0.15),
+                          color: isPast ? colorScheme.onSurface.withValues(alpha: 0.2) : colorScheme.primary.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
                           isPast ? 'Past' : 'Upcoming',
-                          style: TextStyle(fontSize: 11, color: isPast ? AppTheme.textMuted : AppTheme.primaryColor, fontWeight: FontWeight.w600),
+                          style: TextStyle(fontSize: 11, color: isPast ? colorScheme.onSurface.withValues(alpha: 0.4) : colorScheme.primary, fontWeight: FontWeight.w600),
                         ),
                       ),
                       const Spacer(),
-                      Text(dateStr, style: const TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+                      Text(dateStr, style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 12)),
                     ],
                   ),
                   const SizedBox(height: 8),
                   Text(event.title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
                   if (event.description != null) ...[
                     const SizedBox(height: 4),
-                    Text(event.description!, style: const TextStyle(color: AppTheme.textMuted, fontSize: 13), maxLines: 2, overflow: TextOverflow.ellipsis),
+                    Text(event.description!, style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 13), maxLines: 2, overflow: TextOverflow.ellipsis),
                   ],
                   const SizedBox(height: 10),
                   Row(
@@ -120,12 +126,12 @@ class _EventsScreenState extends State<EventsScreen> {
                       if (event.creator != null) ...[
                         UserAvatar(imageUrl: event.creator!.avatarUrlOrDefault, size: 22, fallbackName: event.creator!.displayName),
                         const SizedBox(width: 6),
-                        Text(event.creator!.displayName, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+                        Text(event.creator!.displayName, style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.7), fontSize: 12)),
                       ],
                       const Spacer(),
-                      Icon(Icons.people_outline, size: 14, color: AppTheme.textMuted),
+                      Icon(Icons.people_outline, size: 14, color: colorScheme.onSurface.withValues(alpha: 0.4)),
                       const SizedBox(width: 4),
-                      Text('${event.goingCount} going', style: const TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+                      Text('${event.goingCount} going', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 12)),
                     ],
                   ),
                 ],
@@ -138,6 +144,7 @@ class _EventsScreenState extends State<EventsScreen> {
   }
 
   void _showCreateEventSheet(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final titleController = TextEditingController();
     final descController = TextEditingController();
     final meetLinkController = TextEditingController();
@@ -175,7 +182,7 @@ class _EventsScreenState extends State<EventsScreen> {
                     decoration: const InputDecoration(labelText: 'Date & Time *', prefixIcon: Icon(Icons.calendar_today)),
                     child: Text(
                       selectedDate != null ? DateFormat('EEE, MMM d · h:mm a').format(selectedDate!) : 'Select date and time',
-                      style: TextStyle(color: selectedDate != null ? AppTheme.textPrimary : AppTheme.textMuted),
+                      style: TextStyle(color: selectedDate != null ? colorScheme.onSurface : colorScheme.onSurface.withValues(alpha: 0.4)),
                     ),
                   ),
                 ),

@@ -19,6 +19,9 @@ class _CreateChallengeScreenState extends State<CreateChallengeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
@@ -47,16 +50,16 @@ class _CreateChallengeScreenState extends State<CreateChallengeScreen> {
                 width: double.infinity,
                 height: 150,
                 decoration: BoxDecoration(
-                  color: AppTheme.cardDarkElevated,
+                  color: colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppTheme.borderDark, style: BorderStyle.solid),
+                  border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3), style: BorderStyle.solid),
                 ),
-                child: const Column(
+                child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.add_photo_alternate, size: 36, color: AppTheme.textMuted),
+                    Icon(Icons.add_photo_alternate, size: 36, color: colorScheme.onSurface.withValues(alpha: 0.4)),
                     SizedBox(height: 8),
-                    Text('Add Cover Image', style: TextStyle(color: AppTheme.textMuted, fontSize: 13)),
+                    Text('Add Cover Image', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 13)),
                   ],
                 ),
               ),
@@ -129,7 +132,7 @@ class _CreateChallengeScreenState extends State<CreateChallengeScreen> {
                   _endDate != null
                       ? '${_endDate!.day}/${_endDate!.month}/${_endDate!.year}'
                       : 'Select end date',
-                  style: TextStyle(color: _endDate != null ? AppTheme.textPrimary : AppTheme.textMuted),
+                  style: TextStyle(color: _endDate != null ? colorScheme.onSurface : colorScheme.onSurface.withValues(alpha: 0.4)),
                 ),
               ),
             ),
@@ -139,18 +142,18 @@ class _CreateChallengeScreenState extends State<CreateChallengeScreen> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withValues(alpha: 0.05),
+                color: colorScheme.primary.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.2)),
+                border: Border.all(color: colorScheme.primary.withValues(alpha: 0.2)),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.info_outline, size: 18, color: AppTheme.primaryColor),
+                  Icon(Icons.info_outline, size: 18, color: colorScheme.primary),
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       'Once created, the challenge will be visible to all users and they can join it.',
-                      style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
+                      style: TextStyle(fontSize: 13, color: colorScheme.onSurface.withValues(alpha: 0.7)),
                     ),
                   ),
                 ],

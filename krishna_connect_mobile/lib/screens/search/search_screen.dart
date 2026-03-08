@@ -50,6 +50,9 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         titleSpacing: 0,
@@ -64,9 +67,9 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
             hintText: 'Search users, posts...',
             border: InputBorder.none,
             filled: true,
-            fillColor: AppTheme.cardDarkElevated,
+            fillColor: colorScheme.surfaceContainerHighest,
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            prefixIcon: const Icon(Icons.search, size: 20, color: AppTheme.textMuted),
+            prefixIcon: Icon(Icons.search, size: 20, color: colorScheme.onSurface.withValues(alpha: 0.4)),
             suffixIcon: _searchController.text.isNotEmpty
                 ? IconButton(
                     icon: const Icon(Icons.clear, size: 18),
@@ -89,15 +92,15 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
         ),
       ),
       body: _query.isEmpty
-          ? const Center(
+          ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.search, size: 64, color: AppTheme.textMuted),
+                  Icon(Icons.search, size: 64, color: colorScheme.onSurface.withValues(alpha: 0.4)),
                   SizedBox(height: 16),
-                  Text('Search Krishna Connect', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
+                  Text('Search Krishna Connect', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: colorScheme.onSurface.withValues(alpha: 0.7))),
                   SizedBox(height: 6),
-                  Text('Find people, posts, and more', style: TextStyle(color: AppTheme.textMuted)),
+                  Text('Find people, posts, and more', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))),
                 ],
               ),
             )
@@ -108,7 +111,7 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
                   children: [
                     // Users tab
                     _users.isEmpty
-                        ? const Center(child: Text('No users found', style: TextStyle(color: AppTheme.textMuted)))
+                        ? Center(child: Text('No users found', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))))
                         : ListView.builder(
                             itemCount: _users.length,
                             itemBuilder: (context, index) {
@@ -122,14 +125,14 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
                                     if (user.isVerified) ...[const SizedBox(width: 4), VerificationBadge(verified: user.verified, size: 14)],
                                   ],
                                 ),
-                                subtitle: user.username != null ? Text('@${user.username}', style: const TextStyle(color: AppTheme.textMuted, fontSize: 13)) : null,
+                                subtitle: user.username != null ? Text('@${user.username}', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 13)) : null,
                               );
                             },
                           ),
 
                     // Posts tab
                     _posts.isEmpty
-                        ? const Center(child: Text('No posts found', style: TextStyle(color: AppTheme.textMuted)))
+                        ? Center(child: Text('No posts found', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))))
                         : ListView.builder(
                             itemCount: _posts.length,
                             itemBuilder: (context, index) {

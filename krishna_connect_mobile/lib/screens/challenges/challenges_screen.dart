@@ -24,6 +24,9 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     final app = context.watch<AppProvider>();
 
     return Scaffold(
@@ -34,15 +37,15 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
         ],
       ),
       body: app.challenges.isEmpty
-          ? const Center(
+          ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.emoji_events_outlined, size: 64, color: AppTheme.textMuted),
+                  Icon(Icons.emoji_events_outlined, size: 64, color: colorScheme.onSurface.withValues(alpha: 0.4)),
                   SizedBox(height: 16),
-                  Text('No challenges yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
+                  Text('No challenges yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: colorScheme.onSurface.withValues(alpha: 0.7))),
                   SizedBox(height: 6),
-                  Text('Challenges will appear here', style: TextStyle(color: AppTheme.textMuted)),
+                  Text('Challenges will appear here', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))),
                 ],
               ),
             )
@@ -58,14 +61,17 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
   }
 
   Widget _buildChallengeCard(BuildContext context, ChallengeModel challenge) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return GestureDetector(
       onTap: () => context.push('/challenge/${challenge.id}'),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: AppTheme.cardDark,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppTheme.borderDark),
+          border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,7 +84,7 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
                   width: double.infinity,
                   height: 140,
                   fit: BoxFit.cover,
-                  placeholder: (_, __) => Container(height: 140, color: AppTheme.cardDarkElevated),
+                  placeholder: (_, __) => Container(height: 140, color: colorScheme.surfaceContainerHighest),
                 ),
               ),
             Padding(
@@ -93,15 +99,15 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                           margin: const EdgeInsets.only(right: 8),
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                            color: colorScheme.primary.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.star, size: 12, color: AppTheme.primaryColor),
+                              Icon(Icons.star, size: 12, color: colorScheme.primary),
                               SizedBox(width: 4),
-                              Text('Featured', style: TextStyle(fontSize: 11, color: AppTheme.primaryColor, fontWeight: FontWeight.w600)),
+                              Text('Featured', style: TextStyle(fontSize: 11, color: colorScheme.primary, fontWeight: FontWeight.w600)),
                             ],
                           ),
                         ),
@@ -109,21 +115,21 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
-                            color: AppTheme.cardDarkElevated,
+                            color: colorScheme.surfaceContainerHighest,
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: Text(challenge.category!, style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                          child: Text(challenge.category!, style: TextStyle(fontSize: 11, color: colorScheme.onSurface.withValues(alpha: 0.7))),
                         ),
                       const Spacer(),
                       if (!challenge.isActive)
-                        const Text('Ended', style: TextStyle(color: AppTheme.textMuted, fontSize: 11)),
+                        Text('Ended', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 11)),
                     ],
                   ),
                   const SizedBox(height: 8),
                   Text(challenge.title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
                   if (challenge.description != null) ...[
                     const SizedBox(height: 4),
-                    Text(challenge.description!, style: const TextStyle(color: AppTheme.textMuted, fontSize: 13), maxLines: 2, overflow: TextOverflow.ellipsis),
+                    Text(challenge.description!, style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 13), maxLines: 2, overflow: TextOverflow.ellipsis),
                   ],
                   const SizedBox(height: 10),
                   Row(
@@ -131,12 +137,12 @@ class _ChallengesScreenState extends State<ChallengesScreen> {
                       if (challenge.creator != null) ...[
                         UserAvatar(imageUrl: challenge.creator!.avatarUrlOrDefault, size: 22, fallbackName: challenge.creator!.displayName),
                         const SizedBox(width: 6),
-                        Text(challenge.creator!.displayName, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+                        Text(challenge.creator!.displayName, style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.7), fontSize: 12)),
                       ],
                       const Spacer(),
-                      const Icon(Icons.people_outline, size: 14, color: AppTheme.textMuted),
+                      Icon(Icons.people_outline, size: 14, color: colorScheme.onSurface.withValues(alpha: 0.4)),
                       const SizedBox(width: 4),
-                      Text('${challenge.participantCount}', style: const TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+                      Text('${challenge.participantCount}', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 12)),
                     ],
                   ),
                 ],

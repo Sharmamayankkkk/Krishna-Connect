@@ -19,6 +19,9 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
@@ -42,7 +45,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                 ? Stack(
                     fit: StackFit.expand,
                     children: [
-                      Image.file(File(_selectedMedia!.path), fit: BoxFit.contain, errorBuilder: (_, __, ___) => const Center(child: Icon(Icons.image, size: 48, color: AppTheme.textMuted))),
+                      Image.file(File(_selectedMedia!.path), fit: BoxFit.contain, errorBuilder: (_, __, ___) => Center(child: Icon(Icons.image, size: 48, color: colorScheme.onSurface.withValues(alpha: 0.4)))),
                       Positioned(
                         bottom: 0,
                         left: 0,
@@ -77,16 +80,16 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                         Container(
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
-                            color: AppTheme.cardDark,
+                            color: colorScheme.surface,
                             shape: BoxShape.circle,
-                            border: Border.all(color: AppTheme.borderDark),
+                            border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
                           ),
-                          child: const Icon(Icons.add_photo_alternate, size: 48, color: AppTheme.primaryColor),
+                          child: Icon(Icons.add_photo_alternate, size: 48, color: colorScheme.primary),
                         ),
                         const SizedBox(height: 16),
                         const Text('Add to your story', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
                         const SizedBox(height: 8),
-                        const Text('Share a photo or video with your followers', style: TextStyle(color: AppTheme.textMuted, fontSize: 14)),
+                        Text('Share a photo or video with your followers', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 14)),
                         const SizedBox(height: 24),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -104,8 +107,8 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.cardDark,
-                border: Border(top: BorderSide(color: AppTheme.borderDark)),
+                color: colorScheme.surface,
+                border: Border(top: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3))),
               ),
               child: SafeArea(
                 child: Row(
@@ -143,6 +146,8 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
   }
 
   Widget _mediaButton(IconData icon, String label, VoidCallback onTap) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return GestureDetector(
       onTap: onTap,
       child: Column(
@@ -151,13 +156,13 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withValues(alpha: 0.1),
+              color: colorScheme.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: AppTheme.primaryColor, size: 28),
+            child: Icon(icon, color: colorScheme.primary, size: 28),
           ),
           const SizedBox(height: 8),
-          Text(label, style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
+          Text(label, style: TextStyle(fontSize: 13, color: colorScheme.onSurface.withValues(alpha: 0.7))),
         ],
       ),
     );

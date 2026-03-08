@@ -19,6 +19,9 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Complete Profile')),
       body: SingleChildScrollView(
@@ -28,7 +31,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
           children: [
             const Text('Tell us about yourself', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
             const SizedBox(height: 6),
-            const Text('Complete your profile to get started', style: TextStyle(color: AppTheme.textMuted)),
+            Text('Complete your profile to get started', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))),
             const SizedBox(height: 28),
             // Avatar placeholder
             Center(
@@ -36,14 +39,14 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 children: [
                   Container(
                     width: 100, height: 100,
-                    decoration: BoxDecoration(shape: BoxShape.circle, color: AppTheme.cardDarkElevated, border: Border.all(color: AppTheme.borderDark)),
-                    child: const Icon(Icons.person, size: 50, color: AppTheme.textMuted),
+                    decoration: BoxDecoration(shape: BoxShape.circle, color: colorScheme.surfaceContainerHighest, border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3))),
+                    child: Icon(Icons.person, size: 50, color: colorScheme.onSurface.withValues(alpha: 0.4)),
                   ),
                   Positioned(
                     bottom: 0, right: 0,
                     child: Container(
                       padding: const EdgeInsets.all(6),
-                      decoration: const BoxDecoration(shape: BoxShape.circle, color: AppTheme.primaryColor),
+                      decoration: BoxDecoration(shape: BoxShape.circle, color: colorScheme.primary),
                       child: const Icon(Icons.camera_alt, size: 18, color: Colors.black),
                     ),
                   ),

@@ -26,6 +26,9 @@ class _LeelaScreenState extends State<LeelaScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     final app = context.watch<AppProvider>();
     final videos = app.leelaVideos;
 
@@ -40,15 +43,15 @@ class _LeelaScreenState extends State<LeelaScreen> {
         ],
       ),
       body: videos.isEmpty
-          ? const Center(
+          ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.play_circle_outline, size: 64, color: AppTheme.textMuted),
+                  Icon(Icons.play_circle_outline, size: 64, color: colorScheme.onSurface.withValues(alpha: 0.4)),
                   SizedBox(height: 16),
-                  Text('No videos yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
+                  Text('No videos yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: colorScheme.onSurface.withValues(alpha: 0.7))),
                   SizedBox(height: 6),
-                  Text('Short videos will appear here', style: TextStyle(color: AppTheme.textMuted)),
+                  Text('Short videos will appear here', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))),
                 ],
               ),
             )
@@ -107,6 +110,9 @@ class _LeelaVideoCardState extends State<_LeelaVideoCard> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     final userId = context.read<AuthProvider>().userId ?? '';
 
     return GestureDetector(
@@ -193,7 +199,7 @@ class _LeelaVideoCardState extends State<_LeelaVideoCard> {
                 _buildActionButton(
                   icon: widget.video.isBookmarked ? Icons.bookmark : Icons.bookmark_border,
                   label: 'Save',
-                  color: widget.video.isBookmarked ? AppTheme.primaryColor : Colors.white,
+                  color: widget.video.isBookmarked ? colorScheme.primary : Colors.white,
                   onTap: () {},
                 ),
                 const SizedBox(height: 20),

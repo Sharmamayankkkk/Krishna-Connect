@@ -16,6 +16,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/auth/login'))),
       body: Padding(
@@ -25,7 +28,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           children: [
             const Text('Reset Password', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
-            const Text('Enter your email to receive a reset link', style: TextStyle(color: AppTheme.textMuted)),
+            Text('Enter your email to receive a reset link', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))),
             const SizedBox(height: 32),
             if (_sent)
               Container(

@@ -39,15 +39,18 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     final authProvider = context.watch<AuthProvider>();
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF1A1520), AppTheme.surfaceDark],
+            colors: [const Color(0xFF1A1520), theme.scaffoldBackgroundColor],
           ),
         ),
         child: SafeArea(
@@ -64,39 +67,39 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
-                        colors: [AppTheme.primaryColor.withValues(alpha: 0.2), AppTheme.accentColor.withValues(alpha: 0.1)],
+                        colors: [colorScheme.primary.withValues(alpha: 0.2), AppTheme.accentColor.withValues(alpha: 0.1)],
                       ),
                     ),
-                    child: const Icon(Icons.self_improvement, size: 48, color: AppTheme.primaryColor),
+                    child: Icon(Icons.self_improvement, size: 48, color: colorScheme.primary),
                   ),
                   const SizedBox(height: 20),
-                  const Text(
+                  Text(
                     'Krishna Connect',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: AppTheme.primaryColor),
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: colorScheme.primary),
                   ),
                   const SizedBox(height: 6),
-                  const Text(
+                  Text(
                     'Where Devotees Unite',
-                    style: TextStyle(fontSize: 14, color: AppTheme.textMuted, fontStyle: FontStyle.italic),
+                    style: TextStyle(fontSize: 14, color: colorScheme.onSurface.withValues(alpha: 0.4), fontStyle: FontStyle.italic),
                   ),
                   const SizedBox(height: 36),
 
                   // Tab bar
                   Container(
                     decoration: BoxDecoration(
-                      color: AppTheme.cardDark,
+                      color: colorScheme.surface,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: TabBar(
                       controller: _tabController,
                       indicator: BoxDecoration(
-                        color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                        color: colorScheme.primary.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       indicatorSize: TabBarIndicatorSize.tab,
                       dividerHeight: 0,
-                      labelColor: AppTheme.primaryColor,
-                      unselectedLabelColor: AppTheme.textMuted,
+                      labelColor: colorScheme.primary,
+                      unselectedLabelColor: colorScheme.onSurface.withValues(alpha: 0.4),
                       tabs: const [
                         Tab(text: 'Email'),
                         Tab(text: 'Phone'),
@@ -144,12 +147,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                   // Divider
                   Row(
                     children: [
-                      Expanded(child: Divider(color: AppTheme.borderDark)),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Text('or continue with', style: TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+                      Expanded(child: Divider(color: colorScheme.outline.withValues(alpha: 0.3))),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text('or continue with', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 12)),
                       ),
-                      Expanded(child: Divider(color: AppTheme.borderDark)),
+                      Expanded(child: Divider(color: colorScheme.outline.withValues(alpha: 0.3))),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -164,7 +167,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                     label: const Text('Google'),
                     style: OutlinedButton.styleFrom(
                       minimumSize: const Size(double.infinity, 50),
-                      side: const BorderSide(color: AppTheme.borderDark),
+                      side: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3)),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
@@ -174,12 +177,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("Don't have an account? ", style: TextStyle(color: AppTheme.textMuted)),
+                      Text("Don't have an account? ", style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))),
                       GestureDetector(
                         onTap: () => context.push('/auth/signup'),
-                        child: const Text(
+                        child: Text(
                           'Sign up',
-                          style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.w600),
+                          style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.w600),
                         ),
                       ),
                     ],

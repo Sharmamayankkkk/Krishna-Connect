@@ -33,6 +33,9 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     final userId = context.read<AuthProvider>().userId ?? '';
 
     return Scaffold(
@@ -52,7 +55,7 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
                           width: double.infinity,
                           height: 200,
                           fit: BoxFit.cover,
-                          placeholder: (_, __) => Container(height: 200, color: AppTheme.cardDarkElevated),
+                          placeholder: (_, __) => Container(height: 200, color: colorScheme.surfaceContainerHighest),
                           errorWidget: (_, __, ___) => _buildDefaultCover(),
                         )
                       else
@@ -71,15 +74,15 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                     margin: const EdgeInsets.only(right: 8),
                                     decoration: BoxDecoration(
-                                      color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                                      color: colorScheme.primary.withValues(alpha: 0.15),
                                       borderRadius: BorderRadius.circular(6),
                                     ),
-                                    child: const Row(
+                                    child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(Icons.star, size: 12, color: AppTheme.primaryColor),
+                                        Icon(Icons.star, size: 12, color: colorScheme.primary),
                                         SizedBox(width: 4),
-                                        Text('Featured', style: TextStyle(fontSize: 11, color: AppTheme.primaryColor, fontWeight: FontWeight.w600)),
+                                        Text('Featured', style: TextStyle(fontSize: 11, color: colorScheme.primary, fontWeight: FontWeight.w600)),
                                       ],
                                     ),
                                   ),
@@ -87,10 +90,10 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                     decoration: BoxDecoration(
-                                      color: AppTheme.cardDarkElevated,
+                                      color: colorScheme.surfaceContainerHighest,
                                       borderRadius: BorderRadius.circular(6),
                                     ),
-                                    child: Text(_challenge!.category!, style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                                    child: Text(_challenge!.category!, style: TextStyle(fontSize: 11, color: colorScheme.onSurface.withValues(alpha: 0.7))),
                                   ),
                               ],
                             ),
@@ -105,7 +108,7 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
                                 children: [
                                   UserAvatar(imageUrl: _challenge!.creator!.avatarUrlOrDefault, size: 28, fallbackName: _challenge!.creator!.displayName),
                                   const SizedBox(width: 8),
-                                  Text('by ${_challenge!.creator!.displayName}', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
+                                  Text('by ${_challenge!.creator!.displayName}', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.7), fontSize: 14)),
                                 ],
                               ),
                             const SizedBox(height: 16),
@@ -125,7 +128,7 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
                             if (_challenge!.description != null) ...[
                               const Text('Description', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                               const SizedBox(height: 8),
-                              Text(_challenge!.description!, style: const TextStyle(fontSize: 14, height: 1.5, color: AppTheme.textSecondary)),
+                              Text(_challenge!.description!, style: TextStyle(fontSize: 14, height: 1.5, color: colorScheme.onSurface.withValues(alpha: 0.7))),
                               const SizedBox(height: 16),
                             ],
 
@@ -137,11 +140,11 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
                                 width: double.infinity,
                                 padding: const EdgeInsets.all(14),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.cardDarkElevated,
+                                  color: colorScheme.surfaceContainerHighest,
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: AppTheme.borderDark),
+                                  border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
                                 ),
-                                child: Text(_challenge!.rules!, style: const TextStyle(fontSize: 14, height: 1.5, color: AppTheme.textSecondary)),
+                                child: Text(_challenge!.rules!, style: TextStyle(fontSize: 14, height: 1.5, color: colorScheme.onSurface.withValues(alpha: 0.7))),
                               ),
                               const SizedBox(height: 16),
                             ],
@@ -153,23 +156,23 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
-                                    colors: [AppTheme.primaryColor.withValues(alpha: 0.1), AppTheme.accentColor.withValues(alpha: 0.05)],
+                                    colors: [colorScheme.primary.withValues(alpha: 0.1), AppTheme.accentColor.withValues(alpha: 0.05)],
                                   ),
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.3)),
+                                  border: Border.all(color: colorScheme.primary.withValues(alpha: 0.3)),
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Row(
+                                    Row(
                                       children: [
-                                        Icon(Icons.emoji_events, color: AppTheme.primaryColor, size: 20),
+                                        Icon(Icons.emoji_events, color: colorScheme.primary, size: 20),
                                         SizedBox(width: 8),
-                                        Text('Prize', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.primaryColor)),
+                                        Text('Prize', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: colorScheme.primary)),
                                       ],
                                     ),
                                     const SizedBox(height: 8),
-                                    Text(_challenge!.prizeDescription!, style: const TextStyle(fontSize: 14, color: AppTheme.textSecondary)),
+                                    Text(_challenge!.prizeDescription!, style: TextStyle(fontSize: 14, color: colorScheme.onSurface.withValues(alpha: 0.7))),
                                   ],
                                 ),
                               ),
@@ -207,29 +210,34 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
   }
 
   Widget _buildDefaultCover() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       width: double.infinity,
       height: 160,
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [AppTheme.primaryColor.withValues(alpha: 0.3), AppTheme.surfaceDark]),
+        gradient: LinearGradient(colors: [colorScheme.primary.withValues(alpha: 0.3), theme.scaffoldBackgroundColor]),
       ),
-      child: const Center(child: Icon(Icons.emoji_events, size: 48, color: AppTheme.primaryColor)),
+      child: Center(child: Icon(Icons.emoji_events, size: 48, color: colorScheme.primary)),
     );
   }
 
   Widget _statChip(IconData icon, String label) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: AppTheme.cardDarkElevated,
+        color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: AppTheme.textMuted),
+          Icon(icon, size: 14, color: colorScheme.onSurface.withValues(alpha: 0.4)),
           const SizedBox(width: 6),
-          Text(label, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+          Text(label, style: TextStyle(fontSize: 12, color: colorScheme.onSurface.withValues(alpha: 0.7))),
         ],
       ),
     );

@@ -44,6 +44,9 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Bookmarks'),
@@ -57,15 +60,15 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _bookmarkedPosts.isEmpty
-              ? const Center(
+              ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.bookmark_outline, size: 64, color: AppTheme.textMuted),
+                      Icon(Icons.bookmark_outline, size: 64, color: colorScheme.onSurface.withValues(alpha: 0.4)),
                       SizedBox(height: 16),
-                      Text('No bookmarks yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
+                      Text('No bookmarks yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: colorScheme.onSurface.withValues(alpha: 0.7))),
                       SizedBox(height: 6),
-                      Text('Save posts to find them later', style: TextStyle(color: AppTheme.textMuted)),
+                      Text('Save posts to find them later', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))),
                     ],
                   ),
                 )
@@ -88,14 +91,14 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
                                   margin: const EdgeInsets.only(right: 8),
                                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                                   decoration: BoxDecoration(
-                                    color: AppTheme.cardDark,
+                                    color: colorScheme.surface,
                                     borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: AppTheme.borderDark),
+                                    border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
                                   ),
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      const Icon(Icons.folder_outlined, size: 20, color: AppTheme.primaryColor),
+                                      Icon(Icons.folder_outlined, size: 20, color: colorScheme.primary),
                                       const SizedBox(height: 4),
                                       Text(collection['name'] ?? 'Collection', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
                                     ],
