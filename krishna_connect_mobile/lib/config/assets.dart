@@ -43,7 +43,7 @@ class AppAssets {
 
   // Text / Media
   static const String krishnaImage = 'assets/text/krishna.jpg';
-  static const String krishnaVideo = 'assets/text/krishna.mp4';
+  // Note: krishna.mp4 is too large for bundling (52MB) — load from network URL instead
 
   // Data
   static const String promotedContent = 'assets/data/promoted_content.json';

@@ -51,3 +51,6 @@ app.*.map.json
 
 # Generated plugin files
 .flutter-plugins
+
+# Large media files (load from network instead)
+assets/text/*.mp4
