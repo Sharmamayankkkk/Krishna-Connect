@@ -1,6 +1,8 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import '../../config/assets.dart';
 import '../../config/theme.dart';
 import '../../providers/auth_provider.dart';
 
@@ -20,11 +22,28 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   bool _obscurePassword = true;
   bool _isOtpSent = false;
   bool _isLoading = false;
+  int _timeLeft = 0;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+  }
+
+  void _startOtpTimer() {
+    _timeLeft = 120;
+    _tick();
+  }
+
+  void _tick() {
+    if (_timeLeft > 0 && mounted) {
+      Future.delayed(const Duration(seconds: 1), () {
+        if (mounted) {
+          setState(() => _timeLeft--);
+          _tick();
+        }
+      });
+    }
   }
 
   @override
@@ -41,198 +60,232 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-
     final authProvider = context.watch<AuthProvider>();
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [const Color(0xFF1A1520), theme.scaffoldBackgroundColor],
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Background image (matching webapp's c2.png)
+          Image.asset(
+            AppAssets.bgC2,
+            fit: BoxFit.cover,
           ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 28),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Logo
-                  Container(
-                    width: 90,
-                    height: 90,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: [colorScheme.primary.withValues(alpha: 0.2), AppTheme.accentColor.withValues(alpha: 0.1)],
-                      ),
-                    ),
-                    child: Icon(Icons.self_improvement, size: 48, color: colorScheme.primary),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    'Krishna Connect',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: colorScheme.primary),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Where Devotees Unite',
-                    style: TextStyle(fontSize: 14, color: colorScheme.onSurface.withValues(alpha: 0.4), fontStyle: FontStyle.italic),
-                  ),
-                  const SizedBox(height: 36),
-
-                  // Tab bar
-                  Container(
-                    decoration: BoxDecoration(
-                      color: colorScheme.surface,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: TabBar(
-                      controller: _tabController,
-                      indicator: BoxDecoration(
-                        color: colorScheme.primary.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      indicatorSize: TabBarIndicatorSize.tab,
-                      dividerHeight: 0,
-                      labelColor: colorScheme.primary,
-                      unselectedLabelColor: colorScheme.onSurface.withValues(alpha: 0.4),
-                      tabs: const [
-                        Tab(text: 'Email'),
-                        Tab(text: 'Phone'),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Error message
-                  if (authProvider.error != null)
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      margin: const EdgeInsets.only(bottom: 16),
-                      decoration: BoxDecoration(
-                        color: AppTheme.errorColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.3)),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.error_outline, color: AppTheme.errorColor, size: 18),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              authProvider.error!,
-                              style: const TextStyle(color: AppTheme.errorColor, fontSize: 13),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                  // Tab views
-                  SizedBox(
-                    height: 260,
-                    child: TabBarView(
-                      controller: _tabController,
-                      children: [
-                        _buildEmailForm(authProvider),
-                        _buildPhoneForm(authProvider),
-                      ],
-                    ),
-                  ),
-
-                  // Divider
-                  Row(
-                    children: [
-                      Expanded(child: Divider(color: colorScheme.outline.withValues(alpha: 0.3))),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text('or continue with', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 12)),
-                      ),
-                      Expanded(child: Divider(color: colorScheme.outline.withValues(alpha: 0.3))),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Google Sign In
-                  OutlinedButton.icon(
-                    onPressed: () async {
-                      final auth = context.read<AuthProvider>();
-                      // Google sign in handled by Supabase
-                    },
-                    icon: const Icon(Icons.g_mobiledata, size: 24),
-                    label: const Text('Google'),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
-                      side: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Sign up link
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text("Don't have an account? ", style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))),
-                      GestureDetector(
-                        onTap: () => context.push('/auth/signup'),
-                        child: Text(
-                          'Sign up',
-                          style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
+          // Gradient overlay
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  colorScheme.surface.withValues(alpha: 0.3),
+                  colorScheme.surface.withValues(alpha: 0.5),
+                  colorScheme.surface.withValues(alpha: 0.7),
                 ],
               ),
             ),
           ),
-        ),
+          // Content
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                    child: Container(
+                      constraints: const BoxConstraints(maxWidth: 400),
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.1),
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Logo (actual asset matching webapp)
+                          Image.asset(
+                            AppAssets.logo,
+                            width: 100,
+                            height: 100,
+                          ),
+                          const SizedBox(height: 24),
+
+                          // Tab bar
+                          Container(
+                            decoration: BoxDecoration(
+                              color: colorScheme.surface.withValues(alpha: 0.5),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: TabBar(
+                              controller: _tabController,
+                              indicator: BoxDecoration(
+                                color: colorScheme.primary.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              indicatorSize: TabBarIndicatorSize.tab,
+                              dividerHeight: 0,
+                              labelColor: colorScheme.primary,
+                              unselectedLabelColor: colorScheme.onSurface.withValues(alpha: 0.5),
+                              tabs: const [
+                                Tab(text: 'Email'),
+                                Tab(text: 'Phone'),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Error message
+                          if (authProvider.error != null)
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              margin: const EdgeInsets.only(bottom: 16),
+                              decoration: BoxDecoration(
+                                color: AppTheme.errorColor.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.3)),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.error_outline, color: AppTheme.errorColor, size: 18),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      authProvider.error!,
+                                      style: const TextStyle(color: AppTheme.errorColor, fontSize: 13),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                          // Tab views
+                          SizedBox(
+                            height: 260,
+                            child: TabBarView(
+                              controller: _tabController,
+                              children: [
+                                _buildEmailForm(authProvider, colorScheme),
+                                _buildPhoneForm(authProvider, colorScheme),
+                              ],
+                            ),
+                          ),
+
+                          // Divider
+                          Row(
+                            children: [
+                              Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.15))),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: Text(
+                                  'Or continue with',
+                                  style: TextStyle(
+                                    color: colorScheme.onSurface.withValues(alpha: 0.5),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                              Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.15))),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Google Sign In
+                          OutlinedButton.icon(
+                            onPressed: () async {
+                              await context.read<AuthProvider>().signInWithGoogle();
+                            },
+                            icon: const Icon(Icons.g_mobiledata, size: 24),
+                            label: const Text('Google'),
+                            style: OutlinedButton.styleFrom(
+                              minimumSize: const Size(double.infinity, 48),
+                              side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              backgroundColor: colorScheme.surface.withValues(alpha: 0.3),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Sign up link
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Don't have an account? ",
+                                style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5)),
+                              ),
+                              GestureDetector(
+                                onTap: () => context.push('/auth/signup'),
+                                child: Text(
+                                  'Sign up',
+                                  style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildEmailForm(AuthProvider authProvider) {
+  Widget _buildEmailForm(AuthProvider authProvider, ColorScheme colorScheme) {
     return Column(
       children: [
         TextField(
           controller: _emailController,
           keyboardType: TextInputType.emailAddress,
-          decoration: const InputDecoration(
+          style: TextStyle(color: colorScheme.onSurface),
+          decoration: InputDecoration(
             labelText: 'Email',
-            prefixIcon: Icon(Icons.email_outlined, size: 20),
+            prefixIcon: const Icon(Icons.email_outlined, size: 20),
+            filled: true,
+            fillColor: colorScheme.surface.withValues(alpha: 0.5),
           ),
         ),
         const SizedBox(height: 14),
         TextField(
           controller: _passwordController,
           obscureText: _obscurePassword,
+          style: TextStyle(color: colorScheme.onSurface),
           decoration: InputDecoration(
             labelText: 'Password',
             prefixIcon: const Icon(Icons.lock_outline, size: 20),
+            filled: true,
+            fillColor: colorScheme.surface.withValues(alpha: 0.5),
             suffixIcon: IconButton(
               icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 20),
               onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
             ),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         Align(
           alignment: Alignment.centerRight,
           child: TextButton(
             onPressed: () => context.push('/auth/forgot-password'),
-            child: const Text('Forgot password?', style: TextStyle(fontSize: 13)),
+            child: Text(
+              'Forgot password?',
+              style: TextStyle(fontSize: 13, color: colorScheme.onSurface.withValues(alpha: 0.7)),
+            ),
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 4),
         SizedBox(
           width: double.infinity,
-          height: 50,
+          height: 48,
           child: ElevatedButton(
             onPressed: _isLoading ? null : () async {
               setState(() => _isLoading = true);
@@ -248,30 +301,33 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             },
             child: _isLoading
                 ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Text('Sign In'),
+                : const Text('Sign In', style: TextStyle(fontWeight: FontWeight.w600)),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildPhoneForm(AuthProvider authProvider) {
+  Widget _buildPhoneForm(AuthProvider authProvider, ColorScheme colorScheme) {
     if (!_isOtpSent) {
       return Column(
         children: [
           TextField(
             controller: _phoneController,
             keyboardType: TextInputType.phone,
-            decoration: const InputDecoration(
+            style: TextStyle(color: colorScheme.onSurface),
+            decoration: InputDecoration(
               labelText: 'Phone Number',
-              hintText: '+919876543210',
-              prefixIcon: Icon(Icons.phone_outlined, size: 20),
+              hintText: 'e.g. +919876543210',
+              prefixIcon: const Icon(Icons.phone_outlined, size: 20),
+              filled: true,
+              fillColor: colorScheme.surface.withValues(alpha: 0.5),
             ),
           ),
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
-            height: 50,
+            height: 48,
             child: ElevatedButton(
               onPressed: _isLoading ? null : () async {
                 setState(() => _isLoading = true);
@@ -280,10 +336,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                   _isLoading = false;
                   _isOtpSent = true;
                 });
+                _startOtpTimer();
               },
               child: _isLoading
                   ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Get OTP'),
+                  : const Text('Get OTP', style: TextStyle(fontWeight: FontWeight.w600)),
             ),
           ),
         ],
@@ -296,15 +353,19 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           controller: _otpController,
           keyboardType: TextInputType.number,
           maxLength: 6,
-          decoration: const InputDecoration(
-            labelText: 'Enter OTP',
-            prefixIcon: Icon(Icons.pin, size: 20),
+          style: TextStyle(color: colorScheme.onSurface),
+          decoration: InputDecoration(
+            labelText: 'One-Time Password',
+            hintText: 'Enter 6-digit OTP',
+            prefixIcon: const Icon(Icons.pin, size: 20),
+            filled: true,
+            fillColor: colorScheme.surface.withValues(alpha: 0.5),
           ),
         ),
         const SizedBox(height: 14),
         SizedBox(
           width: double.infinity,
-          height: 50,
+          height: 48,
           child: ElevatedButton(
             onPressed: _isLoading ? null : () async {
               setState(() => _isLoading = true);
@@ -317,12 +378,33 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             },
             child: _isLoading
                 ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Text('Verify & Login'),
+                : const Text('Verify OTP & Login', style: TextStyle(fontWeight: FontWeight.w600)),
           ),
         ),
-        TextButton(
-          onPressed: () => setState(() { _isOtpSent = false; _otpController.clear(); }),
-          child: const Text('Change phone number'),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            TextButton(
+              onPressed: () => setState(() { _isOtpSent = false; _otpController.clear(); _timeLeft = 0; }),
+              child: Text('Change Phone Number', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 13)),
+            ),
+            if (_timeLeft > 0)
+              Text(
+                'Resend in ${_timeLeft ~/ 60}:${(_timeLeft % 60).toString().padLeft(2, '0')}',
+                style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 13),
+              )
+            else
+              TextButton(
+                onPressed: _isLoading ? null : () async {
+                  setState(() => _isLoading = true);
+                  await authProvider.sendOtp(_phoneController.text.trim());
+                  setState(() => _isLoading = false);
+                  _startOtpTimer();
+                },
+                child: Text('Resend OTP', style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.w500, fontSize: 13)),
+              ),
+          ],
         ),
       ],
     );

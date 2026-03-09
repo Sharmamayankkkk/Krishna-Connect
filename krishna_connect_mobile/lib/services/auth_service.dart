@@ -16,8 +16,25 @@ class AuthService {
     return await _client.auth.signInWithPassword(email: email, password: password);
   }
 
-  Future<AuthResponse> signUp(String email, String password) async {
-    return await _client.auth.signUp(email: email, password: password);
+  Future<AuthResponse> signUp(
+    String email,
+    String password, {
+    String? name,
+    String? username,
+    String? gender,
+    String? avatarUrl,
+  }) async {
+    final Map<String, dynamic> data = {};
+    if (name != null) data['name'] = name;
+    if (username != null) data['username'] = username;
+    if (gender != null) data['gender'] = gender;
+    if (avatarUrl != null) data['avatar_url'] = avatarUrl;
+
+    return await _client.auth.signUp(
+      email: email,
+      password: password,
+      data: data.isNotEmpty ? data : null,
+    );
   }
 
   Future<void> signInWithOtp(String phone) async {

@@ -67,13 +67,27 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> signUp(String email, String password) async {
+  Future<bool> signUp(
+    String email,
+    String password, {
+    String? name,
+    String? username,
+    String? gender,
+    String? avatarUrl,
+  }) async {
     _error = null;
     _isLoading = true;
     notifyListeners();
 
     try {
-      await _authService.signUp(email, password);
+      await _authService.signUp(
+        email,
+        password,
+        name: name,
+        username: username,
+        gender: gender,
+        avatarUrl: avatarUrl,
+      );
       _isLoading = false;
       notifyListeners();
       return true;
@@ -115,6 +129,17 @@ class AuthProvider extends ChangeNotifier {
     } catch (e) {
       _error = e.toString();
       notifyListeners();
+    }
+  }
+
+  Future<bool> signInWithGoogle() async {
+    _error = null;
+    try {
+      return await _authService.signInWithGoogle();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      return false;
     }
   }
 
