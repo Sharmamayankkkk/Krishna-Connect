@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/assets.dart';
@@ -90,13 +91,16 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             child: Center(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                    child: Container(
-                      constraints: const BoxConstraints(maxWidth: 400),
-                      padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    // Glassmorphism card
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                        child: Container(
+                          constraints: const BoxConstraints(maxWidth: 400),
+                          padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(16),
@@ -200,7 +204,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             onPressed: () async {
                               await context.read<AuthProvider>().signInWithGoogle();
                             },
-                            icon: const Icon(Icons.g_mobiledata, size: 24),
+                            icon: SvgPicture.asset(
+                              AppAssets.iconGoogle,
+                              width: 20,
+                              height: 20,
+                            ),
                             label: const Text('Google'),
                             style: OutlinedButton.styleFrom(
                               minimumSize: const Size(double.infinity, 48),
@@ -232,6 +240,18 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       ),
                     ),
                   ),
+                ),
+                    // c1.png hero image below card (matching webapp mobile layout)
+                    const SizedBox(height: 24),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.asset(
+                        AppAssets.bgC1,
+                        width: double.infinity,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

@@ -49,6 +49,7 @@ class AppAssets {
   static const String iconLeela = 'assets/icons/leela.png';
   static const String iconApp192 = 'assets/icons/android-chrome-192x192.png';
   static const String iconApp512 = 'assets/icons/android-chrome-512x512.png';
+  static const String iconGoogle = 'assets/icons/google.svg';
 
   // Text / Media
   static const String krishnaImage = 'assets/text/krishna.jpg';

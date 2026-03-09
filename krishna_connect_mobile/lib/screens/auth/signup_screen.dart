@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -334,7 +335,11 @@ class _SignupScreenState extends State<SignupScreen> {
                             onPressed: _isLoading ? null : () async {
                               await context.read<AuthProvider>().signInWithGoogle();
                             },
-                            icon: const Icon(Icons.g_mobiledata, size: 24),
+                            icon: SvgPicture.asset(
+                              AppAssets.iconGoogle,
+                              width: 20,
+                              height: 20,
+                            ),
                             label: const Text('Google'),
                             style: OutlinedButton.styleFrom(
                               minimumSize: const Size(double.infinity, 48),
