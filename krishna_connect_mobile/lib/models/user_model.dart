@@ -39,8 +39,7 @@ String? resolveAvatarUrl(String? url) {
   }
 
   // Fallback: treat as a storage path under attachments
-  final cleanPath = url.startsWith('/') ? url.substring(1) : url;
-  return '${SupabaseConfig.supabaseUrl}/storage/v1/object/public/attachments/$cleanPath';
+  return '${SupabaseConfig.supabaseUrl}/storage/v1/object/public/attachments/$url';
 }
 
 class UserModel {

@@ -104,10 +104,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               decoration: BoxDecoration(border: Border(top: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3)))),
               child: Row(
                 children: [
-                  IconButton(icon: Icon(Icons.image_outlined, color: AppTheme.successColor), onPressed: () {}),
+                  IconButton(icon: const Icon(Icons.image_outlined, color: AppTheme.successColor), onPressed: () {}),
                   IconButton(icon: Icon(Icons.gif_box_outlined, color: colorScheme.primary), onPressed: () {}),
-                  IconButton(icon: Icon(Icons.poll_outlined, color: AppTheme.accentColor), onPressed: () {}),
-                  IconButton(icon: Icon(Icons.location_on_outlined, color: AppTheme.errorColor), onPressed: () {}),
+                  IconButton(icon: const Icon(Icons.poll_outlined, color: AppTheme.accentColor), onPressed: () {}),
+                  IconButton(icon: const Icon(Icons.location_on_outlined, color: AppTheme.errorColor), onPressed: () {}),
                 ],
               ),
             ),
