@@ -22,14 +22,31 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+  String? _lastUsername;
+  late List<Widget> _screens;
 
   @override
   void initState() {
     super.initState();
+    _screens = _createScreens(null);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AppProvider>().initializeData();
       _initPushNotifications();
     });
+  }
+
+  List<Widget> _createScreens(String? username) {
+    return [
+      const FeedScreen(),
+      const ExploreScreen(),
+      const LeelaScreen(),
+      const ChatListScreen(),
+      const NewsScreen(),
+      if (username != null && username.isNotEmpty)
+        ProfileScreen(username: username)
+      else
+        const _ProfilePlaceholder(),
+    ];
   }
 
   void _initPushNotifications() {
@@ -60,28 +77,23 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  List<Widget> _buildScreens() {
-    final user = context.read<AuthProvider>().user;
-    return [
-      const FeedScreen(),
-      const ExploreScreen(),
-      const LeelaScreen(),
-      const ChatListScreen(),
-      const NewsScreen(),
-      ProfileScreen(username: user?.username ?? ''),
-    ];
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final user = context.watch<AuthProvider>().user;
 
+    // Rebuild screens only when username changes
+    final currentUsername = user?.username;
+    if (currentUsername != _lastUsername) {
+      _lastUsername = currentUsername;
+      _screens = _createScreens(currentUsername);
+    }
+
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: _buildScreens(),
+        children: _screens,
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -222,6 +234,34 @@ class _HomeScreenState extends State<HomeScreen> {
                 fontSize: 10,
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
                 color: isActive ? activeColor : inactiveColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Placeholder shown in the Profile tab when user is not yet loaded.
+class _ProfilePlaceholder extends StatelessWidget {
+  const _ProfilePlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Scaffold(
+      appBar: AppBar(title: const Text('Profile')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(color: colorScheme.primary),
+            const SizedBox(height: 16),
+            Text(
+              'Loading profile...',
+              style: TextStyle(
+                color: colorScheme.onSurface.withValues(alpha: 0.5),
               ),
             ),
           ],
