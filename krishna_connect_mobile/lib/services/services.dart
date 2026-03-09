@@ -321,7 +321,12 @@ class GroupService {
   }
 
   Future<void> joinGroup(int groupId) async {
-    await _client.from('group_members').insert({'group_id': groupId, 'user_id': _userId});
+    try {
+      await _client.from('group_members').insert({'group_id': groupId, 'user_id': _userId});
+    } on PostgrestException catch (e) {
+      // Ignore duplicate key (user already a member)
+      if (e.code != '23505') rethrow;
+    }
   }
 
   Future<void> leaveGroup(int groupId) async {
