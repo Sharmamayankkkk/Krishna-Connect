@@ -29,6 +29,8 @@ import '../screens/get_verified/get_verified_screen.dart';
 import '../screens/analytics/analytics_screen.dart';
 import '../screens/groups/groups_screen.dart';
 import '../screens/groups/group_detail_screen.dart';
+import '../screens/notifications/notifications_screen.dart';
+import '../screens/news/news_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -187,6 +189,18 @@ GoRouter createRouter(AuthProvider authProvider) {
         builder: (context, state) => GroupDetailScreen(
           groupId: int.parse(state.pathParameters['id']!),
         ),
+      ),
+
+      // Notifications (accessible from app bar bell icon)
+      GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationsScreen(),
+      ),
+
+      // News
+      GoRoute(
+        path: '/news',
+        builder: (context, state) => const NewsScreen(),
       ),
 
       // Settings sub-pages

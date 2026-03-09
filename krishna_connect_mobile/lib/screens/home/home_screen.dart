@@ -1,14 +1,18 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
+import '../../config/assets.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/app_provider.dart';
 import '../../services/push_notification_service.dart';
+import '../../widgets/user_avatar.dart';
 import '../feed/feed_screen.dart';
 import '../explore/explore_screen.dart';
 import '../leela/leela_screen.dart';
 import '../chat/chat_list_screen.dart';
-import '../notifications/notifications_screen.dart';
+import '../news/news_screen.dart';
+import '../profile/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,14 +22,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
-
-  final _screens = const [
-    FeedScreen(),
-    ExploreScreen(),
-    LeelaScreen(),
-    ChatListScreen(),
-    NotificationsScreen(),
-  ];
 
   @override
   void initState() {
@@ -55,24 +51,37 @@ class _HomeScreenState extends State<HomeScreen> {
       if (type == 'new_message') {
         setState(() => _currentIndex = 3); // Switch to chats tab
       } else {
-        setState(() => _currentIndex = 4); // Switch to notifications tab
+        // Navigate to notifications screen directly
+        context.push('/notifications');
       }
     } catch (e) {
       debugPrint('Error parsing notification payload: $e');
-      setState(() => _currentIndex = 4); // Default to notifications tab
+      context.push('/notifications');
     }
+  }
+
+  List<Widget> _buildScreens() {
+    final user = context.read<AuthProvider>().user;
+    return [
+      const FeedScreen(),
+      const ExploreScreen(),
+      const LeelaScreen(),
+      const ChatListScreen(),
+      const NewsScreen(),
+      ProfileScreen(username: user?.username ?? ''),
+    ];
   }
 
   @override
   Widget build(BuildContext context) {
-    final unread = context.watch<AppProvider>().unreadNotifications;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final user = context.watch<AuthProvider>().user;
 
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: _screens,
+        children: _buildScreens(),
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -81,15 +90,15 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: SafeArea(
           child: SizedBox(
-            height: 60,
+            height: 64,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavItem(context, 0, Icons.home_outlined, Icons.home, 'Feed'),
+                _buildNavItem(context, 0, Icons.home_outlined, Icons.home_rounded, 'Feed'),
                 _buildNavItem(context, 1, Icons.explore_outlined, Icons.explore, 'Explore'),
-                _buildNavItem(context, 2, Icons.play_circle_outline, Icons.play_circle_filled, 'Leela'),
+                _buildLeelaNavItem(context, 2),
                 _buildNavItem(context, 3, Icons.chat_bubble_outline, Icons.chat_bubble, 'Chats'),
-                _buildNavItem(context, 4, Icons.notifications_outlined, Icons.notifications, 'Alerts', badge: unread),
+                _buildNavItem(context, 4, Icons.newspaper_outlined, Icons.newspaper, 'News'),
+                _buildProfileNavItem(context, 5, user),
               ],
             ),
           ),
@@ -98,58 +107,120 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildNavItem(BuildContext context, int index, IconData icon, IconData activeIcon, String label, {int badge = 0}) {
+  Widget _buildNavItem(BuildContext context, int index, IconData icon, IconData activeIcon, String label) {
     final isActive = _currentIndex == index;
     final colorScheme = Theme.of(context).colorScheme;
     final activeColor = colorScheme.primary;
     final inactiveColor = colorScheme.onSurface.withValues(alpha: 0.4);
 
-    return GestureDetector(
-      onTap: () => setState(() => _currentIndex = index),
-      behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 64,
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _currentIndex = index),
+        behavior: HitTestBehavior.opaque,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 200),
-                  child: Icon(
-                    isActive ? activeIcon : icon,
-                    key: ValueKey(isActive),
-                    size: 24,
-                    color: isActive ? activeColor : inactiveColor,
-                  ),
-                ),
-                if (badge > 0)
-                  Positioned(
-                    top: -4,
-                    right: -8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: colorScheme.error,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      constraints: const BoxConstraints(minWidth: 16),
-                      child: Text(
-                        badge > 99 ? '99+' : badge.toString(),
-                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-              ],
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: Icon(
+                isActive ? activeIcon : icon,
+                key: ValueKey('$index-$isActive'),
+                size: 24,
+                color: isActive ? activeColor : inactiveColor,
+              ),
             ),
             const SizedBox(height: 3),
             Text(
               label,
               style: TextStyle(
                 fontSize: 10,
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                color: isActive ? activeColor : inactiveColor,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Leela tab uses a custom image icon matching the webapp
+  Widget _buildLeelaNavItem(BuildContext context, int index) {
+    final isActive = _currentIndex == index;
+    final colorScheme = Theme.of(context).colorScheme;
+    final activeColor = colorScheme.primary;
+    final inactiveColor = colorScheme.onSurface.withValues(alpha: 0.4);
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _currentIndex = index),
+        behavior: HitTestBehavior.opaque,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Opacity(
+              opacity: isActive ? 1.0 : 0.5,
+              child: Image.asset(
+                AppAssets.iconLeela,
+                width: 24,
+                height: 24,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              'Leela',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                color: isActive ? activeColor : inactiveColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Profile tab shows user avatar with ring indicator matching the webapp
+  Widget _buildProfileNavItem(BuildContext context, int index, dynamic user) {
+    final isActive = _currentIndex == index;
+    final colorScheme = Theme.of(context).colorScheme;
+    final activeColor = colorScheme.primary;
+    final inactiveColor = colorScheme.onSurface.withValues(alpha: 0.4);
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _currentIndex = index),
+        behavior: HitTestBehavior.opaque,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 26,
+              height: 26,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isActive ? activeColor : colorScheme.outline.withValues(alpha: 0.3),
+                  width: 2,
+                ),
+              ),
+              child: ClipOval(
+                child: UserAvatar(
+                  imageUrl: user?.avatarUrlOrDefault,
+                  size: 22,
+                  fallbackName: user?.displayName,
+                ),
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              'Profile',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
                 color: isActive ? activeColor : inactiveColor,
               ),
             ),

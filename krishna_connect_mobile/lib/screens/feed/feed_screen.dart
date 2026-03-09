@@ -39,6 +39,7 @@ class _FeedScreenState extends State<FeedScreen> {
     final user = auth.user;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final unread = app.unreadNotifications;
 
     return Scaffold(
       body: NestedScrollView(
@@ -66,14 +67,35 @@ class _FeedScreenState extends State<FeedScreen> {
                 icon: Icon(Icons.search, color: colorScheme.onSurface.withValues(alpha: 0.6)),
                 onPressed: () => context.push('/search'),
               ),
-              if (user != null)
-                Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: GestureDetector(
-                    onTap: () => context.push('/profile/${user.username}'),
-                    child: UserAvatar(imageUrl: user.avatarUrlOrDefault, size: 30, fallbackName: user.displayName),
+              // Notification bell with unread badge (matching webapp sidebar)
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.notifications_outlined, color: colorScheme.onSurface.withValues(alpha: 0.6)),
+                    onPressed: () => context.push('/notifications'),
                   ),
-                ),
+                  if (unread > 0)
+                    Positioned(
+                      top: 6,
+                      right: 6,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        constraints: const BoxConstraints(minWidth: 16),
+                        child: Text(
+                          unread > 99 ? '99+' : unread.toString(),
+                          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(width: 4),
             ],
           ),
         ],
@@ -211,10 +233,10 @@ class _FeedScreenState extends State<FeedScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/create-post'),
-        backgroundColor: colorScheme.primary,
-        child: Icon(Icons.edit, color: colorScheme.onPrimary),
+      // Expandable FAB matching webapp's MobileFab (Plus → Post / Leela actions)
+      floatingActionButton: _ExpandableFab(
+        onCreatePost: () => context.push('/create-post'),
+        onCreateLeela: () => context.push('/leela'),
       ),
     );
   }
@@ -227,5 +249,161 @@ class _FeedScreenState extends State<FeedScreen> {
   void dispose() {
     _scrollController.dispose();
     super.dispose();
+  }
+}
+
+/// Expandable FAB matching the webapp's MobileFab component.
+/// Shows a Plus button that expands to show Post and Leela actions.
+class _ExpandableFab extends StatefulWidget {
+  final VoidCallback onCreatePost;
+  final VoidCallback onCreateLeela;
+
+  const _ExpandableFab({
+    required this.onCreatePost,
+    required this.onCreateLeela,
+  });
+
+  @override
+  State<_ExpandableFab> createState() => _ExpandableFabState();
+}
+
+class _ExpandableFabState extends State<_ExpandableFab> with SingleTickerProviderStateMixin {
+  bool _isOpen = false;
+  late AnimationController _controller;
+  late Animation<double> _expandAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 250),
+    );
+    _expandAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOut,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _toggle() {
+    setState(() {
+      _isOpen = !_isOpen;
+      if (_isOpen) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    });
+  }
+
+  void _close() {
+    if (_isOpen) _toggle();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        // Expanded action buttons
+        FadeTransition(
+          opacity: _expandAnimation,
+          child: ScaleTransition(
+            scale: _expandAnimation,
+            alignment: Alignment.bottomRight,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                _buildAction(
+                  icon: Icons.edit_outlined,
+                  label: 'Post',
+                  onTap: () {
+                    _close();
+                    widget.onCreatePost();
+                  },
+                  colorScheme: colorScheme,
+                ),
+                const SizedBox(height: 12),
+                _buildAction(
+                  icon: Icons.movie_creation_outlined,
+                  label: 'Leela',
+                  onTap: () {
+                    _close();
+                    widget.onCreateLeela();
+                  },
+                  colorScheme: colorScheme,
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        ),
+        // Main FAB - Plus icon that rotates 45° when open (matching webapp)
+        FloatingActionButton(
+          onPressed: _toggle,
+          backgroundColor: colorScheme.primary,
+          child: AnimatedRotation(
+            turns: _isOpen ? 0.125 : 0,
+            duration: const Duration(milliseconds: 250),
+            child: Icon(Icons.add, color: colorScheme.onPrimary, size: 26),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAction({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    required ColorScheme colorScheme,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: colorScheme.outline.withValues(alpha: 0.2)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: colorScheme.onSurface,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        FloatingActionButton.small(
+          heroTag: 'fab_$label',
+          onPressed: onTap,
+          backgroundColor: colorScheme.surface,
+          foregroundColor: colorScheme.primary,
+          elevation: 4,
+          child: Icon(icon),
+        ),
+      ],
+    );
   }
 }
