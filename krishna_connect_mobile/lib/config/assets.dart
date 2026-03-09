@@ -18,6 +18,15 @@ class AppAssets {
   static const String badgeKcsVerified = 'assets/user_avatar/KCS-verified.png';
   static const String placeholderUser = 'assets/images/placeholder-user.jpg';
 
+  // Server avatar URLs (used when creating/updating profiles, matching webapp)
+  static const String serverAvatarMale = '/user_Avatar/male.png';
+  static const String serverAvatarFemale = '/user_Avatar/female.png';
+
+  /// Returns the server avatar URL based on gender.
+  static String serverAvatarForGender(String gender) {
+    return gender == 'male' ? serverAvatarMale : serverAvatarFemale;
+  }
+
   // Emoji
   static const String emoji1 = 'assets/emoji/1.png';
   static const String emoji2 = 'assets/emoji/2.png';

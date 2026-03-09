@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -23,6 +24,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   bool _isOtpSent = false;
   bool _isLoading = false;
   int _timeLeft = 0;
+  Timer? _otpTimer;
 
   @override
   void initState() {
@@ -31,23 +33,21 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   void _startOtpTimer() {
-    _timeLeft = 120;
-    _tick();
-  }
-
-  void _tick() {
-    if (_timeLeft > 0 && mounted) {
-      Future.delayed(const Duration(seconds: 1), () {
-        if (mounted) {
-          setState(() => _timeLeft--);
-          _tick();
-        }
-      });
-    }
+    _otpTimer?.cancel();
+    setState(() => _timeLeft = 120);
+    _otpTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_timeLeft <= 1) {
+        timer.cancel();
+      }
+      if (mounted) {
+        setState(() => _timeLeft--);
+      }
+    });
   }
 
   @override
   void dispose() {
+    _otpTimer?.cancel();
     _tabController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -386,7 +386,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             TextButton(
-              onPressed: () => setState(() { _isOtpSent = false; _otpController.clear(); _timeLeft = 0; }),
+              onPressed: () => setState(() { _isOtpSent = false; _otpController.clear(); _otpTimer?.cancel(); _timeLeft = 0; }),
               child: Text('Change Phone Number', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 13)),
             ),
             if (_timeLeft > 0)

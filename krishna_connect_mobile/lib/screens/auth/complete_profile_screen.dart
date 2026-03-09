@@ -208,9 +208,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                 }
                                 setState(() => _isLoading = true);
 
-                                final avatarUrl = _gender == 'male'
-                                    ? '/user_Avatar/male.png'
-                                    : '/user_Avatar/female.png';
+                                final avatarUrl = AppAssets.serverAvatarForGender(_gender);
 
                                 await context.read<AuthProvider>().updateProfile({
                                   'username': _usernameController.text.trim().toLowerCase(),

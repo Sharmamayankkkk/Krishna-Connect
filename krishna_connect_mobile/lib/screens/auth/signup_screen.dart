@@ -33,7 +33,7 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Future<bool> _validateUsername() async {
-    final username = _usernameController.text.trim();
+    final username = _usernameController.text.trim().toLowerCase();
     final usernameRegex = RegExp(r'^[a-zA-Z0-9_]+$');
     if (!usernameRegex.hasMatch(username)) {
       setState(() => _localError = 'Username can only contain letters, numbers, and underscores.');
@@ -50,8 +50,9 @@ class _SignupScreenState extends State<SignupScreen> {
         setState(() => _localError = 'This username is already taken. Please choose another one.');
         return false;
       }
-    } catch (_) {
-      // Ignore validation errors and let server handle
+    } catch (e) {
+      setState(() => _localError = 'Could not verify username. Please check your connection and try again.');
+      return false;
     }
     return true;
   }
@@ -263,7 +264,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                 auth.clearError();
 
                                 final name = _nameController.text.trim();
-                                final username = _usernameController.text.trim();
+                                final username = _usernameController.text.trim().toLowerCase();
                                 final email = _emailController.text.trim();
                                 final password = _passwordController.text;
 
@@ -283,9 +284,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                   return;
                                 }
 
-                                final avatarUrl = _gender == 'male'
-                                    ? '/user_Avatar/male.png'
-                                    : '/user_Avatar/female.png';
+                                final avatarUrl = AppAssets.serverAvatarForGender(_gender);
 
                                 final success = await auth.signUp(
                                   email,
