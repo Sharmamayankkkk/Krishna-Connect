@@ -1,3 +1,48 @@
+import '../config/supabase_config.dart';
+
+/// Resolves avatar URLs the same way the webapp's getAvatarUrl() does.
+/// Handles: full http URLs (pass-through), relative storage paths like
+/// "avatars/uuid_timestamp.png", bare UUID filenames, and simple names
+/// like "male.png" / "female.png".
+String? resolveAvatarUrl(String? url) {
+  if (url == null || url.isEmpty) return null;
+  if (url.startsWith('http')) return url;
+
+  // Handle local /avatars/ path (legacy or incorrect DB entries)
+  if (url.startsWith('/avatars/')) {
+    final filename = url.replaceFirst('/avatars/', '');
+    return '${SupabaseConfig.supabaseUrl}/storage/v1/object/public/avatars/$filename';
+  }
+
+  // Handle "avatars/..." prefix (Supabase storage bucket path)
+  if (url.startsWith('avatars/')) {
+    return '${SupabaseConfig.supabaseUrl}/storage/v1/object/public/$url';
+  }
+
+  // Handle bare UUID_TIMESTAMP.ext strings
+  final uuidTimestamp = RegExp(
+    r'^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}_\d+\.(jpg|jpeg|png|webp|gif)$',
+    caseSensitive: false,
+  );
+  if (uuidTimestamp.hasMatch(url)) {
+    return '${SupabaseConfig.supabaseUrl}/storage/v1/object/public/avatars/$url';
+  }
+
+  // Absolute path (e.g. /user_Avatar/male.png)
+  if (url.startsWith('/')) {
+    return '${SupabaseConfig.supabaseUrl}/storage/v1/object/public$url';
+  }
+
+  // Known static avatars
+  if (url == 'male.png' || url == 'female.png') {
+    return '${SupabaseConfig.supabaseUrl}/storage/v1/object/public/user_Avatar/$url';
+  }
+
+  // Fallback: treat as a storage path under attachments
+  final cleanPath = url.startsWith('/') ? url.substring(1) : url;
+  return '${SupabaseConfig.supabaseUrl}/storage/v1/object/public/attachments/$cleanPath';
+}
+
 class UserModel {
   final String id;
   final String? name;
@@ -92,7 +137,8 @@ class UserModel {
   String get displayName => name ?? username ?? 'Unknown';
 
   String get avatarUrlOrDefault {
-    if (avatarUrl != null && avatarUrl!.isNotEmpty) return avatarUrl!;
+    final resolved = resolveAvatarUrl(avatarUrl);
+    if (resolved != null) return resolved;
     final seed = username ?? id;
     return 'https://api.dicebear.com/7.x/avataaars/png?seed=$seed';
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../config/assets.dart';
 import '../config/theme.dart';
 import '../models/user_model.dart';
 
@@ -98,6 +99,8 @@ class UserAvatar extends StatelessWidget {
   }
 }
 
+/// Verification badge using actual badge images matching the webapp.
+/// KCS-verified → KCS-verified.png, verified → verified.png
 class VerificationBadge extends StatelessWidget {
   final String verified;
   final double size;
@@ -112,10 +115,14 @@ class VerificationBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     if (verified == 'none') return const SizedBox.shrink();
     
-    return Icon(
-      Icons.verified,
-      size: size,
-      color: verified == 'kcs' ? AppTheme.kcsColor : AppTheme.verifiedColor,
+    final src = verified == 'kcs'
+        ? AppAssets.badgeKcsVerified
+        : AppAssets.badgeVerified;
+
+    return Image.asset(
+      src,
+      width: size,
+      height: size,
     );
   }
 }

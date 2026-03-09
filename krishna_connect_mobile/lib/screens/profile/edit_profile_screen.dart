@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/profile_service.dart';
+import '../../widgets/user_avatar.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -54,7 +55,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           children: [
             Center(
               child: Stack(children: [
-                CircleAvatar(radius: 50, backgroundImage: user?.avatarUrl != null ? NetworkImage(user!.avatarUrl!) : null, backgroundColor: colorScheme.surfaceContainerHighest),
+                CircleAvatar(
+                  radius: 50,
+                  backgroundColor: colorScheme.surfaceContainerHighest,
+                  child: ClipOval(
+                    child: UserAvatar(
+                      imageUrl: user?.avatarUrlOrDefault,
+                      size: 100,
+                      fallbackName: user?.displayName,
+                    ),
+                  ),
+                ),
                 Positioned(bottom: 0, right: 0, child: Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(shape: BoxShape.circle, color: colorScheme.primary), child: Icon(Icons.camera_alt, size: 18, color: colorScheme.onPrimary))),
               ]),
             ),

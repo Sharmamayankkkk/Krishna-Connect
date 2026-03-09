@@ -181,7 +181,7 @@ class ChatModel {
   }
 
   String? getChatAvatar(String currentUserId) {
-    if (isGroup) return avatarUrl;
-    return getOtherUser(currentUserId)?.avatarUrl;
+    if (isGroup) return resolveAvatarUrl(avatarUrl);
+    return getOtherUser(currentUserId)?.avatarUrlOrDefault;
   }
 }

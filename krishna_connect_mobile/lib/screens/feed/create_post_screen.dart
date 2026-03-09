@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
 import '../../providers/app_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../widgets/user_avatar.dart';
 import '../../models/post_model.dart';
 
 class CreatePostScreen extends StatefulWidget {
@@ -43,25 +44,55 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundImage: user?.avatarUrl != null ? NetworkImage(user!.avatarUrl!) : null,
-                  backgroundColor: colorScheme.surfaceContainerHighest,
-                  child: user?.avatarUrl == null ? const Icon(Icons.person, size: 20) : null,
+                UserAvatar(
+                  imageUrl: user?.avatarUrlOrDefault,
+                  size: 40,
+                  fallbackName: user?.displayName,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: TextField(
-                    controller: _contentController,
-                    maxLines: null,
-                    autofocus: true,
-                    onChanged: (_) => setState(() {}),
-                    decoration: const InputDecoration(
-                      hintText: "What's on your mind?",
-                      border: InputBorder.none,
-                      filled: false,
-                    ),
-                    style: const TextStyle(fontSize: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (user != null) ...[
+                        Row(
+                          children: [
+                            Text(
+                              user.displayName,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 15,
+                                color: colorScheme.onSurface,
+                              ),
+                            ),
+                            if (user.isVerified) ...[
+                              const SizedBox(width: 4),
+                              VerificationBadge(verified: user.verified, size: 15),
+                            ],
+                          ],
+                        ),
+                        Text(
+                          '@${user.username ?? ''}',
+                          style: TextStyle(
+                            color: colorScheme.onSurface.withValues(alpha: 0.5),
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                      TextField(
+                        controller: _contentController,
+                        maxLines: null,
+                        autofocus: true,
+                        onChanged: (_) => setState(() {}),
+                        decoration: const InputDecoration(
+                          hintText: "What's on your mind?",
+                          border: InputBorder.none,
+                          filled: false,
+                        ),
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -73,10 +104,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               decoration: BoxDecoration(border: Border(top: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3)))),
               child: Row(
                 children: [
-                  IconButton(icon: const Icon(Icons.image_outlined, color: AppTheme.successColor), onPressed: () {}),
+                  IconButton(icon: Icon(Icons.image_outlined, color: AppTheme.successColor), onPressed: () {}),
                   IconButton(icon: Icon(Icons.gif_box_outlined, color: colorScheme.primary), onPressed: () {}),
-                  IconButton(icon: const Icon(Icons.poll_outlined, color: AppTheme.accentColor), onPressed: () {}),
-                  IconButton(icon: const Icon(Icons.location_on_outlined, color: AppTheme.errorColor), onPressed: () {}),
+                  IconButton(icon: Icon(Icons.poll_outlined, color: AppTheme.accentColor), onPressed: () {}),
+                  IconButton(icon: Icon(Icons.location_on_outlined, color: AppTheme.errorColor), onPressed: () {}),
                 ],
               ),
             ),
