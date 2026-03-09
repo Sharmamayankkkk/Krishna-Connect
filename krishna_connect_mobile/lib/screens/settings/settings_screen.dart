@@ -59,9 +59,9 @@ class SettingsScreen extends StatelessWidget {
           // Account section
           _buildSection('Account', [
             _buildTile(Icons.person_outline, 'Edit Profile', () => context.push('/edit-profile'), colorScheme),
-            _buildTile(Icons.lock_outline, 'Privacy', () {}, colorScheme),
-            _buildTile(Icons.security_outlined, 'Security', () {}, colorScheme),
-            _buildTile(Icons.verified_outlined, 'Get Verified', () {}, colorScheme),
+            _buildTile(Icons.lock_outline, 'Privacy', () => context.push('/settings/privacy'), colorScheme),
+            _buildTile(Icons.analytics_outlined, 'Analytics', () => context.push('/analytics'), colorScheme),
+            _buildTile(Icons.verified_outlined, 'Get Verified', () => context.push('/get-verified'), colorScheme),
           ], colorScheme),
 
           // Preferences section
@@ -74,22 +74,37 @@ class SettingsScreen extends StatelessWidget {
               onChanged: (_) => theme.toggleTheme(),
               activeColor: colorScheme.primary,
             ),
-            _buildTile(Icons.notifications_outlined, 'Notifications', () {}, colorScheme),
-            _buildTile(Icons.language, 'Language', () {}, colorScheme),
+            _buildTile(Icons.notifications_outlined, 'Notifications', () => context.push('/settings/notifications'), colorScheme),
           ], colorScheme),
 
           // Content section
           _buildSection('Content', [
             _buildTile(Icons.bookmark_outline, 'Bookmarks', () => context.push('/bookmarks'), colorScheme),
+            _buildTile(Icons.group_outlined, 'Groups', () => context.push('/groups'), colorScheme),
             _buildTile(Icons.event_outlined, 'Events', () => context.push('/events'), colorScheme),
             _buildTile(Icons.emoji_events_outlined, 'Challenges', () => context.push('/challenges'), colorScheme),
-            _buildTile(Icons.star_outline, 'Starred Messages', () {}, colorScheme),
-            _buildTile(Icons.block_outlined, 'Blocked Users', () {}, colorScheme),
+            _buildTile(Icons.block_outlined, 'Blocked Users', () => context.push('/settings/blocked-users'), colorScheme),
           ], colorScheme),
 
           // Support section
           _buildSection('Support', [
-            _buildTile(Icons.help_outline, 'Help Center', () {}, colorScheme),
+            _buildTile(Icons.help_outline, 'Help Center', () {
+              showDialog(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Help Center'),
+                  content: const Text(
+                    'Need help? Contact us:\n\n'
+                    '• Email: support@krishnaconnect.app\n'
+                    '• Visit our FAQ at krishnaconnect.app/help\n\n'
+                    'We typically respond within 24 hours.',
+                  ),
+                  actions: [
+                    TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close')),
+                  ],
+                ),
+              );
+            }, colorScheme),
             _buildTile(Icons.info_outline, 'About Krishna Connect', () {
               showAboutDialog(
                 context: context,
@@ -104,7 +119,35 @@ class SettingsScreen extends StatelessWidget {
                 ],
               );
             }, colorScheme),
-            _buildTile(Icons.feedback_outlined, 'Send Feedback', () {}, colorScheme),
+            _buildTile(Icons.feedback_outlined, 'Send Feedback', () {
+              final feedbackController = TextEditingController();
+              showDialog(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Send Feedback'),
+                  content: TextField(
+                    controller: feedbackController,
+                    decoration: InputDecoration(
+                      hintText: 'Tell us what you think...',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    maxLines: 4,
+                  ),
+                  actions: [
+                    TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                    FilledButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Thank you for your feedback!'), backgroundColor: Colors.green),
+                        );
+                      },
+                      child: const Text('Send'),
+                    ),
+                  ],
+                ),
+              );
+            }, colorScheme),
           ], colorScheme),
 
           // Danger zone

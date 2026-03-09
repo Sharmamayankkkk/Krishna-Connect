@@ -172,6 +172,27 @@ class PostService {
     return List<Map<String, dynamic>>.from(data);
   }
 
+  // Posts by hashtag
+  Future<List<PostModel>> getPostsByHashtag(String tag, {int limit = 30}) async {
+    final hashtagData = await _client
+        .from('hashtags')
+        .select('id')
+        .eq('tag', tag)
+        .maybeSingle();
+    if (hashtagData == null) return [];
+
+    final data = await _client
+        .from('post_hashtags')
+        .select('post_id, posts(*, profiles!posts_user_id_fkey(*))')
+        .eq('hashtag_id', hashtagData['id'])
+        .limit(limit);
+
+    return (data as List)
+        .where((r) => r['posts'] != null)
+        .map((r) => PostModel.fromJson(Map<String, dynamic>.from(r['posts'])))
+        .toList();
+  }
+
   // Poll voting
   Future<void> votePoll(String postId, String optionId) async {
     await _client.rpc('vote_poll', params: {

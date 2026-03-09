@@ -277,3 +277,142 @@ class BookmarkService {
     });
   }
 }
+
+class GroupService {
+  final SupabaseClient _client;
+  GroupService(this._client);
+  String? get _userId => _client.auth.currentUser?.id;
+
+  Future<List<GroupModel>> getGroups({int limit = 30}) async {
+    final data = await _client
+        .from('groups')
+        .select('*, profiles!groups_created_by_fkey(*)')
+        .eq('is_public', true)
+        .order('created_at', ascending: false)
+        .limit(limit);
+    return (data as List).map((g) => GroupModel.fromJson(Map<String, dynamic>.from(g))).toList();
+  }
+
+  Future<List<GroupModel>> getUserGroups() async {
+    final data = await _client
+        .from('group_members')
+        .select('group_id, groups(*, profiles!groups_created_by_fkey(*))')
+        .eq('user_id', _userId!);
+    return (data as List)
+        .where((r) => r['groups'] != null)
+        .map((r) => GroupModel.fromJson(Map<String, dynamic>.from(r['groups'])))
+        .toList();
+  }
+
+  Future<GroupModel?> getGroup(int groupId) async {
+    final data = await _client
+        .from('groups')
+        .select('*, profiles!groups_created_by_fkey(*)')
+        .eq('id', groupId)
+        .maybeSingle();
+    if (data == null) return null;
+    return GroupModel.fromJson(data);
+  }
+
+  Future<void> createGroup({required String name, String? description, bool isPublic = true}) async {
+    await _client.from('groups').insert({
+      'created_by': _userId, 'name': name, 'description': description, 'is_public': isPublic,
+    });
+  }
+
+  Future<void> joinGroup(int groupId) async {
+    await _client.from('group_members').insert({'group_id': groupId, 'user_id': _userId});
+  }
+
+  Future<void> leaveGroup(int groupId) async {
+    await _client.from('group_members').delete().eq('group_id', groupId).eq('user_id', _userId!);
+  }
+
+  Future<List<Map<String, dynamic>>> getGroupMembers(int groupId, {int limit = 50}) async {
+    final data = await _client
+        .from('group_members')
+        .select('*, profiles(*)')
+        .eq('group_id', groupId)
+        .limit(limit);
+    return List<Map<String, dynamic>>.from(data);
+  }
+}
+
+class AnalyticsService {
+  final SupabaseClient _client;
+  AnalyticsService(this._client);
+  String? get _userId => _client.auth.currentUser?.id;
+
+  Future<Map<String, dynamic>> getProfileStats() async {
+    final posts = await _client
+        .from('posts')
+        .select()
+        .eq('user_id', _userId!);
+    final totalPosts = (posts as List).length;
+
+    final likes = await _client
+        .from('post_likes')
+        .select('post_id, posts!inner(user_id)')
+        .eq('posts.user_id', _userId!);
+    final totalLikes = (likes as List).length;
+
+    final comments = await _client
+        .from('comments')
+        .select('post_id, posts!inner(user_id)')
+        .eq('posts.user_id', _userId!);
+    final totalComments = (comments as List).length;
+
+    final followers = await _client
+        .from('relationships')
+        .select()
+        .eq('user_two_id', _userId!)
+        .eq('status', 'approved');
+    final totalFollowers = (followers as List).length;
+
+    final following = await _client
+        .from('relationships')
+        .select()
+        .eq('user_one_id', _userId!)
+        .eq('status', 'approved');
+    final totalFollowing = (following as List).length;
+
+    return {
+      'total_posts': totalPosts,
+      'total_likes': totalLikes,
+      'total_comments': totalComments,
+      'total_followers': totalFollowers,
+      'total_following': totalFollowing,
+      'engagement_rate': totalPosts > 0
+          ? ((totalLikes + totalComments) / totalPosts).toStringAsFixed(1)
+          : '0.0',
+    };
+  }
+}
+
+class VerificationService {
+  final SupabaseClient _client;
+  VerificationService(this._client);
+  String? get _userId => _client.auth.currentUser?.id;
+
+  Future<VerificationRequest?> getExistingRequest() async {
+    final data = await _client
+        .from('verification_requests')
+        .select()
+        .eq('user_id', _userId!)
+        .order('created_at', ascending: false)
+        .limit(1)
+        .maybeSingle();
+    if (data == null) return null;
+    return VerificationRequest.fromJson(data);
+  }
+
+  Future<void> submitRequest({required String plan, String? socialLinks, String? reason}) async {
+    await _client.from('verification_requests').insert({
+      'user_id': _userId,
+      'plan': plan,
+      'social_links': socialLinks,
+      'reason': reason,
+      'status': 'submitted',
+    });
+  }
+}

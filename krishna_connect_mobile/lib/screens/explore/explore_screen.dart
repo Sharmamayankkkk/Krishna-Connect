@@ -86,6 +86,10 @@ class _ExploreScreenState extends State<ExploreScreen> with SingleTickerProvider
                   ),
                   title: Text(t['tag'] ?? '', style: const TextStyle(fontWeight: FontWeight.w600)),
                   subtitle: Text('${t['usage_count'] ?? 0} posts', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 12)),
+                  onTap: () {
+                    final tag = t['tag'] ?? '';
+                    if (tag.isNotEmpty) context.push('/hashtag/$tag');
+                  },
                 )),
                 if (_trending.isEmpty)
                   Padding(

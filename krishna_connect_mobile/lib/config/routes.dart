@@ -16,11 +16,19 @@ import '../screens/events/event_detail_screen.dart';
 import '../screens/events/events_screen.dart';
 import '../screens/search/search_screen.dart';
 import '../screens/settings/settings_screen.dart';
+import '../screens/settings/privacy_screen.dart';
+import '../screens/settings/notification_settings_screen.dart';
+import '../screens/settings/blocked_users_screen.dart';
 import '../screens/stories/create_story_screen.dart';
 import '../screens/challenges/challenge_detail_screen.dart';
 import '../screens/challenges/create_challenge_screen.dart';
 import '../screens/challenges/challenges_screen.dart';
 import '../screens/bookmarks/bookmarks_screen.dart';
+import '../screens/hashtag/hashtag_screen.dart';
+import '../screens/get_verified/get_verified_screen.dart';
+import '../screens/analytics/analytics_screen.dart';
+import '../screens/groups/groups_screen.dart';
+import '../screens/groups/group_detail_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -147,6 +155,52 @@ GoRouter createRouter(AuthProvider authProvider) {
       GoRoute(
         path: '/bookmarks',
         builder: (context, state) => const BookmarksScreen(),
+      ),
+
+      // Hashtag
+      GoRoute(
+        path: '/hashtag/:tag',
+        builder: (context, state) => HashtagScreen(
+          tag: state.pathParameters['tag']!,
+        ),
+      ),
+
+      // Get Verified
+      GoRoute(
+        path: '/get-verified',
+        builder: (context, state) => const GetVerifiedScreen(),
+      ),
+
+      // Analytics
+      GoRoute(
+        path: '/analytics',
+        builder: (context, state) => const AnalyticsScreen(),
+      ),
+
+      // Groups
+      GoRoute(
+        path: '/groups',
+        builder: (context, state) => const GroupsScreen(),
+      ),
+      GoRoute(
+        path: '/group/:id',
+        builder: (context, state) => GroupDetailScreen(
+          groupId: int.parse(state.pathParameters['id']!),
+        ),
+      ),
+
+      // Settings sub-pages
+      GoRoute(
+        path: '/settings/privacy',
+        builder: (context, state) => const PrivacyScreen(),
+      ),
+      GoRoute(
+        path: '/settings/notifications',
+        builder: (context, state) => const NotificationSettingsScreen(),
+      ),
+      GoRoute(
+        path: '/settings/blocked-users',
+        builder: (context, state) => const BlockedUsersScreen(),
       ),
     ],
   );

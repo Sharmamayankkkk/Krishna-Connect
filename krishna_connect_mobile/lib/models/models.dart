@@ -319,6 +319,81 @@ class LeelaVideo {
   }
 }
 
+class GroupModel {
+  final int id;
+  final String name;
+  final String? description;
+  final String? coverImage;
+  final String createdBy;
+  final bool isPublic;
+  final int memberCount;
+  final String createdAt;
+  final UserModel? creator;
+  final bool isMember;
+
+  GroupModel({
+    required this.id,
+    required this.name,
+    this.description,
+    this.coverImage,
+    required this.createdBy,
+    this.isPublic = true,
+    this.memberCount = 0,
+    required this.createdAt,
+    this.creator,
+    this.isMember = false,
+  });
+
+  factory GroupModel.fromJson(Map<String, dynamic> json) {
+    return GroupModel(
+      id: json['id'] ?? 0,
+      name: json['name'] ?? '',
+      description: json['description'],
+      coverImage: json['cover_image'],
+      createdBy: json['created_by'] ?? '',
+      isPublic: json['is_public'] ?? true,
+      memberCount: json['member_count'] ?? 0,
+      createdAt: json['created_at'] ?? '',
+      creator: json['profiles'] != null
+          ? UserModel.fromJson(Map<String, dynamic>.from(json['profiles']))
+          : null,
+      isMember: json['is_member'] ?? false,
+    );
+  }
+}
+
+class VerificationRequest {
+  final int id;
+  final String userId;
+  final String status;
+  final String plan;
+  final String? socialLinks;
+  final String? reason;
+  final String createdAt;
+
+  VerificationRequest({
+    required this.id,
+    required this.userId,
+    required this.status,
+    required this.plan,
+    this.socialLinks,
+    this.reason,
+    required this.createdAt,
+  });
+
+  factory VerificationRequest.fromJson(Map<String, dynamic> json) {
+    return VerificationRequest(
+      id: json['id'] ?? 0,
+      userId: json['user_id'] ?? '',
+      status: json['status'] ?? 'submitted',
+      plan: json['plan'] ?? 'monthly',
+      socialLinks: json['social_links'],
+      reason: json['reason'],
+      createdAt: json['created_at'] ?? '',
+    );
+  }
+}
+
 class NewsArticle {
   final String id;
   final String title;

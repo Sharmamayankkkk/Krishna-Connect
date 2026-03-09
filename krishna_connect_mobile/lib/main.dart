@@ -63,6 +63,9 @@ void main() async {
   final challengeService = ChallengeService(client);
   final leelaService = LeelaService(client);
   final bookmarkService = BookmarkService(client);
+  final groupService = GroupService(client);
+  final analyticsService = AnalyticsService(client);
+  final verificationService = VerificationService(client);
 
   // Initialize push notification service
   final pushService = PushNotificationService(client);
@@ -76,6 +79,9 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthProvider(authService)),
         Provider.value(value: profileService),
         Provider.value(value: pushService),
+        Provider.value(value: groupService),
+        Provider.value(value: analyticsService),
+        Provider.value(value: verificationService),
         ChangeNotifierProvider(
           create: (_) => AppProvider(
             postService: postService,
