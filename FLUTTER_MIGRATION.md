@@ -992,7 +992,7 @@ flutter:
 
 ## Summary Statistics
 
-> **Verification:** `Get-ChildItem -Recurse -File | Where-Object { $_.FullName -notmatch "node_modules|\.next|\.git|docs" } | Measure-Object` → **521 files** (excluding `docs/`). Including `docs/` → **524 files total**.
+> **Verification:** The PowerShell command `Get-ChildItem -Recurse -File | Where-Object { $_.FullName -notmatch "node_modules|\.next|\.git|docs" } | Measure-Object` returns **521 files** — this excludes `node_modules/`, `.next/`, `.git/`, and `docs/` folders. Adding the 3 files in `docs/` gives **524 files total** in the repository.
 
 | Category | Total Files | ✅ Direct Transfer | ⚠️ Needs Changes | 🔄 Reference Only | ❌ Not Needed |
 |----------|------------|-------------------|------------------|-------------------|--------------|
@@ -1005,7 +1005,7 @@ flutter:
 | **TOTAL** | **524** | **168** | **78** | **183** | **95** |
 | **TOTAL (excl. docs)** | **521** | **168** | **75** | **183** | **95** |
 
-> **Key Takeaway:** 168 files can be transferred directly (assets, SQL, templates). 13 src files have reusable business logic (types, algorithms, constants) that can be ported to Dart. 183 files serve as design/behavior reference for Flutter rewrites. 78 files are not needed in Flutter (Next.js layouts, barrel exports, web-only configs).
+> **Key Takeaway:** 168 files can be transferred directly (assets, SQL, templates). 13 src files have reusable business logic (types, algorithms, constants) that can be ported to Dart. 183 files serve as design/behavior reference for Flutter rewrites. 95 files are not needed in Flutter (Next.js layouts, barrel exports, web-only configs, shadcn/ui primitives).
 
 ---
 
@@ -1020,7 +1020,7 @@ These files have **identical binary content** despite different names or paths:
 | Group | Files | Action |
 |-------|-------|--------|
 | **Male avatar / placeholder** | `public/icons/icon-192x192.png` ≡ `public/placeholder-user.jpg` ≡ `public/user_Avatar/male.png` | All three are the same image. In Flutter, keep **one** (`assets/user_Avatar/male.png`) and reference it for all three use cases |
-| **STK_11 duplicate** | `public/stickers/STK_11.png` ≡ `public/stickers/STK_11.svg` | Same content saved as both PNG and SVG. Keep only the **PNG** version |
+| **STK_11 duplicate** | `public/stickers/STK_11.png` ≡ `public/stickers/STK_11.svg` | Same binary content saved with both extensions. Keep only **one** — the SVG if it's truly vector, or the PNG if both are raster. (In this case both files are identical raster data, so keep the PNG and remove the misnamed `.svg`) |
 
 ### 10.2 Functional Duplicates (Same Purpose, Different Implementations)
 
