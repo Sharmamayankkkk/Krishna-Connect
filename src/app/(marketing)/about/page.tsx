@@ -329,7 +329,7 @@ export default function AboutPage() {
                         <div className="md:col-span-2">
                             <h4 className="text-white font-bold mb-6 tracking-wide uppercase text-sm">Platform</h4>
                             <ul className="space-y-4 text-sm font-light">
-                                <li><Link href="krishnaconnect.in" className="hover:text-orange-400 transition-colors flex items-center gap-2">Home Feed</Link></li>
+                                <li><Link href="/feed" className="hover:text-orange-400 transition-colors flex items-center gap-2">Home Feed</Link></li>
                                 <li><Link href="/explore" className="hover:text-orange-400 transition-colors flex items-center gap-2">Explore Search</Link></li>
                                 <li><Link href="/leela" className="hover:text-orange-400 transition-colors flex items-center gap-2">Leela Shorts</Link></li>
                             </ul>
@@ -340,7 +340,7 @@ export default function AboutPage() {
                             <h4 className="text-white font-bold mb-6 tracking-wide uppercase text-sm">Community</h4>
                             <ul className="space-y-4 text-sm font-light">
                                 <li><Link href="/about" className="text-orange-400 font-medium">About Us</Link></li>
-                                <li><Link href="/verification" className="hover:text-orange-400 transition-colors">Get Verified</Link></li>
+                                <li><Link href="/get-verified" className="hover:text-orange-400 transition-colors">Get Verified</Link></li>
                                 <li><Link href="/faq" className="hover:text-orange-400 transition-colors">Help Center & FAQ</Link></li>
                             </ul>
                         </div>
@@ -353,7 +353,7 @@ export default function AboutPage() {
                                 <li><Link href="/privacy-policy" className="hover:text-orange-400 transition-colors">Privacy Policy</Link></li>
                                 <li><Link href="/terms-and-conditions" className="hover:text-orange-400 transition-colors">Terms of Service</Link></li>
                                 <li className="pt-2">
-                                    <Link href="mailto:madanmohandas@krishnaconnect.com" className="flex items-center gap-2 hover:text-orange-400 transition-colors text-white">
+                                    <Link href="mailto:madanmohandas@krishnaconnect.in" className="flex items-center gap-2 hover:text-orange-400 transition-colors text-white">
                                         Support <ExternalLink className="h-3 w-3" />
                                     </Link>
                                 </li>
