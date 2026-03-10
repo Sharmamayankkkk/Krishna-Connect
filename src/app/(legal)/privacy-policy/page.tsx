@@ -13,7 +13,7 @@ const PrivacyPolicyPage = () => {
         <h1 className="text-4xl font-bold mb-4 tracking-tight">
           Privacy Policy
         </h1>
-        <p className="text-muted-foreground">Effective: January 1, 2026</p>
+        <p className="text-muted-foreground">Effective: March 10, 2026</p>
       </div>
 
       <div className="space-y-8 text-lg leading-relaxed text-muted-foreground/90">
@@ -155,7 +155,7 @@ const PrivacyPolicyPage = () => {
               is strictly forbidden.
             </li>
             <li>
-              <strong>Child Sexual Abuse Material (CSAM):</strong> Any content
+              <strong>Child Sexual Abuse Material (CSAM) &amp; CSAE:</strong> Any content
               depicting or promoting the sexual exploitation of minors. We
               report all such content to the National Center for Missing &
               Exploited Children (NCMEC) and relevant law enforcement

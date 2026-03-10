@@ -13,7 +13,7 @@ const TermsAndConditionsPage = () => {
         <h1 className="text-4xl font-bold mb-4 tracking-tight">
           Terms and Conditions
         </h1>
-        <p className="text-muted-foreground">Effective: January 1, 2026</p>
+        <p className="text-muted-foreground">Effective: March 10, 2026</p>
       </div>
 
       <div className="space-y-8 text-lg leading-relaxed text-muted-foreground/90">
@@ -89,7 +89,7 @@ const TermsAndConditionsPage = () => {
             <li>
               <strong>Sexual Exploitation:</strong> Content that depicts,
               promotes, or facilitates sexual exploitation of any person,
-              including minors. This includes child sexual abuse material (CSAM),
+              including minors. This includes child sexual abuse material (CSAM) and child sexual abuse and exploitation (CSAE),
               grooming, or any content sexualizing minors.
             </li>
             <li>

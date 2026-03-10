@@ -353,7 +353,7 @@ export default function AboutPage() {
                                 <li><Link href="/privacy-policy" className="hover:text-orange-400 transition-colors">Privacy Policy</Link></li>
                                 <li><Link href="/terms-and-conditions" className="hover:text-orange-400 transition-colors">Terms of Service</Link></li>
                                 <li className="pt-2">
-                                    <Link href="mailto:madanmohandas@krishnaconnect.com" className="flex items-center gap-2 hover:text-orange-400 transition-colors text-white">
+                                    <Link href="mailto:madanmohandas@krishnaconnect.in" className="flex items-center gap-2 hover:text-orange-400 transition-colors text-white">
                                         Support <ExternalLink className="h-3 w-3" />
                                     </Link>
                                 </li>
