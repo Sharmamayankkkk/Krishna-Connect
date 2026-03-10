@@ -36,6 +36,7 @@
    - [7.21 `src/proxy.ts` — Middleware](#721-srcproxyts--middleware)
 8. [Environment Variables Mapping](#8-environment-variables-mapping)
 9. [Step-by-Step Development Process](#9-step-by-step-development-process)
+10. [Duplications](#10-duplications)
 
 ---
 
@@ -991,14 +992,88 @@ flutter:
 
 ## Summary Statistics
 
+> **Verification:** `Get-ChildItem -Recurse -File | Where-Object { $_.FullName -notmatch "node_modules|\.next|\.git|docs" } | Measure-Object` → **521 files** (excluding `docs/`). Including `docs/` → **524 files total**.
+
 | Category | Total Files | ✅ Direct Transfer | ⚠️ Needs Changes | 🔄 Reference Only | ❌ Not Needed |
 |----------|------------|-------------------|------------------|-------------------|--------------|
 | **Root files** | 15 | 3 | 4 | 0 | 8 |
-| **`public/` → `assets/`** | 138 | ~120 | ~9 | 0 | ~9 |
+| **`public/` → `assets/`** | 138 | 125 | 4 | 0 | 9 |
 | **`docs/`** | 3 | 0 | 3 | 0 | 0 |
 | **`supabase/`** | 24 | 24 | 0 | 0 | 0 |
 | **`.github/`** | 3 | 3 | 0 | 0 | 0 |
-| **`src/` (all)** | ~260 | ~12 | ~55 | ~155 | ~38 |
-| **TOTAL** | **~443** | **~162** | **~71** | **~155** | **~55** |
+| **`src/` (all)** | 341 | 13 | 67 | 183 | 78 |
+| **TOTAL** | **524** | **168** | **78** | **183** | **95** |
+| **TOTAL (excl. docs)** | **521** | **168** | **75** | **183** | **95** |
 
-> **Key Takeaway:** ~162 files can be transferred directly (assets, SQL, docs, templates). ~12 files have reusable business logic (types, algorithms, constants). The remaining ~210 files need to be rewritten in Flutter/Dart, using the original code as design/behavior reference.
+> **Key Takeaway:** 168 files can be transferred directly (assets, SQL, templates). 13 src files have reusable business logic (types, algorithms, constants) that can be ported to Dart. 183 files serve as design/behavior reference for Flutter rewrites. 78 files are not needed in Flutter (Next.js layouts, barrel exports, web-only configs).
+
+---
+
+## 10. Duplications
+
+> Files that share the same name across different locations, or have identical content. These should be consolidated during the Flutter migration.
+
+### 10.1 Content-Identical Files (Binary Duplicates)
+
+These files have **identical binary content** despite different names or paths:
+
+| Group | Files | Action |
+|-------|-------|--------|
+| **Male avatar / placeholder** | `public/icons/icon-192x192.png` ≡ `public/placeholder-user.jpg` ≡ `public/user_Avatar/male.png` | All three are the same image. In Flutter, keep **one** (`assets/user_Avatar/male.png`) and reference it for all three use cases |
+| **STK_11 duplicate** | `public/stickers/STK_11.png` ≡ `public/stickers/STK_11.svg` | Same content saved as both PNG and SVG. Keep only the **PNG** version |
+
+### 10.2 Functional Duplicates (Same Purpose, Different Implementations)
+
+These source files serve the **same purpose** but have diverged implementations. In Flutter, each should become a **single, unified component**.
+
+#### `post-view.tsx` — 2 versions
+
+| File | Description |
+|------|-------------|
+| `src/app/(app)/post/[id]/post-view.tsx` | **Enhanced version** — includes `ThreadComment` sub-component, quote-post dialog, `GoogleAd` placement, comment-like with dedicated component, custom reply composer with `Textarea` |
+| `src/app/(app)/profile/[username]/post/[id]/post-view.tsx` | **Simpler version** — uses `PostCard` for rendering comments instead of `ThreadComment`, no quote-post dialog, no ads, uses plain `<textarea>`, fewer features |
+
+> **Flutter action:** Create a single `lib/screens/post/post_detail_screen.dart` merging the best of both.
+
+#### `promote-post-dialog.tsx` — 2 versions
+
+| File | Description |
+|------|-------------|
+| `src/components/promote-post-dialog.tsx` | **Credit-based system** — fetches user credits via `get_available_credits` RPC, 3 plans (Basic/Pro/Ultra) with durations, pays with credits or $, calls `request_promotion` RPC, shows success/failure result |
+| `src/components/features/posts/dialogs/promote-post-dialog.tsx` | **Budget-based system** — simple radio-group budget selection ($10/$25/$50), estimated reach display, mock transaction, no database calls |
+
+> **Flutter action:** Create a single `lib/widgets/posts/promote_post_dialog.dart` — decide which promotion model to use (credit-based is more complete).
+
+#### `report-dialog.tsx` — 2 versions
+
+| File | Description |
+|------|-------------|
+| `src/components/dialogs/report-dialog.tsx` | **Chat context** — reports a `User` with optional `Message`, uses `AppContext.reportUser()` + optional `blockUser()`, has "also block" checkbox, free-text reason |
+| `src/app/(app)/profile/[username]/components/report-dialog.tsx` | **Profile context** — reports by `targetUserId`, inserts directly to `reports` table via Supabase, has category dropdown (spam/harassment/inappropriate/fake/other), optional description |
+
+> **Flutter action:** Create a single `lib/widgets/dialogs/report_dialog.dart` that supports both contexts (reporting from chat or profile) with a unified reason/category system.
+
+#### `user-card.tsx` — 3 versions
+
+| File | Description |
+|------|-------------|
+| `src/app/(app)/explore/components/user-card.tsx` | **Explore context** — search result card with follow button, verification badge, bio preview |
+| `src/app/(app)/profile/[username]/components/user-card.tsx` | **Profile context** — suggested user card on profile pages, similar layout |
+| `src/app/(app)/profile/[username]/connections/components/user-card.tsx` | **Connections context** — follower/following list card, may include follow-back/remove button |
+
+> **Flutter action:** Create a single `lib/widgets/shared/user_card.dart` with optional props to handle all three contexts.
+
+### 10.3 Same Filename, Different Purpose (NOT Duplicates)
+
+These files share the same filename but serve **completely different purposes** in different routes. They are **not duplicates** — this is normal Next.js file-based routing convention.
+
+| Filename | Count | Explanation |
+|----------|-------|-------------|
+| `layout.tsx` | 37 | Each Next.js route group has its own layout. In Flutter, these become route configurations in `go_router`, not separate files |
+| `page.tsx` | 59 | Each route has its own page component. In Flutter, each becomes a screen in `lib/screens/` |
+| `loading.tsx` | 6 | Route-specific loading skeletons. In Flutter, use shimmer/skeleton widgets within each screen |
+| `route.ts` | 9 | API route handlers. In Flutter, move to Supabase Edge Functions or call APIs directly |
+| `types.ts` | 4 | Context-specific type definitions (`src/lib/types.ts`, `src/app/(app)/types.ts`, `src/app/(app)/news/types.ts`, `src/components/challenges/types.ts`). In Flutter, merge into `lib/models/` |
+| `utils.ts` | 2 | Different utilities (`src/lib/utils.ts` has class merging + Supabase client; `src/app/(app)/explore/utils.ts` has post transformation). In Flutter, consolidate into `lib/utils/` |
+| `index.ts` | 4 | Barrel re-exports. Not needed in Dart |
+| `README.md` | 2 | Root README and Supabase README — different content, both transfer directly |
