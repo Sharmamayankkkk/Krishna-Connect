@@ -307,13 +307,13 @@
     "settingsUpdated": "تم تحديث إعدادات السمة."
   },
   "notifications": {
-    "title": "Notifications",
-    "today": "Today",
-    "thisWeek": "This week",
-    "thisMonth": "This month",
-    "earlier": "Earlier",
-    "followRequestAccepted": "Follow request accepted",
-    "requestDeleted": "Request deleted"
+    "title": "إشعارات",
+    "today": "اليوم",
+    "thisWeek": "هذا الأسبوع",
+    "thisMonth": "هذا الشهر",
+    "earlier": "سابقاً",
+    "followRequestAccepted": "تم قبول طلب المتابعة",
+    "requestDeleted": "تم حذف الطلب"
   },
   "chat": {
     "noConversations": "No conversations yet",

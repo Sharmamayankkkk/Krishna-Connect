@@ -307,13 +307,13 @@
     "settingsUpdated": "থিম সেটিংস আপডেট হয়েছে।"
   },
   "notifications": {
-    "title": "Notifications",
-    "today": "Today",
-    "thisWeek": "This week",
-    "thisMonth": "This month",
-    "earlier": "Earlier",
-    "followRequestAccepted": "Follow request accepted",
-    "requestDeleted": "Request deleted"
+    "title": "বিজ্ঞপ্তি",
+    "today": "আজ",
+    "thisWeek": "এই সপ্তাহ",
+    "thisMonth": "এই মাস",
+    "earlier": "আগে",
+    "followRequestAccepted": "ফলো রিকোয়েস্ট গৃহীত",
+    "requestDeleted": "রিকোয়েস্ট মুছে ফেলা হয়েছে"
   },
   "chat": {
     "noConversations": "No conversations yet",

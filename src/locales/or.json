@@ -307,13 +307,13 @@
     "settingsUpdated": "ଥିମ୍ ସେଟିଂସ୍ ଅପଡେଟ୍ ହୋଇଛି."
   },
   "notifications": {
-    "title": "Notifications",
-    "today": "Today",
-    "thisWeek": "This week",
-    "thisMonth": "This month",
-    "earlier": "Earlier",
-    "followRequestAccepted": "Follow request accepted",
-    "requestDeleted": "Request deleted"
+    "title": "ବିଜ୍ଞପ୍ତି",
+    "today": "ଆଜି",
+    "thisWeek": "ଏହି ସପ୍ତାହ",
+    "thisMonth": "ଏହି ମାସ",
+    "earlier": "ପୂର୍ବରୁ",
+    "followRequestAccepted": "ଅନୁସରଣ ଅନୁରୋଧ ଗ୍ରହଣ କରାଗଲା",
+    "requestDeleted": "ଅନୁରୋଧ ବିଲୋପ କରାଗଲା"
   },
   "chat": {
     "noConversations": "No conversations yet",

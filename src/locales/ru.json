@@ -307,13 +307,13 @@
     "settingsUpdated": "Настройки темы обновлены."
   },
   "notifications": {
-    "title": "Notifications",
-    "today": "Today",
-    "thisWeek": "This week",
-    "thisMonth": "This month",
-    "earlier": "Earlier",
-    "followRequestAccepted": "Follow request accepted",
-    "requestDeleted": "Request deleted"
+    "title": "Уведомления",
+    "today": "Сегодня",
+    "thisWeek": "На этой неделе",
+    "thisMonth": "В этом месяце",
+    "earlier": "Ранее",
+    "followRequestAccepted": "Запрос на подписку принят",
+    "requestDeleted": "Запрос удалён"
   },
   "chat": {
     "noConversations": "No conversations yet",

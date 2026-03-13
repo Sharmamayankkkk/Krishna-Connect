@@ -307,13 +307,13 @@
     "settingsUpdated": "تھیم ترتیبات اپ ڈیٹ ہو گئیں۔"
   },
   "notifications": {
-    "title": "Notifications",
-    "today": "Today",
-    "thisWeek": "This week",
-    "thisMonth": "This month",
-    "earlier": "Earlier",
-    "followRequestAccepted": "Follow request accepted",
-    "requestDeleted": "Request deleted"
+    "title": "اطلاعات",
+    "today": "آج",
+    "thisWeek": "اس ہفتے",
+    "thisMonth": "اس مہینے",
+    "earlier": "پہلے",
+    "followRequestAccepted": "فالو کی درخواست قبول ہوگئی",
+    "requestDeleted": "درخواست حذف ہوگئی"
   },
   "chat": {
     "noConversations": "No conversations yet",

@@ -307,13 +307,13 @@
     "settingsUpdated": "主题设置已更新。"
   },
   "notifications": {
-    "title": "Notifications",
-    "today": "Today",
-    "thisWeek": "This week",
-    "thisMonth": "This month",
-    "earlier": "Earlier",
-    "followRequestAccepted": "Follow request accepted",
-    "requestDeleted": "Request deleted"
+    "title": "通知",
+    "today": "今天",
+    "thisWeek": "本周",
+    "thisMonth": "本月",
+    "earlier": "更早",
+    "followRequestAccepted": "已接受关注请求",
+    "requestDeleted": "请求已删除"
   },
   "chat": {
     "noConversations": "No conversations yet",

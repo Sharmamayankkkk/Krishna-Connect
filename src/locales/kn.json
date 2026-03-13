@@ -307,13 +307,13 @@
     "settingsUpdated": "ಥೀಮ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು ನವೀಕರಿಸಲಾಗಿದೆ."
   },
   "notifications": {
-    "title": "Notifications",
-    "today": "Today",
-    "thisWeek": "This week",
-    "thisMonth": "This month",
-    "earlier": "Earlier",
-    "followRequestAccepted": "Follow request accepted",
-    "requestDeleted": "Request deleted"
+    "title": "ಅಧಿಸೂಚನೆಗಳು",
+    "today": "ಇಂದು",
+    "thisWeek": "ಈ ವಾರ",
+    "thisMonth": "ಈ ತಿಂಗಳು",
+    "earlier": "ಹಿಂದೆ",
+    "followRequestAccepted": "ಅನುಸರಣೆ ವಿನಂತಿ ಸ್ವೀಕರಿಸಲಾಗಿದೆ",
+    "requestDeleted": "ವಿನಂತಿ ಅಳಿಸಲಾಗಿದೆ"
   },
   "chat": {
     "noConversations": "No conversations yet",

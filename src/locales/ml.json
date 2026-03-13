@@ -307,13 +307,13 @@
     "settingsUpdated": "തീം ക്രമീകരണങ്ങൾ അപ്ഡേറ്റ് ചെയ്തു."
   },
   "notifications": {
-    "title": "Notifications",
-    "today": "Today",
-    "thisWeek": "This week",
-    "thisMonth": "This month",
-    "earlier": "Earlier",
-    "followRequestAccepted": "Follow request accepted",
-    "requestDeleted": "Request deleted"
+    "title": "അറിയിപ്പുകൾ",
+    "today": "ഇന്ന്",
+    "thisWeek": "ഈ ആഴ്ച",
+    "thisMonth": "ഈ മാസം",
+    "earlier": "മുമ്പ്",
+    "followRequestAccepted": "ഫോളോ അഭ്യർത്ഥന സ്വീകരിച്ചു",
+    "requestDeleted": "അഭ്യർത്ഥന ഇല്ലാതാക്കി"
   },
   "chat": {
     "noConversations": "No conversations yet",

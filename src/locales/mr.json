@@ -307,13 +307,13 @@
     "settingsUpdated": "थीम सेटिंग्ज अपडेट केल्या."
   },
   "notifications": {
-    "title": "Notifications",
-    "today": "Today",
-    "thisWeek": "This week",
-    "thisMonth": "This month",
-    "earlier": "Earlier",
-    "followRequestAccepted": "Follow request accepted",
-    "requestDeleted": "Request deleted"
+    "title": "सूचना",
+    "today": "आज",
+    "thisWeek": "या आठवड्यात",
+    "thisMonth": "या महिन्यात",
+    "earlier": "पूर्वी",
+    "followRequestAccepted": "फॉलो विनंती स्वीकारली",
+    "requestDeleted": "विनंती हटवली"
   },
   "chat": {
     "noConversations": "No conversations yet",

@@ -308,12 +308,12 @@
   },
   "notifications": {
     "title": "Notifications",
-    "today": "Today",
-    "thisWeek": "This week",
-    "thisMonth": "This month",
-    "earlier": "Earlier",
-    "followRequestAccepted": "Follow request accepted",
-    "requestDeleted": "Request deleted"
+    "today": "Aujourd'hui",
+    "thisWeek": "Cette semaine",
+    "thisMonth": "Ce mois-ci",
+    "earlier": "Plus tôt",
+    "followRequestAccepted": "Demande de suivi acceptée",
+    "requestDeleted": "Demande supprimée"
   },
   "chat": {
     "noConversations": "No conversations yet",

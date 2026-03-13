@@ -307,13 +307,13 @@
     "settingsUpdated": "థీమ్ సెట్టింగ్‌లు అప్‌డేట్ చేయబడ్డాయి."
   },
   "notifications": {
-    "title": "Notifications",
-    "today": "Today",
-    "thisWeek": "This week",
-    "thisMonth": "This month",
-    "earlier": "Earlier",
-    "followRequestAccepted": "Follow request accepted",
-    "requestDeleted": "Request deleted"
+    "title": "నోటిఫికేషన్లు",
+    "today": "ఈరోజు",
+    "thisWeek": "ఈ వారం",
+    "thisMonth": "ఈ నెల",
+    "earlier": "ముందుగా",
+    "followRequestAccepted": "ఫాలో అభ్యర్థన ఆమోదించబడింది",
+    "requestDeleted": "అభ్యర్థన తొలగించబడింది"
   },
   "chat": {
     "noConversations": "No conversations yet",

@@ -307,13 +307,13 @@
     "settingsUpdated": "ਥੀਮ ਸੈਟਿੰਗਾਂ ਅੱਪਡੇਟ ਹੋ ਗਈਆਂ."
   },
   "notifications": {
-    "title": "Notifications",
-    "today": "Today",
-    "thisWeek": "This week",
-    "thisMonth": "This month",
-    "earlier": "Earlier",
-    "followRequestAccepted": "Follow request accepted",
-    "requestDeleted": "Request deleted"
+    "title": "ਸੂਚਨਾਵਾਂ",
+    "today": "ਅੱਜ",
+    "thisWeek": "ਇਸ ਹਫ਼ਤੇ",
+    "thisMonth": "ਇਸ ਮਹੀਨੇ",
+    "earlier": "ਪਹਿਲਾਂ",
+    "followRequestAccepted": "ਫਾਲੋ ਬੇਨਤੀ ਸਵੀਕਾਰ ਕੀਤੀ ਗਈ",
+    "requestDeleted": "ਬੇਨਤੀ ਮਿਟਾਈ ਗਈ"
   },
   "chat": {
     "noConversations": "No conversations yet",

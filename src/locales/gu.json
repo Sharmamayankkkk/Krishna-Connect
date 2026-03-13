@@ -307,13 +307,13 @@
     "settingsUpdated": "થીમ સેટિંગ્સ અપડેટ થઈ."
   },
   "notifications": {
-    "title": "Notifications",
-    "today": "Today",
-    "thisWeek": "This week",
-    "thisMonth": "This month",
-    "earlier": "Earlier",
-    "followRequestAccepted": "Follow request accepted",
-    "requestDeleted": "Request deleted"
+    "title": "સૂચનાઓ",
+    "today": "આજે",
+    "thisWeek": "આ અઠવાડિયે",
+    "thisMonth": "આ મહિને",
+    "earlier": "અગાઉ",
+    "followRequestAccepted": "ફોલો વિનંતી સ્વીકારવામાં આવી",
+    "requestDeleted": "વિનંતી કાઢી નાખવામાં આવી"
   },
   "chat": {
     "noConversations": "No conversations yet",

@@ -307,13 +307,13 @@
     "settingsUpdated": "থীম ছেটিংছ আপডেট হ'ল."
   },
   "notifications": {
-    "title": "Notifications",
-    "today": "Today",
-    "thisWeek": "This week",
-    "thisMonth": "This month",
-    "earlier": "Earlier",
-    "followRequestAccepted": "Follow request accepted",
-    "requestDeleted": "Request deleted"
+    "title": "জাননী",
+    "today": "আজি",
+    "thisWeek": "এই সপ্তাহ",
+    "thisMonth": "এই মাহ",
+    "earlier": "আগতে",
+    "followRequestAccepted": "অনুসৰণ অনুৰোধ গ্ৰহণ কৰা হ'ল",
+    "requestDeleted": "অনুৰোধ মচা হ'ল"
   },
   "chat": {
     "noConversations": "No conversations yet",

@@ -307,13 +307,13 @@
     "settingsUpdated": "테마 설정이 업데이트되었습니다."
   },
   "notifications": {
-    "title": "Notifications",
-    "today": "Today",
-    "thisWeek": "This week",
-    "thisMonth": "This month",
-    "earlier": "Earlier",
-    "followRequestAccepted": "Follow request accepted",
-    "requestDeleted": "Request deleted"
+    "title": "알림",
+    "today": "오늘",
+    "thisWeek": "이번 주",
+    "thisMonth": "이번 달",
+    "earlier": "이전",
+    "followRequestAccepted": "팔로우 요청이 수락되었습니다",
+    "requestDeleted": "요청이 삭제되었습니다"
   },
   "chat": {
     "noConversations": "No conversations yet",

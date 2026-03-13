@@ -307,13 +307,13 @@
     "settingsUpdated": "Impostazioni tema aggiornate."
   },
   "notifications": {
-    "title": "Notifications",
-    "today": "Today",
-    "thisWeek": "This week",
-    "thisMonth": "This month",
-    "earlier": "Earlier",
-    "followRequestAccepted": "Follow request accepted",
-    "requestDeleted": "Request deleted"
+    "title": "Notifiche",
+    "today": "Oggi",
+    "thisWeek": "Questa settimana",
+    "thisMonth": "Questo mese",
+    "earlier": "Prima",
+    "followRequestAccepted": "Richiesta di follow accettata",
+    "requestDeleted": "Richiesta eliminata"
   },
   "chat": {
     "noConversations": "No conversations yet",
