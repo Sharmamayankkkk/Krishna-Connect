@@ -52,7 +52,32 @@
     "totalInteractions": "Total Interactions",
     "totalLikes": "Total Likes",
     "totalViews": "Total Views",
-    "vsLastPeriod": "% vs last period"
+    "vsLastPeriod": "% vs last period",
+    "engagementRate": "Engagement Rate",
+    "viewsOverTime": "Views Over Time",
+    "contentReachInLast": "Your content reach in the last {{days}} days",
+    "audienceByGender": "Audience by Gender",
+    "whosViewingContent": "Who's viewing your content",
+    "notEnoughData": "Not enough data yet.",
+    "viewsNeedGender": "Views need to be associated with profiles that have set their gender.",
+    "bestTimesToPost": "Best Times to Post",
+    "whenAudienceActive": "When your audience is most active",
+    "engagementBreakdown": "Engagement Breakdown",
+    "likesVsComments": "Likes vs Comments over time",
+    "likes": "Likes",
+    "comments": "Comments",
+    "topPerformingPosts": "Top Performing Posts",
+    "bestContentThisPeriod": "Your best content this period",
+    "mediaPost": "Media Post",
+    "engagementLabel": "engagement",
+    "noPostsFound": "No posts found in this period",
+    "insightsAndRecommendations": "Insights & Recommendations",
+    "reachGrowing": "Your reach is growing!",
+    "moreViewsThanPrevious": "You have {{change}}% more views than the previous period. Keep posting consistently.",
+    "bestTimeToPost": "Best Time to Post:",
+    "audienceMostActive": "Your audience is most active during {{timeSlot}}. Try scheduling your next post then!",
+    "contentTip": "Content Tip:",
+    "contentTipText": "Posts with images generate 45% more engagement on average. Consider adding media to your text posts."
   },
   "auth": {
     "acceptableUsePolicy": "Acceptable Use Policy",
@@ -686,7 +711,12 @@
     "trendingNow": "Trending Now",
     "viewLatest": "View Latest Posts",
     "whoToFollow": "Who to follow",
-    "whoToFollow1": "Who to Follow"
+    "whoToFollow1": "Who to Follow",
+    "title": "Explore",
+    "suggestedForYou": "Suggested for you",
+    "nothingToExplore": "Nothing to explore yet",
+    "communityPostsWillAppear": "Posts from the community will appear here",
+    "searchPlaceholder": "Search posts, users, hashtags..."
   },
   "feed": {
     "comeBackTomorrowToSeeIf": "Come back tomorrow to see if new memories surface!",
@@ -705,7 +735,8 @@
     "uploading1": "Uploading...",
     "welcomeToLeela": "Welcome to Leela",
     "whatIsLeela": "What is Leela?",
-    "writeACaptionForYourLeela": "Write a caption for your Leela..."
+    "writeACaptionForYourLeela": "Write a caption for your Leela...",
+    "reachedEndOfFeed": "You've reached the end of the feed!"
   },
   "follow": {
     "followingTitle": "Following",
@@ -765,7 +796,17 @@
     "verifiedMember": "Verified Member",
     "withDiscount": "(with ₹100 discount)",
     "yearly": "Yearly",
-    "yearlyExclusivePerks": "Yearly Exclusive Perks"
+    "yearlyExclusivePerks": "Yearly Exclusive Perks",
+    "discountUnlocked": "Discount Unlocked!",
+    "unlockFlatOff": "Unlock ₹100 Flat Off",
+    "allSocialVerified": "All 3 social posts verified ✓",
+    "postOnAllPlatforms": "Post on all 3 platforms to claim",
+    "claimDiscount": "Claim Your ₹100 Discount",
+    "shareOnPlatforms": "Share about Krishna Connect on all 3 platforms and paste your post links below.",
+    "discountAppliedDone": "Discount Applied — Done!",
+    "moreLinksNeeded": "{{count}} more link(s) needed",
+    "submitLinks": "Submit Links",
+    "postNow": "Post now"
   },
   "legal": {
     "backToHome": "Back to Home",
@@ -839,7 +880,11 @@
     "twitter": "Twitter",
     "typeANameToSearchFor": "Type a name to search for users",
     "whatsOnYourMind": "What's on your mind?",
-    "whatsapp": "WhatsApp"
+    "whatsapp": "WhatsApp",
+    "stageEmpty": "The stage is empty. Be the first to go live and start the show!",
+    "liveBadge": "LIVE",
+    "watching": "watching",
+    "withHost": "with {{name}}"
   },
   "media": {
     "download": "Download",
@@ -878,7 +923,9 @@
     "latestUpdatesFromPrabhupadanugasAndThe": "Latest updates from Prabhupadanugas and the Hare Krsna Sun.",
     "noNewsFound": "No news found",
     "openOriginal": "Open Original",
-    "spiritualNews": "Spiritual News"
+    "spiritualNews": "Spiritual News",
+    "couldNotLoadReader": "Could not load reader view for this article.",
+    "readOnSource": "Read on {{source}}"
   },
   "nft": {
     "connectWallet": "Connect Your Wallet",
@@ -902,7 +949,15 @@
     "thisWeek": "This week",
     "title": "Notifications",
     "today": "Today",
-    "youDontHaveAnyPendingFollow": "You don't have any pending follow requests."
+    "youDontHaveAnyPendingFollow": "You don't have any pending follow requests.",
+    "activityOnPosts": "Activity On Your Posts",
+    "emptyDescription": "When someone likes or comments on one of your posts, you'll see it here.",
+    "likedYourPost": "liked your post",
+    "likedYourComment": "liked your comment",
+    "andOthersLikedYourPost": "and {{count}} other(s) liked your post",
+    "andOthersLikedYourComment": "and {{count}} other(s) liked your comment",
+    "repostedYourPost": "reposted your post",
+    "andOthersRepostedYourPost": "and {{count}} other(s) reposted your post"
   },
   "post": {
     "addGif": "Add GIF",

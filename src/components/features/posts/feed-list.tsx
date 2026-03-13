@@ -292,7 +292,7 @@ export function FeedList({
                 </div>
             ) : (
                 <div className="p-8 text-center text-muted-foreground text-sm border-t">
-                    You&apos;ve reached the end of the feed!
+                    {t('feed.reachedEndOfFeed')}
                 </div>
             )}
         </div>

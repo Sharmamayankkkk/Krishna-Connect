@@ -375,7 +375,7 @@ export default function ExplorePage() {
                     <SidebarTrigger className="md:hidden" />
                     <div className="flex items-center gap-2 flex-1">
                         <Compass className="h-5 w-5 text-primary" />
-                        <h1 className="text-lg font-bold">Explore</h1>
+                        <h1 className="text-lg font-bold">{t('explore.title')}</h1>
                     </div>
                     {loggedInUser && (
                         <Link href={`/profile/${loggedInUser.username}`}>
@@ -389,7 +389,7 @@ export default function ExplorePage() {
 
                 {/* Search */}
                 <div className="px-3 sm:px-4 pb-2.5 sm:pb-3">
-                    <GlobalSearchBar placeholder="Search posts, users, hashtags..." />
+                    <GlobalSearchBar placeholder={t('explore.searchPlaceholder')} />
                 </div>
 
                 {/* Category Pills */}
@@ -422,7 +422,7 @@ export default function ExplorePage() {
                             <div className="flex items-center justify-between mb-2.5 sm:mb-3">
                                 <div className="flex items-center gap-2">
                                     <Users className="h-4 w-4 text-primary" />
-                                    <h2 className="text-xs sm:text-sm font-semibold">Suggested for you</h2>
+                                    <h2 className="text-xs sm:text-sm font-semibold">{t('explore.suggestedForYou')}</h2>
                                 </div>
                                 <Link href="/explore" className="text-[11px] sm:text-xs text-primary font-semibold hover:text-primary/80 flex items-center gap-0.5">
                                     {t('explore.seeAll')} <ChevronRight className="h-3 w-3" />
@@ -521,8 +521,8 @@ export default function ExplorePage() {
                                     <div className="p-3 sm:p-4 rounded-full bg-muted mb-3 sm:mb-4">
                                         <Compass className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground/50" />
                                     </div>
-                                    <p className="text-base sm:text-lg font-semibold">Nothing to explore yet</p>
-                                    <p className="text-xs sm:text-sm mt-1">Posts from the community will appear here</p>
+                                    <p className="text-base sm:text-lg font-semibold">{t('explore.nothingToExplore')}</p>
+                                    <p className="text-xs sm:text-sm mt-1">{t('explore.communityPostsWillAppear')}</p>
                                 </div>
                             )}
                         </div>

@@ -224,16 +224,16 @@ export function SocialDiscountModal({
                                 </div>
                                 <div className="text-left">
                                     <h3 className="font-bold text-base leading-tight mb-0.5">
-                                        {allLinksProvided ? 'Discount Unlocked!' : 'Unlock ₹100 Flat Off'}
+                                        {allLinksProvided ? t('getVerified.discountUnlocked') : t('getVerified.unlockFlatOff')}
                                     </h3>
                                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                         {allLinksProvided ? (
                                             <span className="text-green-600 font-medium text-xs">
-                                                All 3 social posts verified ✓
+                                                {t('getVerified.allSocialVerified')}
                                             </span>
                                         ) : (
                                             <>
-                                                Post on all 3 platforms to claim
+                                                {t('getVerified.postOnAllPlatforms')}
                                                 <div className="flex -space-x-1">
                                                     {[
                                                         { Icon: Twitter, bg: '#E8F5FD', color: '#1DA1F2' },
@@ -277,10 +277,10 @@ export function SocialDiscountModal({
                             <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-sm">
                                 <Sparkles className="h-4 w-4 text-white" />
                             </div>
-                            Claim Your ₹100 Discount
+                            {t('getVerified.claimDiscount')}
                         </DialogTitle>
                         <DialogDescription className="text-sm mt-1">
-                            Share about Krishna Connect on all 3 platforms and paste your post links below.
+                            {t('getVerified.shareOnPlatforms')}
                         </DialogDescription>
                     </DialogHeader>
 
@@ -320,7 +320,7 @@ export function SocialDiscountModal({
                             onClick={() => setOpen(false)}
                         >
                             <CheckCircle2 className="mr-2 h-4 w-4" />
-                            Discount Applied — Done!
+                            {t('getVerified.discountAppliedDone')}
                         </Button>
                     ) : (
                         <>
@@ -330,8 +330,8 @@ export function SocialDiscountModal({
                                 disabled={validCount === 0}
                             >
                                 {validCount > 0 && validCount < 3
-                                    ? `${3 - validCount} more link${3 - validCount > 1 ? 's' : ''} needed`
-                                    : 'Submit Links'}
+                                    ? t('getVerified.moreLinksNeeded', { count: 3 - validCount })
+                                    : t('getVerified.submitLinks')}
                             </Button>
                             <Button variant="ghost" size="sm" onClick={() => setOpen(false)} className="text-muted-foreground">{t('getVerified.maybeLater')}</Button>
                         </>

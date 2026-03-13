@@ -146,7 +146,7 @@ export function LivestreamDiscovery() {
                         <div>
                             <h2 className="text-2xl font-bold mb-2">{t('live.noActiveStreams')}</h2>
                             <p className="text-muted-foreground max-w-sm mx-auto">
-                                The stage is empty. Be the first to go live and start the show!
+                                {t('live.stageEmpty')}
                             </p>
                         </div>
                         <GoLiveButton />
@@ -165,7 +165,7 @@ export function LivestreamDiscovery() {
                                             </Avatar>
                                         </div>
                                         <div className="absolute bottom-0 right-0 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm border border-background">
-                                            LIVE
+                                            {t('live.liveBadge')}
                                         </div>
                                     </div>
                                     <span className="text-xs text-center truncate w-full text-muted-foreground font-medium">
@@ -190,7 +190,7 @@ export function LivestreamDiscovery() {
                                         <Badge className="bg-red-600 hover:bg-red-700 border-none animate-pulse">{t('live.liveNow')}</Badge>
                                         <div className="bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-2">
                                             <Users className="h-3 w-3" />
-                                            {featuredStream.viewer_count} watching
+                                            {featuredStream.viewer_count} {t('live.watching')}
                                         </div>
                                     </div>
 
@@ -205,7 +205,7 @@ export function LivestreamDiscovery() {
                                                     {featuredStream.title}
                                                 </h3>
                                                 <p className="text-gray-300 text-sm">
-                                                    with {featuredStream.host.name}
+                                                    {t('live.withHost', { name: featuredStream.host.name })}
                                                 </p>
                                             </div>
                                         </div>
@@ -244,7 +244,7 @@ export function LivestreamDiscovery() {
 
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent p-4 flex flex-col justify-between text-white">
                                                 <div className="flex justify-between items-start">
-                                                    <Badge className="bg-red-600/90 text-[10px] px-2 h-5">LIVE</Badge>
+                                                    <Badge className="bg-red-600/90 text-[10px] px-2 h-5">{t('live.liveBadge')}</Badge>
                                                     <div className="bg-black/50 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-medium text-gray-300 flex items-center gap-1">
                                                         <Users className="h-3 w-3" />
                                                         {stream.viewer_count}

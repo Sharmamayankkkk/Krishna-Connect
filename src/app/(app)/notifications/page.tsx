@@ -129,8 +129,14 @@ const NotificationItem = React.memo(({
             
             actionHtml = (
                 <span>
-                    {likeCount > 1 ? `and ${likeCount - 1} other${likeCount - 1 > 1 ? 's' : ''} liked your ${likeTarget}` : `liked your ${likeTarget}`}
-                    {inlineSnippet ? <span className="opacity-85">: "{inlineSnippet}"</span> : '.'}
+                    {likeCount > 1
+                        ? (likeTarget === 'comment'
+                            ? t('notifications.andOthersLikedYourComment', { count: likeCount - 1 })
+                            : t('notifications.andOthersLikedYourPost', { count: likeCount - 1 }))
+                        : (likeTarget === 'comment'
+                            ? t('notifications.likedYourComment')
+                            : t('notifications.likedYourPost'))}
+                    {inlineSnippet ? <span className="opacity-85">: &quot;{inlineSnippet}&quot;</span> : '.'}
                 </span>
             );
             if (showRightSide) {
@@ -237,8 +243,8 @@ const NotificationItem = React.memo(({
             const rpCount = metadata?.grouped_count ? parseInt(metadata.grouped_count, 10) : 1;
             actionHtml = (
                 <span>
-                    {rpCount > 1 ? `and ${rpCount - 1} other${rpCount - 1 > 1 ? 's' : ''} reposted your post` : `reposted your post`}
-                    {inlineSnippet ? <span className="opacity-85">: "{inlineSnippet}"</span> : '.'}
+                    {rpCount > 1 ? t('notifications.andOthersRepostedYourPost', { count: rpCount - 1 }) : t('notifications.repostedYourPost')}
+                    {inlineSnippet ? <span className="opacity-85">: &quot;{inlineSnippet}&quot;</span> : '.'}
                 </span>
             );
             if (showRightSide) {
@@ -455,9 +461,9 @@ export default function NotificationsPage() {
                                 <div className="mb-4 rounded-full border-2 border-current p-6">
                                     <Heart className="h-10 w-10" />
                                 </div>
-                                <h3 className="text-xl font-medium">Activity On Your Posts</h3>
+                                <h3 className="text-xl font-medium">{t('notifications.activityOnPosts')}</h3>
                                 <p className="mt-2 text-sm text-muted-foreground max-w-[250px]">
-                                    When someone likes or comments on one of your posts, you'll see it here.
+                                    {t('notifications.emptyDescription')}
                                 </p>
                             </div>
                         ) : (

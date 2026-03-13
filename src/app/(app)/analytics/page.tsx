@@ -201,7 +201,7 @@ export default function AnalyticsPage() {
                         </Card>
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Engagement Rate</CardTitle>
+                                <CardTitle className="text-sm font-medium">{t('analytics.engagementRate')}</CardTitle>
                                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
@@ -240,8 +240,8 @@ export default function AnalyticsPage() {
                         {/* Views Over Time */}
                         <Card className="col-span-4">
                             <CardHeader>
-                                <CardTitle>Views Over Time</CardTitle>
-                                <CardDescription>Your content reach in the last {period} days</CardDescription>
+                                <CardTitle>{t('analytics.viewsOverTime')}</CardTitle>
+                                <CardDescription>{t('analytics.contentReachInLast', { days: period })}</CardDescription>
                             </CardHeader>
                             <CardContent className="pl-2">
                                 <div className="h-[300px] w-full">
@@ -269,8 +269,8 @@ export default function AnalyticsPage() {
                         {/* Audience Demographics */}
                         <Card className="col-span-3">
                             <CardHeader>
-                                <CardTitle>Audience by Gender</CardTitle>
-                                <CardDescription>Who's viewing your content</CardDescription>
+                                <CardTitle>{t('analytics.audienceByGender')}</CardTitle>
+                                <CardDescription>{t('analytics.whosViewingContent')}</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <div className="h-[300px] w-full flex items-center justify-center">
@@ -298,9 +298,9 @@ export default function AnalyticsPage() {
                                         </ResponsiveContainer>
                                     ) : (
                                         <div className="text-center text-muted-foreground">
-                                            Not enough data yet.
+                                            {t('analytics.notEnoughData')}
                                             <br />
-                                            <span className="text-xs">Views need to be associated with profiles that have set their gender.</span>
+                                            <span className="text-xs">{t('analytics.viewsNeedGender')}</span>
                                         </div>
                                     )}
                                 </div>
@@ -313,8 +313,8 @@ export default function AnalyticsPage() {
                         {/* Best Times to Post */}
                         <Card>
                             <CardHeader>
-                                <CardTitle>Best Times to Post</CardTitle>
-                                <CardDescription>When your audience is most active</CardDescription>
+                                <CardTitle>{t('analytics.bestTimesToPost')}</CardTitle>
+                                <CardDescription>{t('analytics.whenAudienceActive')}</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <div className="h-[300px] w-full">
@@ -335,8 +335,8 @@ export default function AnalyticsPage() {
                         {/* Engagement Breakdown */}
                         <Card>
                             <CardHeader>
-                                <CardTitle>Engagement Breakdown</CardTitle>
-                                <CardDescription>Likes vs Comments over time</CardDescription>
+                                <CardTitle>{t('analytics.engagementBreakdown')}</CardTitle>
+                                <CardDescription>{t('analytics.likesVsComments')}</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <div className="h-[300px] w-full">
@@ -348,8 +348,8 @@ export default function AnalyticsPage() {
                                                 contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: '6px' }}
                                             />
                                             <Legend />
-                                            <Bar dataKey="likes" name="Likes" fill="#ef4444" radius={[4, 4, 0, 0]} stackId="a" />
-                                            <Bar dataKey="comments" name="Comments" fill="#3b82f6" radius={[4, 4, 0, 0]} stackId="a" />
+                                            <Bar dataKey="likes" name={t('analytics.likes')} fill="#ef4444" radius={[4, 4, 0, 0]} stackId="a" />
+                                            <Bar dataKey="comments" name={t('analytics.comments')} fill="#3b82f6" radius={[4, 4, 0, 0]} stackId="a" />
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </div>
@@ -360,8 +360,8 @@ export default function AnalyticsPage() {
                     {/* Top Performing Posts */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Top Performing Posts</CardTitle>
-                            <CardDescription>Your best content this period</CardDescription>
+                            <CardTitle>{t('analytics.topPerformingPosts')}</CardTitle>
+                            <CardDescription>{t('analytics.bestContentThisPeriod')}</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
@@ -373,7 +373,7 @@ export default function AnalyticsPage() {
                                                     {index + 1}
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium line-clamp-2 max-w-[500px]">{post.content || 'Media Post'}</p>
+                                                    <p className="font-medium line-clamp-2 max-w-[500px]">{post.content || t('analytics.mediaPost')}</p>
                                                     <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                                                         <span className="flex items-center gap-1"><Eye className="h-3 w-3" /> {post.views}</span>
                                                         <span className="flex items-center gap-1"><Heart className="h-3 w-3" /> {post.likes}</span>
@@ -384,12 +384,12 @@ export default function AnalyticsPage() {
                                             </div>
                                             <div className="text-right shrink-0 ml-2">
                                                 <div className="text-lg font-bold text-primary">{post.engagement_rate.toFixed(1)}%</div>
-                                                <div className="text-xs text-muted-foreground">engagement</div>
+                                                <div className="text-xs text-muted-foreground">{t('analytics.engagementLabel')}</div>
                                             </div>
                                         </div>
                                     </Link>
                                 )) : (
-                                    <p className="text-center text-muted-foreground py-8">No posts found in this period</p>
+                                    <p className="text-center text-muted-foreground py-8">{t('analytics.noPostsFound')}</p>
                                 )}
                             </div>
                         </CardContent>
@@ -400,7 +400,7 @@ export default function AnalyticsPage() {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <TrendingUp className="h-5 w-5 text-primary" />
-                                Insights & Recommendations
+                                {t('analytics.insightsAndRecommendations')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -408,7 +408,7 @@ export default function AnalyticsPage() {
                                 <div className="flex gap-3 items-start">
                                     <div className="mt-0.5 h-2 w-2 rounded-full bg-green-500 shrink-0" />
                                     <p className="text-sm">
-                                        <strong>Your reach is growing!</strong> You have {summary.views_change.toFixed(1)}% more views than the previous period. Keep posting consistently.
+                                        <strong>{t('analytics.reachGrowing')}</strong> {t('analytics.moreViewsThanPrevious', { change: summary.views_change.toFixed(1) })}
                                     </p>
                                 </div>
                             ) : null}
@@ -416,14 +416,14 @@ export default function AnalyticsPage() {
                                 <div className="flex gap-3 items-start">
                                     <div className="mt-0.5 h-2 w-2 rounded-full bg-blue-500 shrink-0" />
                                     <p className="text-sm">
-                                        <strong>Best Time to Post:</strong> Your audience is most active during {postingTimes[0].time_slot}. Try scheduling your next post then!
+                                        <strong>{t('analytics.bestTimeToPost')}</strong> {t('analytics.audienceMostActive', { timeSlot: postingTimes[0].time_slot })}
                                     </p>
                                 </div>
                             )}
                             <div className="flex gap-3 items-start">
                                 <div className="mt-0.5 h-2 w-2 rounded-full bg-purple-500 shrink-0" />
                                 <p className="text-sm">
-                                    <strong>Content Tip:</strong> Posts with images generate 45% more engagement on average. Consider adding media to your text posts.
+                                    <strong>{t('analytics.contentTip')}</strong> {t('analytics.contentTipText')}
                                 </p>
                             </div>
                         </CardContent>
