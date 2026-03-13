@@ -148,8 +148,8 @@ export function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDi
             console.error('Error updating profile:', error);
             toast({
                 variant: 'destructive',
-                title: 'Error',
-                description: error.message || 'Failed to update profile.'
+                title: t('common.error'),
+                description: error.message || t('profile.failedToUpdateProfile')
             });
         } finally {
             setIsLoading(false);

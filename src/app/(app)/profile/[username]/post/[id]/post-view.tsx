@@ -112,7 +112,7 @@ export default function PostView() {
                 .single();
 
             if (error || !data) {
-                toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch post.' });
+                toast({ variant: 'destructive', title: t('common.error'), description: t('post.couldNotFetchPost') });
                 notFound();
             } else {
                 const formattedPost = transformPost(data);
@@ -152,7 +152,7 @@ export default function PostView() {
             if (error) throw error;
 
             setCommentContent('');
-            toast({ title: 'Comment posted!' });
+            toast({ title: t('post.commentPosted') });
 
             if (data) {
                 setPost(prev => prev ? ({
@@ -165,7 +165,7 @@ export default function PostView() {
                 }) : null);
             }
         } catch (error) {
-            toast({ variant: 'destructive', title: 'Failed to post reply' });
+            toast({ variant: 'destructive', title: t('post.failedToPostReply') });
         } finally {
             setIsPostingComment(false);
         }

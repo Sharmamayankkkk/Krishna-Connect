@@ -628,8 +628,8 @@ export const PostCard = React.memo(function PostCard({
     const handleReport = () => {
         setIsReportOpen(false);
         toast({
-            title: "Report Submitted",
-            description: "Thank you for helping keep our community safe."
+            title: t('post.reportSubmittedTitle'),
+            description: t('post.thankYouForReporting')
         });
     };
 
@@ -676,7 +676,7 @@ export const PostCard = React.memo(function PostCard({
         requireAuth(() => {
             onRepost(post.id);
             setShowRepostMenu(false);
-        }, "Log in to repost");
+        }, t('post.loginToRepost'));
     };
 
     const handleRepostWithQuote = () => {

@@ -1105,7 +1105,13 @@
     "whatIsHappening": "What's happening?!",
     "writeAComment": "Write a comment",
     "yourCredits": "Your Credits",
-    "reposted": "{{name}} reposted"
+    "reposted": "{{name}} reposted",
+    "couldNotFetchPost": "Could not fetch post.",
+    "commentPosted": "Comment posted!",
+    "failedToPostReply": "Failed to post reply",
+    "reportSubmittedTitle": "Report Submitted",
+    "thankYouForReporting": "Thank you for helping keep our community safe.",
+    "loginToRepost": "Log in to repost"
   },
   "profile": {
     "advertisement": "Advertisement",
@@ -1152,7 +1158,16 @@
     "profileUpdated": "Profile updated!",
     "changesSaved": "Your changes have been saved.",
     "save": "Save",
-    "privateAccountHelp": "Only your followers will be able to see your photos and videos."
+    "privateAccountHelp": "Only your followers will be able to see your photos and videos.",
+    "failedToUpdateProfile": "Failed to update profile.",
+    "pleaseSelectAReason": "Please select a reason.",
+    "reportSubmittedTitle": "Report submitted",
+    "thankYouForReporting": "Thank you for reporting. We will review it shortly.",
+    "failedToSubmitReport": "Failed to submit report.",
+    "reportUser": "Report @{{username}}",
+    "reportDialogDescription": "Help us keep the community safe. accurately describe the issue.",
+    "descriptionOptional": "Description (Optional)",
+    "submitReport": "Submit Report"
   },
   "settings": {
     "appearance": {

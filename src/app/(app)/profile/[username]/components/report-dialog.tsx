@@ -31,7 +31,7 @@ export function ReportDialog({ open, onOpenChange, targetUserId, targetUsername 
 
     const handleSubmit = async () => {
         if (!reason) {
-            toast({ variant: "destructive", title: "Error", description: "Please select a reason." });
+            toast({ variant: "destructive", title: t('common.error'), description: t('profile.pleaseSelectAReason') });
             return;
         }
 
@@ -47,13 +47,13 @@ export function ReportDialog({ open, onOpenChange, targetUserId, targetUsername 
 
             if (error) throw error;
 
-            toast({ title: "Report submitted", description: "Thank you for reporting. We will review it shortly." });
+            toast({ title: t('profile.reportSubmittedTitle'), description: t('profile.thankYouForReporting') });
             onOpenChange(false);
             setReason('');
             setDescription('');
         } catch (error: any) {
             console.error('Error submitting report:', error);
-            toast({ variant: "destructive", title: "Error", description: "Failed to submit report." });
+            toast({ variant: "destructive", title: t('common.error'), description: t('profile.failedToSubmitReport') });
         } finally {
             setIsLoading(false);
         }
@@ -63,9 +63,9 @@ export function ReportDialog({ open, onOpenChange, targetUserId, targetUsername 
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Report @{targetUsername}</DialogTitle>
+                    <DialogTitle>{t('profile.reportUser', { username: targetUsername })}</DialogTitle>
                     <DialogDescription>
-                        Help us keep the community safe. accurately describe the issue.
+                        {t('profile.reportDialogDescription')}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
@@ -85,7 +85,7 @@ export function ReportDialog({ open, onOpenChange, targetUserId, targetUsername 
                         </Select>
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="description">Description (Optional)</Label>
+                        <Label htmlFor="description">{t('profile.descriptionOptional')}</Label>
                         <Textarea
                             id="description"
                             placeholder={t('profile.provideMoreDetails')}
@@ -99,7 +99,7 @@ export function ReportDialog({ open, onOpenChange, targetUserId, targetUsername 
                     <Button variant="outline" onClick={() => onOpenChange(false)}>{t('common.cancel')}</Button>
                     <Button onClick={handleSubmit} disabled={isLoading || !reason}>
                         {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Submit Report
+                        {t('profile.submitReport')}
                     </Button>
                 </DialogFooter>
             </DialogContent>
