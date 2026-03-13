@@ -43,6 +43,7 @@ const QUICK_EMOJIS = ['❤️', '🔥', '😂', '😮', '😢', '👏'];
 
 // --- Viewers Sheet (for story owner) — shows views + who liked ---
 function ViewersSheet({ statusId, viewCount }: { statusId: number; viewCount: number }) {
+  const { t } = useTranslation();
   const [viewers, setViewers] = useState<(User & { hasLiked?: boolean })[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const supabase = createClient();
@@ -115,6 +116,7 @@ function ViewersSheet({ statusId, viewCount }: { statusId: number; viewCount: nu
 
 // --- Analytics Sheet (for story owner) ---
 function AnalyticsSheet({ statusId }: { statusId: number }) {
+  const { t } = useTranslation();
   const [analytics, setAnalytics] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const supabase = createClient();

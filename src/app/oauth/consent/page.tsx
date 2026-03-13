@@ -10,6 +10,7 @@ import { CheckCircle2, AlertCircle, Shield } from "lucide-react";
 import { useTranslation } from 'react-i18next';
 
 function ConsentContent() {
+    const { t } = useTranslation();
     const searchParams = useSearchParams();
     const router = useRouter();
 

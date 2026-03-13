@@ -29,6 +29,7 @@ export const Spoiler = ({ content }: { content: string }) => {
 // DateChip component — renders a timezone-aware date pill
 // ---------------------------------------------------------------------------
 export const DateChip = ({ iso }: { iso: string }) => {
+    const { t } = useTranslation();
     // We only format on the client to avoid hydration mismatch between server UTC and client local time
     const [mounted, setMounted] = useState(false);
     useEffect(() => setMounted(true), []);

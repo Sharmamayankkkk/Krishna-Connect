@@ -124,6 +124,7 @@ function CallContent({
     isFullscreen: boolean
     setIsFullscreen: (val: boolean) => void
 }) {
+    const { t } = useTranslation()
     const {
         useCameraState,
         useMicrophoneState,

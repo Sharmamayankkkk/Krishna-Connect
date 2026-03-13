@@ -18,8 +18,6 @@ import { PollMessage } from './poll-message';
 import { useTranslation } from 'react-i18next';
 
 const formatBytes = (bytes: number, decimals = 2) => {
-  const { t } = useTranslation();
-
     if (!+bytes) return '0 Bytes';
     const k = 1024;
     const dm = decimals < 0 ? 0 : decimals;
@@ -45,6 +43,7 @@ interface RenderMessageContentOptions {
 }
 
 function PostShareCard({ metadata }: { metadata: any }) {
+    const { t } = useTranslation();
     const [thumbnail, setThumbnail] = React.useState<string | null>(null);
     const authorName = metadata?.postAuthor || metadata?.description?.replace('@', '') || 'Unknown';
     const authorAvatar = metadata?.postAuthorAvatar || metadata?.image;
@@ -184,7 +183,7 @@ export const createRenderMessageContent = ({
 
             const attachmentElement = () => {
                 if (isSticker) {
-                    return <Image src={message.attachment_url!} alt={t('chat.sticker')} width={160} height={160} className="object-contain" />;
+                    return <Image src={message.attachment_url!} alt="Sticker" width={160} height={160} className="object-contain" />;
                 }
                 if (type.startsWith('image/')) {
                     return (

@@ -75,6 +75,7 @@ function VideoPlayer({
   onDelete?: (id: string) => void
   isOwner?: boolean
 }) {
+  const { t } = useTranslation()
   const videoRef = React.useRef<HTMLVideoElement>(null)
   const [isPlaying, setIsPlaying] = React.useState(false)
   const [isMuted, setIsMuted] = React.useState(false)

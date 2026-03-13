@@ -107,6 +107,7 @@ function CommentCard({
   onHide: (commentId: string, isHidden: boolean) => void,
   onLikeToggle: (commentId: string, isLiked: boolean) => void
 }) {
+  const { t } = useTranslation();
   const { loggedInUser } = useAppContext();
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(comment.text);

@@ -94,13 +94,12 @@ export const MessageBubble = React.memo(function MessageBubble({
     } = ctx;
 
     // ⚠️ RULES OF HOOKS: always called before any early returns
+    const { t } = useTranslation();
     const isMyMessage = message.user_id === loggedInUserId;
     const isOptimistic = typeof message.id === 'string';
 
     const swipeHandlers = useSwipeable({
-        onSwipedRight: () => {
-  const { t } = useTranslation();
- if (!isMyMessage && !isOptimistic) handleStartReply(message); },
+        onSwipedRight: () => { if (!isMyMessage && !isOptimistic) handleStartReply(message); },
         onSwipedLeft: () => { if (isMyMessage && !isOptimistic) handleStartReply(message); },
         trackMouse: true,
         preventScrollOnSwipe: true,

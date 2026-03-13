@@ -95,6 +95,7 @@ function LastMessagePreview({
   content: string | null | undefined;
   hasUnread: boolean;
 }) {
+  const { t } = useTranslation();
   const baseClass = cn(
     'flex items-center gap-1.5 text-xs truncate',
     hasUnread ? 'text-foreground font-medium' : 'text-muted-foreground'

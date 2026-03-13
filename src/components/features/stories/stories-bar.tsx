@@ -124,6 +124,7 @@ function OwnStoryMenu({
     onDelete: () => void;
     anchorRect: DOMRect | null;
 }) {
+    const { t } = useTranslation();
     const menuRef = React.useRef<HTMLDivElement>(null);
 
     React.useEffect(() => {

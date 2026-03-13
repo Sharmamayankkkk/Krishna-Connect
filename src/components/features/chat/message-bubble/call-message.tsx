@@ -18,8 +18,6 @@ interface CallMessageProps {
 }
 
 const formatDuration = (s: number) => {
-  const { t } = useTranslation();
-
     if (s < 60) return `${s}s`;
     const m = Math.floor(s / 60);
     const remaining = s % 60;
@@ -34,6 +32,7 @@ export const CallMessage = ({
     startCall,
     joinCall,
 }: CallMessageProps) => {
+    const { t } = useTranslation();
     const callData = content.replace(CALL_MESSAGE_PREFIX, '').replace(']]', '');
     const [callType, callStatus, durationStr, , callId] = callData.split('|');
     const duration = parseInt(durationStr) || 0;

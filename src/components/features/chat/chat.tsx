@@ -53,14 +53,17 @@ const DateSeparator = ({ date }: { date: string }) => (
     </div>
 );
 
-const UnreadSeparator = () => (
+const UnreadSeparator = () => {
+    const { t } = useTranslation();
+    return (
     <div className="relative my-4">
         <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-red-500" /></div>
         <div className="relative flex justify-center">
             <span className="bg-red-500 px-3 text-xs font-medium text-white rounded-full">{t('chat.unreadMessages')}</span>
         </div>
     </div>
-);
+    );
+};
 
 // ---------------------------------------------------------------------------
 // Chat component
