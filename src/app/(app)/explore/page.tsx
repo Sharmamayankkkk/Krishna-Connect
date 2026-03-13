@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Search, TrendingUp, Users, Flame, Heart, MessageCircle, Play, ImageIcon, Compass, Bookmark, Eye, Share2, Sparkles, ChevronRight, Layers } from 'lucide-react';
@@ -65,6 +66,7 @@ function pickDisplayMedia(postId: number | string, mediaArray: any[]): { url: st
 
 export default function ExplorePage() {
     const { loggedInUser } = useAppContext();
+    const { t } = useTranslation();
     const { toast } = useToast();
     const router = useRouter();
     const [suggestedUsers, setSuggestedUsers] = React.useState<any[]>([]);
@@ -77,10 +79,10 @@ export default function ExplorePage() {
     const [selectedMedia, setSelectedMedia] = React.useState<Record<string, { url: string; type: string }>>({});
 
     const categories = [
-        { id: 'all', label: 'For You', icon: Sparkles },
-        { id: 'trending', label: 'Trending', icon: Flame },
-        { id: 'latest', label: 'Latest', icon: TrendingUp },
-        { id: 'people', label: 'People', icon: Users },
+        { id: 'all', label: t('explore.forYou'), icon: Sparkles },
+        { id: 'trending', label: t('explore.trending'), icon: Flame },
+        { id: 'latest', label: t('explore.latest'), icon: TrendingUp },
+        { id: 'people', label: t('explore.people'), icon: Users },
     ];
 
     React.useEffect(() => {
@@ -423,7 +425,7 @@ export default function ExplorePage() {
                                     <h2 className="text-xs sm:text-sm font-semibold">Suggested for you</h2>
                                 </div>
                                 <Link href="/explore" className="text-[11px] sm:text-xs text-primary font-semibold hover:text-primary/80 flex items-center gap-0.5">
-                                    See All <ChevronRight className="h-3 w-3" />
+                                    {t('explore.seeAll')} <ChevronRight className="h-3 w-3" />
                                 </Link>
                             </div>
                             <div className="flex gap-2.5 sm:gap-3 overflow-x-auto pb-1 scrollbar-hide">
@@ -455,7 +457,7 @@ export default function ExplorePage() {
                         <section className="px-3 sm:px-4 py-3 sm:py-4 border-b">
                             <div className="flex items-center gap-2 mb-2.5 sm:mb-3">
                                 <Flame className="h-4 w-4 text-orange-500" />
-                                <h2 className="text-xs sm:text-sm font-semibold">Trending</h2>
+                                <h2 className="text-xs sm:text-sm font-semibold">{t('explore.trending')}</h2>
                             </div>
                             <TrendingTopicsList
                                 onHashtagClick={(tag) => {
@@ -470,10 +472,10 @@ export default function ExplorePage() {
                         <section className="px-3 sm:px-4 py-3 sm:py-4 border-b">
                             <div className="flex items-center justify-between mb-2.5 sm:mb-3">
                                 <div className="flex items-center gap-2">
-                                    <h2 className="text-xs sm:text-sm font-semibold">Latest News</h2>
+                                    <h2 className="text-xs sm:text-sm font-semibold">{t('explore.latestNews')}</h2>
                                 </div>
                                 <Link href="/news" className="text-[11px] sm:text-xs text-primary font-semibold hover:text-primary/80 flex items-center gap-0.5">
-                                    See All <ChevronRight className="h-3 w-3" />
+                                    {t('explore.seeAll')} <ChevronRight className="h-3 w-3" />
                                 </Link>
                             </div>
                             {/* We can reuse NewsWidget but it's vertical. Let's make a container that forces grid or horizontal scroll. 
