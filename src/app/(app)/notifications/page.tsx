@@ -104,6 +104,7 @@ const NotificationItem = React.memo(({
     onAccept?: (id: string) => void;
     onDecline?: (id: string) => void;
 }) => {
+    const { t } = useTranslation();
     const { fromUser, type, metadata, referenceId, createdAt } = notification;
 
     // Build the action phrase
