@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
+import { useTranslation } from 'react-i18next'
 import { useAppContext } from "@/providers/app-provider"
 import { useCallContext } from "@/providers/call-provider"
 import { createClient } from "@/lib/utils"
@@ -39,10 +40,10 @@ function CallHistorySkeleton() {
   )
 }
 
-function formatCallDate(dateStr: string): string {
+function formatCallDate(dateStr: string, t: (key: string) => string): string {
   const date = new Date(dateStr)
   if (isToday(date)) return format(date, "h:mm a")
-  if (isYesterday(date)) return "Yesterday"
+  if (isYesterday(date)) return t('calls.yesterday')
   return format(date, "MMM d")
 }
 
@@ -78,24 +79,24 @@ function getCallStatusIcon(call: CallRecord, userId: string) {
   }
 }
 
-function getCallStatusText(call: CallRecord, userId: string): string {
+function getCallStatusText(call: CallRecord, userId: string, t: (key: string) => string): string {
   const isOutgoing = call.caller_id === userId
 
   switch (call.status) {
     case "missed":
-      return isOutgoing ? "No answer" : "Missed"
+      return isOutgoing ? t('calls.noAnswer') : t('calls.missed')
     case "declined":
-      return isOutgoing ? "Declined" : "Declined"
+      return isOutgoing ? t('calls.declined') : t('calls.declined')
     case "ended":
-      return formatCallDuration(call.duration_seconds) || (isOutgoing ? "Outgoing" : "Incoming")
+      return formatCallDuration(call.duration_seconds) || (isOutgoing ? t('calls.outgoing') : t('calls.incoming'))
     case "answered":
-      return "In progress"
+      return t('calls.inProgress')
     case "busy":
-      return "Busy"
+      return t('calls.busy')
     case "failed":
-      return "Failed"
+      return t('calls.failed')
     case "ringing":
-      return "Ringing"
+      return t('calls.ringing')
     default:
       return call.status
   }
@@ -104,6 +105,7 @@ function getCallStatusText(call: CallRecord, userId: string): string {
 export default function CallsPage() {
   const { loggedInUser, isReady } = useAppContext()
   const { startCall, startGroupCall } = useCallContext()
+  const { t } = useTranslation()
   const [calls, setCalls] = useState<CallRecord[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -156,15 +158,15 @@ export default function CallsPage() {
       {/* Mobile Header */}
       <header className="flex items-center p-2 border-b gap-2 md:hidden">
         <SidebarTrigger />
-        <h1 className="font-semibold text-lg">Calls</h1>
+        <h1 className="font-semibold text-lg">{t('calls.title')}</h1>
       </header>
 
       {/* Desktop Header */}
       <div className="hidden md:flex items-center justify-between border-b px-6 py-4">
         <div>
-          <h1 className="text-2xl font-bold mb-1">Calls</h1>
+          <h1 className="text-2xl font-bold mb-1">{t('calls.title')}</h1>
           <p className="text-sm text-muted-foreground">
-            {isLoading ? "Loading..." : `${calls.length} ${calls.length === 1 ? "call" : "calls"}`}
+            {isLoading ? t('common.loading') : t(calls.length === 1 ? 'calls.call' : 'calls.calls_plural', { count: calls.length })}
           </p>
         </div>
       </div>
@@ -179,9 +181,9 @@ export default function CallsPage() {
               <Phone className="h-8 w-8 text-muted-foreground" />
             </div>
             <div>
-              <h3 className="font-semibold text-lg">No calls yet</h3>
+              <h3 className="font-semibold text-lg">{t('calls.noCalls')}</h3>
               <p className="text-sm text-muted-foreground">
-                Start a voice or video call from any chat.
+                {t('calls.noCallsDesc')}
               </p>
             </div>
           </div>
@@ -207,7 +209,7 @@ export default function CallsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <p className={`font-medium truncate ${isMissed ? "text-red-500" : ""}`}>
-                      {call.is_group ? "Group Call" : (otherName || "Unknown")}
+                      {call.is_group ? t('calls.groupCall') : (otherName || "Unknown")}
                     </p>
                     <Badge variant="outline" className="text-xs px-1.5 py-0">
                       {call.call_type === "video" ? (
@@ -220,9 +222,9 @@ export default function CallsPage() {
                   </div>
                   <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                     {getCallStatusIcon(call, loggedInUser?.id || "")}
-                    <span>{getCallStatusText(call, loggedInUser?.id || "")}</span>
+                    <span>{getCallStatusText(call, loggedInUser?.id || "", t)}</span>
                     <span>·</span>
-                    <span>{formatCallDate(call.created_at)}</span>
+                    <span>{formatCallDate(call.created_at, t)}</span>
                   </div>
                 </div>
 
