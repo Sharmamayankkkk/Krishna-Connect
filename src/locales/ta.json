@@ -608,7 +608,8 @@
     "translateMessage": "Translate Message",
     "translateTo": "Translate To",
     "translatedText": "Translated Text",
-    "yesDelete": "ஆம், எனது கணக்கை நீக்கு"
+    "yesDelete": "ஆம், எனது கணக்கை நீக்கு",
+    "translate": "Translate"
   },
   "drafts": {
     "deleted": "வரைவு நீக்கப்பட்டது",

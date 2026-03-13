@@ -132,7 +132,7 @@ export function TranslateDialog({ message, open, onOpenChange }: TranslateDialog
           <Button variant="outline" onClick={() => onOpenChange(false)}>{t('common.close')}</Button>
           <Button onClick={handleTranslate} disabled={isTranslating || !message?.content}>
             {isTranslating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Languages className="mr-2 h-4 w-4" />}
-            Translate
+            {t('dialogs.translate')}
           </Button>
         </DialogFooter>
       </DialogContent>

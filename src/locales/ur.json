@@ -608,7 +608,8 @@
     "translateMessage": "Translate Message",
     "translateTo": "Translate To",
     "translatedText": "Translated Text",
-    "yesDelete": "ہاں، میرا اکاؤنٹ حذف کریں"
+    "yesDelete": "ہاں، میرا اکاؤنٹ حذف کریں",
+    "translate": "Translate"
   },
   "drafts": {
     "deleted": "مسودہ حذف ہو گیا",

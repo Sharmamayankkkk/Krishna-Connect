@@ -608,7 +608,8 @@
     "translateMessage": "Translate Message",
     "translateTo": "Translate To",
     "translatedText": "Translated Text",
-    "yesDelete": "はい、アカウントを削除します"
+    "yesDelete": "はい、アカウントを削除します",
+    "translate": "Translate"
   },
   "drafts": {
     "deleted": "下書きが削除されました",

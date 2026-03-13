@@ -608,7 +608,8 @@
     "translateMessage": "Translate Message",
     "translateTo": "Translate To",
     "translatedText": "Translated Text",
-    "yesDelete": "Oui, supprimer mon compte"
+    "yesDelete": "Oui, supprimer mon compte",
+    "translate": "Translate"
   },
   "drafts": {
     "deleted": "Brouillon supprimé",

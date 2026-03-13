@@ -608,7 +608,8 @@
     "translateMessage": "Translate Message",
     "translateTo": "Translate To",
     "translatedText": "Translated Text",
-    "yesDelete": "是的，删除我的账户"
+    "yesDelete": "是的，删除我的账户",
+    "translate": "Translate"
   },
   "drafts": {
     "deleted": "草稿已删除",

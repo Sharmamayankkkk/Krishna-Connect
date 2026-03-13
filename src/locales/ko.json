@@ -608,7 +608,8 @@
     "translateMessage": "Translate Message",
     "translateTo": "Translate To",
     "translatedText": "Translated Text",
-    "yesDelete": "예, 계정을 삭제합니다"
+    "yesDelete": "예, 계정을 삭제합니다",
+    "translate": "Translate"
   },
   "drafts": {
     "deleted": "임시저장 삭제됨",

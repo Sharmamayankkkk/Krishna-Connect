@@ -608,7 +608,8 @@
     "translateMessage": "Translate Message",
     "translateTo": "Translate To",
     "translatedText": "Translated Text",
-    "yesDelete": "نعم، احذف حسابي"
+    "yesDelete": "نعم، احذف حسابي",
+    "translate": "Translate"
   },
   "drafts": {
     "deleted": "تم حذف المسودة",

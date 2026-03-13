@@ -608,7 +608,8 @@
     "translateMessage": "Translate Message",
     "translateTo": "Translate To",
     "translatedText": "Translated Text",
-    "yesDelete": "হ্যাঁ, আমার অ্যাকাউন্ট মুছুন"
+    "yesDelete": "হ্যাঁ, আমার অ্যাকাউন্ট মুছুন",
+    "translate": "Translate"
   },
   "drafts": {
     "deleted": "খসড়া মুছে ফেলা হয়েছে",

@@ -9,12 +9,12 @@ import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 
 export function TrendingTopicsList({ onHashtagClick }: { onHashtagClick: (tag: string) => void }) {
+    const { t } = useTranslation();
     const [topics, setTopics] = React.useState<any[]>([]);
     const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
         const fetchTopics = async () => {
-  const { t } = useTranslation();
 
             const supabase = createClient();
             const { data, error } = await supabase.rpc('get_trending_topics');

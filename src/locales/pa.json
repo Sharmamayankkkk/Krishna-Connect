@@ -608,7 +608,8 @@
     "translateMessage": "Translate Message",
     "translateTo": "Translate To",
     "translatedText": "Translated Text",
-    "yesDelete": "ਹਾਂ, ਮੇਰਾ ਖਾਤਾ ਮਿਟਾਓ"
+    "yesDelete": "ਹਾਂ, ਮੇਰਾ ਖਾਤਾ ਮਿਟਾਓ",
+    "translate": "Translate"
   },
   "drafts": {
     "deleted": "ਡਰਾਫਟ ਮਿਟਾ ਦਿੱਤਾ",

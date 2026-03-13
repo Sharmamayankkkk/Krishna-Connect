@@ -608,7 +608,8 @@
     "translateMessage": "Translate Message",
     "translateTo": "Translate To",
     "translatedText": "Translated Text",
-    "yesDelete": "आम्, मम खातं विलोपयतु"
+    "yesDelete": "आम्, मम खातं विलोपयतु",
+    "translate": "Translate"
   },
   "drafts": {
     "deleted": "प्रारूपं विलोपितम्",

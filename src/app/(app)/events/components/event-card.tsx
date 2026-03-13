@@ -21,13 +21,13 @@ import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 
 export function EventCard({ event, onRsvp }: { event: Event, onRsvp: () => void }) {
+    const { t } = useTranslation();
     const { loggedInUser } = useAppContext();
     const { toast } = useToast();
     const supabase = createClient();
     const [isShareDialogOpen, setIsShareDialogOpen] = React.useState(false);
 
     const handleRsvp = async (status: RSVPStatus) => {
-  const { t } = useTranslation();
 
         if (!loggedInUser) return;
 

@@ -12,6 +12,7 @@ import { createClient } from "@/lib/utils"
 import { useTranslation } from 'react-i18next';
 
 function ChatPageLoading() {
+  const { t } = useTranslation();
   return (
     <div className="flex h-full w-full items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-4">

@@ -608,7 +608,8 @@
     "translateMessage": "Translate Message",
     "translateTo": "Translate To",
     "translatedText": "Translated Text",
-    "yesDelete": "Да, удалить мой аккаунт"
+    "yesDelete": "Да, удалить мой аккаунт",
+    "translate": "Translate"
   },
   "drafts": {
     "deleted": "Черновик удалён",

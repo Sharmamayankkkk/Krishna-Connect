@@ -608,7 +608,8 @@
     "translateMessage": "Translate Message",
     "translateTo": "Translate To",
     "translatedText": "Translated Text",
-    "yesDelete": "അതെ, എന്റെ അക്കൗണ്ട് ഇല്ലാതാക്കുക"
+    "yesDelete": "അതെ, എന്റെ അക്കൗണ്ട് ഇല്ലാതാക്കുക",
+    "translate": "Translate"
   },
   "drafts": {
     "deleted": "ഡ്രാഫ്റ്റ് ഇല്ലാതാക്കി",

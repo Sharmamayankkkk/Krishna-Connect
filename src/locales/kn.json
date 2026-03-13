@@ -608,7 +608,8 @@
     "translateMessage": "Translate Message",
     "translateTo": "Translate To",
     "translatedText": "Translated Text",
-    "yesDelete": "ಹೌದು, ನನ್ನ ಖಾತೆಯನ್ನು ಅಳಿಸಿ"
+    "yesDelete": "ಹೌದು, ನನ್ನ ಖಾತೆಯನ್ನು ಅಳಿಸಿ",
+    "translate": "Translate"
   },
   "drafts": {
     "deleted": "ಡ್ರಾಫ್ಟ್ ಅಳಿಸಲಾಯಿತು",

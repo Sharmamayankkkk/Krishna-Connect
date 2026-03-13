@@ -608,7 +608,8 @@
     "translateMessage": "Translate Message",
     "translateTo": "Translate To",
     "translatedText": "Translated Text",
-    "yesDelete": "ହଁ, ମୋ ଆକାଉଣ୍ଟ ବିଲୋପ କରନ୍ତୁ"
+    "yesDelete": "ହଁ, ମୋ ଆକାଉଣ୍ଟ ବିଲୋପ କରନ୍ତୁ",
+    "translate": "Translate"
   },
   "drafts": {
     "deleted": "ଡ୍ରାଫ୍ଟ ବିଲୋପ",

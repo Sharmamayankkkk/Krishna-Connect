@@ -608,7 +608,8 @@
     "translateMessage": "Translate Message",
     "translateTo": "Translate To",
     "translatedText": "Translated Text",
-    "yesDelete": "হয়, মোৰ একাউণ্ট মচি পেলাওক"
+    "yesDelete": "হয়, মোৰ একাউণ্ট মচি পেলাওক",
+    "translate": "Translate"
   },
   "drafts": {
     "deleted": "খচৰা মচি পেলোৱা হ'ল",

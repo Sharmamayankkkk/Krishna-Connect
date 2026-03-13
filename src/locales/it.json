@@ -608,7 +608,8 @@
     "translateMessage": "Translate Message",
     "translateTo": "Translate To",
     "translatedText": "Translated Text",
-    "yesDelete": "Sì, elimina il mio account"
+    "yesDelete": "Sì, elimina il mio account",
+    "translate": "Translate"
   },
   "drafts": {
     "deleted": "Bozza eliminata",

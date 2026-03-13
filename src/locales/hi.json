@@ -608,7 +608,8 @@
     "translateMessage": "Translate Message",
     "translateTo": "Translate To",
     "translatedText": "Translated Text",
-    "yesDelete": "हां, मेरा खाता हटाएं"
+    "yesDelete": "हां, मेरा खाता हटाएं",
+    "translate": "Translate"
   },
   "drafts": {
     "deleted": "ड्राफ़्ट हटाया गया",
