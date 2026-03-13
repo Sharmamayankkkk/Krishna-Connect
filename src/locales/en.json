@@ -1277,6 +1277,24 @@
     "videoMustBeUnder": "Video must be under {{size}}MB",
     "emptyDescription": "Short-form videos from the Krishna Connect community. Be the first to share a Leela!",
     "whatIsLeelaDescription": "Share divine moments through short-form videos up to 60 seconds. Express your devotion, share teachings, and connect with the community through visual stories.",
-    "uploadFirstLeela": "Upload Your First Leela"
+    "uploadFirstLeela": "Upload Your First Leela",
+    "unmute": "Unmute",
+    "mute": "Mute",
+    "saved": "Saved",
+    "save": "Save",
+    "logInToLikeVideos": "Log in to like videos",
+    "logInToSaveVideos": "Log in to save videos",
+    "removedFromSaved": "Removed from saved",
+    "savedToCollection": "Saved to collection",
+    "canOnlyDeleteOwnVideos": "You can only delete your own videos",
+    "failedToDelete": "Failed to delete",
+    "leelaDeleted": "Leela deleted",
+    "user": "User",
+    "leelaUploadedSuccessfully": "Leela uploaded successfully",
+    "uploadFailed": "Upload failed",
+    "selected": "Selected",
+    "caption": "Caption",
+    "optional": "optional",
+    "postLeela": "Post Leela"
   }
 }
