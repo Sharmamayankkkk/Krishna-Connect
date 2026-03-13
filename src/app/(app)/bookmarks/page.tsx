@@ -42,15 +42,17 @@ import { useCollections, useCreateCollection, useDeleteCollection } from './hook
 import { BookmarkCollection } from '@/types/collections';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link'; // Import Link
+import { useTranslation } from 'react-i18next';
 
 // Collection Card Component
 function CollectionCard({ collection }: { collection: BookmarkCollection }) {
+    const { t } = useTranslation();
     const { mutate: deleteCollection } = useDeleteCollection();
 
     const handleDelete = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        if (confirm('Are you sure you want to delete this collection?')) {
+        if (confirm(t('bookmarks.confirmDelete'))) {
             deleteCollection(collection.id);
         }
     };
@@ -69,7 +71,7 @@ function CollectionCard({ collection }: { collection: BookmarkCollection }) {
                         <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                             <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={handleDelete}>
                                 <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
+                                {t('common.delete')}
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -89,7 +91,7 @@ function CollectionCard({ collection }: { collection: BookmarkCollection }) {
                         <div className="text-2xl font-bold">{collection.post_count}</div>
                         <div className="flex justify-between items-center mt-1">
                             <p className="text-xs text-muted-foreground">
-                                {collection.is_private ? 'Private' : 'Public'}
+                                {collection.is_private ? t('bookmarks.private') : t('bookmarks.public')}
                             </p>
                             <p className="text-xs text-muted-foreground">
                                 {formatDistanceToNow(new Date(collection.created_at), { addSuffix: true })}
@@ -104,6 +106,7 @@ function CollectionCard({ collection }: { collection: BookmarkCollection }) {
 
 // Create Collection Dialog
 function CreateCollectionDialog({ children }: { children: React.ReactNode }) {
+    const { t } = useTranslation();
     const [open, setOpen] = React.useState(false);
     const [name, setName] = React.useState('');
     const [isPrivate, setIsPrivate] = React.useState(true);
@@ -128,28 +131,28 @@ function CreateCollectionDialog({ children }: { children: React.ReactNode }) {
             <DialogContent className="sm:max-w-[425px]">
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
-                        <DialogTitle>Create Collection</DialogTitle>
+                        <DialogTitle>{t('bookmarks.createCollection')}</DialogTitle>
                         <DialogDescription>
-                            Organize your saved posts into collections.
+                            {t('bookmarks.organizeDesc')}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="name" className="text-right">
-                                Name
+                                {t('bookmarks.name')}
                             </Label>
                             <Input
                                 id="name"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 className="col-span-3"
-                                placeholder="e.g., Inspiration"
+                                placeholder={t('bookmarks.namePlaceholder')}
                                 required
                             />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="privacy" className="text-right">
-                                Private
+                                {t('bookmarks.private')}
                             </Label>
                             <div className="flex items-center space-x-2 col-span-3">
                                 <Switch
@@ -158,7 +161,7 @@ function CreateCollectionDialog({ children }: { children: React.ReactNode }) {
                                     onCheckedChange={setIsPrivate}
                                 />
                                 <Label htmlFor="privacy" className="font-normal text-muted-foreground">
-                                    Only you can see this collection
+                                    {t('bookmarks.privateOnly')}
                                 </Label>
                             </div>
                         </div>
@@ -166,7 +169,7 @@ function CreateCollectionDialog({ children }: { children: React.ReactNode }) {
                     <DialogFooter>
                         <Button type="submit" disabled={isPending}>
                             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Create Collection
+                            {t('bookmarks.createCollection')}
                         </Button>
                     </DialogFooter>
                 </form>
@@ -176,6 +179,7 @@ function CreateCollectionDialog({ children }: { children: React.ReactNode }) {
 }
 
 export default function BookmarksPage() {
+    const { t } = useTranslation();
     const router = useRouter();
 
     // Fetch bookmarks (all posts)
@@ -196,7 +200,7 @@ export default function BookmarksPage() {
                         <SidebarTrigger className="md:hidden" />
                         <Bookmark className="h-5 w-5 text-primary" />
                         <div>
-                            <h1 className="text-xl font-bold">Bookmarks</h1>
+                            <h1 className="text-xl font-bold">{t('bookmarks.title')}</h1>
                         </div>
                     </div>
 
@@ -204,7 +208,7 @@ export default function BookmarksPage() {
                         <CreateCollectionDialog>
                             <Button variant="outline" size="sm">
                                 <Plus className="h-4 w-4 mr-2" />
-                                New Collection
+                                {t('bookmarks.newCollection')}
                             </Button>
                         </CreateCollectionDialog>
 
@@ -217,11 +221,11 @@ export default function BookmarksPage() {
                             <DropdownMenuContent align="end">
                                 <DropdownMenuItem onClick={() => setViewMode('list')}>
                                     <List className="mr-2 h-4 w-4" />
-                                    <span>List View</span>
+                                    <span>{t('bookmarks.listView')}</span>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => setViewMode('grid')}>
                                     <Grid className="mr-2 h-4 w-4" />
-                                    <span>Grid View</span>
+                                    <span>{t('bookmarks.gridView')}</span>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -233,8 +237,8 @@ export default function BookmarksPage() {
                 <div className="max-w-4xl mx-auto p-4">
                     <Tabs defaultValue="all" className="w-full">
                         <TabsList className="grid w-full grid-cols-2 h-auto mb-6">
-                            <TabsTrigger value="all" className="py-2">All Posts</TabsTrigger>
-                            <TabsTrigger value="collections" className="py-2">Collections</TabsTrigger>
+                            <TabsTrigger value="all" className="py-2">{t('bookmarks.allPosts')}</TabsTrigger>
+                            <TabsTrigger value="collections" className="py-2">{t('bookmarks.collections')}</TabsTrigger>
                         </TabsList>
 
                         {/* All Bookmarked Posts */}
@@ -287,9 +291,9 @@ export default function BookmarksPage() {
                             ) : (
                                 <div className="text-center py-12 border-2 border-dashed rounded-xl">
                                     <Bookmark className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                                    <h3 className="mt-4 text-lg font-semibold">No Bookmarks Yet</h3>
+                                    <h3 className="mt-4 text-lg font-semibold">{t('bookmarks.noBookmarks')}</h3>
                                     <p className="mt-2 text-sm text-muted-foreground">
-                                        Save posts to see them here.
+                                        {t('bookmarks.noBookmarksDesc')}
                                     </p>
                                 </div>
                             )}
@@ -315,13 +319,13 @@ export default function BookmarksPage() {
                             ) : (
                                 <div className="text-center py-12 border-2 border-dashed rounded-xl">
                                     <List className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                                    <h3 className="mt-4 text-lg font-semibold">No Collections Yet</h3>
+                                    <h3 className="mt-4 text-lg font-semibold">{t('bookmarks.noCollections')}</h3>
                                     <p className="mt-2 text-sm text-muted-foreground">
-                                        Create a collection to organize your bookmarks.
+                                        {t('bookmarks.noCollectionsDesc')}
                                     </p>
                                     <div className="mt-4">
                                         <CreateCollectionDialog>
-                                            <Button>Create Collection</Button>
+                                            <Button>{t('bookmarks.createCollection')}</Button>
                                         </CreateCollectionDialog>
                                     </div>
                                 </div>
