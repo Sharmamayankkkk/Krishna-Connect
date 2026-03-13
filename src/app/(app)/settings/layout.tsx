@@ -14,8 +14,10 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
     // Helper to get title based on path
     const getPageTitle = () => {
         if (pathname.includes("/appearance")) return "Appearance"
+        if (pathname.includes("/language")) return "Language"
         if (pathname.includes("/privacy")) return "Privacy"
         if (pathname.includes("/security")) return "Security"
+        if (pathname.includes("/promotions")) return "Promotions"
         return "Settings"
     }
 

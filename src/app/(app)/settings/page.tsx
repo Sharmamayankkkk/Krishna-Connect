@@ -9,6 +9,7 @@ import {
   Shield,
   Lock,
   TrendingUp,
+  Globe,
   ChevronRight
 } from "lucide-react"
 
@@ -18,6 +19,12 @@ const settingsCategories = [
     description: "Theme, colors, and display",
     href: "/settings/appearance",
     icon: Palette
+  },
+  {
+    name: "Language",
+    description: "Language and regional preferences",
+    href: "/settings/language",
+    icon: Globe
   },
   {
     name: "Privacy",
