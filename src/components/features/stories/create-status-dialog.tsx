@@ -17,6 +17,8 @@ import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/lib/supabase/client';
 import { useAppContext } from '@/providers/app-provider';
 
+import { useTranslation } from 'react-i18next';
+
 interface CreateStatusDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -84,6 +86,8 @@ interface TextBlock {
 }
 
 export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: CreateStatusDialogProps) {
+  const { t } = useTranslation();
+
   const { toast } = useToast();
   const { loggedInUser } = useAppContext();
   const supabase = createClient();
@@ -451,8 +455,8 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent hideClose className="!flex !flex-col max-w-[100vw] sm:max-w-lg w-full h-[100dvh] sm:h-[90vh] p-0 gap-0 overflow-hidden bg-black border-none rounded-none sm:rounded-2xl">
-        <DialogTitle className="sr-only">Create Story</DialogTitle>
-        <DialogDescription className="sr-only">Create a new story to share with your followers</DialogDescription>
+        <DialogTitle className="sr-only">{t('story.createStory')}</DialogTitle>
+        <DialogDescription className="sr-only">{t('story.createANewStoryToShare')}</DialogDescription>
 
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2.5 shrink-0 border-b border-white/10">
@@ -465,7 +469,7 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
           }}>
             <ChevronLeft className="h-4 w-4 mr-1" /> {mode !== 'select' ? 'Back' : 'Close'}
           </Button>
-          <h2 className="text-white font-semibold text-base">Create Story</h2>
+          <h2 className="text-white font-semibold text-base">{t('story.createStory')}</h2>
           {(mode === 'photo' || mode === 'video' || mode === 'text') ? (
             <Button
               size="sm"
@@ -495,27 +499,27 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
                 <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 flex items-center justify-center mx-auto mb-4">
                   <Camera className="h-8 w-8 text-white" />
                 </div>
-                <h3 className="text-white text-lg font-semibold">Add to Your Story</h3>
+                <h3 className="text-white text-lg font-semibold">{t('story.addToYourStory1')}</h3>
                 <p className="text-white/60 text-sm mt-1">Share a moment that disappears in 24h</p>
               </div>
 
               <div className="grid grid-cols-2 gap-3 w-full max-w-xs">
                 <button onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all">
                   <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center"><ImageIcon className="h-5 w-5 text-blue-400" /></div>
-                  <span className="text-white text-xs font-medium">Photo</span>
+                  <span className="text-white text-xs font-medium">{t('story.photo')}</span>
                 </button>
                 <button onClick={() => videoInputRef.current?.click()} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all">
                   <div className="w-12 h-12 rounded-full bg-pink-500/20 flex items-center justify-center"><Video className="h-5 w-5 text-pink-400" /></div>
-                  <span className="text-white text-xs font-medium">Video</span>
+                  <span className="text-white text-xs font-medium">{t('post.video')}</span>
                 </button>
                 <button onClick={() => setMode('text')} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all">
                   <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center"><Type className="h-5 w-5 text-purple-400" /></div>
-                  <span className="text-white text-xs font-medium">Text</span>
+                  <span className="text-white text-xs font-medium">{t('story.text')}</span>
                 </button>
                 <button disabled className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/5 border border-white/10 opacity-50 cursor-not-allowed relative">
                   <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center"><Music className="h-5 w-5 text-green-400" /></div>
-                  <span className="text-white text-xs font-medium">Music</span>
-                  <Badge variant="secondary" className="absolute -top-1 -right-1 text-[9px] px-1.5 py-0 bg-amber-500/90 text-white border-none">Soon</Badge>
+                  <span className="text-white text-xs font-medium">{t('story.music')}</span>
+                  <Badge variant="secondary" className="absolute -top-1 -right-1 text-[9px] px-1.5 py-0 bg-amber-500/90 text-white border-none">{t('story.soon')}</Badge>
                 </button>
               </div>
 
@@ -529,9 +533,9 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
             <div className="absolute inset-0 flex flex-col">
               <div className="relative flex-1">
                 {mode === 'photo' ? (
-                  <Image src={preview} alt="Story preview" fill className="object-contain" />
+                  <Image src={preview} alt={t('story.storyPreview')} fill className="object-contain" />
                 ) : (
-                  <video src={preview} className="w-full h-full object-contain" autoPlay muted loop playsInline aria-label="Story preview video" />
+                  <video src={preview} className="w-full h-full object-contain" autoPlay muted loop playsInline aria-label={t('story.storyPreviewVideo')} />
                 )}
 
                 {/* Drawing canvas overlay */}
@@ -655,27 +659,27 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
               {activeTool === 'sticker' && !stickerPanel && (
                   <div className="absolute bottom-20 left-2 right-2 sm:left-4 sm:right-4 z-40">
                   <div className="bg-black/80 backdrop-blur-xl rounded-2xl p-3 sm:p-4 border border-white/10 max-h-[40vh] overflow-y-auto">
-                    <p className="text-white/60 text-xs text-center mb-3">Add to your story</p>
+                    <p className="text-white/60 text-xs text-center mb-3">{t('story.addToYourStory')}</p>
                     <div className="grid grid-cols-5 gap-2 sm:gap-3">
                       <button onClick={() => setStickerPanel('mention')} className="flex flex-col items-center gap-1 sm:gap-1.5">
                         <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-blue-500/20 flex items-center justify-center"><AtSign className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" /></div>
-                        <span className="text-white/70 text-[9px] sm:text-[10px]">Mention</span>
+                        <span className="text-white/70 text-[9px] sm:text-[10px]">{t('story.mention')}</span>
                       </button>
                       <button onClick={() => setStickerPanel('hashtag')} className="flex flex-col items-center gap-1 sm:gap-1.5">
                         <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-purple-500/20 flex items-center justify-center"><Hash className="h-4 w-4 sm:h-5 sm:w-5 text-purple-400" /></div>
-                        <span className="text-white/70 text-[9px] sm:text-[10px]">Hashtag</span>
+                        <span className="text-white/70 text-[9px] sm:text-[10px]">{t('story.hashtag')}</span>
                       </button>
                       <button onClick={() => addSticker('time', {})} className="flex flex-col items-center gap-1 sm:gap-1.5">
                         <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-amber-500/20 flex items-center justify-center"><Clock className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400" /></div>
-                        <span className="text-white/70 text-[9px] sm:text-[10px]">Time</span>
+                        <span className="text-white/70 text-[9px] sm:text-[10px]">{t('events.time')}</span>
                       </button>
                       <button onClick={() => setStickerPanel('link')} className="flex flex-col items-center gap-1 sm:gap-1.5">
                         <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-green-500/20 flex items-center justify-center"><Link2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-400" /></div>
-                        <span className="text-white/70 text-[9px] sm:text-[10px]">Link</span>
+                        <span className="text-white/70 text-[9px] sm:text-[10px]">{t('story.link')}</span>
                       </button>
                       <button onClick={() => setStickerPanel('countdown')} className="flex flex-col items-center gap-1 sm:gap-1.5">
                         <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-pink-500/20 flex items-center justify-center"><Timer className="h-4 w-4 sm:h-5 sm:w-5 text-pink-400" /></div>
-                        <span className="text-white/70 text-[9px] sm:text-[10px]">Countdown</span>
+                        <span className="text-white/70 text-[9px] sm:text-[10px]">{t('story.countdown')}</span>
                       </button>
                     </div>
                   </div>
@@ -687,7 +691,7 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
                 <div className="absolute bottom-20 left-2 right-2 sm:left-4 sm:right-4 z-40">
                   <div className="bg-black/80 backdrop-blur-xl rounded-2xl p-3 sm:p-4 border border-white/10">
                     <div className="flex items-center justify-between mb-3">
-                      <button onClick={() => setStickerPanel(null)} className="text-white/60 text-sm"><ChevronLeft className="h-4 w-4 inline" /> Back</button>
+                      <button onClick={() => setStickerPanel(null)} className="text-white/60 text-sm"><ChevronLeft className="h-4 w-4 inline" />{t('common.back')}</button>
                       <span className="text-white text-sm font-semibold capitalize">{stickerPanel}</span>
                       <div className="w-12" />
                     </div>
@@ -719,9 +723,7 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
                           else if (stickerPanel === 'countdown') addSticker('countdown', { label: stickerInput });
                         }}
                         className="bg-primary text-primary-foreground rounded-full px-4 py-2 text-sm font-medium"
-                      >
-                        Add
-                      </button>
+                      >{t('settings.security.add')}</button>
                     </div>
                   </div>
                 </div>
@@ -732,7 +734,7 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
                 {showCaptionInput ? (
                   <div className="flex items-end gap-2">
                     <Textarea
-                      placeholder="Write a caption..."
+                      placeholder={t('story.writeACaption')}
                       value={caption}
                       onChange={(e) => setCaption(e.target.value)}
                       className="bg-white/10 border-white/20 text-white placeholder:text-white/50 resize-none text-sm rounded-xl min-h-[40px] max-h-[100px]"
@@ -776,7 +778,7 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
           {mode === 'text' && (
             <div className={`absolute inset-0 bg-gradient-to-br ${bgGradient} flex flex-col items-center justify-center p-8`}>
               <Textarea
-                placeholder="Type your story..."
+                placeholder={t('story.typeYourStory')}
                 value={textContent}
                 onChange={(e) => setTextContent(e.target.value)}
                 className="bg-transparent border-none text-center text-2xl font-bold resize-none focus-visible:ring-0 shadow-none placeholder:text-white/40 max-h-[60%]"
@@ -811,14 +813,12 @@ export function CreateStatusDialog({ open, onOpenChange, onStatusCreated }: Crea
                   onClick={() => setVisibility('public')}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${visibility === 'public' ? 'bg-white text-black' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
                 >
-                  <Lock className="h-3 w-3" /> Your Story
-                </button>
+                  <Lock className="h-3 w-3" />{t('story.yourStory')}</button>
                 <button
                   onClick={() => setVisibility('close_friends')}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${visibility === 'close_friends' ? 'bg-green-500 text-white' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
                 >
-                  <Users className="h-3 w-3" /> Close Friends
-                </button>
+                  <Users className="h-3 w-3" />{t('story.closeFriends')}</button>
               </div>
               <span className="text-white/30 text-[10px]">24h</span>
             </>

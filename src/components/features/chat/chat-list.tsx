@@ -52,6 +52,8 @@ import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
+import { useTranslation } from 'react-i18next';
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface ChatListProps {
@@ -99,7 +101,7 @@ function LastMessagePreview({
   );
 
   if (!content || typeof content !== 'string') {
-    return <span className={baseClass}>No messages yet</span>;
+    return <span className={baseClass}>{t('chat.noMessagesYet')}</span>;
   }
 
   // Call message
@@ -151,6 +153,8 @@ function SectionLabel({ label }: { label: string }) {
 // ─── ChatList ─────────────────────────────────────────────────────────────────
 
 export function ChatList({ chats }: ChatListProps) {
+  const { t } = useTranslation();
+
   const pathname = usePathname();
   const router = useRouter();
   const { isMobile, setOpenMobile } = useSidebar();
@@ -286,10 +290,10 @@ export function ChatList({ chats }: ChatListProps) {
                 onClick={() => setIsNewChatOpen(true)}
               >
                 <MessageSquarePlus className="h-4 w-4" />
-                <span className="sr-only">New Chat</span>
+                <span className="sr-only">{t('chat.newChat')}</span>
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="text-xs">New Chat</TooltipContent>
+            <TooltipContent side="bottom" className="text-xs">{t('chat.newChat')}</TooltipContent>
           </Tooltip>
 
           <Tooltip>
@@ -301,10 +305,10 @@ export function ChatList({ chats }: ChatListProps) {
                 onClick={() => setIsCreateGroupOpen(true)}
               >
                 <PlusCircle className="h-4 w-4" />
-                <span className="sr-only">Create Group</span>
+                <span className="sr-only">{t('chat.createGroup')}</span>
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="text-xs">Create Group</TooltipContent>
+            <TooltipContent side="bottom" className="text-xs">{t('chat.createGroup')}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </div>
@@ -324,7 +328,7 @@ export function ChatList({ chats }: ChatListProps) {
             </div>
           ) : (
             <>
-              {hasPinned && <SectionLabel label="Pinned" />}
+              {hasPinned && <SectionLabel label={t('profile.pinned')} />}
 
               {sortedChats.map((chat, index) => {
                 const { name, avatar, partnerId } = getChatDisplayInfo(chat);
@@ -341,7 +345,7 @@ export function ChatList({ chats }: ChatListProps) {
 
                 return (
                   <React.Fragment key={chat.id}>
-                    {showAllHeader && <SectionLabel label="All Messages" />}
+                    {showAllHeader && <SectionLabel label={t('chat.allMessages')} />}
 
                     <Link
                       href={`/chat/${chat.id}`}
@@ -436,7 +440,7 @@ export function ChatList({ chats }: ChatListProps) {
                             variant="ghost"
                             size="icon"
                             className="h-7 w-7 shrink-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted"
-                            aria-label="Chat options"
+                            aria-label={t('chat.chatOptions')}
                             onClick={(e) => e.preventDefault()}
                           >
                             <MoreVertical className="h-3.5 w-3.5" />
@@ -446,21 +450,15 @@ export function ChatList({ chats }: ChatListProps) {
                           <DropdownMenuItem onClick={(e) => handleTogglePin(chat.id, e)}>
                             {isPinned ? (
                               <>
-                                <PinOff className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
-                                Unpin
-                              </>
+                                <PinOff className="h-3.5 w-3.5 mr-2 text-muted-foreground" />{t('chat.unpin')}</>
                             ) : (
                               <>
-                                <Pin className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
-                                Pin Chat
-                              </>
+                                <Pin className="h-3.5 w-3.5 mr-2 text-muted-foreground" />{t('chat.pinChat')}</>
                             )}
                           </DropdownMenuItem>
                           {partnerId && (
                             <DropdownMenuItem onClick={(e) => handleViewProfile(chat, e)}>
-                              <User className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
-                              View Profile
-                            </DropdownMenuItem>
+                              <User className="h-3.5 w-3.5 mr-2 text-muted-foreground" />{t('chat.viewProfile')}</DropdownMenuItem>
                           )}
                         </DropdownMenuContent>
                       </DropdownMenu>

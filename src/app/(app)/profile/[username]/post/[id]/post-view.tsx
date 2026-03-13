@@ -17,6 +17,8 @@ import { AuthGate } from '@/components/auth-gate';
 import { usePostInteractions } from '@/hooks/use-post-interactions';
 import { transformPost } from '@/lib/post-utils';
 
+import { useTranslation } from 'react-i18next';
+
 const POST_QUERY = `
     id,
     user_id,
@@ -50,6 +52,8 @@ const POST_QUERY = `
 `;
 
 export default function PostView() {
+  const { t } = useTranslation();
+
     const params = useParams<{ username: string; id: string }>();
     const router = useRouter();
     const { toast } = useToast();
@@ -179,7 +183,7 @@ export default function PostView() {
                     <Button variant="ghost" size="icon" onClick={() => router.back()}>
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
-                    <h2 className="text-xl font-bold tracking-tight">Post</h2>
+                    <h2 className="text-xl font-bold tracking-tight">{t('post.postButton')}</h2>
                 </div>
             </header>
 
@@ -271,9 +275,7 @@ export default function PostView() {
                                     })
                                 ) : (
                                     <div className="p-10 text-center">
-                                        <p className="text-muted-foreground">
-                                            No comments yet.
-                                        </p>
+                                        <p className="text-muted-foreground">{t('explore.noCommentsYet')}</p>
                                     </div>
                                 )}
                             </div>

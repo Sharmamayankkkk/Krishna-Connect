@@ -2,6 +2,8 @@
 
 import { Wifi, Users, Heart, Send } from 'lucide-react';
 
+import { useTranslation } from 'react-i18next';
+
 interface LiveStreamingViewProps {
   streamDetails: {
     title: string;
@@ -11,12 +13,14 @@ interface LiveStreamingViewProps {
 }
 
 export function LiveStreamingView({ streamDetails }: LiveStreamingViewProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex flex-col lg:flex-row h-[calc(100vh-4rem)] bg-black text-white">
       {/* Video Player Section */}
       <div className="flex-1 flex flex-col items-center justify-center bg-gray-900/50 relative">
         <div className="aspect-video bg-black w-full flex items-center justify-center">
-          <p className="text-muted-foreground">Live video stream would be here.</p>
+          <p className="text-muted-foreground">{t('live.liveVideoStreamWouldBeHere')}</p>
         </div>
         <div className="absolute top-4 left-4 p-4">
             <div className="flex items-center space-x-2 bg-red-600 px-3 py-1 rounded-md">
@@ -38,15 +42,15 @@ export function LiveStreamingView({ streamDetails }: LiveStreamingViewProps) {
       <div className="w-full lg:w-80 bg-background border-l border-border flex flex-col">
         <div className="flex-1 p-4 space-y-4 overflow-y-auto">
           {/* Mock chat messages */}
-          <div className="text-sm"><b>Radha:</b> Hare Krishna! So beautiful.</div>
-          <div className="text-sm"><b>Gopal:</b> All glories to Srila Prabhupada!</div>
-          <div className="text-sm"><b>Krishna Das:</b> Jay Sri Krishna!</div>
+          <div className="text-sm"><b>Radha:</b>{t('live.hareKrishnaSoBeautiful')}</div>
+          <div className="text-sm"><b>Gopal:</b>{t('live.allGloriesToSrilaPrabhupada')}</div>
+          <div className="text-sm"><b>Krishna Das:</b>{t('live.jaySriKrishna')}</div>
         </div>
         <div className="p-4 border-t border-border">
           <div className="relative">
             <input
               type="text"
-              placeholder="Send a message..."
+              placeholder={t('live.sendAMessage')}
               className="w-full bg-muted rounded-full px-4 py-2 text-sm pr-10"
             />
             <Send size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />

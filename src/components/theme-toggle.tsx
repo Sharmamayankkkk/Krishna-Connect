@@ -4,7 +4,11 @@ import * as React from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+import { useTranslation } from 'react-i18next';
+
 export function ThemeToggle() {
+  const { t } = useTranslation();
+
   const [isDarkMode, setIsDarkMode] = React.useState(false);
 
   React.useEffect(() => {
@@ -24,7 +28,7 @@ export function ThemeToggle() {
       ) : (
         <Moon className="h-[1.2rem] w-[1.2rem]" />
       )}
-      <span className="sr-only">Toggle theme</span>
+      <span className="sr-only">{t('common.toggleTheme')}</span>
     </Button>
   );
 }

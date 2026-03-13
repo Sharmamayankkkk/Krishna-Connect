@@ -20,6 +20,8 @@ import type { Event, Chat } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/utils';
 
+import { useTranslation } from 'react-i18next';
+
 interface ShareEventDialogProps {
   event: Event | null;
   open: boolean;
@@ -27,6 +29,8 @@ interface ShareEventDialogProps {
 }
 
 export function ShareEventDialog({ event, open, onOpenChange }: ShareEventDialogProps) {
+  const { t } = useTranslation();
+
   const { chats, loggedInUser } = useAppContext();
   const [selectedChats, setSelectedChats] = React.useState<number[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -109,7 +113,7 @@ export function ShareEventDialog({ event, open, onOpenChange }: ShareEventDialog
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Share event in app...</DialogTitle>
+          <DialogTitle>{t('events.shareEventInApp')}</DialogTitle>
         </DialogHeader>
         <ScrollArea className="py-4 max-h-[60vh]">
           <div className="pr-6 space-y-4">
@@ -139,7 +143,7 @@ export function ShareEventDialog({ event, open, onOpenChange }: ShareEventDialog
           </div>
         </ScrollArea>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{t('common.cancel')}</Button>
           <Button onClick={handleShare} disabled={selectedChats.length === 0 || isLoading}>
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
             Share

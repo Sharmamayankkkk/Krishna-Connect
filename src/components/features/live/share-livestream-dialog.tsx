@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Copy, Check, Share2, Facebook, Twitter, MessageCircle } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
+import { useTranslation } from 'react-i18next';
+
 interface ShareLivestreamDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
@@ -15,6 +17,8 @@ interface ShareLivestreamDialogProps {
 }
 
 export function ShareLivestreamDialog({ open, onOpenChange, livestreamId, title }: ShareLivestreamDialogProps) {
+  const { t } = useTranslation();
+
     const [copied, setCopied] = useState(false)
     const { toast } = useToast()
 
@@ -74,18 +78,14 @@ export function ShareLivestreamDialog({ open, onOpenChange, livestreamId, title 
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        <Share2 className="h-5 w-5" />
-                        Share Livestream
-                    </DialogTitle>
-                    <DialogDescription>
-                        Invite others to watch your livestream
-                    </DialogDescription>
+                        <Share2 className="h-5 w-5" />{t('live.shareLivestream')}</DialogTitle>
+                    <DialogDescription>{t('live.inviteOthersToWatchYourLivestream')}</DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-4">
                     {/* Copy Link */}
                     <div className="space-y-2">
-                        <label className="text-sm font-medium">Share Link</label>
+                        <label className="text-sm font-medium">{t('live.shareLink')}</label>
                         <div className="flex gap-2">
                             <Input
                                 value={shareUrl}
@@ -108,7 +108,7 @@ export function ShareLivestreamDialog({ open, onOpenChange, livestreamId, title 
 
                     {/* Social Share Buttons */}
                     <div className="space-y-2">
-                        <label className="text-sm font-medium">Share on Social Media</label>
+                        <label className="text-sm font-medium">{t('live.shareOnSocialMedia')}</label>
                         <div className="grid grid-cols-3 gap-2">
                             <Button
                                 variant="outline"
@@ -116,7 +116,7 @@ export function ShareLivestreamDialog({ open, onOpenChange, livestreamId, title 
                                 onClick={() => handleShare('facebook')}
                             >
                                 <Facebook className="h-5 w-5 text-blue-600" />
-                                <span className="text-xs">Facebook</span>
+                                <span className="text-xs">{t('live.facebook')}</span>
                             </Button>
                             <Button
                                 variant="outline"
@@ -124,7 +124,7 @@ export function ShareLivestreamDialog({ open, onOpenChange, livestreamId, title 
                                 onClick={() => handleShare('twitter')}
                             >
                                 <Twitter className="h-5 w-5 text-sky-500" />
-                                <span className="text-xs">Twitter</span>
+                                <span className="text-xs">{t('live.twitter')}</span>
                             </Button>
                             <Button
                                 variant="outline"
@@ -132,7 +132,7 @@ export function ShareLivestreamDialog({ open, onOpenChange, livestreamId, title 
                                 onClick={() => handleShare('whatsapp')}
                             >
                                 <MessageCircle className="h-5 w-5 text-green-600" />
-                                <span className="text-xs">WhatsApp</span>
+                                <span className="text-xs">{t('live.whatsapp')}</span>
                             </Button>
                         </div>
                     </div>

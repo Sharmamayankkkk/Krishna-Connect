@@ -15,6 +15,8 @@ import { Input } from '@/components/ui/input';
 import { Sparkles, Twitter, Instagram, Facebook, CheckCircle2, AlertCircle, ExternalLink, Gift, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+import { useTranslation } from 'react-i18next';
+
 // --- Validation Helpers ---
 
 interface ValidationResult {
@@ -179,6 +181,8 @@ export function SocialDiscountModal({
     setFacebookLink,
     allLinksProvided,
 }: SocialDiscountModalProps) {
+  const { t } = useTranslation();
+
     const [open, setOpen] = React.useState(false);
     const [touched, setTouched] = React.useState({ twitter: false, instagram: false, facebook: false });
 
@@ -253,16 +257,12 @@ export function SocialDiscountModal({
 
                             {allLinksProvided ? (
                                 <div className="flex items-center gap-1.5 text-green-700 font-semibold bg-green-100 dark:bg-green-900/40 px-3 py-1.5 rounded-full text-sm shrink-0">
-                                    <CheckCircle2 className="h-3.5 w-3.5" />
-                                    Unlocked
-                                </div>
+                                    <CheckCircle2 className="h-3.5 w-3.5" />{t('getVerified.unlocked')}</div>
                             ) : (
                                 <Button
                                     size="sm"
                                     className="font-semibold shrink-0 pointer-events-none group-hover:scale-105 transition-transform"
-                                >
-                                    Unlock Now
-                                </Button>
+                                >{t('getVerified.unlockNow')}</Button>
                             )}
                         </CardContent>
                     </Card>
@@ -333,9 +333,7 @@ export function SocialDiscountModal({
                                     ? `${3 - validCount} more link${3 - validCount > 1 ? 's' : ''} needed`
                                     : 'Submit Links'}
                             </Button>
-                            <Button variant="ghost" size="sm" onClick={() => setOpen(false)} className="text-muted-foreground">
-                                Maybe later
-                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => setOpen(false)} className="text-muted-foreground">{t('getVerified.maybeLater')}</Button>
                         </>
                     )}
                 </div>

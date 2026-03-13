@@ -11,6 +11,8 @@ import { createClient } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
+import { useTranslation } from 'react-i18next';
+
 interface ReportDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
@@ -19,6 +21,8 @@ interface ReportDialogProps {
 }
 
 export function ReportDialog({ open, onOpenChange, targetUserId, targetUsername }: ReportDialogProps) {
+  const { t } = useTranslation();
+
     const supabase = createClient();
     const { toast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
@@ -66,17 +70,17 @@ export function ReportDialog({ open, onOpenChange, targetUserId, targetUsername 
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                     <div className="space-y-2">
-                        <Label htmlFor="reason">Reason</Label>
+                        <Label htmlFor="reason">{t('profile.reason')}</Label>
                         <Select onValueChange={setReason} value={reason}>
                             <SelectTrigger>
-                                <SelectValue placeholder="Select a reason" />
+                                <SelectValue placeholder={t('profile.selectAReason')} />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="spam">Spam</SelectItem>
-                                <SelectItem value="harassment">Harassment or Bullying</SelectItem>
-                                <SelectItem value="inappropriate">Inappropriate Content</SelectItem>
-                                <SelectItem value="fake">Fake Account</SelectItem>
-                                <SelectItem value="other">Other</SelectItem>
+                                <SelectItem value="spam">{t('dialogs.reportReasons.spam')}</SelectItem>
+                                <SelectItem value="harassment">{t('profile.harassmentOrBullying')}</SelectItem>
+                                <SelectItem value="inappropriate">{t('dialogs.reportReasons.inappropriate')}</SelectItem>
+                                <SelectItem value="fake">{t('profile.fakeAccount')}</SelectItem>
+                                <SelectItem value="other">{t('challenges.other')}</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -84,7 +88,7 @@ export function ReportDialog({ open, onOpenChange, targetUserId, targetUsername 
                         <Label htmlFor="description">Description (Optional)</Label>
                         <Textarea
                             id="description"
-                            placeholder="Provide more details..."
+                            placeholder={t('profile.provideMoreDetails')}
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             maxLength={500}
@@ -92,7 +96,7 @@ export function ReportDialog({ open, onOpenChange, targetUserId, targetUsername 
                     </div>
                 </div>
                 <DialogFooter>
-                    <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+                    <Button variant="outline" onClick={() => onOpenChange(false)}>{t('common.cancel')}</Button>
                     <Button onClick={handleSubmit} disabled={isLoading || !reason}>
                         {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Submit Report

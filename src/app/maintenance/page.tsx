@@ -1,5 +1,9 @@
+"use client";
+
 import { Metadata } from 'next';
 import { Wrench } from 'lucide-react';
+
+import { useTranslation } from 'react-i18next';
 
 export const metadata: Metadata = {
     title: "Maintenance",
@@ -7,6 +11,8 @@ export const metadata: Metadata = {
 };
 
 export default function MaintenancePage() {
+  const { t } = useTranslation();
+
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4 text-center">
             <div className="space-y-6 max-w-md">
@@ -16,9 +22,7 @@ export default function MaintenancePage() {
                     </div>
                 </div>
 
-                <h1 className="text-3xl font-bold tracking-tight">
-                    Under Maintenance
-                </h1>
+                <h1 className="text-3xl font-bold tracking-tight">{t('common.underMaintenance')}</h1>
 
                 <p className="text-muted-foreground text-lg">
                     We are currently performing scheduled maintenance to improve your experience. We'll be back shortly.

@@ -13,6 +13,8 @@ import { ParticipantsModal } from './participants-modal'
 import { LiveChat } from './live-chat'
 import { createClient } from '@/lib/utils'
 
+import { useTranslation } from 'react-i18next';
+
 interface LivestreamOverlaysProps {
     call: any
     livestreamId: string
@@ -22,6 +24,8 @@ interface LivestreamOverlaysProps {
 }
 
 export function LivestreamOverlays({ call, livestreamId, role, hostProfile, title }: LivestreamOverlaysProps) {
+  const { t } = useTranslation();
+
     const {
         useCameraState,
         useMicrophoneState,
@@ -106,7 +110,7 @@ export function LivestreamOverlays({ call, livestreamId, role, hostProfile, titl
                                             LIVE
                                         </>
                                     ) : (
-                                        <>BACKSTAGE</>
+                                        <>{t('live.backstage')}</>
                                     )}
                                 </span>
                             </div>
@@ -139,9 +143,7 @@ export function LivestreamOverlays({ call, livestreamId, role, hostProfile, titl
                             variant="destructive"
                             onClick={handleEndStream}
                             className="h-8 rounded-full px-4 text-xs font-semibold shadow-lg hover:bg-red-700 pointer-events-auto"
-                        >
-                            End
-                        </Button>
+                        >{t('live.end')}</Button>
                     ) : (
                         <Button
                             size="icon"
@@ -167,9 +169,7 @@ export function LivestreamOverlays({ call, livestreamId, role, hostProfile, titl
                         <Button
                             onClick={handleGoLive}
                             className="bg-white text-black hover:bg-gray-200 rounded-full font-bold px-10 shadow-2xl h-14 text-xl whitespace-nowrap animate-pulse"
-                        >
-                            Go Live
-                        </Button>
+                        >{t('live.goLive')}</Button>
                     </div>
                 )}
 

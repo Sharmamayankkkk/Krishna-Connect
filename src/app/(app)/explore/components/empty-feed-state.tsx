@@ -1,5 +1,9 @@
+"use client";
+
 import { FileQuestion } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+import { useTranslation } from 'react-i18next';
 
 interface EmptyFeedStateProps {
     filter: 'latest' | 'following';
@@ -11,6 +15,8 @@ interface EmptyFeedStateProps {
  * Provides contextual messaging based on the current filter
  */
 export function EmptyFeedState({ filter, onSwitchTab }: EmptyFeedStateProps) {
+  const { t } = useTranslation();
+
     return (
         <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
             <div className="rounded-full bg-muted p-4 mb-4">
@@ -29,9 +35,7 @@ export function EmptyFeedState({ filter, onSwitchTab }: EmptyFeedStateProps) {
             </p>
 
             {filter === 'following' && onSwitchTab && (
-                <Button onClick={onSwitchTab} variant="default">
-                    View Latest Posts
-                </Button>
+                <Button onClick={onSwitchTab} variant="default">{t('explore.viewLatest')}</Button>
             )}
         </div>
     );

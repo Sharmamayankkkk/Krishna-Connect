@@ -10,6 +10,8 @@ import { createClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 
+import { useTranslation } from 'react-i18next';
+
 type SearchResult = {
     type: 'user' | 'post' | 'event'
     id: string
@@ -28,6 +30,8 @@ interface GlobalSearchBarProps {
 }
 
 export function GlobalSearchBar({ className, value, onChange, placeholder = "Search...", autoFocus }: GlobalSearchBarProps) {
+  const { t } = useTranslation();
+
     const router = useRouter()
     const [internalQuery, setInternalQuery] = React.useState("")
     const query = value !== undefined ? value : internalQuery
@@ -139,7 +143,7 @@ export function GlobalSearchBar({ className, value, onChange, placeholder = "Sea
 
                     {groupedResults.user.length > 0 && (
                         <div className="mb-2">
-                            <h3 className="text-xs font-semibold text-muted-foreground px-2 py-1 mb-1">People</h3>
+                            <h3 className="text-xs font-semibold text-muted-foreground px-2 py-1 mb-1">{t('explore.people')}</h3>
                             {groupedResults.user.map(item => (
                                 <ResultItem key={item.id} item={item} icon={User} onSelect={handleSelect} />
                             ))}
@@ -148,7 +152,7 @@ export function GlobalSearchBar({ className, value, onChange, placeholder = "Sea
 
                     {groupedResults.event.length > 0 && (
                         <div className="mb-2">
-                            <h3 className="text-xs font-semibold text-muted-foreground px-2 py-1 mb-1">Events</h3>
+                            <h3 className="text-xs font-semibold text-muted-foreground px-2 py-1 mb-1">{t('events.title')}</h3>
                             {groupedResults.event.map(item => (
                                 <ResultItem key={item.id} item={item} icon={Calendar} onSelect={handleSelect} />
                             ))}
@@ -157,7 +161,7 @@ export function GlobalSearchBar({ className, value, onChange, placeholder = "Sea
 
                     {groupedResults.post.length > 0 && (
                         <div className="mb-2">
-                            <h3 className="text-xs font-semibold text-muted-foreground px-2 py-1 mb-1">Posts</h3>
+                            <h3 className="text-xs font-semibold text-muted-foreground px-2 py-1 mb-1">{t('profile.posts')}</h3>
                             {groupedResults.post.map(item => (
                                 <ResultItem key={item.id} item={item} icon={FileText} onSelect={handleSelect} />
                             ))}

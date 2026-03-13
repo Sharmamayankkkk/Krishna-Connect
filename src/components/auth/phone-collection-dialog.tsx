@@ -11,6 +11,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 
+import { useTranslation } from 'react-i18next';
+
 interface PhoneCollectionDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
@@ -30,6 +32,8 @@ export function PhoneCollectionDialog({
     forceRequired = false,
     currentPhone
 }: PhoneCollectionDialogProps) {
+  const { t } = useTranslation();
+
     const [phone, setPhone] = useState('');
     const [otp, setOtp] = useState('');
     const [isOtpSent, setIsOtpSent] = useState(false);
@@ -179,7 +183,7 @@ export function PhoneCollectionDialog({
                 {error && (
                     <Alert variant="destructive">
                         <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>Error</AlertTitle>
+                        <AlertTitle>{t('common.error')}</AlertTitle>
                         <AlertDescription>{error}</AlertDescription>
                     </Alert>
                 )}
@@ -191,9 +195,7 @@ export function PhoneCollectionDialog({
                             variant="outline"
                             className="w-full"
                             onClick={() => setIsEditing(true)}
-                        >
-                            Change Number
-                        </Button>
+                        >{t('auth.changeNumber1')}</Button>
                         <Button
                             variant="destructive"
                             className="w-full"
@@ -230,9 +232,7 @@ export function PhoneCollectionDialog({
                                     variant="ghost"
                                     onClick={() => setIsEditing(false)}
                                     className="sm:w-auto w-full"
-                                >
-                                    Cancel
-                                </Button>
+                                >{t('common.cancel')}</Button>
                             )}
                             <Button type="submit" disabled={isLoading || !phone} className="sm:w-auto w-full">
                                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -245,7 +245,7 @@ export function PhoneCollectionDialog({
                 {isOtpSent && (
                     <form onSubmit={handleVerifyOtp} className="space-y-4 py-4">
                         <div className="space-y-2">
-                            <Label htmlFor="otp-collection">One-Time Password</Label>
+                            <Label htmlFor="otp-collection">{t('auth.otp')}</Label>
                             <Input
                                 id="otp-collection"
                                 placeholder="Enter 6-digit code"
@@ -255,7 +255,7 @@ export function PhoneCollectionDialog({
                                 maxLength={6}
                             />
                             <div className="text-xs text-muted-foreground flex justify-between items-center">
-                                <span>Sent to {phone}. <button type="button" onClick={() => setIsOtpSent(false)} className="text-primary hover:underline">Change number</button></span>
+                                <span>Sent to {phone}. <button type="button" onClick={() => setIsOtpSent(false)} className="text-primary hover:underline">{t('auth.changeNumber')}</button></span>
 
                                 {timeLeft > 0 ? (
                                     <span>Resend in {formatTime(timeLeft)}</span>
@@ -265,9 +265,7 @@ export function PhoneCollectionDialog({
                                         onClick={() => handleSendOtp()}
                                         className="text-primary hover:underline font-medium"
                                         disabled={isLoading}
-                                    >
-                                        Resend OTP
-                                    </button>
+                                    >{t('auth.resendOtp')}</button>
                                 )}
                             </div>
                         </div>

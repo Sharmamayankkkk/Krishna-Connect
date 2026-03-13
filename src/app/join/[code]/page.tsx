@@ -11,6 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
+import { useTranslation } from 'react-i18next';
+
 function JoinPageScreen({ title, description, children }: { title: string; description: string; children?: React.ReactNode }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
@@ -29,6 +31,8 @@ function JoinPageScreen({ title, description, children }: { title: string; descr
 }
 
 export default function JoinGroupPage() {
+  const { t } = useTranslation();
+
   const { code } = useParams<{ code: string }>();
   const router = useRouter();
   const pathname = usePathname();
@@ -112,18 +116,18 @@ export default function JoinGroupPage() {
   }, [code, loggedInUser, isReady, hasProcessed, router, supabase, toast, addChat]);
 
   if (!isReady) {
-    return <JoinPageScreen title="Joining Group" description="Validating invite link..." />;
+    return <JoinPageScreen title={t('common.joiningGroup')} description={t('common.validatingInviteLink')} />;
   }
 
   if (!loggedInUser) {
     return (
-      <JoinPageScreen title="Login to Join" description="You need to sign in to your Krishna Connect account to join this group.">
+      <JoinPageScreen title={t('common.loginToJoin')} description={t('common.youNeedToSignInTo')}>
         <Link href={`/login?next=${pathname}`} className="w-full">
-            <Button className="w-full">Go to Login</Button>
+            <Button className="w-full">{t('common.goToLogin')}</Button>
         </Link>
       </JoinPageScreen>
     );
   }
 
-  return <JoinPageScreen title="Joining Group" description="Please wait while we add you to the group..." />;
+  return <JoinPageScreen title={t('common.joiningGroup')} description={t('common.pleaseWaitWhileWeAddYou')} />;
 }

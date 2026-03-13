@@ -20,6 +20,8 @@ import { useAppContext } from '@/providers/app-provider';
 import type { Message, Chat } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
+import { useTranslation } from 'react-i18next';
+
 interface ForwardMessageDialogProps {
   message: Message | null;
   open: boolean;
@@ -27,6 +29,8 @@ interface ForwardMessageDialogProps {
 }
 
 export function ForwardMessageDialog({ message, open, onOpenChange }: ForwardMessageDialogProps) {
+  const { t } = useTranslation();
+
   const { chats, forwardMessage, loggedInUser } = useAppContext();
   const [selectedChats, setSelectedChats] = React.useState<number[]>([]);
   const [isSending, setIsSending] = React.useState(false);
@@ -80,8 +84,8 @@ export function ForwardMessageDialog({ message, open, onOpenChange }: ForwardMes
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Forward message to...</DialogTitle>
-          <DialogDescription>Select one or more chats to send this message to.</DialogDescription>
+          <DialogTitle>{t('chat.forwardMessageTo')}</DialogTitle>
+          <DialogDescription>{t('chat.selectOneOrMoreChatsTo')}</DialogDescription>
         </DialogHeader>
         <ScrollArea className="py-4 max-h-[60vh]">
           <div className="pr-6 space-y-4">
@@ -110,7 +114,7 @@ export function ForwardMessageDialog({ message, open, onOpenChange }: ForwardMes
           </div>
         </ScrollArea>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSending}>Cancel</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSending}>{t('common.cancel')}</Button>
           <Button onClick={handleShare} disabled={selectedChats.length === 0 || isSending}>
             {isSending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
             Send

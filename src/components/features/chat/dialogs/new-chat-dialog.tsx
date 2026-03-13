@@ -20,12 +20,16 @@ import { createClient } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Search } from 'lucide-react'
 
+import { useTranslation } from 'react-i18next';
+
 interface NewChatDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 export function NewChatDialog({ open, onOpenChange }: NewChatDialogProps) {
+  const { t } = useTranslation();
+
   const router = useRouter();
   const { toast } = useToast();
   const { loggedInUser, chats, addChat } = useAppContext();
@@ -145,13 +149,13 @@ export function NewChatDialog({ open, onOpenChange }: NewChatDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>New Chat</DialogTitle>
-          <DialogDescription>Select a user to start a conversation.</DialogDescription>
+          <DialogTitle>{t('chat.newChat')}</DialogTitle>
+          <DialogDescription>{t('chat.selectAUserToStartA')}</DialogDescription>
         </DialogHeader>
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search users..."
+            placeholder={t('chat.searchUsers')}
             className="pl-8"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -159,7 +163,7 @@ export function NewChatDialog({ open, onOpenChange }: NewChatDialogProps) {
         </div>
         <ScrollArea className="h-72 w-full mt-4">
           {!searchQuery.trim() ? (
-            <p className="text-sm text-center text-muted-foreground py-10">Type a name to search for users.</p>
+            <p className="text-sm text-center text-muted-foreground py-10">{t('chat.typeANameToSearchFor')}</p>
           ) : isLoading ? (
             <div className="space-y-3 pr-4">
               {[...Array(5)].map((_, i) => (
@@ -193,9 +197,7 @@ export function NewChatDialog({ open, onOpenChange }: NewChatDialogProps) {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-center text-muted-foreground py-10">
-              No users found.
-            </p>
+            <p className="text-sm text-center text-muted-foreground py-10">{t('chat.noUsersFound')}</p>
           )}
         </ScrollArea>
       </DialogContent>

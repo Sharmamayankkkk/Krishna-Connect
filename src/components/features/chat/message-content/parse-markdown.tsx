@@ -4,17 +4,21 @@ import React, { useState, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import { Calendar } from 'lucide-react';
 
+import { useTranslation } from 'react-i18next';
+
 // ---------------------------------------------------------------------------
 // Spoiler component — click to reveal hidden text
 // ---------------------------------------------------------------------------
 export const Spoiler = ({ content }: { content: string }) => {
+  const { t } = useTranslation();
+
     const [revealed, setRevealed] = useState(false);
     return (
         <span
             className="spoiler"
             data-revealed={revealed}
             onClick={() => setRevealed(true)}
-            title="Click to reveal"
+            title={t('chat.clickToReveal')}
         >
             {content}
         </span>
@@ -32,7 +36,7 @@ export const DateChip = ({ iso }: { iso: string }) => {
     const dateObj = new Date(iso);
     const isValid = !isNaN(dateObj.getTime());
     
-    if (!isValid) return <span className="text-destructive">Invalid date</span>;
+    if (!isValid) return <span className="text-destructive">{t('chat.invalidDate')}</span>;
     
     const display = mounted 
         ? dateObj.toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })

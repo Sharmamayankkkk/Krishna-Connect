@@ -4,6 +4,8 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Play, Pause, Volume2, VolumeX, Maximize, RotateCcw } from 'lucide-react';
 
+import { useTranslation } from 'react-i18next';
+
 interface VideoPlayerProps {
   src: string;
   poster?: string;
@@ -17,6 +19,8 @@ function formatTime(seconds: number): string {
 }
 
 export function VideoPlayer({ src, poster }: VideoPlayerProps) {
+  const { t } = useTranslation();
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -190,7 +194,7 @@ export function VideoPlayer({ src, poster }: VideoPlayerProps) {
 
           <div className="flex-1" />
 
-          <button onClick={handleFullScreen} className="p-1 text-white hover:text-white/80 transition-colors" aria-label="Fullscreen">
+          <button onClick={handleFullScreen} className="p-1 text-white hover:text-white/80 transition-colors" aria-label={t('media.fullscreen')}>
             <Maximize className="h-5 w-5" />
           </button>
         </div>

@@ -5,7 +5,11 @@ import { Button } from '@/components/ui/button'
 import { Radio } from 'lucide-react'
 import { GoLiveDialog } from '@/components/features/live/go-live-dialog'
 
+import { useTranslation } from 'react-i18next';
+
 export function GoLiveButton() {
+  const { t } = useTranslation();
+
     const [open, setOpen] = useState(false)
 
     return (
@@ -26,7 +30,7 @@ export function GoLiveButton() {
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
                     </span>
                     <Radio className="h-4 w-4" />
-                    <span>Go Live</span>
+                    <span>{t('live.goLive')}</span>
                 </div>
             </Button>
             <GoLiveDialog open={open} onOpenChange={setOpen} />

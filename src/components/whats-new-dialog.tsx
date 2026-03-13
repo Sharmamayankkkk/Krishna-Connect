@@ -5,9 +5,13 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Button } from '@/components/ui/button';
 import { Sparkles, MessageCircle, BarChart3, Tags, Shield, Image as ImageIcon, Calendar } from 'lucide-react';
 
+import { useTranslation } from 'react-i18next';
+
 const CURRENT_VERSION = 'update-v2.1-advanced-chat';
 
 export function WhatsNewDialog() {
+  const { t } = useTranslation();
+
     const [isOpen, setIsOpen] = React.useState(false);
 
     React.useEffect(() => {
@@ -43,7 +47,7 @@ export function WhatsNewDialog() {
                             <BarChart3 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div className="space-y-1">
-                            <h4 className="font-semibold">Interactive Chat Polls</h4>
+                            <h4 className="font-semibold">{t('common.interactiveChatPolls')}</h4>
                             <p className="text-sm text-muted-foreground">
                                 Create instant polls in any chat or group. Supports multiple answers, anonymous voting, and live vote counting. 
                             </p>
@@ -55,7 +59,7 @@ export function WhatsNewDialog() {
                             <Tags className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                         </div>
                         <div className="space-y-1">
-                            <h4 className="font-semibold">Member Tags</h4>
+                            <h4 className="font-semibold">{t('chat.memberTags')}</h4>
                             <p className="text-sm text-muted-foreground">
                                 Group members can now showcase their roles or interests with custom tags next to their name. Group admins hold distinct, colored tags.
                             </p>
@@ -79,7 +83,7 @@ export function WhatsNewDialog() {
                             <MessageCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                         </div>
                         <div className="space-y-1">
-                            <h4 className="font-semibold">Smart Clear Chat & Jump Navigation</h4>
+                            <h4 className="font-semibold">{t('common.smartClearChatJumpNavigation')}</h4>
                             <p className="text-sm text-muted-foreground">
                                 Clear your side of a chat without deleting it for the other person. Clicking replies now smoothly pulses to highlight the original message.
                             </p>
@@ -91,7 +95,7 @@ export function WhatsNewDialog() {
                             <ImageIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
                         </div>
                         <div className="space-y-1">
-                            <h4 className="font-semibold">Reply Thumbnails</h4>
+                            <h4 className="font-semibold">{t('common.replyThumbnails')}</h4>
                             <p className="text-sm text-muted-foreground">
                                 Replying to an image, file, or voice note now visualizes a clean preview thumbnail inside the message bubble.
                             </p>
@@ -103,7 +107,7 @@ export function WhatsNewDialog() {
                             <Calendar className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                         </div>
                         <div className="space-y-1">
-                            <h4 className="font-semibold">Localized Date Formatting</h4>
+                            <h4 className="font-semibold">{t('common.localizedDateFormatting')}</h4>
                             <p className="text-sm text-muted-foreground">
                                 Type specific dates and times using the new date picker. It will automatically convert to the timezone of whomever reads it!
                             </p>
@@ -112,9 +116,7 @@ export function WhatsNewDialog() {
                 </div>
 
                 <DialogFooter>
-                    <Button onClick={handleClose} className="w-full bg-primary hover:bg-primary/90">
-                        Jay Sri Krishna
-                    </Button>
+                    <Button onClick={handleClose} className="w-full bg-primary hover:bg-primary/90">{t('common.jaySriKrishna')}</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

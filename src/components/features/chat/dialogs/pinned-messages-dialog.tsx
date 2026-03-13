@@ -14,6 +14,8 @@ import { Pin, X } from 'lucide-react';
 import type { Message } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
 
+import { useTranslation } from 'react-i18next';
+
 interface PinnedMessagesDialogProps {
   messages: Message[];
   open: boolean;
@@ -31,18 +33,16 @@ export function PinnedMessagesDialog({
     onUnpinMessage,
     isAdmin 
 }: PinnedMessagesDialogProps) {
+  const { t } = useTranslation();
+
     
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Pin className="h-5 w-5" />
-            Pinned Messages
-          </DialogTitle>
-          <DialogDescription>
-            All pinned messages in this chat are shown here.
-          </DialogDescription>
+            <Pin className="h-5 w-5" />{t('chat.pinnedMessages')}</DialogTitle>
+          <DialogDescription>{t('chat.allPinnedMessagesInThisChat')}</DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-72 w-full mt-4">
           <div className="space-y-4 pr-4">
@@ -79,7 +79,7 @@ export function PinnedMessagesDialog({
                 ))
             ) : (
                 <div className="text-center py-10 text-muted-foreground">
-                    <p>No messages have been pinned yet.</p>
+                    <p>{t('chat.noMessagesHaveBeenPinnedYet')}</p>
                 </div>
             )}
           </div>

@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
+import { useTranslation } from 'react-i18next';
+
 type FollowRequest = {
     id: string; // the notification or relationship ID
     fromUser: {
@@ -19,6 +21,8 @@ type FollowRequest = {
 };
 
 export default function FollowRequestsPage() {
+  const { t } = useTranslation();
+
     const router = useRouter();
     const { toast } = useToast();
     const [requests, setRequests] = React.useState<FollowRequest[]>([]);
@@ -88,20 +92,20 @@ export default function FollowRequestsPage() {
                     >
                         <ChevronLeft className="h-6 w-6" />
                     </button>
-                    <h1 className="text-xl font-bold tracking-tight">Follow requests</h1>
+                    <h1 className="text-xl font-bold tracking-tight">{t('notifications.followRequests')}</h1>
                 </div>
             </div>
 
             <div className="w-full max-w-2xl mx-auto flex-1 pt-2">
                 {isLoading ? (
-                    <div className="p-4 text-center text-muted-foreground">Loading...</div>
+                    <div className="p-4 text-center text-muted-foreground">{t('common.loading')}</div>
                 ) : requests.length === 0 ? (
                     <div className="p-8 text-center text-muted-foreground flex flex-col items-center">
                         <div className="h-16 w-16 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center mb-4">
                             <span className="text-2xl text-muted-foreground/50">0</span>
                         </div>
-                        <h3 className="font-semibold text-foreground">No follow requests</h3>
-                        <p className="text-sm mt-1">You don't have any pending follow requests.</p>
+                        <h3 className="font-semibold text-foreground">{t('notifications.noFollowRequests')}</h3>
+                        <p className="text-sm mt-1">{t('notifications.youDontHaveAnyPendingFollow')}</p>
                     </div>
                 ) : (
                     <div className="w-full">
@@ -121,16 +125,12 @@ export default function FollowRequestsPage() {
                                     <Button 
                                         className="h-8 rounded-lg bg-[#0064e0] px-4 py-0 text-sm font-semibold hover:bg-[#0052b8] text-white"
                                         onClick={() => handleAccept(req.id)}
-                                    >
-                                        Confirm
-                                    </Button>
+                                    >{t('common.confirm')}</Button>
                                     <Button 
                                         variant="secondary" 
                                         className="h-8 rounded-lg bg-muted px-4 py-0 text-sm font-semibold hover:bg-muted/80 text-foreground"
                                         onClick={() => handleDecline(req.id)}
-                                    >
-                                        Delete
-                                    </Button>
+                                    >{t('common.delete')}</Button>
                                 </div>
                             </div>
                         ))}

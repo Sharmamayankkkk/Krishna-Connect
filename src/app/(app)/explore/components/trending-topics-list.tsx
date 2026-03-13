@@ -6,12 +6,16 @@ import { Hash, TrendingUp } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 
+import { useTranslation } from 'react-i18next';
+
 export function TrendingTopicsList({ onHashtagClick }: { onHashtagClick: (tag: string) => void }) {
     const [topics, setTopics] = React.useState<any[]>([]);
     const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
         const fetchTopics = async () => {
+  const { t } = useTranslation();
+
             const supabase = createClient();
             const { data, error } = await supabase.rpc('get_trending_topics');
             if (!error && data) {
@@ -36,7 +40,7 @@ export function TrendingTopicsList({ onHashtagClick }: { onHashtagClick: (tag: s
         return (
             <div className="p-4 text-center text-muted-foreground text-sm">
                 <Hash className="h-5 w-5 mx-auto mb-1 opacity-50" />
-                <p>No trending topics yet</p>
+                <p>{t('explore.noTrending')}</p>
             </div>
         );
     }

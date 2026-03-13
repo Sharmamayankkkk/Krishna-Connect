@@ -1,4 +1,8 @@
+"use client";
+
 import { Metadata } from "next";
+import { useTranslation } from 'react-i18next';
+
 import {
   Rocket,
   Sparkles,
@@ -150,12 +154,12 @@ const faqCategories = [
 ];
 
 const FAQPage = () => {
+  const { t } = useTranslation();
+
   return (
     <div className="container mx-auto px-4 py-12 max-w-4xl text-foreground">
       <div className="mb-10 text-center">
-        <h1 className="text-4xl font-bold mb-4 tracking-tight">
-          Frequently Asked Questions
-        </h1>
+        <h1 className="text-4xl font-bold mb-4 tracking-tight">{t('legal.frequentlyAskedQuestions')}</h1>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
           Find answers to common questions about Krishna Connect. Can&apos;t
           find what you&apos;re looking for? Contact us at{" "}

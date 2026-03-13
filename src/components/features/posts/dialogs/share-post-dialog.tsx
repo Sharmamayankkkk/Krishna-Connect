@@ -21,6 +21,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
+import { useTranslation } from 'react-i18next';
+
 interface SharePostDialogProps {
     post: PostType;
     open: boolean;
@@ -82,6 +84,8 @@ const BrandIcon = ({ platform, className }: { platform: string; className?: stri
 }
 
 export function SharePostDialog({ post, open, onOpenChange }: SharePostDialogProps) {
+  const { t } = useTranslation();
+
     const { chats, forwardMessage, loggedInUser } = useAppContext();
     const [selectedChats, setSelectedChats] = React.useState<number[]>([]);
     const [isSending, setIsSending] = React.useState(false);
@@ -226,15 +230,15 @@ export function SharePostDialog({ post, open, onOpenChange }: SharePostDialogPro
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden bg-background">
                 <DialogHeader className="px-6 py-4 border-b">
-                    <DialogTitle>Share Post</DialogTitle>
-                    <DialogDescription>Share this post with friends or via other apps.</DialogDescription>
+                    <DialogTitle>{t('post.sharePost1')}</DialogTitle>
+                    <DialogDescription>{t('post.shareThisPostWithFriendsOr')}</DialogDescription>
                 </DialogHeader>
 
                 <Tabs defaultValue="dm" className="w-full">
                     <div className="px-6 pt-4">
                         <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="dm">Send to DM</TabsTrigger>
-                            <TabsTrigger value="external">Share via...</TabsTrigger>
+                            <TabsTrigger value="dm">{t('post.sendToDm')}</TabsTrigger>
+                            <TabsTrigger value="external">{t('post.shareVia')}</TabsTrigger>
                         </TabsList>
                     </div>
 
@@ -243,7 +247,7 @@ export function SharePostDialog({ post, open, onOpenChange }: SharePostDialogPro
                             <div className="relative">
                                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                                 <Input
-                                    placeholder="Search people..."
+                                    placeholder={t('post.searchPeople')}
                                     className="pl-9 bg-muted/50 border-none"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -328,7 +332,7 @@ export function SharePostDialog({ post, open, onOpenChange }: SharePostDialogPro
                             </div>
 
                             <div className="space-y-3 pt-4 border-t pb-4">
-                                <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Page Link</Label>
+                                <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">{t('post.pageLink')}</Label>
                                 <div className="flex items-center gap-2 p-1 border rounded-full pl-3 pr-1 w-full bg-muted/50 overflow-hidden">
                                     <Link2 className="h-4 w-4 text-muted-foreground shrink-0" />
                                     <input
@@ -343,12 +347,10 @@ export function SharePostDialog({ post, open, onOpenChange }: SharePostDialogPro
                                     >
                                         {hasCopied ? (
                                             <>
-                                                <Check className="h-3.5 w-3.5 mr-1" /> Copied
-                                            </>
+                                                <Check className="h-3.5 w-3.5 mr-1" />{t('post.copied')}</>
                                         ) : (
                                             <>
-                                                <Copy className="h-3.5 w-3.5 mr-1" /> Copy
-                                            </>
+                                                <Copy className="h-3.5 w-3.5 mr-1" />{t('chat.copy')}</>
                                         )}
                                     </Button>
                                 </div>

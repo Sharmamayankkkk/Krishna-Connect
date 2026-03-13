@@ -1,5 +1,9 @@
+"use client";
+
 import { Metadata } from "next";
 import Image from "next/image";
+
+import { useTranslation } from 'react-i18next';
 
 export const metadata: Metadata = {
   title: "Our Team | Krishna Connect",
@@ -7,6 +11,8 @@ export const metadata: Metadata = {
 };
 
 const DevelopersPage = () => {
+  const { t } = useTranslation();
+
   return (
     <div className="container mx-auto px-4 py-12 max-w-6xl">
       {/* Header */}
@@ -14,18 +20,14 @@ const DevelopersPage = () => {
         <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">
           Krishna Consciousness Society
         </h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Dedicated to spreading Vedic wisdom through technology.
-        </p>
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">{t('legal.dedicatedToSpreadingVedicWisdomThrough')}</p>
       </div>
 
       {/* Spiritual Leadership Section */}
       <section className="mb-20">
         <div className="flex items-center justify-center gap-4 mb-10">
           <div className="h-px bg-border flex-1 max-w-[100px]" />
-          <h2 className="text-2xl font-bold text-center text-foreground">
-            Our Inspiration & Leadership
-          </h2>
+          <h2 className="text-2xl font-bold text-center text-foreground">{t('legal.ourInspirationLeadership')}</h2>
           <div className="h-px bg-border flex-1 max-w-[100px]" />
         </div>
 
@@ -36,12 +38,12 @@ const DevelopersPage = () => {
             <div className="w-48 h-48 relative mb-6 rounded-full overflow-hidden border-4 border-primary/10 shadow-xl group-hover:scale-105 transition-transform duration-500">
               <Image
                 src="/logo/Srila-Prabhupada.png"
-                alt="Srila Prabhupada"
+                alt={t('legal.srilaPrabhupada')}
                 fill
                 className="object-cover"
               />
             </div>
-            <h3 className="text-2xl font-bold text-foreground">His Divine Grace A.C. Bhaktivedanta Swami Prabhupada</h3>
+            <h3 className="text-2xl font-bold text-foreground">{t('legal.hisDivineGraceAcBhaktivedantaSwami')}</h3>
             <p className="text-primary font-medium mt-2">Founder-Acharya: International Society for Krishna Consciousness</p>
           </div>
 

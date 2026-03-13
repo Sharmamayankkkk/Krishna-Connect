@@ -1,8 +1,14 @@
+"use client";
+
 import React from 'react';
 import Image from 'next/image';
 import { Check, X as XIcon } from 'lucide-react';
 
+import { useTranslation } from 'react-i18next';
+
 export function ComparisonTable() {
+  const { t } = useTranslation();
+
     const features = [
         { feature: 'Verified Badge', free: false, verified: true },
         { feature: 'Official Emojis & Stickers', free: false, verified: true },
@@ -17,18 +23,16 @@ export function ComparisonTable() {
 
     return (
         <div className="space-y-4">
-            <h3 className="text-2xl font-bold text-center">Normal vs Verified</h3>
+            <h3 className="text-2xl font-bold text-center">{t('getVerified.normalVsVerified')}</h3>
             <div className="rounded-2xl border overflow-hidden bg-card shadow-sm">
                 <table className="w-full text-sm">
                     <thead>
                         <tr className="bg-muted/50">
-                            <th className="text-left p-3 sm:p-4 font-semibold">Feature</th>
-                            <th className="text-center p-3 sm:p-4 font-semibold w-24">Free</th>
+                            <th className="text-left p-3 sm:p-4 font-semibold">{t('getVerified.feature')}</th>
+                            <th className="text-center p-3 sm:p-4 font-semibold w-24">{t('getVerified.free')}</th>
                             <th className="text-center p-3 sm:p-4 font-semibold w-24 bg-primary/5">
                                 <span className="flex items-center justify-center gap-1">
-                                    <Image src="/user_Avatar/verified.png" alt="" width={14} height={14} />
-                                    Verified
-                                </span>
+                                    <Image src="/user_Avatar/verified.png" alt="" width={14} height={14} />{t('getVerified.verified')}</span>
                             </th>
                         </tr>
                     </thead>

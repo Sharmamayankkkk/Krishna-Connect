@@ -1,5 +1,9 @@
+"use client";
+
 import { Metadata } from "next";
 import Link from "next/link";
+
+import { useTranslation } from 'react-i18next';
 
 export const metadata: Metadata = {
   title: "Terms and Conditions | Krishna Connect",
@@ -7,12 +11,12 @@ export const metadata: Metadata = {
 };
 
 const TermsAndConditionsPage = () => {
+  const { t } = useTranslation();
+
   return (
     <div className="container mx-auto px-4 py-12 max-w-4xl text-foreground">
       <div className="mb-10 text-center">
-        <h1 className="text-4xl font-bold mb-4 tracking-tight">
-          Terms and Conditions
-        </h1>
+        <h1 className="text-4xl font-bold mb-4 tracking-tight">{t('legal.termsAndConditions')}</h1>
         <p className="text-muted-foreground">Effective: March 10, 2026</p>
       </div>
 
@@ -209,9 +213,7 @@ const TermsAndConditionsPage = () => {
             <Link
               href="/privacy-policy"
               className="text-primary hover:underline"
-            >
-              Privacy Policy
-            </Link>{" "}
+            >{t('auth.privacyPolicy')}</Link>{" "}
             to understand how we collect, use, store, and protect your data.
             By using the Platform, you consent to the data practices described
             in our Privacy Policy.

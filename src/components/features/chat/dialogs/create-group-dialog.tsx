@@ -36,6 +36,8 @@ import type { User } from '@/lib/types'
 import { createClient, getAvatarUrl } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
 
+import { useTranslation } from 'react-i18next';
+
 interface CreateGroupDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -48,6 +50,8 @@ const createGroupSchema = z.object({
 })
 
 export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps) {
+  const { t } = useTranslation();
+
   const router = useRouter();
   const { toast } = useToast();
   const { loggedInUser } = useAppContext();
@@ -151,14 +155,14 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Create a New Group</DialogTitle>
-          <DialogDescription>Fill out the details below to start a new group chat.</DialogDescription>
+          <DialogTitle>{t('chat.createANewGroup')}</DialogTitle>
+          <DialogDescription>{t('chat.fillOutTheDetailsBelowTo')}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="flex items-center gap-6">
               <Avatar className="h-20 w-20">
-                <AvatarImage src={`https://placehold.co/100x100.png`} alt="Group avatar" data-ai-hint="logo symbol" />
+                <AvatarImage src={`https://placehold.co/100x100.png`} alt={t('chat.groupAvatar')} data-ai-hint="logo symbol" />
                 <AvatarFallback>{form.watch('name')?.charAt(0).toUpperCase() || 'G'}</AvatarFallback>
               </Avatar>
               <div className="flex-1 space-y-4">
@@ -167,9 +171,9 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Group Name</FormLabel>
+                      <FormLabel>{t('chat.groupName')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="E.g., Bhagavad Gita Study" {...field} />
+                        <Input placeholder={t('events.egBhagavadGitaStudy')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -182,7 +186,7 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
                     <FormItem>
                       <FormLabel>Description (Optional)</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="What is this group about?" className="resize-none" {...field} />
+                        <Textarea placeholder={t('chat.whatIsThisGroupAbout')} className="resize-none" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -196,11 +200,11 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
               name="members"
               render={() => (
                 <FormItem>
-                  <FormLabel>Add Members</FormLabel>
+                  <FormLabel>{t('chat.addMembers')}</FormLabel>
                   <div className="mb-2">
                     <input
                       type="text"
-                      placeholder="Search by name or username..."
+                      placeholder={t('chat.searchByNameOrUsername')}
                       value={memberSearch}
                       onChange={e => setMemberSearch(e.target.value)}
                       className="w-full px-3 py-1.5 text-sm border rounded-md bg-background focus:outline-none focus:ring-1 focus:ring-primary"
@@ -243,7 +247,7 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
                         />
                       ))
                     ) : (
-                      <p className="text-sm text-center text-muted-foreground py-4">No other users found to add.</p>
+                      <p className="text-sm text-center text-muted-foreground py-4">{t('chat.noOtherUsersFoundToAdd')}</p>
                     )}
                   </ScrollArea>
                   <FormMessage />
@@ -253,7 +257,7 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
 
             <DialogFooter>
               <DialogClose asChild>
-                <Button type="button" variant="outline">Cancel</Button>
+                <Button type="button" variant="outline">{t('common.cancel')}</Button>
               </DialogClose>
               <Button type="submit" disabled={isCreating}>{isCreating ? 'Creating...' : 'Create Group'}</Button>
             </DialogFooter>

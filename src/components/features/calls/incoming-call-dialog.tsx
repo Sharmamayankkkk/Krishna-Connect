@@ -6,7 +6,11 @@ import { Button } from "@/components/ui/button"
 import { Phone, Video, PhoneOff } from "lucide-react"
 import { getAvatarUrl } from "@/lib/utils"
 
+import { useTranslation } from 'react-i18next';
+
 export function IncomingCallDialog() {
+  const { t } = useTranslation();
+
   const { incomingCall, acceptCall, declineCall } = useCallContext()
 
   if (!incomingCall) return null
@@ -36,7 +40,7 @@ export function IncomingCallDialog() {
             size="lg"
             className="rounded-full h-16 w-16 p-0"
             onClick={declineCall}
-            aria-label="Decline call"
+            aria-label={t('calls.declineCall')}
           >
             <PhoneOff className="h-7 w-7" />
           </Button>
@@ -44,7 +48,7 @@ export function IncomingCallDialog() {
             size="lg"
             className="rounded-full h-16 w-16 p-0 bg-green-500 hover:bg-green-600 text-white"
             onClick={acceptCall}
-            aria-label="Accept call"
+            aria-label={t('calls.acceptCall')}
           >
             {callType === "video" ? <Video className="h-7 w-7" /> : <Phone className="h-7 w-7" />}
           </Button>

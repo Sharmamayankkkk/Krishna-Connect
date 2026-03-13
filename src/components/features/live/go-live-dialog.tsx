@@ -15,12 +15,16 @@ import { useRouter } from 'next/navigation'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 
+import { useTranslation } from 'react-i18next';
+
 interface GoLiveDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
 }
 
 export function GoLiveDialog({ open, onOpenChange }: GoLiveDialogProps) {
+  const { t } = useTranslation();
+
     const { client } = useStreamVideo()
     const { loggedInUser } = useAppContext()
     const router = useRouter()
@@ -89,17 +93,15 @@ export function GoLiveDialog({ open, onOpenChange }: GoLiveDialogProps) {
                             variant="ghost"
                             className="text-white/70 hover:text-white hover:bg-white/10 rounded-full h-8 w-8"
                             onClick={() => onOpenChange(false)}
-                            aria-label="Close"
+                            aria-label={t('common.close')}
                         >
                             <X className="h-5 w-5" />
                         </Button>
                     </div>
                     <div className="relative z-10">
                         <DialogTitle className="text-2xl font-bold text-white flex items-center gap-2">
-                            <Radio className="h-6 w-6 animate-pulse" />
-                            Go Live
-                        </DialogTitle>
-                        <p className="text-white/80 text-sm mt-1">Setup your stream details</p>
+                            <Radio className="h-6 w-6 animate-pulse" />{t('live.goLive')}</DialogTitle>
+                        <p className="text-white/80 text-sm mt-1">{t('live.setupYourStreamDetails')}</p>
                     </div>
                     {/* Decorative circles */}
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
@@ -115,7 +117,7 @@ export function GoLiveDialog({ open, onOpenChange }: GoLiveDialogProps) {
                             <Wand2 className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground z-10" />
                             <Input
                                 id="title"
-                                placeholder="What's on your mind?"
+                                placeholder={t('live.whatsOnYourMind')}
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 className="bg-muted border-transparent focus:border-red-500 focus:bg-background text-foreground placeholder:text-muted-foreground pl-10 h-12 text-base transition-all relative z-10"
@@ -124,12 +126,10 @@ export function GoLiveDialog({ open, onOpenChange }: GoLiveDialogProps) {
                     </div>
 
                     <div className="space-y-2 relative">
-                        <Label htmlFor="description" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground z-10 relative">
-                            Description
-                        </Label>
+                        <Label htmlFor="description" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground z-10 relative">{t('challenges.description')}</Label>
                         <Textarea
                             id="description"
-                            placeholder="Tell your viewers more..."
+                            placeholder={t('live.tellYourViewersMore')}
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             className="bg-muted border-transparent focus:border-red-500 focus:bg-background text-foreground placeholder:text-muted-foreground resize-none min-h-[80px] relative z-10 mt-2"
@@ -137,9 +137,7 @@ export function GoLiveDialog({ open, onOpenChange }: GoLiveDialogProps) {
                     </div>
 
                     <div className="space-y-2">
-                        <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                            Audience
-                        </Label>
+                        <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('analytics.audience')}</Label>
                         <div className="grid grid-cols-2 gap-3">
                             <button
                                 type="button"
@@ -152,7 +150,7 @@ export function GoLiveDialog({ open, onOpenChange }: GoLiveDialogProps) {
                                 )}
                             >
                                 <Globe className="h-6 w-6 mb-2" />
-                                <span className="text-sm font-medium">Public</span>
+                                <span className="text-sm font-medium">{t('bookmarks.public')}</span>
                             </button>
                             <button
                                 type="button"
@@ -165,7 +163,7 @@ export function GoLiveDialog({ open, onOpenChange }: GoLiveDialogProps) {
                                 )}
                             >
                                 <Users className="h-6 w-6 mb-2" />
-                                <span className="text-sm font-medium">Followers</span>
+                                <span className="text-sm font-medium">{t('profile.followers')}</span>
                             </button>
                         </div>
                     </div>
@@ -178,9 +176,7 @@ export function GoLiveDialog({ open, onOpenChange }: GoLiveDialogProps) {
                         >
                             {isCreating ? (
                                 <>
-                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                    Creating Studio...
-                                </>
+                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />{t('live.creatingStudio')}</>
                             ) : (
                                 'Enter Studio'
                             )}

@@ -1,3 +1,5 @@
+"use client";
+
 import { fetchArticleContent, fetchNewsFeed } from "../actions";
 import { NewsItem } from "../types";
 import { Button } from "@/components/ui/button";
@@ -8,6 +10,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+
+import { useTranslation } from 'react-i18next';
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -59,14 +63,12 @@ export default async function NewsArticlePage({ params }: PageProps) {
                         <SidebarTrigger className="md:hidden" />
                         <Button variant="ghost" size="sm" asChild className="-ml-2">
                             <Link href="/news">
-                                <ChevronLeft className="mr-1 h-4 w-4" />
-                                Back to News
-                            </Link>
+                                <ChevronLeft className="mr-1 h-4 w-4" />{t('news.backToNews')}</Link>
                         </Button>
                     </div>
                     <div className="flex gap-2">
                         <Button variant="ghost" size="icon" asChild>
-                            <a href={link} target="_blank" rel="noopener noreferrer" title="Open Original">
+                            <a href={link} target="_blank" rel="noopener noreferrer" title={t('news.openOriginal')}>
                                 <ExternalLink className="h-4 w-4" />
                             </a>
                         </Button>
@@ -116,7 +118,7 @@ export default async function NewsArticlePage({ params }: PageProps) {
                         />
                     ) : (
                         <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground not-prose">
-                            <p className="text-lg">Could not load reader view for this article.</p>
+                            <p className="text-lg">{t('news.couldNotLoadReaderViewFor')}</p>
                             <Button variant="outline" className="mt-4" asChild>
                                 <a href={link} target="_blank" rel="noopener noreferrer">
                                     Read on {item.source} <ExternalLink className="ml-2 h-4 w-4" />

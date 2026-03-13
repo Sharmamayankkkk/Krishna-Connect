@@ -15,7 +15,11 @@ import { getAvatarUrl } from '@/lib/utils';
 import type { Message } from '@/lib/types';
 import { PollMessage } from './poll-message';
 
+import { useTranslation } from 'react-i18next';
+
 const formatBytes = (bytes: number, decimals = 2) => {
+  const { t } = useTranslation();
+
     if (!+bytes) return '0 Bytes';
     const k = 1024;
     const dm = decimals < 0 ? 0 : decimals;
@@ -86,7 +90,7 @@ function PostShareCard({ metadata }: { metadata: any }) {
                 </div>
                 {hasMedia && displaySrc && (
                     <div className="relative aspect-square w-full bg-black/5">
-                        <Image src={displaySrc} alt="Post content" fill className="object-cover" sizes="(max-width: 768px) 100vw, 300px" />
+                        <Image src={displaySrc} alt={t('chat.postContent')} fill className="object-cover" sizes="(max-width: 768px) 100vw, 300px" />
                         {isVideo && (
                             <div className="absolute inset-0 flex items-center justify-center bg-black/20">
                                 <div className="bg-black/50 backdrop-blur-sm rounded-full p-2.5">
@@ -180,7 +184,7 @@ export const createRenderMessageContent = ({
 
             const attachmentElement = () => {
                 if (isSticker) {
-                    return <Image src={message.attachment_url!} alt="Sticker" width={160} height={160} className="object-contain" />;
+                    return <Image src={message.attachment_url!} alt={t('chat.sticker')} width={160} height={160} className="object-contain" />;
                 }
                 if (type.startsWith('image/')) {
                     return (

@@ -6,6 +6,8 @@ import { cn } from '@/lib/utils';
 import { CALL_MESSAGE_PREFIX } from '../chat-constants';
 import type { Message } from '@/lib/types';
 
+import { useTranslation } from 'react-i18next';
+
 interface CallMessageProps {
     content: string;
     message: Message;
@@ -16,6 +18,8 @@ interface CallMessageProps {
 }
 
 const formatDuration = (s: number) => {
+  const { t } = useTranslation();
+
     if (s < 60) return `${s}s`;
     const m = Math.floor(s / 60);
     const remaining = s % 60;
@@ -77,14 +81,10 @@ export const CallMessage = ({
                             const otherUser = chatParticipants?.find((p: any) => p.user_id !== loggedInUserId);
                             if (otherUser) startCall(otherUser.user_id, isVideo ? 'video' : 'voice');
                         }}
-                    >
-                        Call Back
-                    </Button>
+                    >{t('chat.callBack')}</Button>
                 )}
                 {canJoin && joinCall && callId && (
-                    <Button variant="default" size="sm" className="ml-2 h-7 text-xs" onClick={() => joinCall(callId)}>
-                        Join
-                    </Button>
+                    <Button variant="default" size="sm" className="ml-2 h-7 text-xs" onClick={() => joinCall(callId)}>{t('chat.join')}</Button>
                 )}
             </div>
         </div>

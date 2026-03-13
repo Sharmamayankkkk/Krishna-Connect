@@ -9,7 +9,11 @@ import { ArrowLeft, Hash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { PostType } from "@/lib/types";
 
+import { useTranslation } from 'react-i18next';
+
 export default function HashtagPage() {
+  const { t } = useTranslation();
+
     const params = useParams();
     const router = useRouter();
     const tag = params.tag as string;
@@ -179,7 +183,7 @@ export default function HashtagPage() {
                 ) : (
                     <div className="p-8 text-center text-muted-foreground">
                         <Hash className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                        <h2 className="text-lg font-semibold">No posts yet</h2>
+                        <h2 className="text-lg font-semibold">{t('common.noPostsYet')}</h2>
                         <p>Be the first to post with #{tag}!</p>
                     </div>
                 )}

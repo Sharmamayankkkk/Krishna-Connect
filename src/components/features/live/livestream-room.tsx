@@ -10,6 +10,8 @@ import { createStreamClient, disconnectStreamClient } from '@/lib/stream-config'
 import { useToast } from '@/hooks/use-toast'
 import { Loader2 } from 'lucide-react'
 import { useAppContext } from '@/providers/app-provider'
+import { useTranslation } from 'react-i18next';
+
 import '@stream-io/video-react-sdk/dist/css/styles.css'
 
 interface LivestreamRoomProps {
@@ -21,6 +23,8 @@ interface LivestreamRoomProps {
 }
 
 export function LivestreamRoom({ livestreamId, callId, role, hostProfile, title }: LivestreamRoomProps) {
+  const { t } = useTranslation();
+
     const { loggedInUser } = useAppContext()
     const { toast } = useToast()
     const router = useRouter()
@@ -138,7 +142,7 @@ export function LivestreamRoom({ livestreamId, callId, role, hostProfile, title 
             <LiveLayout>
                 <div className="flex flex-col items-center justify-center h-full w-full bg-black text-white gap-4 rounded-[inherit]">
                     <Loader2 className="h-8 w-8 animate-spin" />
-                    <p className="text-sm text-gray-400">Entering livestream...</p>
+                    <p className="text-sm text-gray-400">{t('live.enteringLivestream')}</p>
                 </div>
             </LiveLayout>
         )

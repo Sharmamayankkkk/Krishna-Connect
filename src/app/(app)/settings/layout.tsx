@@ -7,7 +7,11 @@ import { cn } from "@/lib/utils"
 import { ChevronLeft } from "lucide-react"
 import Link from "next/link"
 
+import { useTranslation } from 'react-i18next';
+
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation();
+
     const pathname = usePathname()
     const isSettingsRoot = pathname === "/settings"
 
@@ -25,10 +29,8 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
         <div className="container max-w-4xl mx-auto py-4 md:py-6 px-4 md:px-8 h-[calc(100vh-4rem)] md:h-auto overflow-y-auto md:overflow-visible">
             {/* Desktop Header */}
             <div className="hidden md:block space-y-0.5 mb-6">
-                <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
-                <p className="text-muted-foreground">
-                    Manage your account settings and preferences.
-                </p>
+                <h2 className="text-2xl font-bold tracking-tight">{t('settings.title')}</h2>
+                <p className="text-muted-foreground">{t('settings.manageYourAccountSettingsAndPreferences')}</p>
             </div>
             <Separator className="hidden md:block my-6" />
 
@@ -37,7 +39,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                 <div className="md:hidden flex items-center gap-2 mb-6 text-muted-foreground hover:text-foreground transition-colors">
                     <Link href="/settings" className="flex items-center gap-1">
                         <ChevronLeft className="h-5 w-5" />
-                        <span className="font-medium text-foreground">Settings</span>
+                        <span className="font-medium text-foreground">{t('settings.title')}</span>
                     </Link>
                 </div>
             )}
@@ -47,7 +49,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                     <Link href="/feed" className="flex items-center text-muted-foreground hover:text-foreground transition-colors">
                         <ChevronLeft className="h-5 w-5" />
                     </Link>
-                    <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
+                    <h2 className="text-2xl font-bold tracking-tight">{t('settings.title')}</h2>
                 </div>
             )}
 

@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { CheckCircle2 } from 'lucide-react';
 
+import { useTranslation } from 'react-i18next';
+
 interface SocialLink {
     url: string;
     status: 'pending' | 'approved' | 'needs_change';
@@ -32,6 +34,8 @@ export function SocialLinkInput({
     placeholder,
     disabled
 }: SocialLinkInputProps) {
+  const { t } = useTranslation();
+
     const needsChange = link?.status === 'needs_change';
     const isApproved = link?.status === 'approved';
 
@@ -40,14 +44,10 @@ export function SocialLinkInput({
             <Label className="flex items-center gap-2 capitalize text-sm font-medium">
                 {icon} {platform}
                 {isApproved && (
-                    <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] h-5 px-1.5">
-                        Approved
-                    </Badge>
+                    <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] h-5 px-1.5">{t('challenges.approved')}</Badge>
                 )}
                 {needsChange && (
-                    <Badge variant="destructive" className="text-[10px] h-5 px-1.5">
-                        Needs Change
-                    </Badge>
+                    <Badge variant="destructive" className="text-[10px] h-5 px-1.5">{t('getVerified.needsChange')}</Badge>
                 )}
             </Label>
             <div className="relative">

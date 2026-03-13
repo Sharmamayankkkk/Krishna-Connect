@@ -18,6 +18,8 @@ import {
 import { cn, getAvatarUrl } from '@/lib/utils'
 import { useToast } from '@/hooks/use-toast'
 
+import { useTranslation } from 'react-i18next';
+
 interface StreamCallScreenProps {
     callId: string
     callType: 'video' | 'voice'
@@ -33,6 +35,8 @@ export function StreamCallScreen({
     remoteUserName,
     remoteUserAvatar
 }: StreamCallScreenProps) {
+  const { t } = useTranslation();
+
     const { client } = useStreamVideo()
     const { toast } = useToast()
     const [call, setCall] = useState<any>(null)
@@ -227,9 +231,7 @@ function CallContent({
                                     participant={localParticipant}
                                     className="w-full h-full"
                                 />
-                                <div className="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
-                                    You
-                                </div>
+                                <div className="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs">{t('calls.you')}</div>
                             </div>
                         )}
 
@@ -237,7 +239,7 @@ function CallContent({
                         {!hasRemoteParticipants && (
                             <div className="flex flex-col items-center justify-center text-white/60">
                                 <Users className="h-16 w-16 mb-4" />
-                                <p>Waiting for others to join...</p>
+                                <p>{t('calls.waitingForOthersToJoin')}</p>
                             </div>
                         )}
                     </div>

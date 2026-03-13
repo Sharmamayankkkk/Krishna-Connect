@@ -29,6 +29,8 @@ import { PostType, MediaType } from '@/lib/types';
 import { createClient } from '@/lib/supabase/client';
 import { getMaxFileSize, getMaxFileSizeMB } from '@/lib/utils';
 
+import { useTranslation } from 'react-i18next';
+
 interface EditPostDialogProps {
     post: PostType;
     open: boolean;
@@ -40,6 +42,8 @@ const MAX_CHARACTERS = 500;
 const MAX_MEDIA = 4;
 
 export function EditPostDialog({ post, open, onOpenChange, onPostUpdated }: EditPostDialogProps) {
+  const { t } = useTranslation();
+
     const { loggedInUser } = useAppContext();
     const { toast } = useToast();
 
@@ -342,7 +346,7 @@ export function EditPostDialog({ post, open, onOpenChange, onPostUpdated }: Edit
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-xl">
                 <DialogHeader>
-                    <DialogTitle>Edit Post</DialogTitle>
+                    <DialogTitle>{t('post.editPost')}</DialogTitle>
                 </DialogHeader>
 
                 <div className="flex gap-3">
@@ -362,23 +366,23 @@ export function EditPostDialog({ post, open, onOpenChange, onPostUpdated }: Edit
 
                         {/* Formatting Toolbar */}
                         <div className="flex items-center gap-1 pb-2 border-b mb-2">
-                            <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={formatBold} title="Bold">
+                            <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={formatBold} title={t('post.bold')}>
                                 <Bold className="h-4 w-4" />
                             </Button>
-                            <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={formatItalic} title="Italic">
+                            <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={formatItalic} title={t('post.italic')}>
                                 <Italic className="h-4 w-4" />
                             </Button>
                             <div className="w-px h-5 bg-border mx-1" />
-                            <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={formatHeading} title="Heading">
+                            <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={formatHeading} title={t('post.heading')}>
                                 <Heading2 className="h-4 w-4" />
                             </Button>
-                            <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={formatBulletList} title="Bullet List">
+                            <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={formatBulletList} title={t('post.bulletList')}>
                                 <List className="h-4 w-4" />
                             </Button>
-                            <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={formatNumberedList} title="Numbered List">
+                            <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={formatNumberedList} title={t('post.numberedList')}>
                                 <ListOrdered className="h-4 w-4" />
                             </Button>
-                            <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={formatHorizontalLine} title="Horizontal Line">
+                            <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={formatHorizontalLine} title={t('post.horizontalLine')}>
                                 <Minus className="h-4 w-4" />
                             </Button>
                         </div>
@@ -414,7 +418,7 @@ export function EditPostDialog({ post, open, onOpenChange, onPostUpdated }: Edit
                                             <>
                                                 <Image
                                                     src={media.url}
-                                                    alt="Preview"
+                                                    alt={t('settings.appearance.preview')}
                                                     fill
                                                     className="object-cover"
                                                 />
@@ -427,9 +431,7 @@ export function EditPostDialog({ post, open, onOpenChange, onPostUpdated }: Edit
                                                         setEditingImage({ index, url: media.url });
                                                         setIsImageEditorOpen(true);
                                                     }}
-                                                >
-                                                    Edit
-                                                </Button>
+                                                >{t('common.edit')}</Button>
                                             </>
                                         )}
                                         {media.type === 'video' && (
@@ -459,9 +461,7 @@ export function EditPostDialog({ post, open, onOpenChange, onPostUpdated }: Edit
                                     onClick={() => fileInputRef.current?.click()}
                                     disabled={mediaPreviews.length >= MAX_MEDIA}
                                 >
-                                    <ImageIcon className="h-4 w-4 mr-2" />
-                                    Image
-                                </Button>
+                                    <ImageIcon className="h-4 w-4 mr-2" />{t('post.image')}</Button>
 
                                 <input
                                     type="file"
@@ -478,9 +478,7 @@ export function EditPostDialog({ post, open, onOpenChange, onPostUpdated }: Edit
                                     onClick={() => videoInputRef.current?.click()}
                                     disabled={mediaPreviews.length >= MAX_MEDIA}
                                 >
-                                    <Video className="h-4 w-4 mr-2" />
-                                    Video
-                                </Button>
+                                    <Video className="h-4 w-4 mr-2" />{t('post.video')}</Button>
                             </div>
 
                             <div className="flex items-center gap-3">
@@ -499,9 +497,7 @@ export function EditPostDialog({ post, open, onOpenChange, onPostUpdated }: Edit
                                 >
                                     {isSaving ? (
                                         <>
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                            Saving...
-                                        </>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />{t('post.saving')}</>
                                     ) : 'Save'}
                                 </Button>
                             </div>

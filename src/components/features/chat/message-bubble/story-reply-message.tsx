@@ -4,6 +4,8 @@ import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import type { Message } from '@/lib/types';
 
+import { useTranslation } from 'react-i18next';
+
 interface StoryReplyMessageProps {
     content: string;
     message: Message;
@@ -11,6 +13,8 @@ interface StoryReplyMessageProps {
 }
 
 export const StoryReplyMessage = ({ content, message, loggedInUserId }: StoryReplyMessageProps) => {
+  const { t } = useTranslation();
+
     const isMyMessage = message.user_id === loggedInUserId;
     const match = content.match(/\[\[STORY_REPLY:(.*?)\]\]\s*([\s\S]*)/);
     const mediaUrl = match?.[1] || '';
@@ -32,7 +36,7 @@ export const StoryReplyMessage = ({ content, message, loggedInUserId }: StoryRep
                             <video src={mediaUrl} className="w-full h-full object-cover" muted playsInline />
                         ) : (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={mediaUrl} alt="Story" className="w-full h-full object-cover" />
+                            <img src={mediaUrl} alt={t('chat.story')} className="w-full h-full object-cover" />
                         )}
                     </div>
                 )}

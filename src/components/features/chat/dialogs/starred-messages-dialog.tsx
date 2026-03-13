@@ -15,6 +15,8 @@ import type { Message } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
 import { getAvatarUrl } from '@/lib/utils';
 
+import { useTranslation } from 'react-i18next';
+
 interface StarredMessagesDialogProps {
   messages: Message[];
   open: boolean;
@@ -30,18 +32,16 @@ export function StarredMessagesDialog({
     onJumpToMessage,
     onUnstarMessage,
 }: StarredMessagesDialogProps) {
+  const { t } = useTranslation();
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Star className="h-5 w-5 text-amber-400 fill-amber-400" />
-            Starred Messages
-          </DialogTitle>
-          <DialogDescription>
-            Messages you have starred in this chat.
-          </DialogDescription>
+            <Star className="h-5 w-5 text-amber-400 fill-amber-400" />{t('starred.title')}</DialogTitle>
+          <DialogDescription>{t('chat.messagesYouHaveStarredInThis')}</DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-72 w-full mt-4">
           <div className="space-y-4 pr-4">
@@ -77,8 +77,8 @@ export function StarredMessagesDialog({
             ) : (
                 <div className="text-center py-10 text-muted-foreground">
                     <Star className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p>No starred messages yet.</p>
-                    <p className="text-xs mt-1">Star important messages to find them here.</p>
+                    <p>{t('chat.noStarredMessagesYet')}</p>
+                    <p className="text-xs mt-1">{t('chat.starImportantMessagesToFindThem')}</p>
                 </div>
             )}
           </div>

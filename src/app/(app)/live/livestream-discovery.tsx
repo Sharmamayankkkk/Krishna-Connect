@@ -12,6 +12,8 @@ import { GoLiveButton } from '@/components/features/live/go-live-button'
 import { MyActiveLivestream } from '@/components/features/live/my-active-livestream'
 import { cn } from '@/lib/utils'
 
+import { useTranslation } from 'react-i18next';
+
 interface Livestream {
     id: string
     title: string
@@ -28,6 +30,8 @@ interface Livestream {
 }
 
 export function LivestreamDiscovery() {
+  const { t } = useTranslation();
+
     const [livestreams, setLivestreams] = useState<Livestream[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const supabase = createClient()
@@ -93,9 +97,7 @@ export function LivestreamDiscovery() {
                         <div className="bg-red-600 rounded-md p-1">
                             <Radio className="h-5 w-5 text-white" />
                         </div>
-                        <h1 className="text-xl font-bold bg-gradient-to-r from-red-600 to-purple-600 bg-clip-text text-transparent">
-                            Live
-                        </h1>
+                        <h1 className="text-xl font-bold bg-gradient-to-r from-red-600 to-purple-600 bg-clip-text text-transparent">{t('nav.live')}</h1>
                     </div>
                     <GoLiveButton />
                 </div>
@@ -142,7 +144,7 @@ export function LivestreamDiscovery() {
                             <Radio className="relative h-20 w-20 text-muted-foreground mx-auto" strokeWidth={1} />
                         </div>
                         <div>
-                            <h2 className="text-2xl font-bold mb-2">No active streams</h2>
+                            <h2 className="text-2xl font-bold mb-2">{t('live.noActiveStreams')}</h2>
                             <p className="text-muted-foreground max-w-sm mx-auto">
                                 The stage is empty. Be the first to go live and start the show!
                             </p>
@@ -185,9 +187,7 @@ export function LivestreamDiscovery() {
                                 {/* Content Overlay */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent p-6 flex flex-col justify-end text-white">
                                     <div className="flex items-start justify-between absolute top-4 left-4 right-4">
-                                        <Badge className="bg-red-600 hover:bg-red-700 border-none animate-pulse">
-                                            LIVE NOW
-                                        </Badge>
+                                        <Badge className="bg-red-600 hover:bg-red-700 border-none animate-pulse">{t('live.liveNow')}</Badge>
                                         <div className="bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-2">
                                             <Users className="h-3 w-3" />
                                             {featuredStream.viewer_count} watching
@@ -229,7 +229,7 @@ export function LivestreamDiscovery() {
                         {/* Masonry Grid for Other Streams */}
                         {otherStreams.length > 0 && (
                             <div className="space-y-4">
-                                <h3 className="text-lg font-semibold">More Live Streams</h3>
+                                <h3 className="text-lg font-semibold">{t('live.moreLiveStreams')}</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {otherStreams.map((stream, i) => (
                                         <Link

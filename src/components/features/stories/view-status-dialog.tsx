@@ -18,6 +18,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 
+import { useTranslation } from 'react-i18next';
+
 type StatusUpdate = {
   user_id: string;
   name: string;
@@ -96,14 +98,14 @@ function ViewersSheet({ statusId, viewCount }: { statusId: number; viewCount: nu
                   {viewer.hasLiked && (
                     <div className="flex items-center gap-1 text-red-500">
                       <Heart className="h-4 w-4 fill-current" />
-                      <span className="text-xs">Liked</span>
+                      <span className="text-xs">{t('story.liked')}</span>
                     </div>
                   )}
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-center text-muted-foreground pt-10">No views yet</p>
+            <p className="text-center text-muted-foreground pt-10">{t('story.noViewsYet')}</p>
           )}
         </ScrollArea>
       </SheetContent>
@@ -131,12 +133,12 @@ function AnalyticsSheet({ statusId }: { statusId: number }) {
       <SheetTrigger asChild>
         <button onClick={fetchAnalytics} className="flex items-center gap-1.5 text-white/70 text-sm hover:text-white transition-colors">
           <BarChart3 className="h-4 w-4" />
-          <span>Insights</span>
+          <span>{t('story.insights')}</span>
         </button>
       </SheetTrigger>
       <SheetContent side="bottom" className="rounded-t-2xl">
         <SheetHeader>
-          <SheetTitle>Story Insights</SheetTitle>
+          <SheetTitle>{t('story.storyInsights')}</SheetTitle>
         </SheetHeader>
         <div className="mt-4">
           {isLoading ? (
@@ -150,48 +152,48 @@ function AnalyticsSheet({ statusId }: { statusId: number }) {
               <div className="bg-muted/50 rounded-xl p-3">
                 <div className="flex items-center gap-2 mb-1">
                   <Eye className="h-4 w-4 text-blue-500" />
-                  <span className="text-xs text-muted-foreground">Views</span>
+                  <span className="text-xs text-muted-foreground">{t('post.views')}</span>
                 </div>
                 <p className="text-2xl font-bold">{analytics.total_views || 0}</p>
               </div>
               <div className="bg-muted/50 rounded-xl p-3">
                 <div className="flex items-center gap-2 mb-1">
                   <Heart className="h-4 w-4 text-red-500" />
-                  <span className="text-xs text-muted-foreground">Reactions</span>
+                  <span className="text-xs text-muted-foreground">{t('story.reactions')}</span>
                 </div>
                 <p className="text-2xl font-bold">{analytics.total_reactions || 0}</p>
               </div>
               <div className="bg-muted/50 rounded-xl p-3">
                 <div className="flex items-center gap-2 mb-1">
                   <Send className="h-4 w-4 text-green-500" />
-                  <span className="text-xs text-muted-foreground">Replies</span>
+                  <span className="text-xs text-muted-foreground">{t('profile.replies')}</span>
                 </div>
                 <p className="text-2xl font-bold">{analytics.total_replies || 0}</p>
               </div>
               <div className="bg-muted/50 rounded-xl p-3">
                 <div className="flex items-center gap-2 mb-1">
                   <ArrowRight className="h-4 w-4 text-purple-500" />
-                  <span className="text-xs text-muted-foreground">Forward Taps</span>
+                  <span className="text-xs text-muted-foreground">{t('story.forwardTaps')}</span>
                 </div>
                 <p className="text-2xl font-bold">{analytics.forward_taps || 0}</p>
               </div>
               <div className="bg-muted/50 rounded-xl p-3">
                 <div className="flex items-center gap-2 mb-1">
                   <ArrowLeft className="h-4 w-4 text-amber-500" />
-                  <span className="text-xs text-muted-foreground">Back Taps</span>
+                  <span className="text-xs text-muted-foreground">{t('story.backTaps')}</span>
                 </div>
                 <p className="text-2xl font-bold">{analytics.back_taps || 0}</p>
               </div>
               <div className="bg-muted/50 rounded-xl p-3">
                 <div className="flex items-center gap-2 mb-1">
                   <LogOut className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">Exits</span>
+                  <span className="text-xs text-muted-foreground">{t('story.exits')}</span>
                 </div>
                 <p className="text-2xl font-bold">{analytics.exits || 0}</p>
               </div>
             </div>
           ) : (
-            <p className="text-center text-muted-foreground py-8">No analytics data yet</p>
+            <p className="text-center text-muted-foreground py-8">{t('story.noAnalyticsDataYet')}</p>
           )}
         </div>
       </SheetContent>
@@ -201,6 +203,8 @@ function AnalyticsSheet({ statusId }: { statusId: number }) {
 
 // --- Main Viewer ---
 export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenChange, onStatusViewed }: ViewStatusDialogProps) {
+  const { t } = useTranslation();
+
   const { loggedInUser } = useAppContext();
   const { toast } = useToast();
   const supabase = createClient();
@@ -570,7 +574,7 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
         style={{ transform: touchDeltaY > 0 ? `translateY(${touchDeltaY}px) scale(${1 - touchDeltaY / 1000})` : undefined, opacity: touchDeltaY > 0 ? 1 - touchDeltaY / 400 : 1, transition: touchDeltaY === 0 ? 'transform 0.2s, opacity 0.2s' : 'none' }}
       >
         <DialogTitle className="sr-only">Story from {statusUpdate.name}</DialogTitle>
-        <DialogDescription className="sr-only">Viewing story. Swipe down to close.</DialogDescription>
+        <DialogDescription className="sr-only">{t('story.viewingStorySwipeDownToClose')}</DialogDescription>
 
         {/* Top gradient + progress + header */}
         <div className="absolute top-0 left-0 right-0 p-2 sm:p-3 z-30 bg-gradient-to-b from-black/60 via-black/30 to-transparent">
@@ -593,7 +597,7 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1 sm:gap-1.5">
                   <p className="font-semibold text-white text-xs sm:text-sm truncate">{statusUpdate.name}</p>
-                  {isCloseFriend && <span className="text-[8px] sm:text-[10px] bg-green-500 text-white px-1 sm:px-1.5 py-0.5 rounded-full font-medium shrink-0">Close Friend</span>}
+                  {isCloseFriend && <span className="text-[8px] sm:text-[10px] bg-green-500 text-white px-1 sm:px-1.5 py-0.5 rounded-full font-medium shrink-0">{t('story.closeFriend')}</span>}
                 </div>
                 <p className="text-[9px] sm:text-[10px] text-white/60">{formatDistanceToNow(new Date(currentStatus.created_at), { addSuffix: true })}</p>
               </div>
@@ -618,7 +622,7 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
               </button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="text-white p-2 sm:p-2.5 bg-black/30 backdrop-blur-sm hover:bg-black/50 rounded-full transition-all active:scale-90" aria-label="More options">
+                  <button className="text-white p-2 sm:p-2.5 bg-black/30 backdrop-blur-sm hover:bg-black/50 rounded-full transition-all active:scale-90" aria-label={t('post.moreOptions')}>
                     <MoreHorizontal className="h-4 w-4" />
                   </button>
                 </DropdownMenuTrigger>
@@ -626,23 +630,20 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
                   {isMyStatus ? (
                     <>
                       <DropdownMenuItem onClick={handleDeleteStory} className="text-destructive focus:text-destructive">
-                        <Trash2 className="h-4 w-4 mr-2" /> Delete Story
-                      </DropdownMenuItem>
+                        <Trash2 className="h-4 w-4 mr-2" />{t('story.deleteStory')}</DropdownMenuItem>
                       <DropdownMenuItem onClick={() => toast({ title: 'Coming Soon', description: 'Add to Highlights will be available soon.' })}>
-                        <Bookmark className="h-4 w-4 mr-2" /> Add to Highlights
-                      </DropdownMenuItem>
+                        <Bookmark className="h-4 w-4 mr-2" />{t('story.addToHighlights')}</DropdownMenuItem>
                     </>
                   ) : (
                     <DropdownMenuItem onClick={() => toast({ title: 'Report submitted', description: 'This story has been reported for review.' })}>
-                      <Flag className="h-4 w-4 mr-2" /> Report
-                    </DropdownMenuItem>
+                      <Flag className="h-4 w-4 mr-2" />{t('post.report')}</DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
               <button
                 onClick={() => onOpenChange(false)}
                 className="text-white p-2 sm:p-2.5 bg-black/30 backdrop-blur-sm hover:bg-black/50 rounded-full transition-all active:scale-90"
-                aria-label="Close"
+                aria-label={t('common.close')}
               >
                 <X className="h-4 w-4" />
               </button>
@@ -724,17 +725,17 @@ export function ViewStatusDialog({ allStatusUpdates, startIndex, open, onOpenCha
           )}
 
           {/* Navigation: tap left/right areas — avoid covering top header (72px) and bottom bar (64px) */}
-          <button onClick={(e) => { e.stopPropagation(); goToPrevStory(); }} className="absolute left-0 top-[72px] bottom-[64px] w-1/3 z-20" aria-label="Previous story" />
-          <button onClick={(e) => { e.stopPropagation(); goToNextStory(); }} className="absolute right-0 top-[72px] bottom-[64px] w-1/3 z-20" aria-label="Next story" />
+          <button onClick={(e) => { e.stopPropagation(); goToPrevStory(); }} className="absolute left-0 top-[72px] bottom-[64px] w-1/3 z-20" aria-label={t('story.previousStory')} />
+          <button onClick={(e) => { e.stopPropagation(); goToNextStory(); }} className="absolute right-0 top-[72px] bottom-[64px] w-1/3 z-20" aria-label={t('story.nextStory')} />
 
           {/* User navigation arrows (desktop) */}
           {currentUserIndex !== null && currentUserIndex > 0 && (
-            <button onClick={goToPrevUser} className="absolute left-2 top-1/2 -translate-y-1/2 z-30 bg-black/30 backdrop-blur-sm text-white rounded-full p-1.5 hover:bg-black/50 transition-colors hidden sm:flex" aria-label="Previous user">
+            <button onClick={goToPrevUser} className="absolute left-2 top-1/2 -translate-y-1/2 z-30 bg-black/30 backdrop-blur-sm text-white rounded-full p-1.5 hover:bg-black/50 transition-colors hidden sm:flex" aria-label={t('story.previousUser')}>
               <ChevronLeft size={20} />
             </button>
           )}
           {currentUserIndex !== null && currentUserIndex < allStatusUpdates.length - 1 && (
-            <button onClick={goToNextUser} className="absolute right-2 top-1/2 -translate-y-1/2 z-30 bg-black/30 backdrop-blur-sm text-white rounded-full p-1.5 hover:bg-black/50 transition-colors hidden sm:flex" aria-label="Next user">
+            <button onClick={goToNextUser} className="absolute right-2 top-1/2 -translate-y-1/2 z-30 bg-black/30 backdrop-blur-sm text-white rounded-full p-1.5 hover:bg-black/50 transition-colors hidden sm:flex" aria-label={t('story.nextUser')}>
               <ChevronRight size={20} />
             </button>
           )}

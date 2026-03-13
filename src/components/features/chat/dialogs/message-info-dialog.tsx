@@ -15,6 +15,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CheckCheck } from 'lucide-react';
 import type { Message, Chat, Participant, User } from '@/lib/types';
 
+import { useTranslation } from 'react-i18next';
+
 interface MessageInfoDialogProps {
   message: Message;
   chat: Chat;
@@ -23,6 +25,8 @@ interface MessageInfoDialogProps {
 }
 
 export function MessageInfoDialog({ message, chat, open, onOpenChange }: MessageInfoDialogProps) {
+  const { t } = useTranslation();
+
   
   const { readBy, deliveredTo } = useMemo(() => {
     if (!message || !chat.participants) {
@@ -50,8 +54,8 @@ export function MessageInfoDialog({ message, chat, open, onOpenChange }: Message
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Message Info</DialogTitle>
-          <DialogDescription>See who has read and received your message.</DialogDescription>
+          <DialogTitle>{t('chat.messageInfo')}</DialogTitle>
+          <DialogDescription>{t('chat.seeWhoHasReadAndReceived')}</DialogDescription>
         </DialogHeader>
 
         <div className="my-4 p-3 rounded-lg border bg-muted">
@@ -80,7 +84,7 @@ export function MessageInfoDialog({ message, chat, open, onOpenChange }: Message
                             </div>
                         ))
                     ) : (
-                        <p className="text-center text-sm text-muted-foreground pt-10">No one has read this message yet.</p>
+                        <p className="text-center text-sm text-muted-foreground pt-10">{t('chat.noOneHasReadThisMessage')}</p>
                     )}
                 </TabsContent>
                 <TabsContent value="delivered_to">
@@ -99,7 +103,7 @@ export function MessageInfoDialog({ message, chat, open, onOpenChange }: Message
                     ) : (
                         <div className="flex flex-col items-center justify-center text-center text-muted-foreground pt-10">
                             <CheckCheck className="h-10 w-10 mb-4 text-green-500"/>
-                            <p>Delivered to everyone.</p>
+                            <p>{t('chat.deliveredToEveryone')}</p>
                         </div>
                     )}
                 </TabsContent>

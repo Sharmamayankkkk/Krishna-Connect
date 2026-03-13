@@ -7,6 +7,8 @@ import Link from "next/link";
 import { LoginModal } from "@/components/login-modal";
 import { useState } from "react";
 
+import { useTranslation } from 'react-i18next';
+
 interface PrivatePlaceholderProps {
     avatarUrl?: string;
     displayName: string;
@@ -15,6 +17,8 @@ interface PrivatePlaceholderProps {
 }
 
 export function PrivateContentPlaceholder({ avatarUrl, displayName, username, isProfile = false }: PrivatePlaceholderProps) {
+  const { t } = useTranslation();
+
     const [showLogin, setShowLogin] = useState(false);
 
     return (
@@ -23,10 +27,8 @@ export function PrivateContentPlaceholder({ avatarUrl, displayName, username, is
                 <Lock className="w-8 h-8 text-foreground" />
             </div>
 
-            <h3 className="text-xl font-bold mb-2">This account is private</h3>
-            <p className="text-muted-foreground max-w-sm mb-6">
-                Follow this account to see their photos and videos.
-            </p>
+            <h3 className="text-xl font-bold mb-2">{t('profile.thisAccountIsPrivate')}</h3>
+            <p className="text-muted-foreground max-w-sm mb-6">{t('common.followThisAccountToSeeTheir')}</p>
 
             {!isProfile && (
                 <div className="flex items-center gap-3 mb-6 p-4 border rounded-lg bg-background/50">
@@ -41,9 +43,7 @@ export function PrivateContentPlaceholder({ avatarUrl, displayName, username, is
                 </div>
             )}
 
-            <Button onClick={() => setShowLogin(true)} size="lg" className="font-semibold px-8">
-                Login to Follow
-            </Button>
+            <Button onClick={() => setShowLogin(true)} size="lg" className="font-semibold px-8">{t('common.loginToFollow')}</Button>
 
             <LoginModal open={showLogin} onOpenChange={setShowLogin} />
         </div>

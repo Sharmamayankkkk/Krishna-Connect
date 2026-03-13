@@ -22,6 +22,8 @@ import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
+import { useTranslation } from 'react-i18next';
+
 function EventDetailsLoader() {
     return (
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -45,6 +47,8 @@ function EventDetailsLoader() {
 
 
 export default function EventDetailsPage() {
+  const { t } = useTranslation();
+
     const params = useParams<{ id: string }>();
     const router = useRouter();
     const supabase = createClient();
@@ -138,10 +142,10 @@ export default function EventDetailsPage() {
                     <div className="flex items-center gap-4">
                         <Button variant="ghost" size="icon" onClick={() => router.back()}>
                             <ArrowLeft className="h-5 w-5" />
-                            <span className="sr-only">Back</span>
+                            <span className="sr-only">{t('common.back')}</span>
                         </Button>
                         <h2 className="text-3xl font-bold tracking-tight">{event.title}</h2>
-                        {isCancelled && <Badge variant="destructive" className="text-lg">Cancelled</Badge>}
+                        {isCancelled && <Badge variant="destructive" className="text-lg">{t('events.cancelled')}</Badge>}
                     </div>
                      {isAdmin && (
                         <DropdownMenu>
@@ -153,32 +157,32 @@ export default function EventDetailsPage() {
                             <DropdownMenuContent align="end">
                                 <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
                                     <Edit className="mr-2 h-4 w-4" />
-                                    <span>Edit Event</span>
+                                    <span>{t('events.editEvent')}</span>
                                 </DropdownMenuItem>
                                  <DropdownMenuSeparator />
                                 {isCancelled ? (
                                     <DropdownMenuItem onClick={() => handleUpdateStatus('active')}>
                                         <Check className="mr-2 h-4 w-4" />
-                                        <span>Re-activate Event</span>
+                                        <span>{t('events.reactivateEvent')}</span>
                                     </DropdownMenuItem>
                                 ) : (
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
                                             <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                                                 <XCircle className="mr-2 h-4 w-4" />
-                                                <span>Cancel Event</span>
+                                                <span>{t('events.cancelEvent')}</span>
                                             </DropdownMenuItem>
                                         </AlertDialogTrigger>
                                         <AlertDialogContent>
                                             <AlertDialogHeader>
-                                                <AlertDialogTitle>Cancel this event?</AlertDialogTitle>
+                                                <AlertDialogTitle>{t('events.cancelThisEvent')}</AlertDialogTitle>
                                                 <AlertDialogDescription>
                                                     This will mark the event as cancelled, but it will remain visible.
                                                 </AlertDialogDescription>
                                             </AlertDialogHeader>
                                             <AlertDialogFooter>
-                                                <AlertDialogCancel>Close</AlertDialogCancel>
-                                                <AlertDialogAction onClick={() => handleUpdateStatus('cancelled')}>Confirm Cancel</AlertDialogAction>
+                                                <AlertDialogCancel>{t('common.close')}</AlertDialogCancel>
+                                                <AlertDialogAction onClick={() => handleUpdateStatus('cancelled')}>{t('events.confirmCancel')}</AlertDialogAction>
                                             </AlertDialogFooter>
                                         </AlertDialogContent>
                                     </AlertDialog>
@@ -187,19 +191,19 @@ export default function EventDetailsPage() {
                                     <AlertDialogTrigger asChild>
                                         <DropdownMenuItem className="text-destructive" onSelect={(e) => e.preventDefault()}>
                                             <Trash2 className="mr-2 h-4 w-4" />
-                                            <span>Delete Event</span>
+                                            <span>{t('events.deleteEvent')}</span>
                                         </DropdownMenuItem>
                                     </AlertDialogTrigger>
                                      <AlertDialogContent>
                                         <AlertDialogHeader>
-                                            <AlertDialogTitle>Delete this event?</AlertDialogTitle>
+                                            <AlertDialogTitle>{t('events.deleteThisEvent')}</AlertDialogTitle>
                                             <AlertDialogDescription>
                                                 This is a permanent action and cannot be undone. The event will be removed for everyone.
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction onClick={handleDeleteEvent} className="bg-destructive hover:bg-destructive/90">Confirm Delete</AlertDialogAction>
+                                            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                                            <AlertDialogAction onClick={handleDeleteEvent} className="bg-destructive hover:bg-destructive/90">{t('events.confirmDelete')}</AlertDialogAction>
                                         </AlertDialogFooter>
                                     </AlertDialogContent>
                                 </AlertDialog>
@@ -219,7 +223,7 @@ export default function EventDetailsPage() {
 
                         <Card>
                             <CardHeader>
-                                <CardTitle>About this event</CardTitle>
+                                <CardTitle>{t('events.aboutThisEvent')}</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <p className="text-foreground whitespace-pre-wrap">{event.description}</p>
@@ -241,7 +245,7 @@ export default function EventDetailsPage() {
                                      <div className="flex items-start gap-4">
                                         <LinkIcon className="h-6 w-6 mt-1 text-primary" />
                                         <div>
-                                            <p className="font-semibold">Online Event</p>
+                                            <p className="font-semibold">{t('events.onlineEvent')}</p>
                                             <a href={event.meet_link} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:underline break-all">
                                                 {event.meet_link}
                                             </a>
@@ -252,13 +256,13 @@ export default function EventDetailsPage() {
                              {!isPastEvent && !isCancelled && (
                                 <CardFooter className="flex-col items-stretch gap-2">
                                     <div className="grid grid-cols-3 gap-2">
-                                        <Button variant={userRsvp?.status === 'going' ? 'success' : 'outline'} size="sm" onClick={() => handleRsvp('going')}><Check className="mr-1.5 h-4 w-4" /> Going</Button>
-                                        <Button variant={userRsvp?.status === 'interested' ? 'default' : 'outline'} size="sm" onClick={() => handleRsvp('interested')}><Star className="mr-1.5 h-4 w-4" /> Interested</Button>
-                                        <Button variant={userRsvp?.status === 'not_going' ? 'destructive' : 'outline'} size="sm" onClick={() => handleRsvp('not_going')}><X className="mr-1.5 h-4 w-4" /> Can't go</Button>
+                                        <Button variant={userRsvp?.status === 'going' ? 'success' : 'outline'} size="sm" onClick={() => handleRsvp('going')}><Check className="mr-1.5 h-4 w-4" />{t('events.going')}</Button>
+                                        <Button variant={userRsvp?.status === 'interested' ? 'default' : 'outline'} size="sm" onClick={() => handleRsvp('interested')}><Star className="mr-1.5 h-4 w-4" />{t('events.interested')}</Button>
+                                        <Button variant={userRsvp?.status === 'not_going' ? 'destructive' : 'outline'} size="sm" onClick={() => handleRsvp('not_going')}><X className="mr-1.5 h-4 w-4" />{t('events.cantGo')}</Button>
                                     </div>
                                     <div className="grid grid-cols-2 gap-2">
-                                        {event.meet_link && <Button asChild><a href={event.meet_link} target="_blank" rel="noopener noreferrer"><LinkIcon className="mr-1.5 h-4 w-4" />Join Meet</a></Button>}
-                                        <Button variant="secondary" onClick={() => setIsShareOpen(true)}><Share2 className="mr-1.5 h-4 w-4"/> Share</Button>
+                                        {event.meet_link && <Button asChild><a href={event.meet_link} target="_blank" rel="noopener noreferrer"><LinkIcon className="mr-1.5 h-4 w-4" />{t('events.joinMeet')}</a></Button>}
+                                        <Button variant="secondary" onClick={() => setIsShareOpen(true)}><Share2 className="mr-1.5 h-4 w-4"/>{t('post.share')}</Button>
                                     </div>
                                 </CardFooter>
                              )}
@@ -266,7 +270,7 @@ export default function EventDetailsPage() {
                         
                         <Card>
                              <CardHeader>
-                                <CardTitle className="flex items-center gap-2"><Users className="h-5 w-5" /> RSVPs</CardTitle>
+                                <CardTitle className="flex items-center gap-2"><Users className="h-5 w-5" />{t('events.rsvps')}</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div>
@@ -280,7 +284,7 @@ export default function EventDetailsPage() {
                                                 </Link>
                                             ))}
                                         </div>
-                                    ) : <p className="text-sm text-muted-foreground">No one has RSVP'd as going yet.</p>}
+                                    ) : <p className="text-sm text-muted-foreground">{t('events.noOneHasRsvpdAsGoing')}</p>}
                                 </div>
                                 <div>
                                     <h4 className="font-semibold mb-2">{rsvpLists.interested.length} Interested</h4>
@@ -293,7 +297,7 @@ export default function EventDetailsPage() {
                                                 </Link>
                                             ))}
                                         </div>
-                                    ) : <p className="text-sm text-muted-foreground">No one has RSVP'd as interested yet.</p>}
+                                    ) : <p className="text-sm text-muted-foreground">{t('events.noOneHasRsvpdAsInterested')}</p>}
                                 </div>
                             </CardContent>
                         </Card>

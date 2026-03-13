@@ -17,6 +17,8 @@ import Image from 'next/image'
 import { GoogleAd } from '@/components/ads/google-ad'
 import { LikeAnimation } from '@/components/shared/like-animation'
 
+import { useTranslation } from 'react-i18next';
+
 type LeelaVideo = {
   id: string
   video_url: string
@@ -242,7 +244,7 @@ function VideoPlayer({
             <div className="p-2 text-white/80 hover:text-red-400 transition-colors">
               <Trash2 className="h-6 w-6 drop-shadow-lg" />
             </div>
-            <span className="text-white/80 text-[10px] font-semibold drop-shadow-lg">Delete</span>
+            <span className="text-white/80 text-[10px] font-semibold drop-shadow-lg">{t('common.delete')}</span>
           </button>
         )}
 
@@ -260,6 +262,8 @@ function VideoPlayer({
 }
 
 export default function LeelaPage() {
+  const { t } = useTranslation();
+
   const { loggedInUser } = useAppContext()
   const { toast } = useToast()
   const supabase = createClient()
@@ -557,8 +561,8 @@ export default function LeelaPage() {
       <div className="flex flex-col h-[100dvh]">
         <header className="flex items-center gap-3 border-b p-4 bg-background z-10">
           <SidebarTrigger className="md:hidden" />
-          <Image src="/icons/leela.png" alt="Leela" width={28} height={28} />
-          <h1 className="text-xl font-bold">Leela</h1>
+          <Image src="/icons/leela.png" alt={t('create.leela')} width={28} height={28} />
+          <h1 className="text-xl font-bold">{t('create.leela')}</h1>
         </header>
 
         {/* Hidden File Input */}
@@ -569,8 +573,7 @@ export default function LeelaPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in">
             <div className="bg-card w-full max-w-md rounded-xl shadow-lg border p-6 animate-in zoom-in-95">
               <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <Upload className="h-5 w-5 text-primary" /> Upload Leela
-              </h2>
+                <Upload className="h-5 w-5 text-primary" />{t('feed.uploadLeela')}</h2>
               <p className="text-sm text-muted-foreground mb-4">
                 Selected: <span className="font-semibold text-foreground">{selectedFile.name}</span>
               </p>
@@ -581,7 +584,7 @@ export default function LeelaPage() {
                     id="caption"
                     value={uploadCaption}
                     onChange={(e) => setUploadCaption(e.target.value)}
-                    placeholder="Write a caption for your Leela..."
+                    placeholder={t('feed.writeACaptionForYourLeela')}
                     className="w-full min-h-[100px] p-3 rounded-md border bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm resize-none"
                     maxLength={200}
                   />
@@ -591,11 +594,9 @@ export default function LeelaPage() {
                 </div>
               </div>
               <div className="flex justify-end gap-3 border-t pt-4">
-                <Button variant="ghost" onClick={() => { setIsUploadDialogOpen(false); setSelectedFile(null); }}>
-                  Cancel
-                </Button>
+                <Button variant="ghost" onClick={() => { setIsUploadDialogOpen(false); setSelectedFile(null); }}>{t('common.cancel')}</Button>
                 <Button onClick={handleUploadConfirm} disabled={isUploading}>
-                  {isUploading ? <><div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" /> Uploading...</> : 'Post Leela'}
+                  {isUploading ? <><div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />{t('feed.uploading1')}</> : 'Post Leela'}
                 </Button>
               </div>
             </div>
@@ -609,7 +610,7 @@ export default function LeelaPage() {
             </div>
           </div>
           <div className="space-y-2 max-w-sm">
-            <h2 className="text-2xl font-bold">Welcome to Leela</h2>
+            <h2 className="text-2xl font-bold">{t('feed.welcomeToLeela')}</h2>
             <p className="text-muted-foreground">
               Short-form videos from the Krishna Connect community. Be the first to share a Leela!
             </p>
@@ -619,7 +620,7 @@ export default function LeelaPage() {
             {isUploading ? 'Uploading...' : 'Upload Your First Leela'}
           </Button>
           <div className="mt-4 bg-muted/50 rounded-lg p-4 max-w-xs text-sm text-muted-foreground">
-            <p className="font-medium text-foreground mb-1 flex items-center gap-1.5"><Lightbulb className="h-3.5 w-3.5" /> What is Leela?</p>
+            <p className="font-medium text-foreground mb-1 flex items-center gap-1.5"><Lightbulb className="h-3.5 w-3.5" />{t('feed.whatIsLeela')}</p>
             <p>Share divine moments through short-form videos up to 60 seconds. Express your devotion, share teachings, and connect with the community through visual stories.</p>
           </div>
         </div>
@@ -637,8 +638,7 @@ export default function LeelaPage() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in">
           <div className="bg-card w-full max-w-md rounded-xl shadow-2xl border p-6 animate-in zoom-in-95 relative overflow-hidden">
             <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <Upload className="h-5 w-5 text-primary" /> Upload Leela
-            </h2>
+              <Upload className="h-5 w-5 text-primary" />{t('feed.uploadLeela')}</h2>
             <p className="text-sm text-muted-foreground mb-4">
               Selected: <span className="font-semibold text-foreground truncate block">{selectedFile.name}</span>
             </p>
@@ -649,7 +649,7 @@ export default function LeelaPage() {
                   id="caption-main"
                   value={uploadCaption}
                   onChange={(e) => setUploadCaption(e.target.value)}
-                  placeholder="Write a caption for your Leela..."
+                  placeholder={t('feed.writeACaptionForYourLeela')}
                   className="w-full min-h-[100px] p-3 rounded-md border bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm resize-none"
                   maxLength={200}
                 />
@@ -659,11 +659,9 @@ export default function LeelaPage() {
               </div>
             </div>
             <div className="flex justify-end gap-3 border-t pt-4">
-              <Button variant="ghost" onClick={() => { setIsUploadDialogOpen(false); setSelectedFile(null); }} className="hover:bg-red-500/10 hover:text-red-500">
-                Cancel
-              </Button>
+              <Button variant="ghost" onClick={() => { setIsUploadDialogOpen(false); setSelectedFile(null); }} className="hover:bg-red-500/10 hover:text-red-500">{t('common.cancel')}</Button>
               <Button onClick={handleUploadConfirm} disabled={isUploading} className="min-w-[120px]">
-                {isUploading ? <><div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" /> Uploading</> : 'Post Leela'}
+                {isUploading ? <><div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />{t('feed.uploading')}</> : 'Post Leela'}
               </Button>
             </div>
           </div>
@@ -673,15 +671,15 @@ export default function LeelaPage() {
       {/* Header overlay */}
       <header className="absolute top-0 left-0 right-0 z-20 flex items-center gap-3 p-4">
         <SidebarTrigger className="md:hidden text-white" />
-        <Image src="/icons/leela.png" alt="Leela" width={24} height={24} />
-        <h1 className="text-lg font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Leela</h1>
+        <Image src="/icons/leela.png" alt={t('create.leela')} width={24} height={24} />
+        <h1 className="text-lg font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">{t('create.leela')}</h1>
         <div className="ml-auto flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
             className="text-white hover:bg-white/20 rounded-full h-8 w-8 backdrop-blur-sm"
             onClick={() => fileInputRef.current?.click()}
-            title="Upload Leela"
+            title={t('feed.uploadLeela')}
           >
             <Upload className="h-4 w-4" />
           </Button>
@@ -689,7 +687,7 @@ export default function LeelaPage() {
             onClick={() => navigate('up')}
             disabled={currentIndex === 0}
             className="p-1.5 rounded-full bg-white/10 backdrop-blur-sm text-white disabled:opacity-30 hover:bg-white/20 transition-colors"
-            aria-label="Previous video"
+            aria-label={t('feed.previousVideo')}
           >
             <ChevronUp className="h-4 w-4" />
           </button>
@@ -697,7 +695,7 @@ export default function LeelaPage() {
             onClick={() => navigate('down')}
             disabled={currentIndex >= videos.length - 1}
             className="p-1.5 rounded-full bg-white/10 backdrop-blur-sm text-white disabled:opacity-30 hover:bg-white/20 transition-colors"
-            aria-label="Next video"
+            aria-label={t('feed.nextVideo')}
           >
             <ChevronDown className="h-4 w-4" />
           </button>
@@ -756,7 +754,7 @@ export default function LeelaPage() {
       <Sheet open={commentSheetOpen} onOpenChange={setCommentSheetOpen}>
         <SheetContent side="bottom" className="h-[70vh] rounded-t-2xl p-0 flex flex-col">
           <SheetHeader className="p-4 pb-2 border-b shrink-0">
-            <SheetTitle className="text-center text-base">Comments</SheetTitle>
+            <SheetTitle className="text-center text-base">{t('explore.comments')}</SheetTitle>
           </SheetHeader>
           <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
             {loadingComments ? (
@@ -766,7 +764,7 @@ export default function LeelaPage() {
             ) : comments.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <MessageCircle className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                <p className="text-sm">No comments yet. Be the first!</p>
+                <p className="text-sm">{t('feed.noCommentsYetBeTheFirst')}</p>
               </div>
             ) : (
               comments.map(c => (
@@ -794,7 +792,7 @@ export default function LeelaPage() {
           </div>
           <div className="p-3 border-t shrink-0 flex gap-2">
             <Input
-              placeholder="Add a comment..."
+              placeholder={t('dialogs.addComment')}
               value={commentText}
               onChange={e => setCommentText(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); postComment(); } }}

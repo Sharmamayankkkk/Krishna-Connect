@@ -1,3 +1,5 @@
+"use client";
+
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
@@ -7,6 +9,8 @@ import { User, Session } from "@supabase/supabase-js";
 import { Profile } from "@/types";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+
+import { useTranslation } from 'react-i18next';
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -198,16 +202,14 @@ export default async function ProfilePage(props: ProfilePageProps) {
             </div>
 
             <div className="space-y-2">
-              <h1 className="text-2xl font-bold tracking-tight">Profile Not Found</h1>
+              <h1 className="text-2xl font-bold tracking-tight">{t('profile.profileNotFound')}</h1>
               <p className="text-muted-foreground text-sm">
                 The user <strong>@{username}</strong> could not be found. They may have changed their username or deleted their account.
               </p>
             </div>
 
             <Button asChild size="lg" className="rounded-full px-8">
-              <Link href="/explore">
-                Go to Explore
-              </Link>
+              <Link href="/explore">{t('profile.goToExplore')}</Link>
             </Button>
           </div>
         </Card>
@@ -219,7 +221,7 @@ export default async function ProfilePage(props: ProfilePageProps) {
 
         {/* Google Ad Unit */}
         <div className="w-full max-w-2xl mt-8">
-          <p className="text-xs text-muted-foreground mb-2 text-center uppercase tracking-widest">Advertisement</p>
+          <p className="text-xs text-muted-foreground mb-2 text-center uppercase tracking-widest">{t('profile.advertisement')}</p>
           <GoogleAd
             slot="6010040695"
             client="ca-pub-4172622079471868"

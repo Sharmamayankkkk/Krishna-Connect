@@ -12,6 +12,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { SocialLinkInput } from './social-link-input';
 
+import { useTranslation } from 'react-i18next';
+
 interface VerificationRequest {
     id: number;
     user_id: string;
@@ -53,6 +55,8 @@ export function StatusDashboard({
     onResubmit,
     isSubmitting
 }: StatusDashboardProps) {
+  const { t } = useTranslation();
+
     const router = useRouter();
 
     return (
@@ -60,12 +64,12 @@ export function StatusDashboard({
             <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b">
                 <div className="flex items-center gap-4 px-4 h-14 max-w-5xl mx-auto">
                     <SidebarTrigger className="md:hidden" />
-                    <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full" aria-label="Go back">
+                    <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full" aria-label={t('getVerified.goBack')}>
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
                     <div className="flex items-center gap-2">
-                        <Image src="/user_Avatar/verified.png" alt="Verified" width={20} height={20} />
-                        <h1 className="font-bold text-lg">Verification Status</h1>
+                        <Image src="/user_Avatar/verified.png" alt={t('getVerified.verified')} width={20} height={20} />
+                        <h1 className="font-bold text-lg">{t('getVerified.verificationStatus')}</h1>
                     </div>
                 </div>
             </header>
@@ -79,7 +83,7 @@ export function StatusDashboard({
                             <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30 animate-pulse">
                                 <Clock className="h-10 w-10 text-amber-600 dark:text-amber-400" />
                             </div>
-                            <h2 className="text-2xl font-bold mb-2">Application Under Review</h2>
+                            <h2 className="text-2xl font-bold mb-2">{t('getVerified.applicationUnderReview')}</h2>
                             <p className="text-muted-foreground mb-6 leading-relaxed max-w-sm mx-auto">
                                 Thank you for applying! Our team is currently reviewing your details.
                                 We'll notify you shortly to schedule your KCS Meet.
@@ -97,7 +101,7 @@ export function StatusDashboard({
                         <CardHeader>
                             <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
                                 <AlertCircle className="h-5 w-5" />
-                                <CardTitle>Action Required</CardTitle>
+                                <CardTitle>{t('getVerified.actionRequired')}</CardTitle>
                             </div>
                             <CardDescription>
                                 Please update the highlighted social links and resubmit your application.
@@ -153,13 +157,13 @@ export function StatusDashboard({
                             <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30 ring-4 ring-green-500/20">
                                 <Video className="h-10 w-10 text-green-600 dark:text-green-400" />
                             </div>
-                            <h2 className="text-2xl font-bold mb-2 text-green-700 dark:text-green-300">Application Approved!</h2>
+                            <h2 className="text-2xl font-bold mb-2 text-green-700 dark:text-green-300">{t('getVerified.applicationApproved')}</h2>
                             <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
                                 Your KCS Meet (Video Call) has been scheduled. Please join the call at the scheduled time to complete the verification process.
                             </p>
 
                             <div className="bg-background/80 backdrop-blur-sm rounded-xl p-6 mb-8 inline-block border shadow-sm w-full max-w-sm">
-                                <p className="text-xs uppercase tracking-wider text-muted-foreground font-bold mb-2">Scheduled Time</p>
+                                <p className="text-xs uppercase tracking-wider text-muted-foreground font-bold mb-2">{t('getVerified.scheduledTime')}</p>
                                 <p className="font-bold text-xl text-foreground">
                                     {new Date(request.meeting_details.scheduled_at).toLocaleString('en-IN', {
                                         weekday: 'short',
@@ -180,9 +184,7 @@ export function StatusDashboard({
                             <div className="w-full max-w-sm mx-auto">
                                 <Button asChild size="lg" className="w-full bg-green-600 hover:bg-green-700 h-12 text-lg shadow-lg shadow-green-500/20">
                                     <a href={request.meeting_details.url} target="_blank" rel="noopener noreferrer">
-                                        <ExternalLink className="mr-2 h-5 w-5" />
-                                        Join KCS Meet
-                                    </a>
+                                        <ExternalLink className="mr-2 h-5 w-5" />{t('getVerified.joinKcsMeet')}</a>
                                 </Button>
                             </div>
                         </CardContent>
@@ -196,7 +198,7 @@ export function StatusDashboard({
                             <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
                                 <AlertCircle className="h-12 w-12 text-red-600 dark:text-red-400" />
                             </div>
-                            <h2 className="text-2xl font-bold mb-2 text-destructive">Application Rejected</h2>
+                            <h2 className="text-2xl font-bold mb-2 text-destructive">{t('getVerified.applicationRejected')}</h2>
                             <p className="text-muted-foreground mb-6">
                                 Unfortunately, your application was not approved at this time.
                             </p>

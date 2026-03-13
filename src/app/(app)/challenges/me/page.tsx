@@ -10,7 +10,11 @@ import { Challenge } from '@/components/challenges/types';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { useTranslation } from 'react-i18next';
+
 export default function MyChallengesPage() {
+  const { t } = useTranslation();
+
     const router = useRouter();
     const supabase = createClient();
     const [loading, setLoading] = useState(true);
@@ -69,8 +73,8 @@ export default function MyChallengesPage() {
                         </Button>
                     </Link>
                     <div>
-                        <h1 className="text-xl font-bold">My Challenge Hub</h1>
-                        <p className="text-xs text-muted-foreground">Track your progress and creations</p>
+                        <h1 className="text-xl font-bold">{t('challenges.myChallengeHub')}</h1>
+                        <p className="text-xs text-muted-foreground">{t('challenges.trackYourProgressAndCreations')}</p>
                     </div>
                 </div>
             </header>
@@ -85,12 +89,12 @@ export default function MyChallengesPage() {
                                 <TabsTrigger value="participating" className="gap-2 rounded-lg py-2.5 px-4 shrink-0"><Trophy className="h-4 w-4" /> Participating <span className="text-xs opacity-50 ml-1">({participating.length})</span></TabsTrigger>
                                 <TabsTrigger value="created" className="gap-2 rounded-lg py-2.5 px-4 shrink-0"><Layers className="h-4 w-4" /> Created by me <span className="text-xs opacity-50 ml-1">({created.length})</span></TabsTrigger>
                                 <TabsTrigger value="completed" className="gap-2 rounded-lg py-2.5 px-4 shrink-0"><CheckCircle className="h-4 w-4" /> Completed <span className="text-xs opacity-50 ml-1">({completed.length})</span></TabsTrigger>
-                                <TabsTrigger value="bookmarked" className="gap-2 rounded-lg py-2.5 px-4 shrink-0"><BookMarked className="h-4 w-4" /> Bookmarked</TabsTrigger>
+                                <TabsTrigger value="bookmarked" className="gap-2 rounded-lg py-2.5 px-4 shrink-0"><BookMarked className="h-4 w-4" />{t('challenges.bookmarked')}</TabsTrigger>
                             </TabsList>
 
                             <TabsContent value="participating" className="m-0 focus-visible:outline-none">
                                 {participating.length === 0 ? (
-                                    <EmptyState icon={<Clock />} title="No active challenges" desc="You aren't participating in any active challenges right now." actionText="Discover Challenges" link="/challenges" />
+                                    <EmptyState icon={<Clock />} title={t('challenges.noActiveChallenges')} desc="You aren't participating in any active challenges right now." actionText="Discover Challenges" link="/challenges" />
                                 ) : (
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                         {participating.map(c => <ChallengeCard key={c.id} challenge={c} userId={userId} onClick={() => router.push(`/challenges/${c.id}`)} />)}
@@ -100,7 +104,7 @@ export default function MyChallengesPage() {
 
                             <TabsContent value="created" className="m-0 focus-visible:outline-none">
                                 {created.length === 0 ? (
-                                    <EmptyState icon={<Layers />} title="You haven't created any" desc="Launch a challenge to engage your community." actionText="Create New" link="/challenges/create" />
+                                    <EmptyState icon={<Layers />} title={t('challenges.youHaventCreatedAny')} desc="Launch a challenge to engage your community." actionText="Create New" link="/challenges/create" />
                                 ) : (
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                         {created.map(c => <ChallengeCard key={c.id} challenge={c} userId={userId} onClick={() => router.push(`/challenges/${c.id}`)} />)}
@@ -110,7 +114,7 @@ export default function MyChallengesPage() {
 
                             <TabsContent value="completed" className="m-0 focus-visible:outline-none">
                                 {completed.length === 0 ? (
-                                    <EmptyState icon={<CheckCircle />} title="No completed history" desc="Once a challenge you joined finishes, it will appear here." />
+                                    <EmptyState icon={<CheckCircle />} title={t('challenges.noCompletedHistory')} desc="Once a challenge you joined finishes, it will appear here." />
                                 ) : (
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 opacity-90">
                                         {completed.map(c => <ChallengeCard key={c.id} challenge={c} userId={userId} onClick={() => router.push(`/challenges/${c.id}`)} />)}
@@ -120,7 +124,7 @@ export default function MyChallengesPage() {
 
                             <TabsContent value="bookmarked" className="m-0 focus-visible:outline-none">
                                 {bookmarked.length === 0 ? (
-                                    <EmptyState icon={<BookMarked />} title="No saved challenges" desc="Tap the bookmark icon on any challenge to save it for later." actionText="Explore" link="/challenges" />
+                                    <EmptyState icon={<BookMarked />} title={t('challenges.noSavedChallenges')} desc="Tap the bookmark icon on any challenge to save it for later." actionText="Explore" link="/challenges" />
                                 ) : (
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                         {bookmarked.map(c => <ChallengeCard key={c.id} challenge={c} userId={userId} onClick={() => router.push(`/challenges/${c.id}`)} />)}

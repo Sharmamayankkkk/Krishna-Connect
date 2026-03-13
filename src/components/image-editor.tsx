@@ -36,6 +36,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+import { useTranslation } from 'react-i18next';
+
 interface ImageEditorProps {
   open: boolean;
   onClose: () => void;
@@ -144,6 +146,8 @@ const aspectRatios: AspectRatio[] = [
 ];
 
 export function ImageEditor({ open, onClose, image, onSave }: ImageEditorProps) {
+  const { t } = useTranslation();
+
   const [rotation, setRotation] = useState<number>(0);
   const [aspectRatio, setAspectRatio] = useState<number | null>(null); // UI selection only
   const [zoom, setZoom] = useState<number>(1);
@@ -238,16 +242,16 @@ export function ImageEditor({ open, onClose, image, onSave }: ImageEditorProps) 
         {/* Header */}
         <DialogHeader className="flex-shrink-0 px-4 sm:px-6 pt-4 pb-3 border-b">
           <div className="flex items-center justify-between gap-3">
-            <DialogTitle className="text-base sm:text-lg font-semibold">Edit Image</DialogTitle>
-            <DialogDescription className="sr-only">Editor to crop, adjust, and apply filters to images.</DialogDescription>
+            <DialogTitle className="text-base sm:text-lg font-semibold">{t('common.editImage')}</DialogTitle>
+            <DialogDescription className="sr-only">{t('common.editorToCropAdjustAndApply')}</DialogDescription>
             <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={undo} disabled={historyIndex <= 0} title="Undo">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={undo} disabled={historyIndex <= 0} title={t('common.undo')}>
                 <Undo className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={redo} disabled={historyIndex >= history.length - 1} title="Redo">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={redo} disabled={historyIndex >= history.length - 1} title={t('common.redo')}>
                 <Redo className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleReset} title="Reset all">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleReset} title={t('common.resetAll')}>
                 <RefreshCw className="h-4 w-4" />
               </Button>
               <Button variant="ghost" size="icon" className="h-8 w-8 sm:hidden" onClick={onClose}>
@@ -276,7 +280,7 @@ export function ImageEditor({ open, onClose, image, onSave }: ImageEditorProps) 
             <img
               ref={imageRef}
               src={image}
-              alt="Edit preview"
+              alt={t('common.editPreview')}
               style={getImageStyle()}
               className="max-w-full max-h-full object-contain"
             />
@@ -288,17 +292,11 @@ export function ImageEditor({ open, onClose, image, onSave }: ImageEditorProps) 
 
               <TabsList className="flex-shrink-0 w-full grid grid-cols-3 rounded-none h-11 border-b">
                 <TabsTrigger value="crop" className="gap-1.5 text-xs sm:text-sm">
-                  <Crop className="h-3.5 w-3.5" />
-                  Crop
-                </TabsTrigger>
+                  <Crop className="h-3.5 w-3.5" />{t('common.crop')}</TabsTrigger>
                 <TabsTrigger value="adjust" className="gap-1.5 text-xs sm:text-sm">
-                  <Sliders className="h-3.5 w-3.5" />
-                  Adjust
-                </TabsTrigger>
+                  <Sliders className="h-3.5 w-3.5" />{t('common.adjust')}</TabsTrigger>
                 <TabsTrigger value="filters" className="gap-1.5 text-xs sm:text-sm">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  Filters
-                </TabsTrigger>
+                  <Sparkles className="h-3.5 w-3.5" />{t('common.filters')}</TabsTrigger>
               </TabsList>
 
               <div className="flex-1 overflow-y-auto">
@@ -308,7 +306,7 @@ export function ImageEditor({ open, onClose, image, onSave }: ImageEditorProps) 
                   <TabsContent value="crop" className="mt-0 space-y-5">
 
                     <div className="space-y-2">
-                      <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Aspect Ratio</Label>
+                      <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('common.aspectRatio')}</Label>
                       <div className="grid grid-cols-5 gap-1.5">
                         {aspectRatios.map((ratio) => (
                           <Button
@@ -327,7 +325,7 @@ export function ImageEditor({ open, onClose, image, onSave }: ImageEditorProps) 
 
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Zoom</Label>
+                        <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('common.zoom')}</Label>
                         <span className="text-xs tabular-nums text-muted-foreground">{zoom.toFixed(1)}×</span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -346,7 +344,7 @@ export function ImageEditor({ open, onClose, image, onSave }: ImageEditorProps) 
 
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Rotation</Label>
+                        <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('common.rotation')}</Label>
                         <span className="text-xs tabular-nums text-muted-foreground">{rotation}°</span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -364,24 +362,20 @@ export function ImageEditor({ open, onClose, image, onSave }: ImageEditorProps) 
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Flip</Label>
+                      <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('common.flip')}</Label>
                       <div className="flex gap-2">
                         <Button
                           variant={flip.horizontal ? 'default' : 'outline'}
                           className="flex-1 gap-2 h-9 text-sm"
                           onClick={() => setFlip(prev => ({ ...prev, horizontal: !prev.horizontal }))}
                         >
-                          <FlipHorizontal className="h-4 w-4" />
-                          Horizontal
-                        </Button>
+                          <FlipHorizontal className="h-4 w-4" />{t('common.horizontal')}</Button>
                         <Button
                           variant={flip.vertical ? 'default' : 'outline'}
                           className="flex-1 gap-2 h-9 text-sm"
                           onClick={() => setFlip(prev => ({ ...prev, vertical: !prev.vertical }))}
                         >
-                          <FlipVertical className="h-4 w-4" />
-                          Vertical
-                        </Button>
+                          <FlipVertical className="h-4 w-4" />{t('common.vertical')}</Button>
                       </div>
                     </div>
                   </TabsContent>
@@ -409,9 +403,7 @@ export function ImageEditor({ open, onClose, image, onSave }: ImageEditorProps) 
 
                     <Button variant="outline" size="sm" className="w-full gap-2"
                       onClick={() => { setBrightness(100); setContrast(100); setSaturation(100); }}>
-                      <RefreshCw className="h-3.5 w-3.5" />
-                      Reset Adjustments
-                    </Button>
+                      <RefreshCw className="h-3.5 w-3.5" />{t('common.resetAdjustments')}</Button>
                   </TabsContent>
 
                   {/* FILTERS */}
@@ -455,19 +447,15 @@ export function ImageEditor({ open, onClose, image, onSave }: ImageEditorProps) 
         <DialogFooter className="flex-shrink-0 px-4 sm:px-6 py-3 border-t bg-background">
           <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between w-full gap-2">
             <Button variant="outline" size="sm" className="gap-2" onClick={handleDownload} disabled={isProcessing}>
-              <Download className="h-4 w-4" />
-              Download
-            </Button>
+              <Download className="h-4 w-4" />{t('media.download')}</Button>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" className="flex-1 sm:flex-none gap-2" onClick={onClose} disabled={isProcessing}>
-                <X className="h-4 w-4" />
-                Cancel
-              </Button>
+                <X className="h-4 w-4" />{t('common.cancel')}</Button>
               <Button size="sm" className="flex-1 sm:flex-none gap-2" onClick={handleSave} disabled={isProcessing}>
                 {isProcessing ? (
                   <><Loader2 className="h-4 w-4 animate-spin" />Processing…</>
                 ) : (
-                  <><Check className="h-4 w-4" />Apply & Save</>
+                  <><Check className="h-4 w-4" />{t('common.applySave')}</>
                 )}
               </Button>
             </div>

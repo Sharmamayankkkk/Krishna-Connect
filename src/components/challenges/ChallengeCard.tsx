@@ -8,6 +8,8 @@ import { VerificationBadge } from '@/components/shared/verification-badge';
 import { Button } from '@/components/ui/button';
 import { getAvatarUrl } from '@/lib/utils';
 
+import { useTranslation } from 'react-i18next';
+
 interface ChallengeCardProps {
     challenge: Challenge;
     userId: string | null;
@@ -20,6 +22,8 @@ interface ChallengeCardProps {
 }
 
 export function ChallengeCard({ challenge, userId, onClick, onToggleBookmark }: ChallengeCardProps) {
+  const { t } = useTranslation();
+
     const isOwner = userId === challenge.author_id;
 
     return (
@@ -56,11 +60,10 @@ export function ChallengeCard({ challenge, userId, onClick, onToggleBookmark }: 
                 <div className="absolute top-2 left-2 flex flex-col gap-1">
                     {challenge.is_featured && (
                         <Badge variant="default" className="text-[10px] px-2 rounded-sm bg-amber-500 hover:bg-amber-600 text-white shadow-sm border-none tracking-wider font-bold">
-                            <Flame className="h-3 w-3 mr-1" /> Featured
-                        </Badge>
+                            <Flame className="h-3 w-3 mr-1" />{t('explore.featured')}</Badge>
                     )}
                     {challenge.status === 'submission_closed' && (
-                        <Badge variant="destructive" className="text-[10px] px-1.5 rounded-sm bg-red-500/90 hover:bg-red-500/90 shadow-sm border-none uppercase tracking-wider font-bold">Closed</Badge>
+                        <Badge variant="destructive" className="text-[10px] px-1.5 rounded-sm bg-red-500/90 hover:bg-red-500/90 shadow-sm border-none uppercase tracking-wider font-bold">{t('challenges.closed')}</Badge>
                     )}
                     {challenge.difficulty && (
                         <Badge variant="outline" className="backdrop-blur-md bg-background/60 border-white/30 text-[10px] uppercase font-bold text-foreground">
@@ -99,19 +102,14 @@ export function ChallengeCard({ challenge, userId, onClick, onToggleBookmark }: 
 
                     {/* Challenge Type specific badge */}
                     {challenge.type === 'speed_race' && (
-                        <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-normal text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/30">
-                            Speed Race
-                        </Badge>
+                        <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-normal text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/30">{t('challenges.speedRace')}</Badge>
                     )}
                     {challenge.type === 'community_voted' && (
-                        <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-normal text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-900 bg-purple-50 dark:bg-purple-950/30">
-                            Voting
-                        </Badge>
+                        <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-normal text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-900 bg-purple-50 dark:bg-purple-950/30">{t('challenges.voting')}</Badge>
                     )}
                     {challenge.prize_description && (
                         <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-normal text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/30 shadow-sm">
-                            <Award className="h-3 w-3 mr-0.5" /> Prize
-                        </Badge>
+                            <Award className="h-3 w-3 mr-0.5" />{t('challenges.prize')}</Badge>
                     )}
                 </div>
             </CardHeader>
@@ -149,7 +147,7 @@ export function ChallengeCard({ challenge, userId, onClick, onToggleBookmark }: 
                         <div className="flex justify-end">
                             <div className="flex items-center gap-1 text-orange-500 bg-orange-50 dark:bg-orange-500/10 px-2 py-0.5 rounded-full text-xs font-bold border border-orange-200 dark:border-orange-900/50">
                                 <Flame className="h-3 w-3 fill-orange-500" />
-                                <span>Active</span>
+                                <span>{t('getVerified.active')}</span>
                             </div>
                         </div>
                     )}

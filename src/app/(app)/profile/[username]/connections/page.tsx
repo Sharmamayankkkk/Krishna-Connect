@@ -1,8 +1,12 @@
+"use client";
+
 import { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { ConnectionsView } from './components/connections-view';
 import { notFound, redirect } from 'next/navigation';
 import { Lock } from 'lucide-react';
+
+import { useTranslation } from 'react-i18next';
 
 export const metadata: Metadata = {
     title: "Connections",
@@ -66,7 +70,7 @@ export default async function ConnectionsPage(props: PageProps) {
                     <div className="bg-muted p-4 rounded-full">
                         <Lock className="h-8 w-8 text-muted-foreground" />
                     </div>
-                    <h1 className="text-2xl font-bold">This account is private</h1>
+                    <h1 className="text-2xl font-bold">{t('profile.thisAccountIsPrivate')}</h1>
                     <p className="text-muted-foreground">Follow this account to see their {type}.</p>
                 </div>
             );
@@ -141,6 +145,8 @@ export default async function ConnectionsPage(props: PageProps) {
 
         const relationMap = new Map();
         myRelationships?.forEach((r: any) => {
+  const { t } = useTranslation();
+
             relationMap.set(r.user_two_id, r.status);
         });
 

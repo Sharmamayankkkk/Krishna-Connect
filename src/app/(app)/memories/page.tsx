@@ -2,6 +2,8 @@
 
 import { Calendar, Pin } from 'lucide-react';
 
+import { useTranslation } from 'react-i18next';
+
 // Mock data for memories - in a real app, this would be fetched based on the current date
 const mockMemories = {
   '1 Year Ago': [
@@ -29,13 +31,15 @@ const mockMemories = {
 };
 
 export default function MemoriesPage() {
+  const { t } = useTranslation();
+
   const hasMemories = Object.keys(mockMemories).length > 0;
   const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
 
   return (
     <div className="container mx-auto max-w-3xl py-8">
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold">Memory Lane</h1>
+        <h1 className="text-4xl font-bold">{t('feed.memoryLane')}</h1>
         <p className="text-xl text-muted-foreground mt-2">
           A look back at your posts from <span className="text-primary font-semibold">{today}</span>.
         </p>
@@ -66,8 +70,8 @@ export default function MemoriesPage() {
         </div>
       ) : (
         <div className="text-center py-20 border-2 border-dashed rounded-lg">
-            <p className="text-xl text-muted-foreground">No memories from this day.</p>
-            <p className="mt-2">Come back tomorrow to see if new memories surface!</p>
+            <p className="text-xl text-muted-foreground">{t('feed.noMemoriesFromThisDay')}</p>
+            <p className="mt-2">{t('feed.comeBackTomorrowToSeeIf')}</p>
         </div>
       )}
     </div>

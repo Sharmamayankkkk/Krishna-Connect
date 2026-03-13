@@ -24,6 +24,8 @@ import { Calendar } from '@/components/ui/calendar'
 import Image from 'next/image'
 import { v4 as uuidv4 } from 'uuid';
 
+import { useTranslation } from 'react-i18next';
+
 interface CreateEventDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -41,6 +43,8 @@ const createEventSchema = z.object({
 });
 
 export function CreateEventDialog({ open, onOpenChange, eventToEdit, onEventCreated, onEventUpdated }: CreateEventDialogProps) {
+  const { t } = useTranslation();
+
   const { toast } = useToast();
   const { loggedInUser } = useAppContext();
 
@@ -172,8 +176,8 @@ export function CreateEventDialog({ open, onOpenChange, eventToEdit, onEventCrea
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Event Title</FormLabel>
-                    <FormControl><Input placeholder="E.g., Bhagavad Gita Study" {...field} /></FormControl>
+                    <FormLabel>{t('events.eventTitle')}</FormLabel>
+                    <FormControl><Input placeholder={t('events.egBhagavadGitaStudy')} {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -183,22 +187,20 @@ export function CreateEventDialog({ open, onOpenChange, eventToEdit, onEventCrea
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl><Textarea placeholder="What is this event about?" className="resize-none" {...field} /></FormControl>
+                    <FormLabel>{t('challenges.description')}</FormLabel>
+                    <FormControl><Textarea placeholder={t('events.whatIsThisEventAbout')} className="resize-none" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
               <FormItem>
-                <FormLabel>Thumbnail</FormLabel>
+                <FormLabel>{t('events.thumbnail')}</FormLabel>
                 <div className="flex items-center gap-4">
                   <div className="relative w-48 h-27 aspect-video rounded-md overflow-hidden bg-muted">
                     {thumbnailPreview ? <Image src={thumbnailPreview} alt="thumbnail preview" fill className="object-cover" /> : <div className="h-full w-full bg-muted" />}
                   </div>
                   <Button type="button" variant="outline" onClick={() => thumbnailInputRef.current?.click()}>
-                    <Upload className="mr-2 h-4 w-4" />
-                    Upload Image
-                  </Button>
+                    <Upload className="mr-2 h-4 w-4" />{t('events.uploadImage')}</Button>
                   <input type="file" ref={thumbnailInputRef} onChange={handleThumbnailChange} className="hidden" accept="image/*" />
                 </div>
                 <FormMessage />
@@ -209,7 +211,7 @@ export function CreateEventDialog({ open, onOpenChange, eventToEdit, onEventCrea
                   name="date"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Date</FormLabel>
+                      <FormLabel>{t('events.date')}</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
@@ -217,7 +219,7 @@ export function CreateEventDialog({ open, onOpenChange, eventToEdit, onEventCrea
                               variant={"outline"}
                               className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
                             >
-                              {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                              {field.value ? format(field.value, "PPP") : <span>{t('events.pickADate')}</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                             </Button>
                           </FormControl>
@@ -235,7 +237,7 @@ export function CreateEventDialog({ open, onOpenChange, eventToEdit, onEventCrea
                   name="time"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Time</FormLabel>
+                      <FormLabel>{t('events.time')}</FormLabel>
                       <FormControl><Input type="time" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
@@ -255,7 +257,7 @@ export function CreateEventDialog({ open, onOpenChange, eventToEdit, onEventCrea
               />
             </div>
             <DialogFooter className="sticky bottom-0 bg-background py-4">
-              <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
+              <DialogClose asChild><Button type="button" variant="outline">{t('common.cancel')}</Button></DialogClose>
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isEditing ? 'Save Changes' : 'Create Event'}

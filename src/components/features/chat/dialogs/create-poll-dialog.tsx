@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -10,6 +12,8 @@ import { createClient } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/types';
 
+import { useTranslation } from 'react-i18next';
+
 interface CreatePollDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -19,6 +23,8 @@ interface CreatePollDialogProps {
 }
 
 export const CreatePollDialog = ({ open, onOpenChange, chatId, loggedInUser, onPollCreated }: CreatePollDialogProps) => {
+  const { t } = useTranslation();
+
   const [question, setQuestion] = useState('');
   const [options, setOptions] = useState([{ id: '1', text: '' }, { id: '2', text: '' }]);
   const [isAnonymous, setIsAnonymous] = useState(false);
@@ -91,14 +97,14 @@ export const CreatePollDialog = ({ open, onOpenChange, chatId, loggedInUser, onP
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Create Poll</DialogTitle>
+          <DialogTitle>{t('chat.createPoll')}</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label>Question</Label>
+            <Label>{t('chat.question')}</Label>
             <Input 
-              placeholder="Ask a question..." 
+              placeholder={t('chat.askAQuestion')} 
               value={question} 
               onChange={(e) => setQuestion(e.target.value)}
               maxLength={300}
@@ -106,7 +112,7 @@ export const CreatePollDialog = ({ open, onOpenChange, chatId, loggedInUser, onP
           </div>
 
           <div className="space-y-2">
-            <Label>Poll Options</Label>
+            <Label>{t('chat.pollOptions')}</Label>
             <ScrollArea className="max-h-[30vh] pr-4 space-y-2">
               <div className="space-y-2">
                 {options.map((option, index) => (
@@ -128,24 +134,23 @@ export const CreatePollDialog = ({ open, onOpenChange, chatId, loggedInUser, onP
             </ScrollArea>
             {options.length < 10 && (
               <Button type="button" variant="ghost" className="w-full mt-2" onClick={handleAddOption}>
-                <Plus className="h-4 w-4 mr-2" /> Add Option
-              </Button>
+                <Plus className="h-4 w-4 mr-2" />{t('chat.addOption')}</Button>
             )}
           </div>
 
           <div className="space-y-4 pt-4 border-t">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Anonymous Voting</Label>
-                <p className="text-xs text-muted-foreground">Hide who voted for what</p>
+                <Label>{t('chat.anonymousVoting')}</Label>
+                <p className="text-xs text-muted-foreground">{t('chat.hideWhoVotedForWhat')}</p>
               </div>
               <Switch checked={isAnonymous} onCheckedChange={setIsAnonymous} />
             </div>
             
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Multiple Answers</Label>
-                <p className="text-xs text-muted-foreground">Allow selecting multiple options</p>
+                <Label>{t('chat.multipleAnswers')}</Label>
+                <p className="text-xs text-muted-foreground">{t('chat.allowSelectingMultipleOptions')}</p>
               </div>
               <Switch checked={allowsMultiple} onCheckedChange={setAllowsMultiple} />
             </div>
@@ -154,7 +159,7 @@ export const CreatePollDialog = ({ open, onOpenChange, chatId, loggedInUser, onP
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline">{t('common.cancel')}</Button>
           </DialogClose>
           <Button onClick={handleSubmit} disabled={isSubmitting || !question.trim()}>
             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}

@@ -13,6 +13,8 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
+import { useTranslation } from 'react-i18next';
+
 interface CallControlsProps {
   isAudioMuted: boolean
   isVideoOff: boolean
@@ -34,6 +36,8 @@ export function CallControls({
   onToggleScreenShare,
   onEndCall,
 }: CallControlsProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex items-center justify-center gap-3 p-4">
       <TooltipProvider>
@@ -107,7 +111,7 @@ export function CallControls({
               <PhoneOff className="h-6 w-6" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>End Call</TooltipContent>
+          <TooltipContent>{t('calls.endCall')}</TooltipContent>
         </Tooltip>
       </TooltipProvider>
     </div>

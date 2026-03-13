@@ -1,6 +1,10 @@
+"use client";
+
 import { Metadata } from "next";
 import Link from "next/link";
 import { legalPolicies } from "@/config/legal-policies";
+
+import { useTranslation } from 'react-i18next';
 
 export const metadata: Metadata = {
     title: "Legal Directory | Krishna Connect",
@@ -8,6 +12,8 @@ export const metadata: Metadata = {
 };
 
 export default function LegalDirectoryPage() {
+  const { t } = useTranslation();
+
     const customSlugs = [
         { slug: '/terms-and-conditions', title: 'Terms and Conditions' },
         { slug: '/privacy-policy', title: 'Privacy Policy' },
@@ -29,10 +35,8 @@ export default function LegalDirectoryPage() {
     return (
         <div className="container mx-auto px-4 py-12 max-w-4xl text-foreground">
             <div className="mb-10 text-center">
-                <h1 className="text-4xl font-bold mb-4 tracking-tight">
-                    Legal Directory
-                </h1>
-                <p className="text-muted-foreground">Comprehensive list of all platform policies and guidelines.</p>
+                <h1 className="text-4xl font-bold mb-4 tracking-tight">{t('legal.legalDirectory')}</h1>
+                <p className="text-muted-foreground">{t('legal.comprehensiveListOfAllPlatformPolicies')}</p>
             </div>
 
             <div className="bg-card p-6 rounded-xl border border-border/50 shadow-sm">

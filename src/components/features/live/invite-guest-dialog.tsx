@@ -11,6 +11,8 @@ import { useAppContext } from '@/providers/app-provider'
 import { useToast } from '@/hooks/use-toast'
 import { getAvatarUrl } from '@/lib/utils'
 
+import { useTranslation } from 'react-i18next';
+
 interface InviteGuestDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
@@ -19,6 +21,8 @@ interface InviteGuestDialogProps {
 }
 
 export function InviteGuestDialog({ open, onOpenChange, livestreamId, currentGuests }: InviteGuestDialogProps) {
+  const { t } = useTranslation();
+
     const { loggedInUser } = useAppContext()
     const { toast } = useToast()
     const supabase = createClient()
@@ -86,7 +90,7 @@ export function InviteGuestDialog({ open, onOpenChange, livestreamId, currentGue
             >
                 {/* Header — never scrolls */}
                 <DialogHeader className="px-5 pt-5 pb-3 shrink-0">
-                    <DialogTitle className="text-lg">Invite Guest Co-Host</DialogTitle>
+                    <DialogTitle className="text-lg">{t('live.inviteGuestCohost')}</DialogTitle>
                     <DialogDescription>
                         Invite up to 3 guests to join your livestream as co-hosts
                     </DialogDescription>
@@ -96,7 +100,7 @@ export function InviteGuestDialog({ open, onOpenChange, livestreamId, currentGue
                 <div className="relative px-5 pb-2 shrink-0">
                     <Search className="absolute left-8 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                     <Input
-                        placeholder="Search users..."
+                        placeholder={t('chat.searchUsers')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-9 bg-muted/50 border-transparent focus:bg-background"
@@ -114,17 +118,13 @@ export function InviteGuestDialog({ open, onOpenChange, livestreamId, currentGue
                 >
                     <div className="space-y-1 py-2">
                         {!searchQuery.trim() ? (
-                            <p className="text-sm text-muted-foreground text-center py-8">
-                                Type a name to search for users
-                            </p>
+                            <p className="text-sm text-muted-foreground text-center py-8">{t('live.typeANameToSearchFor')}</p>
                         ) : isSearching ? (
                             <div className="flex justify-center py-8">
                                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                             </div>
                         ) : searchResults.length === 0 ? (
-                            <p className="text-sm text-muted-foreground text-center py-8">
-                                No users found
-                            </p>
+                            <p className="text-sm text-muted-foreground text-center py-8">{t('chat.noUsersFound1')}</p>
                         ) : (
                             searchResults.map((user) => (
                                 <div
@@ -154,7 +154,7 @@ export function InviteGuestDialog({ open, onOpenChange, livestreamId, currentGue
                                         ) : (
                                             <>
                                                 <UserPlus className="h-4 w-4" />
-                                                <span>Invite</span>
+                                                <span>{t('live.invite')}</span>
                                             </>
                                         )}
                                     </Button>

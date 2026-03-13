@@ -17,7 +17,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label"
 import { Loader2 } from 'lucide-react'
 
+import { useTranslation } from 'react-i18next';
+
 export function UploadLeelaFab() {
+  const { t } = useTranslation();
+
   const { loggedInUser } = useAppContext()
   const { toast } = useToast()
   const supabase = createClient()
@@ -99,9 +103,7 @@ export function UploadLeelaFab() {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Image src="/icons/leela.png" alt="Leela" width={20} height={20} />
-              Upload Leela
-            </DialogTitle>
+              <Image src="/icons/leela.png" alt={t('create.leela')} width={20} height={20} />{t('feed.uploadLeela')}</DialogTitle>
           </DialogHeader>
 
           {selectedLeelaFile && (
@@ -116,7 +118,7 @@ export function UploadLeelaFab() {
                   id="fab-leela-caption"
                   value={leelaCaption}
                   onChange={(e) => setLeelaCaption(e.target.value)}
-                  placeholder="Write a caption for your Leela..."
+                  placeholder={t('feed.writeACaptionForYourLeela')}
                   className="w-full min-h-[100px] p-3 rounded-md border bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm resize-none"
                   maxLength={200}
                 />
@@ -131,11 +133,9 @@ export function UploadLeelaFab() {
             <Button variant="ghost" onClick={() => {
               setIsLeelaDialogOpen(false);
               setSelectedLeelaFile(null);
-            }}>
-              Cancel
-            </Button>
+            }}>{t('common.cancel')}</Button>
             <Button onClick={handleLeelaUploadConfirm} disabled={isUploading}>
-              {isUploading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...</> : 'Post Leela'}
+              {isUploading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t('feed.uploading1')}</> : 'Post Leela'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -149,12 +149,12 @@ export function UploadLeelaFab() {
               className="fixed bottom-20 right-4 z-50 h-14 w-14 rounded-full md:bottom-8 bg-white dark:bg-gradient-to-br dark:from-slate-800 dark:to-slate-900 border border-slate-200 dark:border-slate-700 shadow-[0_4px_15px_rgba(6,182,212,0.3)] dark:shadow-[0_0_15px_rgba(6,182,212,0.4)] transition-all hover:scale-105 hover:shadow-[0_4px_25px_rgba(6,182,212,0.4)] dark:hover:shadow-[0_0_25px_rgba(6,182,212,0.6)] hover:bg-slate-50 dark:hover:from-slate-700 dark:hover:to-slate-800"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              aria-label="Upload Leela"
+              aria-label={t('feed.uploadLeela')}
             >
               {isUploading ? (
                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
               ) : (
-                <Image src="/icons/leela.png" alt="Leela" width={24} height={24} />
+                <Image src="/icons/leela.png" alt={t('create.leela')} width={24} height={24} />
               )}
             </Button>
           </TooltipTrigger>

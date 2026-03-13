@@ -20,6 +20,8 @@ import { UserType } from '@/lib/types';
 import { useAppContext } from '@/providers/app-provider';
 import { VerificationBadge } from "@/components/shared/verification-badge";
 
+import { useTranslation } from 'react-i18next';
+
 // Reusing UserType but ensuring Collaborator matches what we need
 export type Collaborator = UserType;
 
@@ -38,6 +40,8 @@ export function CollaborativePostDialog({
   onSelectCollaborators,
   initialCollaborators,
 }: CollaborativePostDialogProps) {
+  const { t } = useTranslation();
+
   const { toast } = useToast();
   const { loggedInUser } = useAppContext();
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -132,7 +136,7 @@ export function CollaborativePostDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Invite Collaborators</DialogTitle>
+          <DialogTitle>{t('post.inviteCollaborators')}</DialogTitle>
           <DialogDescription>
             Select up to {MAX_COLLABORATORS} other users to be co-authors of this post.
           </DialogDescription>
@@ -141,7 +145,7 @@ export function CollaborativePostDialog({
         <div className="relative my-4">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search for people..."
+            placeholder={t('post.searchForPeople')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -182,7 +186,7 @@ export function CollaborativePostDialog({
                 {searchQuery ? (
                   <p>No users found matching "{searchQuery}"</p>
                 ) : (
-                  <p>Search for users to invite</p>
+                  <p>{t('post.searchForUsersToInvite')}</p>
                 )}
               </div>
             )}
@@ -210,7 +214,7 @@ export function CollaborativePostDialog({
         )}
 
         <DialogFooter className='pt-4'>
-          <Button onClick={handleDone} className='w-full'>Done</Button>
+          <Button onClick={handleDone} className='w-full'>{t('common.done')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

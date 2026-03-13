@@ -11,6 +11,8 @@ import { Megaphone, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { VerificationBadge } from "@/components/shared/verification-badge";
 
+import { useTranslation } from 'react-i18next';
+
 // Types matching promoted_content.json structure
 export interface PromotedAuthor {
     name: string;
@@ -52,6 +54,8 @@ interface PromotedPostCardProps {
 }
 
 export function PromotedPostCard({ promotion, className }: PromotedPostCardProps) {
+  const { t } = useTranslation();
+
     const { content, cta, type } = promotion;
     const author = content.author;
 
@@ -85,9 +89,7 @@ export function PromotedPostCard({ promotion, className }: PromotedPostCardProps
                             </div>
                         </div>
                         <Badge variant="outline" className="bg-background/50 backdrop-blur-md border-primary/30 text-primary px-3 py-1 text-xs uppercase tracking-wider font-bold shadow-sm">
-                            <Megaphone className="h-3 w-3 mr-1.5 fill-current" />
-                            Featured
-                        </Badge>
+                            <Megaphone className="h-3 w-3 mr-1.5 fill-current" />{t('explore.featured')}</Badge>
                     </div>
 
                     {/* Content */}
@@ -101,7 +103,7 @@ export function PromotedPostCard({ promotion, className }: PromotedPostCardProps
                             <div className="relative w-full aspect-[2/1] sm:aspect-[2.4/1] rounded-2xl overflow-hidden shadow-inner bg-muted/20 group-hover:scale-[1.01] transition-transform duration-500">
                                 <Image
                                     src={content.imageUrl}
-                                    alt="Promoted content"
+                                    alt={t('explore.promotedContent')}
                                     fill
                                     className="object-cover"
                                 />
@@ -112,9 +114,7 @@ export function PromotedPostCard({ promotion, className }: PromotedPostCardProps
                     {/* CTA Footer */}
                     {cta && (
                         <div className="mt-6 flex items-center justify-between gap-4 pt-4 border-t border-primary/10">
-                            <p className="text-sm text-muted-foreground font-medium hidden sm:block">
-                                Sponsored Content
-                            </p>
+                            <p className="text-sm text-muted-foreground font-medium hidden sm:block">{t('explore.sponsoredContent')}</p>
                             <Button asChild size="lg" className="w-full sm:w-auto rounded-full font-bold shadow-lg shadow-primary/20 group-hover:shadow-primary/40 transition-all">
                                 <Link href={cta.url} target="_blank" rel="noopener noreferrer">
                                     {cta.label}

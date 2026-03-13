@@ -17,6 +17,8 @@ import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+import { useTranslation } from 'react-i18next';
+
 interface PostDetailDialogProps {
   post: Post | null;
   author: User | null;
@@ -26,6 +28,8 @@ interface PostDetailDialogProps {
 }
 
 export function PostDetailDialog({ post, author, initialComments = [], open, onOpenChange }: PostDetailDialogProps) {
+  const { t } = useTranslation();
+
   const { loggedInUser } = useAppContext();
   const { toast } = useToast();
   const [comments, setComments] = useState<Comment[]>(initialComments);
@@ -366,9 +370,7 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
             <button
               onClick={() => setReplyingTo(comment)}
               className="font-semibold hover:text-foreground transition-colors"
-            >
-              Reply
-            </button>
+            >{t('explore.reply')}</button>
           </div>
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">
@@ -392,9 +394,7 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
                   onClick={() => handleCommentDelete(String(comment.id))}
                   className="text-destructive focus:text-destructive"
                 >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </DropdownMenuItem>
+                  <Trash2 className="mr-2 h-4 w-4" />{t('common.delete')}</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -428,8 +428,8 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
       {comments.length === 0 && (
         <div className="text-center py-8">
           <MessageCircle className="h-12 w-12 mx-auto mb-3 opacity-50 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground font-semibold">No comments yet</p>
-          <p className="text-xs text-muted-foreground mt-1">Be the first to comment!</p>
+          <p className="text-sm text-muted-foreground font-semibold">{t('post.noCommentsYet')}</p>
+          <p className="text-xs text-muted-foreground mt-1">{t('post.beTheFirstToComment')}</p>
         </div>
       )}
     </>
@@ -458,7 +458,7 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
                 />
               ) : (
                 <div className="flex items-center justify-center h-full w-full text-muted-foreground bg-muted/20">
-                  <p>No image available</p>
+                  <p>{t('post.noImageAvailable')}</p>
                 </div>
               )}
             </div>
@@ -480,7 +480,7 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
                 </Link>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" aria-label="More options">
+                    <Button variant="ghost" size="icon" aria-label={t('post.moreOptions')}>
                       <MoreHorizontal className="h-5 w-5" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -488,16 +488,12 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
                     {isPostAuthor ? (
                       <>
                         <DropdownMenuItem onClick={handleDelete} className="text-destructive focus:text-destructive">
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete Post
-                        </DropdownMenuItem>
+                          <Trash2 className="mr-2 h-4 w-4" />{t('post.deletePost')}</DropdownMenuItem>
                       </>
                     ) : (
                       <>
                         <DropdownMenuItem onClick={handleReport} className="text-destructive focus:text-destructive">
-                          <Flag className="mr-2 h-4 w-4" />
-                          Report
-                        </DropdownMenuItem>
+                          <Flag className="mr-2 h-4 w-4" />{t('post.report')}</DropdownMenuItem>
                       </>
                     )}
                   </DropdownMenuContent>
@@ -533,7 +529,7 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
                       variant="ghost"
                       size="icon"
                       onClick={() => commentInputRef.current?.focus()}
-                      aria-label="Comment on post"
+                      aria-label={t('post.commentOnPost')}
                       className="hover:scale-110 transition-transform"
                     >
                       <MessageCircle className="h-6 w-6" />
@@ -542,7 +538,7 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
                       variant="ghost"
                       size="icon"
                       onClick={handleShare}
-                      aria-label="Share post"
+                      aria-label={t('post.sharePost')}
                       className="hover:scale-110 transition-transform"
                     >
                       <Share2 className="h-6 w-6" />
@@ -604,14 +600,14 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
                     onChange={(e) => setNewComment(e.target.value)}
                     onKeyDown={handleKeyDown}
                     className="flex-1"
-                    aria-label="Write a comment"
+                    aria-label={t('post.writeAComment')}
                     maxLength={500}
                     disabled={isPostingComment}
                   />
                   <Button
                     onClick={handleDesktopSubmit}
                     disabled={!newComment.trim() || isPostingComment}
-                    aria-label="Post comment"
+                    aria-label={t('post.postComment')}
                     className="hover:scale-105 transition-transform"
                   >
                     {isPostingComment ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
@@ -644,7 +640,7 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
                       variant="ghost"
                       size="icon"
                       onClick={() => setIsMobileCommentsOpen(true)}
-                      aria-label="View comments"
+                      aria-label={t('post.viewComments')}
                       className="hover:scale-110 transition-transform"
                     >
                       <MessageCircle className="h-6 w-6" />
@@ -653,7 +649,7 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
                       variant="ghost"
                       size="icon"
                       onClick={handleShare}
-                      aria-label="Share post"
+                      aria-label={t('post.sharePost')}
                       className="hover:scale-110 transition-transform"
                     >
                       <Share2 className="h-6 w-6" />
@@ -704,7 +700,7 @@ export function PostDetailDialog({ post, author, initialComments = [], open, onO
       }}>
         <SheetContent side="bottom" className="h-[80vh] flex flex-col p-0">
           <SheetHeader className="text-center p-4 border-b">
-            <SheetTitle>Comments</SheetTitle>
+            <SheetTitle>{t('explore.comments')}</SheetTitle>
           </SheetHeader>
 
           <ScrollArea className="flex-1 p-4">

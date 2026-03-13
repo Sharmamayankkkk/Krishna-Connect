@@ -12,6 +12,8 @@ import { useAppContext } from '@/providers/app-provider';
 import { usePostInteractions } from '@/hooks/use-post-interactions';
 import { createClient } from '@/lib/supabase/client';
 
+import { useTranslation } from 'react-i18next';
+
 interface FeedListProps {
     posts: PostType[];
     isLoading: boolean;
@@ -39,6 +41,8 @@ export function FeedList({
     onPin,
     emptyMessage = "Be the first to share something with the community!"
 }: FeedListProps) {
+  const { t } = useTranslation();
+
     const { loggedInUser } = useAppContext();
     const [promotions, setPromotions] = React.useState<PromotedContent[]>([]);
 
@@ -219,7 +223,7 @@ export function FeedList({
                         />
                     </svg>
                 </div>
-                <h3 className="text-xl font-semibold mb-2">No posts yet</h3>
+                <h3 className="text-xl font-semibold mb-2">{t('common.noPostsYet')}</h3>
                 <p className="text-muted-foreground max-w-sm">
                     {emptyMessage}
                 </p>
@@ -280,12 +284,10 @@ export function FeedList({
                     {isLoadingMore ? (
                         <div className="flex items-center gap-2 text-muted-foreground">
                             <Loader2 className="h-4 w-4 animate-spin" />
-                            <span>Loading more...</span>
+                            <span>{t('post.loadingMore')}</span>
                         </div>
                     ) : (
-                        <Button variant="ghost" className="w-full text-muted-foreground" onClick={onLoadMore}>
-                            Load more posts
-                        </Button>
+                        <Button variant="ghost" className="w-full text-muted-foreground" onClick={onLoadMore}>{t('post.loadMorePosts')}</Button>
                     )}
                 </div>
             ) : (

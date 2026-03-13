@@ -15,7 +15,11 @@ import { Switch } from '@/components/ui/switch';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import Link from 'next/link';
 
+import { useTranslation } from 'react-i18next';
+
 export default function CreateChallengePage() {
+  const { t } = useTranslation();
+
     const supabase = createClient();
     const router = useRouter();
     const { toast } = useToast();
@@ -170,8 +174,8 @@ export default function CreateChallengePage() {
                             <ArrowLeft className="h-4 w-4 md:h-5 md:w-5" />
                         </Button>
                         <div className="min-w-0 flex-1">
-                            <h1 className="text-base md:text-xl font-bold truncate">Create Challenge</h1>
-                            <p className="text-xs text-muted-foreground hidden sm:block truncate">Configure rules, rewards, and deadlines</p>
+                            <h1 className="text-base md:text-xl font-bold truncate">{t('challenges.createChallenge')}</h1>
+                            <p className="text-xs text-muted-foreground hidden sm:block truncate">{t('challenges.configureRulesRewardsAndDeadlines')}</p>
                         </div>
                     </div>
                     <div className="flex gap-1.5 md:gap-2 shrink-0">
@@ -179,10 +183,9 @@ export default function CreateChallengePage() {
                             {showPreview ? 'Edit' : 'Preview'}
                         </Button>
                         <Button variant="outline" size="sm" className="h-8 md:h-9 text-xs md:text-sm px-2 md:px-3 whitespace-nowrap" onClick={() => handleSave('draft')} disabled={isSubmitting}>
-                            <span className="hidden sm:inline">Save&nbsp;</span>Draft
-                        </Button>
+                            <span className="hidden sm:inline">Save&nbsp;</span>{t('post.draft')}</Button>
                         <Button size="sm" className="h-8 md:h-9 text-xs md:text-sm px-2 md:px-3 whitespace-nowrap" onClick={() => handleSave('active')} disabled={isSubmitting}>
-                            {isSubmitting ? '...' : <><span className="hidden sm:inline">Publish Challenge</span><span className="sm:hidden">Publish</span></>}
+                            {isSubmitting ? '...' : <><span className="hidden sm:inline">{t('challenges.publishChallenge')}</span><span className="sm:hidden">{t('challenges.publish')}</span></>}
                         </Button>
                     </div>
                 </div>
@@ -194,13 +197,13 @@ export default function CreateChallengePage() {
                         <div className="bg-card border rounded-2xl overflow-hidden shadow-sm">
                             {imagePreview ? (
                                 <div className="w-full h-48 md:h-72 bg-muted/30 relative">
-                                    <img src={imagePreview} className="w-full h-full object-cover" alt="Cover" />
+                                    <img src={imagePreview} className="w-full h-full object-cover" alt={t('challenges.cover')} />
                                 </div>
                             ) : (
                                 <div className="w-full h-48 md:h-72 bg-muted flex items-center justify-center">
                                     <div className="text-center text-muted-foreground">
                                         <Upload className="h-10 w-10 mx-auto mb-2 opacity-50" />
-                                        <p>No Cover Image</p>
+                                        <p>{t('challenges.noCoverImage')}</p>
                                     </div>
                                 </div>
                             )}
@@ -215,13 +218,13 @@ export default function CreateChallengePage() {
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8 border-t min-w-0 overflow-hidden w-full">
                                     <div className="md:col-span-2 space-y-8 min-w-0">
                                         <section className="min-w-0">
-                                            <h3 className="text-xl font-bold mb-4">About this Challenge</h3>
+                                            <h3 className="text-xl font-bold mb-4">{t('challenges.aboutThisChallenge')}</h3>
                                             <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap flex-1 break-words overflow-wrap-anywhere min-w-0 text-wrap break-all md:break-words">{description || 'No description provided.'}</p>
                                         </section>
                                         <section className="min-w-0">
                                             <div className="flex items-center gap-2 mb-4">
                                                 <ShieldCheck className="h-5 w-5 text-primary" />
-                                                <h3 className="text-xl font-bold">Rules & Guidelines</h3>
+                                                <h3 className="text-xl font-bold">{t('challenges.rulesGuidelines')}</h3>
                                             </div>
                                             <div className="bg-muted/30 rounded-xl p-5 border text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap font-mono break-words overflow-wrap-anywhere min-w-0 text-wrap break-all md:break-words">
                                                 {rules || 'No rules provided.'}
@@ -232,7 +235,7 @@ export default function CreateChallengePage() {
                                         <div className="bg-gradient-to-br from-yellow-500/10 to-amber-500/5 border border-yellow-500/20 rounded-xl p-5 min-w-0">
                                             <div className="flex items-center gap-2 mb-3">
                                                 <Trophy className="h-5 w-5 text-yellow-500" />
-                                                <h3 className="font-bold text-yellow-700 dark:text-yellow-500">The Prize</h3>
+                                                <h3 className="font-bold text-yellow-700 dark:text-yellow-500">{t('challenges.thePrize')}</h3>
                                             </div>
                                             <p className="text-sm text-yellow-800 dark:text-yellow-200/80 break-words overflow-wrap-anywhere min-w-0 text-wrap break-all md:break-words">{prize || 'No prize specified.'}</p>
                                         </div>
@@ -248,7 +251,7 @@ export default function CreateChallengePage() {
                         <div className="space-y-6 bg-card p-4 md:p-6 rounded-xl border shadow-sm min-w-0 w-full">
                             <div className="flex items-center gap-2 border-b pb-4 mb-4">
                                 <Sparkles className="h-5 w-5 text-primary" />
-                                <h2 className="text-lg font-semibold">Core Details</h2>
+                                <h2 className="text-lg font-semibold">{t('challenges.coreDetails')}</h2>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -262,11 +265,11 @@ export default function CreateChallengePage() {
                                             <SelectContent>
                                                 <SelectItem value="proof_based">Proof-Based (Manual Review)</SelectItem>
                                                 <SelectItem value="speed_race">Speed Race (First to submit wins)</SelectItem>
-                                                <SelectItem value="community_voted">Community Voted</SelectItem>
+                                                <SelectItem value="community_voted">{t('challenges.communityVoted')}</SelectItem>
                                                 <SelectItem value="scored">Scored (1-10 judges points)</SelectItem>
                                             </SelectContent>
                                         </Select>
-                                        <p className="text-xs text-muted-foreground">This determines how the winner is selected.</p>
+                                        <p className="text-xs text-muted-foreground">{t('challenges.thisDeterminesHowTheWinnerIs')}</p>
                                     </div>
                                 </div>
 
@@ -276,35 +279,35 @@ export default function CreateChallengePage() {
                                 </div>
 
                                 <div className="grid gap-2 md:col-span-2">
-                                    <Label htmlFor="desc">Description</Label>
-                                    <Textarea id="desc" placeholder="What is this challenge about? Inspire your community." className="min-h-[120px]" value={description} onChange={(e) => setDescription(e.target.value)} />
+                                    <Label htmlFor="desc">{t('challenges.description')}</Label>
+                                    <Textarea id="desc" placeholder={t('challenges.whatIsThisChallengeAboutInspire')} className="min-h-[120px]" value={description} onChange={(e) => setDescription(e.target.value)} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label>Category</Label>
+                                    <Label>{t('challenges.category')}</Label>
                                     <Select value={category} onValueChange={setCategory}>
                                         <SelectTrigger>
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="fitness">Fitness</SelectItem>
-                                            <SelectItem value="coding">Coding & Tech</SelectItem>
+                                            <SelectItem value="fitness">{t('challenges.fitness')}</SelectItem>
+                                            <SelectItem value="coding">{t('challenges.codingTech')}</SelectItem>
                                             <SelectItem value="spiritual">Spiritual / Yoga</SelectItem>
-                                            <SelectItem value="art">Art & Design</SelectItem>
-                                            <SelectItem value="photography">Photography</SelectItem>
-                                            <SelectItem value="writing">Writing</SelectItem>
-                                            <SelectItem value="other">Other</SelectItem>
+                                            <SelectItem value="art">{t('challenges.artDesign')}</SelectItem>
+                                            <SelectItem value="photography">{t('challenges.photography')}</SelectItem>
+                                            <SelectItem value="writing">{t('challenges.writing')}</SelectItem>
+                                            <SelectItem value="other">{t('challenges.other')}</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label>Submission Deadline</Label>
+                                    <Label>{t('challenges.submissionDeadline')}</Label>
                                     <Input type="datetime-local" value={submissionDeadline} onChange={e => setSubmissionDeadline(e.target.value)} />
                                 </div>
 
                                 <div className="grid gap-2 md:col-span-2">
-                                    <Label>Banner Image</Label>
+                                    <Label>{t('challenges.bannerImage')}</Label>
                                     <div className="border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center text-center hover:bg-muted/50 transition-colors relative h-48 bg-muted/10 overflow-hidden">
                                         <input
                                             type="file"
@@ -313,11 +316,11 @@ export default function CreateChallengePage() {
                                             onChange={handleImageChange}
                                         />
                                         {imagePreview ? (
-                                            <img src={imagePreview} alt="Preview" className="absolute inset-0 w-full h-full object-cover" />
+                                            <img src={imagePreview} alt={t('settings.appearance.preview')} className="absolute inset-0 w-full h-full object-cover" />
                                         ) : (
                                             <>
                                                 <Upload className="h-8 w-8 mb-2 text-muted-foreground" />
-                                                <p className="text-sm font-medium">Upload Cover Image</p>
+                                                <p className="text-sm font-medium">{t('challenges.uploadCoverImage')}</p>
                                                 <p className="text-xs text-muted-foreground">Recommended: 1200x600px</p>
                                             </>
                                         )}
@@ -329,15 +332,15 @@ export default function CreateChallengePage() {
                         <div className="space-y-6 bg-card p-4 md:p-6 rounded-xl border shadow-sm min-w-0 w-full">
                             <div className="flex items-center gap-2 border-b pb-4 mb-4">
                                 <ShieldCheck className="h-5 w-5 text-primary" />
-                                <h2 className="text-lg font-semibold">Rules & Rewards</h2>
+                                <h2 className="text-lg font-semibold">{t('challenges.rulesRewards')}</h2>
                             </div>
                             <div className="grid gap-6">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="rules">Rules & Guidelines</Label>
+                                    <Label htmlFor="rules">{t('challenges.rulesGuidelines')}</Label>
                                     <Textarea id="rules" placeholder="1. No plagiarism&#10;2. Must be original work&#10;..." className="min-h-[100px] font-mono text-sm" value={rules} onChange={(e) => setRules(e.target.value)} />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="prize">What does the winner get?</Label>
+                                    <Label htmlFor="prize">{t('challenges.whatDoesTheWinnerGet')}</Label>
                                     <Input id="prize" placeholder="e.g., $50 Gift Card, Custom Badge, Fame" value={prize} onChange={(e) => setPrize(e.target.value)} />
                                 </div>
                             </div>
@@ -349,15 +352,15 @@ export default function CreateChallengePage() {
                                 <AccordionTrigger className="px-4 md:px-6 hover:no-underline hover:bg-muted/40 rounded-xl transition-colors">
                                     <div className="flex items-center gap-2">
                                         <Settings className="h-5 w-5 text-muted-foreground" />
-                                        <span className="font-semibold">Advanced Power Settings</span>
-                                        <Badge variant="secondary" className="ml-2 text-[10px] bg-primary/10 text-primary uppercase">Pro Creators</Badge>
+                                        <span className="font-semibold">{t('challenges.advancedPowerSettings')}</span>
+                                        <Badge variant="secondary" className="ml-2 text-[10px] bg-primary/10 text-primary uppercase">{t('challenges.proCreators')}</Badge>
                                     </div>
                                 </AccordionTrigger>
                                 <AccordionContent className="px-6 pb-6 pt-2 space-y-8">
 
                                     {/* Scheduling */}
                                     <div className="space-y-4 pt-4">
-                                        <h3 className="font-medium flex items-center gap-2 text-foreground/80"><Clock className="h-4 w-4" /> Scheduling & Access</h3>
+                                        <h3 className="font-medium flex items-center gap-2 text-foreground/80"><Clock className="h-4 w-4" />{t('challenges.schedulingAccess')}</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="grid gap-2">
                                                 <Label>Start Date (Schedule to auto-publish)</Label>
@@ -372,12 +375,12 @@ export default function CreateChallengePage() {
                                                 <Input type="number" min="0" value={gracePeriodHours} onChange={e => setGracePeriodHours(e.target.value)} />
                                             </div>
                                             <div className="grid gap-2">
-                                                <Label>Visibility</Label>
+                                                <Label>{t('challenges.visibility')}</Label>
                                                 <Select value={visibility} onValueChange={setVisibility}>
                                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                                     <SelectContent>
                                                         <SelectItem value="public">Public (Anyone)</SelectItem>
-                                                        <SelectItem value="followers_only">Followers Only</SelectItem>
+                                                        <SelectItem value="followers_only">{t('challenges.followersOnly')}</SelectItem>
                                                         <SelectItem value="private">Private (Invite only)</SelectItem>
                                                     </SelectContent>
                                                 </Select>
@@ -387,25 +390,25 @@ export default function CreateChallengePage() {
 
                                     {/* Submissions */}
                                     <div className="space-y-4 pt-4 border-t border-border/50">
-                                        <h3 className="font-medium text-foreground/80">Submission Logic</h3>
+                                        <h3 className="font-medium text-foreground/80">{t('challenges.submissionLogic')}</h3>
                                         <div className="grid gap-4 bg-background p-4 rounded-lg border">
                                             <div className="flex items-center justify-between">
                                                 <div className="space-y-0.5">
-                                                    <Label className="text-base">Allow Multiple Entries</Label>
-                                                    <p className="text-xs text-muted-foreground">Can a user submit more than one proof?</p>
+                                                    <Label className="text-base">{t('challenges.allowMultipleEntries')}</Label>
+                                                    <p className="text-xs text-muted-foreground">{t('challenges.canAUserSubmitMoreThan')}</p>
                                                 </div>
                                                 <Switch checked={allowMultiple} onCheckedChange={setAllowMultiple} />
                                             </div>
                                             {allowMultiple && (
                                                 <div className="grid gap-2 pl-4 border-l-2 border-primary/20">
-                                                    <Label>Max Submissions per user</Label>
+                                                    <Label>{t('challenges.maxSubmissionsPerUser')}</Label>
                                                     <Input type="number" min="1" value={maxSubmissions} onChange={e => setMaxSubmissions(e.target.value)} className="max-w-[150px]" />
                                                 </div>
                                             )}
 
                                             <div className="flex items-center justify-between pt-2">
                                                 <div className="space-y-0.5">
-                                                    <Label className="text-base">Allow Edits Before Deadline</Label>
+                                                    <Label className="text-base">{t('challenges.allowEditsBeforeDeadline')}</Label>
                                                     <p className="text-xs text-muted-foreground">Participants can swap their image/text before the clock runs out.</p>
                                                 </div>
                                                 <Switch checked={allowEditBeforeDeadline} onCheckedChange={setAllowEditBeforeDeadline} />
@@ -415,10 +418,10 @@ export default function CreateChallengePage() {
 
                                     {/* Review Flow */}
                                     <div className="space-y-4 pt-4 border-t border-border/50">
-                                        <h3 className="font-medium text-foreground/80 flex items-center gap-2"><Trophy className="h-4 w-4" /> Review & Moderation</h3>
+                                        <h3 className="font-medium text-foreground/80 flex items-center gap-2"><Trophy className="h-4 w-4" />{t('challenges.reviewModeration')}</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="grid gap-2">
-                                                <Label>Moderation Mode</Label>
+                                                <Label>{t('challenges.moderationMode')}</Label>
                                                 <Select value={moderationType} onValueChange={setModerationType}>
                                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                                     <SelectContent>
@@ -428,12 +431,12 @@ export default function CreateChallengePage() {
                                                 </Select>
                                             </div>
                                             <div className="grid gap-2">
-                                                <Label>Submissions Privacy</Label>
+                                                <Label>{t('challenges.submissionsPrivacy')}</Label>
                                                 <Select value={submissionsVisibility} onValueChange={setSubmissionsVisibility}>
                                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                                     <SelectContent>
                                                         <SelectItem value="public">Public Wall (Everyone sees entries)</SelectItem>
-                                                        <SelectItem value="author_only">Private to Author</SelectItem>
+                                                        <SelectItem value="author_only">{t('challenges.privateToAuthor')}</SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </div>
@@ -444,16 +447,16 @@ export default function CreateChallengePage() {
                                                         <Label className="font-bold text-purple-700 dark:text-purple-400">Voting Settings (Community Voted required)</Label>
                                                     </div>
                                                     <div className="flex items-center justify-between mb-4 mt-2">
-                                                        <Label>Enable Public Voting</Label>
+                                                        <Label>{t('challenges.enablePublicVoting')}</Label>
                                                         <Switch checked={votingEnabled} onCheckedChange={setVotingEnabled} />
                                                     </div>
-                                                    <Label className="mb-1">Reward Issue Type</Label>
+                                                    <Label className="mb-1">{t('challenges.rewardIssueType')}</Label>
                                                     <Select value={rewardType} onValueChange={setRewardType}>
                                                         <SelectTrigger><SelectValue /></SelectTrigger>
                                                         <SelectContent>
-                                                            <SelectItem value="none">None explicitly handled</SelectItem>
-                                                            <SelectItem value="badge">Profile Badge</SelectItem>
-                                                            <SelectItem value="points">Platform Points</SelectItem>
+                                                            <SelectItem value="none">{t('challenges.noneExplicitlyHandled')}</SelectItem>
+                                                            <SelectItem value="badge">{t('challenges.profileBadge')}</SelectItem>
+                                                            <SelectItem value="points">{t('challenges.platformPoints')}</SelectItem>
                                                         </SelectContent>
                                                     </Select>
                                                 </div>

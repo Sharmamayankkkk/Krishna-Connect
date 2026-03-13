@@ -1,4 +1,8 @@
+"use client";
+
 import { Metadata } from "next";
+
+import { useTranslation } from 'react-i18next';
 
 export const metadata: Metadata = {
   title: "Privacy Policy | Krishna Connect",
@@ -7,12 +11,12 @@ export const metadata: Metadata = {
 };
 
 const PrivacyPolicyPage = () => {
+  const { t } = useTranslation();
+
   return (
     <div className="container mx-auto px-4 py-12 max-w-4xl text-foreground">
       <div className="mb-10 text-center">
-        <h1 className="text-4xl font-bold mb-4 tracking-tight">
-          Privacy Policy
-        </h1>
+        <h1 className="text-4xl font-bold mb-4 tracking-tight">{t('auth.privacyPolicy')}</h1>
         <p className="text-muted-foreground">Effective: March 10, 2026</p>
       </div>
 
@@ -75,7 +79,7 @@ const PrivacyPolicyPage = () => {
             We use the collected data for the following purposes:
           </p>
           <ul className="list-disc pl-6 space-y-2 marker:text-primary">
-            <li>To create, manage, and authenticate your account.</li>
+            <li>{t('legal.toCreateManageAndAuthenticateYour')}</li>
             <li>
               To deliver messages and facilitate real-time communication
               including calls.
@@ -182,8 +186,8 @@ const PrivacyPolicyPage = () => {
             harassment and abuse. This includes but is not limited to:
           </p>
           <ul className="list-disc pl-6 space-y-2 marker:text-primary">
-            <li>Bullying, intimidation, or targeted harassment of any user.</li>
-            <li>Stalking or unwanted persistent contact.</li>
+            <li>{t('legal.bullyingIntimidationOrTargetedHarassmentOf')}</li>
+            <li>{t('legal.stalkingOrUnwantedPersistentContact')}</li>
             <li>
               Threats of violence, doxxing, or sharing personal information
               without consent.

@@ -11,7 +11,11 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 
+import { useTranslation } from 'react-i18next';
+
 export function MobileDashboard() {
+  const { t } = useTranslation();
+
     const router = useRouter();
     const [activeTab, setActiveTab] = React.useState<'trending' | 'news'>('trending');
 
@@ -22,7 +26,7 @@ export function MobileDashboard() {
                 <div className="px-4 mb-2 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <Users className="h-4 w-4 text-primary" />
-                        <h3 className="text-sm font-semibold">Who to follow</h3>
+                        <h3 className="text-sm font-semibold">{t('explore.whoToFollow')}</h3>
                     </div>
                     <Link href="/explore" className="text-xs text-muted-foreground flex items-center">
                         View all <ChevronRight className="h-3 w-3" />
@@ -44,9 +48,7 @@ export function MobileDashboard() {
                         )}
                     >
                         <div className="flex items-center gap-2">
-                            <Flame className={cn("h-4 w-4", activeTab === 'trending' && "text-orange-500")} />
-                            Trending
-                        </div>
+                            <Flame className={cn("h-4 w-4", activeTab === 'trending' && "text-orange-500")} />{t('explore.trending')}</div>
                         {activeTab === 'trending' && (
                             <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
                         )}
@@ -59,9 +61,7 @@ export function MobileDashboard() {
                         )}
                     >
                         <div className="flex items-center gap-2">
-                            <Newspaper className={cn("h-4 w-4", activeTab === 'news' && "text-blue-500")} />
-                            News
-                        </div>
+                            <Newspaper className={cn("h-4 w-4", activeTab === 'news' && "text-blue-500")} />{t('explore.news')}</div>
                         {activeTab === 'news' && (
                             <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
                         )}

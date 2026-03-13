@@ -9,12 +9,14 @@ import { useEffect, useRef, useMemo, useCallback, useState } from "react"
 import type { Message, Chat } from "@/lib/types"
 import { createClient } from "@/lib/utils"
 
+import { useTranslation } from 'react-i18next';
+
 function ChatPageLoading() {
   return (
     <div className="flex h-full w-full items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-4">
         <Icons.logo className="h-12 w-12 animate-pulse text-primary" />
-        <p className="text-muted-foreground">Loading chat...</p>
+        <p className="text-muted-foreground">{t('chat.loadingChat')}</p>
       </div>
     </div>
   )
@@ -30,6 +32,8 @@ const FULL_MESSAGE_SELECT_QUERY = `
 `;
 
 export default function ChatPage() {
+  const { t } = useTranslation();
+
   const params = useParams<{ id: string }>()
   const searchParams = useSearchParams()
   const highlightMessageId = searchParams.get("highlight")

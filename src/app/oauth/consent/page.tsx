@@ -7,6 +7,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CheckCircle2, AlertCircle, Shield } from "lucide-react";
 
+import { useTranslation } from 'react-i18next';
+
 function ConsentContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -45,7 +47,7 @@ function ConsentContent() {
                     <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-2">
                         <Shield className="w-8 h-8 text-primary" />
                     </div>
-                    <CardTitle className="text-2xl">Authorization Request</CardTitle>
+                    <CardTitle className="text-2xl">{t('common.authorizationRequest')}</CardTitle>
                     <CardDescription>
                         <span className="font-semibold text-foreground">{appName}</span> wants to access your account.
                     </CardDescription>
@@ -83,12 +85,8 @@ function ConsentContent() {
 
                 </CardContent>
                 <CardFooter className="flex-col gap-3">
-                    <Button className="w-full" size="lg" onClick={handleAuthorize}>
-                        Authorize Access
-                    </Button>
-                    <Button variant="ghost" className="w-full" onClick={handleCancel}>
-                        Cancel
-                    </Button>
+                    <Button className="w-full" size="lg" onClick={handleAuthorize}>{t('common.authorizeAccess')}</Button>
+                    <Button variant="ghost" className="w-full" onClick={handleCancel}>{t('common.cancel')}</Button>
                 </CardFooter>
             </Card>
         </div>
@@ -96,8 +94,10 @@ function ConsentContent() {
 }
 
 export default function ConsentPage() {
+  const { t } = useTranslation();
+
     return (
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">{t('common.loading')}</div>}>
             <ConsentContent />
         </Suspense>
     );

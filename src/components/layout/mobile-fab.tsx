@@ -14,7 +14,11 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
 
+import { useTranslation } from 'react-i18next';
+
 export function MobileFab() {
+  const { t } = useTranslation();
+
     const [isOpen, setIsOpen] = useState(false)
     const [isCreatePostOpen, setIsCreatePostOpen] = useState(false)
     const { loggedInUser } = useAppContext()
@@ -155,9 +159,7 @@ export function MobileFab() {
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
-                            <Image src="/icons/leela.png" alt="Leela" width={20} height={20} />
-                            Upload Leela
-                        </DialogTitle>
+                            <Image src="/icons/leela.png" alt={t('create.leela')} width={20} height={20} />{t('feed.uploadLeela')}</DialogTitle>
                     </DialogHeader>
 
                     {selectedLeelaFile && (
@@ -172,7 +174,7 @@ export function MobileFab() {
                                     id="fab-leela-caption"
                                     value={leelaCaption}
                                     onChange={(e) => setLeelaCaption(e.target.value)}
-                                    placeholder="Write a caption for your Leela..."
+                                    placeholder={t('feed.writeACaptionForYourLeela')}
                                     className="w-full min-h-[100px] p-3 rounded-md border bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm resize-none"
                                     maxLength={200}
                                 />
@@ -187,11 +189,9 @@ export function MobileFab() {
                         <Button variant="ghost" onClick={() => {
                             setIsLeelaDialogOpen(false);
                             setSelectedLeelaFile(null);
-                        }}>
-                            Cancel
-                        </Button>
+                        }}>{t('common.cancel')}</Button>
                         <Button onClick={handleLeelaUploadConfirm} disabled={isUploading}>
-                            {isUploading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...</> : 'Post Leela'}
+                            {isUploading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t('feed.uploading1')}</> : 'Post Leela'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -251,8 +251,8 @@ export function MobileFab() {
             {/* Shared Create Post Modal for the FAB */}
             <Dialog open={isCreatePostOpen} onOpenChange={setIsCreatePostOpen}>
                 <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden border-none bg-transparent shadow-none">
-                    <DialogTitle className="sr-only">Create Post</DialogTitle>
-                    <DialogDescription className="sr-only">Create a new post</DialogDescription>
+                    <DialogTitle className="sr-only">{t('common.createPost')}</DialogTitle>
+                    <DialogDescription className="sr-only">{t('common.createANewPost')}</DialogDescription>
                     <div className="bg-background border rounded-lg shadow-xl overflow-hidden mt-8 md:mt-0">
                         <CreatePost
                             onPostCreated={() => {

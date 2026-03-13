@@ -13,6 +13,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { PostType } from '@/lib/types';
 import { VideoPlayer } from './video-player';
 
+import { useTranslation } from 'react-i18next';
+
 interface ImageViewerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -26,6 +28,8 @@ export function ImageViewerDialog({
   media = [],
   startIndex = 0
 }: ImageViewerDialogProps) {
+  const { t } = useTranslation();
+
   const [currentIndex, setCurrentIndex] = useState(startIndex);
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
@@ -97,7 +101,7 @@ export function ImageViewerDialog({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent hideClose className="max-w-[95vw] max-h-[95vh] w-auto h-auto bg-black/95 border-none shadow-2xl p-0 flex flex-col">
-        <DialogTitle className="sr-only">Media Viewer</DialogTitle>
+        <DialogTitle className="sr-only">{t('media.mediaViewer')}</DialogTitle>
         <DialogDescription className="sr-only">Viewing media in full screen. Use controls to navigate, zoom, rotate, or download.</DialogDescription>
 
         <div className="flex items-center justify-between p-4 bg-black/50 backdrop-blur-sm border-b border-white/10">
@@ -107,14 +111,14 @@ export function ImageViewerDialog({
           <div className="flex items-center space-x-2">
             {currentItem.type === 'image' && (
               <>
-                <button onClick={handleZoomOut} className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors" title="Zoom Out"><ZoomOut size={18} /></button>
+                <button onClick={handleZoomOut} className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors" title={t('media.zoomOut')}><ZoomOut size={18} /></button>
                 <span className="text-white/70 text-sm min-w-[50px] text-center">{Math.round(zoom * 100)}%</span>
-                <button onClick={handleZoomIn} className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors" title="Zoom In"><ZoomIn size={18} /></button>
-                <button onClick={handleRotate} className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors" title="Rotate"><RotateCw size={18} /></button>
+                <button onClick={handleZoomIn} className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors" title={t('media.zoomIn')}><ZoomIn size={18} /></button>
+                <button onClick={handleRotate} className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors" title={t('media.rotate')}><RotateCw size={18} /></button>
               </>
             )}
-            <button onClick={handleDownload} className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors" title="Download"><Download size={18} /></button>
-            <button onClick={handleClose} className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors" title="Close"><X size={18} /></button>
+            <button onClick={handleDownload} className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors" title={t('media.download')}><Download size={18} /></button>
+            <button onClick={handleClose} className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors" title={t('common.close')}><X size={18} /></button>
           </div>
         </div>
 

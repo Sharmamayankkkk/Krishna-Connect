@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -8,6 +10,8 @@ import { PostType } from '@/lib/types';
 import { useAppContext } from '@/providers/app-provider';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
+
+import { useTranslation } from 'react-i18next';
 
 interface PromoteDialogProps {
     post: PostType | null;
@@ -32,6 +36,8 @@ const PLANS: Plan[] = [
 ];
 
 export function PromotePostDialog({ post, open, onOpenChange }: PromoteDialogProps) {
+  const { t } = useTranslation();
+
     const { toast } = useToast();
     const { loggedInUser } = useAppContext();
     const [isLoading, setIsLoading] = useState(false);
@@ -115,12 +121,8 @@ export function PromotePostDialog({ post, open, onOpenChange }: PromoteDialogPro
             <DialogContent className="sm:max-w-[600px]">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        <TrendingUp className="h-5 w-5 text-primary" />
-                        Promote Post
-                    </DialogTitle>
-                    <DialogDescription>
-                        Choose a plan to boost your post's visibility.
-                    </DialogDescription>
+                        <TrendingUp className="h-5 w-5 text-primary" />{t('post.promotePost')}</DialogTitle>
+                    <DialogDescription>{t('post.chooseAPlanToBoostYour')}</DialogDescription>
                 </DialogHeader>
 
                 <div className="py-4">
@@ -133,7 +135,7 @@ export function PromotePostDialog({ post, open, onOpenChange }: PromoteDialogPro
                                         <Coins className="h-4 w-4" />
                                     </div>
                                     <div>
-                                        <div className="text-sm font-medium">Your Credits</div>
+                                        <div className="text-sm font-medium">{t('post.yourCredits')}</div>
                                         <div className="text-xs text-muted-foreground">
                                             {loggedInUser?.is_verified ? "Renewed monthly" : "Need verification for free credits"}
                                         </div>
@@ -163,9 +165,7 @@ export function PromotePostDialog({ post, open, onOpenChange }: PromoteDialogPro
                                                 <div className="text-xs text-muted-foreground">or {plan.credits} Credits</div>
                                             </div>
                                             {selectedPlan.id === plan.id && (
-                                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">
-                                                    Selected
-                                                </div>
+                                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">{t('post.selected')}</div>
                                             )}
                                         </div>
                                     </div>
@@ -225,9 +225,7 @@ export function PromotePostDialog({ post, open, onOpenChange }: PromoteDialogPro
                         </Button>
                     )}
                     {result && result.success && (
-                        <Button onClick={handleClose} variant="default">
-                            Done
-                        </Button>
+                        <Button onClick={handleClose} variant="default">{t('common.done')}</Button>
                     )}
                 </DialogFooter>
             </DialogContent>

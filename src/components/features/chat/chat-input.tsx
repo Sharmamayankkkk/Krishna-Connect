@@ -34,6 +34,8 @@ import { useAppContext } from '@/providers/app-provider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CreatePollDialog } from './dialogs/create-poll-dialog';
 import { BarChart3 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+
 // This is a constant string used in our Supabase database queries.
 // It tells the database exactly which columns we want to fetch for a message,
 // including related data like the sender's profile and the message being replied to.
@@ -90,6 +92,8 @@ export function ChatInput({
     onUnblockUser,
     onRequestDm,
 }: ChatInputProps) {
+  const { t } = useTranslation();
+
     const { toast } = useToast();
     // State variables for the component.
     const [message, setMessage] = useState('');
@@ -726,8 +730,8 @@ export function ChatInput({
             <div className="p-2 border-t bg-background shrink-0">
                 <Alert>
                     <Shield className="h-4 w-4" />
-                    <AlertTitle>Channel is read-only</AlertTitle>
-                    <AlertDescription>Only admins can send messages in this channel.</AlertDescription>
+                    <AlertTitle>{t('chat.channelIsReadonly')}</AlertTitle>
+                    <AlertDescription>{t('chat.onlyAdminsCanSendMessagesIn')}</AlertDescription>
                 </Alert>
             </div>
         );
@@ -737,10 +741,10 @@ export function ChatInput({
             <div className="p-2 border-t bg-background shrink-0">
                 <Alert variant="destructive">
                     <UserX className="h-4 w-4" />
-                    <AlertTitle>User Blocked</AlertTitle>
+                    <AlertTitle>{t('chat.userBlocked')}</AlertTitle>
                     <AlertDescription className="flex items-center justify-between gap-4">
-                        <span>You can't send messages to a user you have blocked.</span>
-                        <Button variant="outline" size="sm" onClick={onUnblockUser}>Unblock</Button>
+                        <span>{t('chat.youCantSendMessagesToA')}</span>
+                        <Button variant="outline" size="sm" onClick={onUnblockUser}>{t('settings.privacy.unblock')}</Button>
                     </AlertDescription>
                 </Alert>
             </div>
@@ -750,13 +754,13 @@ export function ChatInput({
         return (
             <div className="p-2 border-t bg-background shrink-0">
                 <Alert>
-                    <AlertTitle>DM Restriction</AlertTitle>
+                    <AlertTitle>{t('chat.dmRestriction')}</AlertTitle>
                     <AlertDescription className="flex items-center justify-between gap-4">
-                        <span>You cannot send direct messages to this user.</span>
+                        <span>{t('chat.youCannotSendDirectMessagesTo')}</span>
                         {existingRequest ? (
                             <Button variant="outline" disabled className="capitalize">Request {existingRequest.status}</Button>
                         ) : (
-                            <Button onClick={onRequestDm}>Request to DM</Button>
+                            <Button onClick={onRequestDm}>{t('chat.requestToDm')}</Button>
                         )}
                     </AlertDescription>
                 </Alert>
@@ -770,7 +774,7 @@ export function ChatInput({
                 <div className="flex items-center w-full gap-2 bg-muted p-2 rounded-lg">
                     <Button variant="ghost" size="icon" className="text-destructive h-8 w-8" onClick={handleCancelRecording}>
                         <Trash2 className="h-5 w-5" />
-                        <span className="sr-only">Cancel recording</span>
+                        <span className="sr-only">{t('chat.cancelRecording')}</span>
                     </Button>
 
                     <div className="flex-1 flex items-center justify-between gap-2">
@@ -786,7 +790,7 @@ export function ChatInput({
 
                     <Button size="icon" className="h-10 w-10 bg-green-500 hover:bg-green-600" onClick={handleStopAndSendRecording}>
                         <Send />
-                        <span className="sr-only">Send recording</span>
+                        <span className="sr-only">{t('chat.sendRecording')}</span>
                     </Button>
                 </div>
             </div>
@@ -800,12 +804,12 @@ export function ChatInput({
             <input type="file" ref={attachmentInputRef} onChange={handleFileSelect} className="hidden" />
             <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
                 <DialogContent className="max-w-3xl">
-                    <DialogHeader><DialogTitle>Send Attachment</DialogTitle></DialogHeader>
+                    <DialogHeader><DialogTitle>{t('chat.sendAttachment')}</DialogTitle></DialogHeader>
                     <div className="flex flex-col gap-4 py-4">
                         {/* Preview content... */}
                     </div>
                     <DialogFooter>
-                        <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                        <DialogClose asChild><Button variant="outline">{t('common.cancel')}</Button></DialogClose>
                         <Button onClick={() => attachmentPreview && handleSendMessage({ content: caption, attachment: { file: attachmentPreview.file, url: attachmentPreview.url } })} disabled={isSending}>
                             {isSending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />} Send
                         </Button>
@@ -838,7 +842,7 @@ export function ChatInput({
             )}
             {editingMessage && (
                 <div className="flex items-center justify-between p-2 pl-3 mb-2 rounded-t-md bg-muted text-sm border-b">
-                    <p className="font-semibold text-primary">Editing message...</p>
+                    <p className="font-semibold text-primary">{t('chat.editingMessage')}</p>
                     <Button variant="ghost" size="icon" onClick={() => setEditingMessage(null)} className="h-7 w-7"><X className="h-4 w-4" /></Button>
                 </div>
             )}
@@ -891,7 +895,7 @@ export function ChatInput({
                                         </button>
                                     ))
                                 ) : (
-                                    <div className="p-2 text-center text-sm text-muted-foreground">No users found</div>
+                                    <div className="p-2 text-center text-sm text-muted-foreground">{t('chat.noUsersFound1')}</div>
                                 )}
                             </CardContent>
                         </ScrollArea>
@@ -927,10 +931,10 @@ export function ChatInput({
                                         {(loggedInUser.is_verified === 'verified' || loggedInUser.is_verified === 'kcs') ? (
                                             <TabsTrigger value="custom-emoji"><ImageIcon className="mr-2 h-4 w-4" />Official <Sparkles className="ml-1 h-3 w-3" /></TabsTrigger>
                                         ) : (
-                                            <TabsTrigger value="custom-emoji" disabled className="opacity-50" aria-label="Official emojis - Premium feature"><ImageIcon className="mr-2 h-4 w-4" />Official <Lock className="ml-1 h-3 w-3" /></TabsTrigger>
+                                            <TabsTrigger value="custom-emoji" disabled className="opacity-50" aria-label={t('chat.officialEmojisPremiumFeature')}><ImageIcon className="mr-2 h-4 w-4" />Official <Lock className="ml-1 h-3 w-3" /></TabsTrigger>
                                         )}
-                                        <TabsTrigger value="emoji"><Smile className="mr-2 h-4 w-4" />Emojis</TabsTrigger>
-                                        <TabsTrigger value="stickers"><StickyNote className="mr-2 h-4 w-4" />Stickers</TabsTrigger>
+                                        <TabsTrigger value="emoji"><Smile className="mr-2 h-4 w-4" />{t('chat.emojis')}</TabsTrigger>
+                                        <TabsTrigger value="stickers"><StickyNote className="mr-2 h-4 w-4" />{t('create.stickers')}</TabsTrigger>
                                     </TabsList>
                                     <TabsContent value="custom-emoji">
                                         {(loggedInUser.is_verified === 'verified' || loggedInUser.is_verified === 'kcs') ? (
@@ -952,7 +956,7 @@ export function ChatInput({
                                                 <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
                                                     <ImageIcon className="h-6 w-6 text-primary" />
                                                 </div>
-                                                <p className="text-sm font-medium">Official Emojis are a premium feature</p>
+                                                <p className="text-sm font-medium">{t('chat.officialEmojisAreAPremiumFeature')}</p>
                                                 <p className="text-xs text-muted-foreground">Get verified to unlock exclusive emojis &amp; stickers</p>
                                                 <a href="/get-verified" className="inline-block text-xs text-primary font-medium hover:underline">Get Verified →</a>
                                             </div>
@@ -978,11 +982,11 @@ export function ChatInput({
                             </PopoverContent>
                         </Popover>
                         <TooltipProvider>
-                            <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={handleAttachmentClick}><Paperclip className="h-5 w-5" /></Button></TooltipTrigger><TooltipContent>Attach file</TooltipContent></Tooltip>
+                            <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={handleAttachmentClick}><Paperclip className="h-5 w-5" /></Button></TooltipTrigger><TooltipContent>{t('chat.attachFile')}</TooltipContent></Tooltip>
                             {isGroup && (
-                                <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={() => setIsPollDialogOpen(true)}><BarChart3 className="h-5 w-5" /></Button></TooltipTrigger><TooltipContent>Create Poll</TooltipContent></Tooltip>
+                                <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={() => setIsPollDialogOpen(true)}><BarChart3 className="h-5 w-5" /></Button></TooltipTrigger><TooltipContent>{t('chat.createPoll')}</TooltipContent></Tooltip>
                             )}
-                            <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={handleStartRecording}><Mic className="h-5 w-5" /></Button></TooltipTrigger><TooltipContent>Voice message</TooltipContent></Tooltip>
+                            <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={handleStartRecording}><Mic className="h-5 w-5" /></Button></TooltipTrigger><TooltipContent>{t('chat.voiceMessage')}</TooltipContent></Tooltip>
                         </TooltipProvider>
                         <Button size="icon" className="ml-1 h-8 w-8 shrink-0" onClick={() => editingMessage ? onSaveEdit() : handleSendMessage({ content: message })} disabled={isSending || !currentMessageValue.trim()}>
                             {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : editingMessage ? <Check className="h-4 w-4" /> : <Send className="h-4 w-4" />}
