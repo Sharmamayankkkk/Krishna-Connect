@@ -103,7 +103,26 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" dir="ltr" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var lang = localStorage.getItem('i18nextLng');
+                  if (lang) {
+                    document.documentElement.lang = lang;
+                    if (lang === 'ar' || lang === 'ur') {
+                      document.documentElement.dir = 'rtl';
+                    }
+                  }
+                } catch(e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className={cn("font-sans antialiased", inter.variable)} suppressHydrationWarning>
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-ZRN1L5GXJ4"
