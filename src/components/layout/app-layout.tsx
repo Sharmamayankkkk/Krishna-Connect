@@ -13,6 +13,7 @@ import { MobileBottomNav } from "./mobile-bottom-nav"
 import { MobileFab } from "./mobile-fab"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
+import { useTranslation } from 'react-i18next';
 
 interface AppLayoutProps {
   children: React.ReactNode
@@ -20,6 +21,7 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const pathname = usePathname()
+  const { t } = useTranslation();
 
   // Logic to match MobileBottomNav visibility
   const isMobileNavHidden = /^(\/chat\/\d+|\/leela)$/.test(pathname)
@@ -39,7 +41,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               />
             </div>
             <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 bg-clip-text text-transparent group-data-[collapsible=icon]:hidden drop-shadow-sm">
-              Krishna Connect
+              {t('common.appName')}
             </span>
           </div>
         </SidebarHeader>
