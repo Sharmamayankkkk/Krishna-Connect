@@ -816,7 +816,9 @@
     "discountAppliedDone": "Discount Applied — Done!",
     "moreLinksNeeded": "{{count}} more link(s) needed",
     "submitLinks": "Submit Links",
-    "postNow": "Post now"
+    "postNow": "Post now",
+    "error": "Error",
+    "failedToResubmit": "Failed to resubmit."
   },
   "legal": {
     "backToHome": "Back to Home",

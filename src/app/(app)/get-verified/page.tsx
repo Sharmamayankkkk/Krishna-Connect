@@ -162,7 +162,7 @@ export default function GetVerifiedPage() {
             }
         } catch (error: any) {
             console.error('Error submitting:', error);
-            toast({ variant: 'destructive', title: 'Error', description: error.message || 'Failed to submit application.' });
+            toast({ variant: 'destructive', title: t('getVerified.error'), description: error.message || t('getVerified.failedToSubmit') });
         } finally {
             setIsSubmitting(false);
         }
@@ -201,7 +201,7 @@ export default function GetVerifiedPage() {
             setExistingRequest({ ...existingRequest, social_links: socialLinks, status: 'reviewing' });
         } catch (error: any) {
             console.error('Error resubmitting:', error);
-            toast({ variant: 'destructive', title: 'Error', description: error.message || 'Failed to resubmit.' });
+            toast({ variant: 'destructive', title: t('getVerified.error'), description: error.message || t('getVerified.failedToResubmit') });
         } finally {
             setIsSubmitting(false);
         }
@@ -274,7 +274,7 @@ export default function GetVerifiedPage() {
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
                     <div className="flex items-center gap-2">
-                        <Image src="/user_Avatar/verified.png" alt="Verified" width={20} height={20} />
+                        <Image src="/user_Avatar/verified.png" alt={t('getVerified.verified')} width={20} height={20} />
                         <h1 className="font-bold text-lg">{t('getVerified.title')}</h1>
                     </div>
                 </div>
@@ -284,7 +284,7 @@ export default function GetVerifiedPage() {
                 {/* Hero Section */}
                 <div className="text-center space-y-6 pt-4">
                     <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 shadow-2xl shadow-purple-500/25 animate-in zoom-in-50 duration-500">
-                        <Image src="/user_Avatar/verified.png" alt="Verified" width={56} height={56} className="drop-shadow-lg" />
+                        <Image src="/user_Avatar/verified.png" alt={t('getVerified.verified')} width={56} height={56} className="drop-shadow-lg" />
                     </div>
                     <div className="space-y-3 max-w-2xl mx-auto">
                         <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
@@ -345,9 +345,11 @@ export default function GetVerifiedPage() {
                         )}
                     </Button>
                     <p className="text-sm text-muted-foreground">
-                        Selected: <strong>{t(selectedPlan === 'monthly' ? 'getVerified.monthly' : 'getVerified.yearly')}</strong> •
-                        Total: <strong>₹{currentPrice}</strong>
-                        {allLinksProvided && ' (with ₹100 discount)'}
+                        {t('getVerified.selectedPlan', {
+                            plan: t(selectedPlan === 'monthly' ? 'getVerified.monthly' : 'getVerified.yearly'),
+                            price: currentPrice
+                        })}
+                        {allLinksProvided && ` ${t('getVerified.withDiscount')}`}
                     </p>
                 </div>
             </main>
