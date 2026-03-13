@@ -17,6 +17,7 @@ import type { CallRecord } from "@/lib/types";
 import Link from "next/link";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Suspense } from "react";
+import { useTranslation } from "react-i18next";
 
 // ─── Skeleton ───────────────────────────────────────────────────────────────
 
@@ -43,6 +44,7 @@ function ChatListSkeleton() {
 // ─── Empty States ────────────────────────────────────────────────────────────
 
 function EmptyChatState() {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center justify-center h-full px-6 py-16 text-center">
       <div className="relative mb-6">
@@ -53,18 +55,18 @@ function EmptyChatState() {
           <Sparkles className="h-3.5 w-3.5 text-primary-foreground" />
         </div>
       </div>
-      <h3 className="text-xl font-bold mb-2">No conversations yet</h3>
+      <h3 className="text-xl font-bold mb-2">{t('chat.noConversations')}</h3>
       <p className="text-muted-foreground text-sm max-w-xs mb-6">
-        Start a conversation with your friends or create a group to get started!
+        {t('chat.noConversationsDesc')}
       </p>
       <div className="flex gap-3">
         <Button variant="outline" className="gap-2">
           <Users className="h-4 w-4" />
-          Create Group
+          {t('chat.createGroup')}
         </Button>
         <Button className="gap-2">
           <Plus className="h-4 w-4" />
-          New Chat
+          {t('chat.newChat')}
         </Button>
       </div>
     </div>
@@ -72,32 +74,34 @@ function EmptyChatState() {
 }
 
 function EmptyCallsState() {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center space-y-4 px-6">
       <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
         <Phone className="h-8 w-8 text-muted-foreground" />
       </div>
       <div>
-        <h3 className="font-semibold text-lg">No calls yet</h3>
-        <p className="text-sm text-muted-foreground mt-1">Start a voice or video call from any chat.</p>
+        <h3 className="font-semibold text-lg">{t('chat.noCalls')}</h3>
+        <p className="text-sm text-muted-foreground mt-1">{t('chat.noCallsDesc')}</p>
       </div>
     </div>
   );
 }
 
 function EmptyGroupsState() {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center space-y-4 px-6">
       <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
         <Users className="h-8 w-8 text-muted-foreground" />
       </div>
       <div>
-        <h3 className="font-semibold text-lg">No groups yet</h3>
-        <p className="text-sm text-muted-foreground mt-1">Create or join a group to chat with multiple people.</p>
+        <h3 className="font-semibold text-lg">{t('chat.noGroups')}</h3>
+        <p className="text-sm text-muted-foreground mt-1">{t('chat.noGroupsDesc')}</p>
       </div>
       <Button className="gap-2" asChild>
         <Link href="/groups">
-          <Plus className="h-4 w-4" /> Discover Groups
+          <Plus className="h-4 w-4" /> {t('chat.discoverGroups')}
         </Link>
       </Button>
     </div>
@@ -107,6 +111,7 @@ function EmptyGroupsState() {
 // ─── Quick Contacts ───────────────────────────────────────────────────────────
 
 function QuickContacts({ chats }: { chats: any[] }) {
+  const { t } = useTranslation();
   const recentPartners = chats
     .filter((c) => c.type === "dm")
     .slice(0, 8)
@@ -117,7 +122,7 @@ function QuickContacts({ chats }: { chats: any[] }) {
 
   return (
     <div className="px-4 py-3 border-b shrink-0">
-      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Quick Access</p>
+      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">{t('chat.quickAccess')}</p>
       <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-1">
         {recentPartners.map((user: any, i: number) => (
           <Link
@@ -148,12 +153,12 @@ function QuickContacts({ chats }: { chats: any[] }) {
 
 // ─── Call History Helpers ─────────────────────────────────────────────────────
 
-function formatCallDate(dateStr: string): string {
+function formatCallDate(dateStr: string, t: (key: string) => string): string {
   const date = new Date(dateStr);
   const now = new Date();
   const days = Math.floor((now.getTime() - date.getTime()) / 86_400_000);
   if (days === 0) return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-  if (days === 1) return "Yesterday";
+  if (days === 1) return t("calls.yesterday");
   if (days < 7) return date.toLocaleDateString([], { weekday: "short" });
   return date.toLocaleDateString([], { month: "short", day: "numeric" });
 }
@@ -181,16 +186,16 @@ function CallStatusIcon({ call, userId }: { call: CallRecord; userId: string }) 
   }
 }
 
-function callStatusText(call: CallRecord, userId: string): string {
+function callStatusText(call: CallRecord, userId: string, t: (key: string) => string): string {
   const isOutgoing = call.caller_id === userId;
   switch (call.status) {
-    case "missed": return isOutgoing ? "No answer" : "Missed";
-    case "declined": return "Declined";
-    case "busy": return "Busy";
-    case "failed": return "Failed";
-    case "ringing": return "Ringing";
-    case "answered": return "In progress";
-    case "ended": return formatCallDuration(call.duration_seconds) || (isOutgoing ? "Outgoing" : "Incoming");
+    case "missed": return isOutgoing ? t("calls.noAnswer") : t("calls.missed");
+    case "declined": return t("calls.declined");
+    case "busy": return t("calls.busy");
+    case "failed": return t("calls.failed");
+    case "ringing": return t("calls.ringing");
+    case "answered": return t("calls.inProgress");
+    case "ended": return formatCallDuration(call.duration_seconds) || (isOutgoing ? t("calls.outgoing") : t("calls.incoming"));
     default: return call.status;
   }
 }
@@ -199,6 +204,7 @@ function callStatusText(call: CallRecord, userId: string): string {
 
 function CallsTab() {
   const { loggedInUser, isReady } = useAppContext();
+  const { t } = useTranslation();
   const [calls, setCalls] = useState<CallRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -261,13 +267,13 @@ function CallsTab() {
               </p>
               <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground">
                 <CallStatusIcon call={call} userId={loggedInUser?.id ?? ""} />
-                <span className="truncate">{callStatusText(call, loggedInUser?.id ?? "")}</span>
+                <span className="truncate">{callStatusText(call, loggedInUser?.id ?? "", t)}</span>
               </div>
             </div>
 
             {/* Date + call button */}
             <div className="flex flex-col items-end gap-2 shrink-0">
-              <span className="text-xs text-muted-foreground">{formatCallDate(call.created_at)}</span>
+              <span className="text-xs text-muted-foreground">{formatCallDate(call.created_at, t)}</span>
               <Button
                 variant="ghost"
                 size="icon"
@@ -290,6 +296,7 @@ function CallsTab() {
 
 function GroupsTab() {
   const { loggedInUser } = useAppContext();
+  const { t } = useTranslation();
   const [groups, setGroups] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -331,7 +338,7 @@ function GroupsTab() {
             </h4>
             <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
               <Users className="h-3 w-3 shrink-0" />
-              {group.member_count || 1} member{(group.member_count || 1) !== 1 ? "s" : ""}
+              {group.member_count || 1} {(group.member_count || 1) !== 1 ? t('chat.members') : t('chat.member')}
             </p>
           </div>
 
@@ -342,7 +349,7 @@ function GroupsTab() {
       <div className="pt-4 pb-6 text-center">
         <Button variant="outline" size="sm" className="gap-2 rounded-full" asChild>
           <Link href="/groups">
-            <Search className="h-3.5 w-3.5" /> Discover More Groups
+            <Search className="h-3.5 w-3.5" /> {t('chat.discoverMoreGroups')}
           </Link>
         </Button>
       </div>
@@ -353,9 +360,9 @@ function GroupsTab() {
 // ─── Tab Bar ──────────────────────────────────────────────────────────────────
 
 const TABS = [
-  { value: "chats", label: "Chats", Icon: MessageSquare },
-  { value: "calls", label: "Calls", Icon: Phone },
-  { value: "groups", label: "Groups", Icon: Users },
+  { value: "chats", labelKey: "chat.chats", Icon: MessageSquare },
+  { value: "calls", labelKey: "chat.calls", Icon: Phone },
+  { value: "groups", labelKey: "chat.groups", Icon: Users },
 ] as const;
 
 type TabValue = (typeof TABS)[number]["value"];
@@ -364,6 +371,7 @@ type TabValue = (typeof TABS)[number]["value"];
 
 function ChatPageContent() {
   const { chats, isReady, loggedInUser } = useAppContext();
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -383,9 +391,9 @@ function ChatPageContent() {
       <header className="flex items-center px-3 py-2.5 border-b gap-3 md:hidden bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shrink-0">
         <SidebarTrigger />
         <div className="flex-1 min-w-0">
-          <h1 className="font-bold text-lg leading-tight">Messages</h1>
+          <h1 className="font-bold text-lg leading-tight">{t('chat.messages')}</h1>
           {isReady && totalUnread > 0 && (
-            <p className="text-xs text-primary font-medium">{totalUnread} unread</p>
+            <p className="text-xs text-primary font-medium">{t('chat.unread', { count: totalUnread })}</p>
           )}
         </div>
         <Button variant="ghost" size="icon" className="rounded-full h-9 w-9 shrink-0">
@@ -399,33 +407,33 @@ function ChatPageContent() {
       {/* ── Desktop Header ── */}
       <div className="hidden md:flex items-center justify-between px-6 py-5 border-b shrink-0">
         <div>
-          <h1 className="text-2xl font-bold leading-tight">Messages</h1>
+          <h1 className="text-2xl font-bold leading-tight">{t('chat.messages')}</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             {isReady ? (
               <>
-                {chats.length} conversation{chats.length !== 1 ? "s" : ""}
+                {t(chats.length !== 1 ? 'chat.conversations' : 'chat.conversation', { count: chats.length })}
                 {totalUnread > 0 && (
-                  <span className="text-primary font-medium"> · {totalUnread} unread</span>
+                  <span className="text-primary font-medium"> · {t('chat.unread', { count: totalUnread })}</span>
                 )}
               </>
-            ) : "Loading…"}
+            ) : t('common.loading')}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="gap-2 rounded-full">
             <Users className="h-4 w-4" />
-            New Group
+            {t('chat.newGroup')}
           </Button>
           <Button size="sm" className="gap-2 rounded-full">
             <Plus className="h-4 w-4" />
-            New Chat
+            {t('chat.newChat')}
           </Button>
         </div>
       </div>
 
       {/* ── Custom Tab Bar ── */}
       <div className="flex border-b shrink-0 bg-background">
-        {TABS.map(({ value, label, Icon }) => (
+        {TABS.map(({ value, labelKey, Icon }) => (
           <button
             key={value}
             onClick={() => handleTabChange(value)}
@@ -437,7 +445,7 @@ function ChatPageContent() {
             ].join(" ")}
           >
             <Icon className="h-4 w-4" />
-            {label}
+            {t(labelKey)}
             {value === "chats" && totalUnread > 0 && (
               <Badge className="h-5 min-w-[20px] px-1.5 text-[10px]">{totalUnread}</Badge>
             )}
