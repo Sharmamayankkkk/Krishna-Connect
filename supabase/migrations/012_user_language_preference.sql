@@ -9,7 +9,7 @@ ALTER TABLE profiles
 ADD CONSTRAINT valid_language_code CHECK (
   preferred_language IN (
     'en', 'hi', 'bn', 'ta', 'te', 'mr', 'gu', 'kn', 'ml', 'pa', 'or', 'as',
-    'ur', 'es', 'fr', 'de', 'pt', 'it', 'ru', 'ar', 'zh', 'ja', 'ko'
+    'sa', 'ur', 'es', 'fr', 'de', 'pt', 'it', 'ru', 'ar', 'zh', 'ja', 'ko'
   )
 );
 
