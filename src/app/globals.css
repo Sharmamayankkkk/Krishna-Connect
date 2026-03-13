@@ -244,10 +244,15 @@ html {
 [dir="rtl"] .rounded-l-lg { border-radius: 0 0.5rem 0.5rem 0; }
 [dir="rtl"] .rounded-r-lg { border-radius: 0.5rem 0 0 0.5rem; }
 
-/* RTL shimmer direction */
-[dir="rtl"] @keyframes shimmer {
+/* RTL shimmer direction override */
+@keyframes shimmer-rtl {
   0% { transform: translateX(100%); }
   100% { transform: translateX(-100%); }
+}
+
+[dir="rtl"] .shimmer,
+[dir="rtl"] [class*="shimmer"] {
+  animation-name: shimmer-rtl;
 }
 
 /* RTL mask gradient */
