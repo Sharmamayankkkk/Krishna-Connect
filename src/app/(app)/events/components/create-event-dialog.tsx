@@ -129,7 +129,7 @@ export function CreateEventDialog({ open, onOpenChange, eventToEdit, onEventCrea
         }).eq('id', eventToEdit.id);
 
         if (error) throw error;
-        toast({ title: "Event Updated!", description: `The event "${values.title}" has been updated.` });
+        toast({ title: t('events.eventUpdated'), description: t('events.eventUpdatedDescription', { title: values.title }) });
         onEventUpdated();
       } else {
         const { error } = await supabase.from('events').insert({
@@ -141,13 +141,13 @@ export function CreateEventDialog({ open, onOpenChange, eventToEdit, onEventCrea
           date_time: combinedDateTime.toISOString(),
         });
         if (error) throw error;
-        toast({ title: "Event Created!", description: `The event "${values.title}" has been scheduled.` });
+        toast({ title: t('events.eventCreated'), description: t('events.eventCreatedDescription', { title: values.title }) });
         onEventCreated();
       }
 
       onOpenChange(false);
     } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Error saving event', description: error.message });
+      toast({ variant: 'destructive', title: t('events.errorSavingEvent'), description: error.message });
     } finally {
       setIsLoading(false);
     }
@@ -163,9 +163,9 @@ export function CreateEventDialog({ open, onOpenChange, eventToEdit, onEventCrea
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{isEditing ? 'Edit Event' : 'Create a New Event'}</DialogTitle>
+          <DialogTitle>{isEditing ? t('events.editEvent') : t('events.createNewEvent')}</DialogTitle>
           <DialogDescription>
-            Fill out the details below to {isEditing ? 'update this event' : 'schedule a new event for the community'}.
+            {isEditing ? t('events.dialogDescriptionEdit') : t('events.dialogDescriptionCreate')}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -249,7 +249,7 @@ export function CreateEventDialog({ open, onOpenChange, eventToEdit, onEventCrea
                 name="meet_link"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Google Meet Link (Optional)</FormLabel>
+                    <FormLabel>{t('events.meetLinkOptional')}</FormLabel>
                     <FormControl><Input placeholder="https://meet.krishnaconnect.in/..." {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>

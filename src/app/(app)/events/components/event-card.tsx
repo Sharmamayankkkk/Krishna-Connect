@@ -38,9 +38,9 @@ export function EventCard({ event, onRsvp }: { event: Event, onRsvp: () => void 
         }, { onConflict: 'event_id, user_id' });
 
         if (error) {
-            toast({ variant: 'destructive', title: 'Error RSVPing', description: error.message });
+            toast({ variant: 'destructive', title: t('events.errorRsvping'), description: error.message });
         } else {
-            toast({ title: `You're now marked as ${status}!` });
+            toast({ title: t('events.markedAsStatus', { status }) });
             onRsvp(); // Callback to re-fetch events
         }
     };
@@ -58,7 +58,7 @@ export function EventCard({ event, onRsvp }: { event: Event, onRsvp: () => void 
             await navigator.share(shareData);
         } catch (err) {
             navigator.clipboard.writeText(shareData.url);
-            toast({ title: 'Link Copied!', description: "The event link has been copied to your clipboard." });
+            toast({ title: t('events.linkCopied'), description: t('events.linkCopiedDescription') });
         }
     };
 
@@ -94,7 +94,7 @@ export function EventCard({ event, onRsvp }: { event: Event, onRsvp: () => void 
                         {(isPastEvent || isCancelled) &&
                             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                                 <Badge variant="destructive" className="text-base">
-                                    {isCancelled ? 'Cancelled' : 'Past Event'}
+                                    {isCancelled ? t('events.cancelled') : t('events.pastEvent')}
                                 </Badge>
                             </div>
                         }
@@ -125,7 +125,7 @@ export function EventCard({ event, onRsvp }: { event: Event, onRsvp: () => void 
                                     <span>{goingCount} Going</span>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    <p className="max-w-xs">{rsvpCount('going')} people going</p>
+                                    <p className="max-w-xs">{t('events.peopleGoing', { count: rsvpCount('going') })}</p>
                                 </TooltipContent>
                             </Tooltip>
                             <Tooltip>
@@ -134,7 +134,7 @@ export function EventCard({ event, onRsvp }: { event: Event, onRsvp: () => void 
                                     <span>{interestedCount} Interested</span>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    <p className="max-w-xs">{rsvpCount('interested')} interested</p>
+                                    <p className="max-w-xs">{t('events.countInterested', { count: rsvpCount('interested') })}</p>
                                 </TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
