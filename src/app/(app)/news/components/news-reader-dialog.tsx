@@ -10,6 +10,8 @@ import { NewsItem } from "../types";
 import { format } from "date-fns";
 import Image from "next/image";
 
+import { useTranslation } from 'react-i18next';
+
 interface NewsReaderDialogProps {
     item: NewsItem | null;
     open: boolean;
@@ -17,6 +19,8 @@ interface NewsReaderDialogProps {
 }
 
 export function NewsReaderDialog({ item, open, onOpenChange }: NewsReaderDialogProps) {
+  const { t } = useTranslation();
+
     const [content, setContent] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
@@ -84,7 +88,7 @@ export function NewsReaderDialog({ item, open, onOpenChange }: NewsReaderDialogP
                                     <div dangerouslySetInnerHTML={{ __html: content }} />
                                 ) : (
                                     <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground">
-                                        <p>Could not load standard reader view.</p>
+                                        <p>{t('news.couldNotLoadStandardReaderView')}</p>
                                         <Button variant="outline" className="mt-4" asChild>
                                             <a href={item.link} target="_blank" rel="noopener noreferrer">
                                                 Open in Browser <ExternalLink className="ml-2 h-4 w-4" />
@@ -98,9 +102,7 @@ export function NewsReaderDialog({ item, open, onOpenChange }: NewsReaderDialogP
                 </div>
 
                 <div className="p-4 border-t bg-background shrink-0 flex justify-between items-center">
-                    <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
-                        Close
-                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>{t('common.close')}</Button>
                     <Button size="sm" asChild>
                         <a href={item.link} target="_blank" rel="noopener noreferrer">
                             Original Article <ExternalLink className="ml-2 h-4 w-4" />

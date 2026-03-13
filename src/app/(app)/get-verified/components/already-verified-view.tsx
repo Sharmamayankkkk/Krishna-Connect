@@ -16,6 +16,8 @@ import { useToast } from '@/hooks/use-toast';
 import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
 
+import { useTranslation } from 'react-i18next';
+
 interface VerificationRequest {
     plan_type: 'monthly' | 'yearly';
     expires_at?: string;
@@ -27,6 +29,8 @@ interface AlreadyVerifiedStateProps {
 }
 
 export function AlreadyVerifiedView({ request }: AlreadyVerifiedStateProps) {
+  const { t } = useTranslation();
+
     const router = useRouter();
     const supabase = createClient();
     const { loggedInUser } = useAppContext();
@@ -84,12 +88,12 @@ export function AlreadyVerifiedView({ request }: AlreadyVerifiedStateProps) {
             <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b">
                 <div className="flex items-center gap-4 px-4 h-14 max-w-5xl mx-auto">
                     <SidebarTrigger className="md:hidden" />
-                    <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full" aria-label="Go back">
+                    <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full" aria-label={t('getVerified.goBack')}>
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
                     <div className="flex items-center gap-2">
-                        <Image src="/user_Avatar/verified.png" alt="Verified" width={20} height={20} />
-                        <h1 className="font-bold text-lg">Verified Member</h1>
+                        <Image src="/user_Avatar/verified.png" alt={t('getVerified.verified')} width={20} height={20} />
+                        <h1 className="font-bold text-lg">{t('getVerified.verifiedMember')}</h1>
                     </div>
                 </div>
             </header>
@@ -111,7 +115,7 @@ export function AlreadyVerifiedView({ request }: AlreadyVerifiedStateProps) {
                                     <div className="h-10 w-10 relative flex items-center justify-center">
                                         <Image
                                             src="/logo/krishna_connect.png"
-                                            alt="KC Logo"
+                                            alt={t('getVerified.kcLogo')}
                                             width={40}
                                             height={40}
                                             className="h-10 w-10 object-contain drop-shadow-md"
@@ -119,12 +123,12 @@ export function AlreadyVerifiedView({ request }: AlreadyVerifiedStateProps) {
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-lg leading-tight">Krishna Connect</h3>
-                                        <p className="text-[10px] text-white/50 uppercase tracking-widest font-semibold">Verified Member</p>
+                                        <p className="text-[10px] text-white/50 uppercase tracking-widest font-semibold">{t('getVerified.verifiedMember')}</p>
                                     </div>
                                 </div>
                                 <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 p-0.5 shadow-lg shadow-blue-500/20">
                                     <div className="h-full w-full rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
-                                        <Image src="/user_Avatar/verified.png" alt="Verified" width={20} height={20} className="drop-shadow-md" />
+                                        <Image src="/user_Avatar/verified.png" alt={t('getVerified.verified')} width={20} height={20} className="drop-shadow-md" />
                                     </div>
                                 </div>
                             </div>
@@ -133,7 +137,7 @@ export function AlreadyVerifiedView({ request }: AlreadyVerifiedStateProps) {
                             <div className="flex items-center gap-4 mt-2">
                                 <div className="h-20 w-20 rounded-2xl bg-white/10 border border-white/20 overflow-hidden relative shadow-inner shrink-0">
                                     {loggedInUser?.avatar_url ? (
-                                        <Image src={getAvatarUrl(loggedInUser.avatar_url) || ''} alt="Profile" fill className="object-cover" />
+                                        <Image src={getAvatarUrl(loggedInUser.avatar_url) || ''} alt={t('userMenu.profile')} fill className="object-cover" />
                                     ) : (
                                         <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-xl font-bold">
                                             {loggedInUser?.name?.[0]}
@@ -154,11 +158,11 @@ export function AlreadyVerifiedView({ request }: AlreadyVerifiedStateProps) {
 
                             <div className="flex justify-between items-end border-t border-white/10 pt-4 mt-2">
                                 <div>
-                                    <p className="text-[9px] text-white/40 uppercase tracking-widest font-semibold mb-0.5">Member Since</p>
+                                    <p className="text-[9px] text-white/40 uppercase tracking-widest font-semibold mb-0.5">{t('getVerified.memberSince')}</p>
                                     <p className="font-mono text-xs text-white/80">{joinYear}</p>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-[9px] text-white/40 uppercase tracking-widest font-semibold mb-0.5">Valid Until</p>
+                                    <p className="text-[9px] text-white/40 uppercase tracking-widest font-semibold mb-0.5">{t('getVerified.validUntil')}</p>
                                     <p className="font-mono text-xs sm:text-sm font-medium text-white/90">{formatDate(endDate)}</p>
                                 </div>
                             </div>
@@ -177,8 +181,8 @@ export function AlreadyVerifiedView({ request }: AlreadyVerifiedStateProps) {
                                         <Trophy className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                                     </div>
                                     <div>
-                                        <h3 className="font-bold">Promotion Credits</h3>
-                                        <p className="text-sm text-muted-foreground">Boost your reach</p>
+                                        <h3 className="font-bold">{t('getVerified.promotionCredits')}</h3>
+                                        <p className="text-sm text-muted-foreground">{t('getVerified.boostYourReach')}</p>
                                     </div>
                                 </div>
                                 <div className="text-right">
@@ -193,16 +197,14 @@ export function AlreadyVerifiedView({ request }: AlreadyVerifiedStateProps) {
                                     style={{ width: `${Math.min(((creditsUsed || 0) / 3) * 100, 100)}%` }}
                                 />
                             </div>
-                            <p className="text-xs text-muted-foreground mb-4">Refreshes next month</p>
+                            <p className="text-xs text-muted-foreground mb-4">{t('getVerified.refreshesNextMonth')}</p>
 
                             <Button
                                 className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg shadow-blue-500/20"
                                 variant="default"
                                 onClick={() => router.push('/settings/promotions')}
                             >
-                                <Sparkles className="mr-2 h-4 w-4" />
-                                Boost a Post
-                            </Button>
+                                <Sparkles className="mr-2 h-4 w-4" />{t('getVerified.boostAPost')}</Button>
                         </CardContent>
                     </Card>
 
@@ -210,26 +212,22 @@ export function AlreadyVerifiedView({ request }: AlreadyVerifiedStateProps) {
                     <div className="grid grid-cols-2 gap-4">
                         <Card className="border-0 shadow-md hover:shadow-lg transition-all">
                             <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-                                <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-1">Plan Type</p>
+                                <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-1">{t('getVerified.planType')}</p>
                                 <p className="font-bold text-lg capitalize">{planType}</p>
                             </CardContent>
                         </Card>
                         <Card className="border-0 shadow-md hover:shadow-lg transition-all">
                             <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-                                <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-1">Status</p>
-                                <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-100">
-                                    Active
-                                </Badge>
+                                <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-1">{t('settings.promotions.status')}</p>
+                                <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-100">{t('getVerified.active')}</Badge>
                             </CardContent>
                         </Card>
                     </div>
 
                     <div className="flex flex-col gap-3">
-                        <Button variant="outline" className="w-full rounded-xl h-12" onClick={() => router.push('/feed')}>
-                            Back to Feed
-                        </Button>
+                        <Button variant="outline" className="w-full rounded-xl h-12" onClick={() => router.push('/feed')}>{t('getVerified.backToFeed')}</Button>
                         <p className="text-xs text-center text-muted-foreground pt-4">
-                            Need help or want to cancel? <Link href="/contact-us" className="underline hover:text-primary">Contact Support</Link>
+                            Need help or want to cancel? <Link href="/contact-us" className="underline hover:text-primary">{t('getVerified.contactSupport')}</Link>
                         </p>
                     </div>
                 </div>

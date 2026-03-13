@@ -6,10 +6,12 @@ import { Home, Compass, MessageSquare, User, Newspaper } from 'lucide-react'
 import { cn, getAvatarUrl } from '@/lib/utils'
 import { useAppContext } from '@/providers/app-provider'
 import Image from 'next/image'
+import { useTranslation } from 'react-i18next'
 
 export function MobileBottomNav() {
     const pathname = usePathname()
     const { loggedInUser } = useAppContext()
+    const { t } = useTranslation()
 
     // Hide bottom nav on chat conversation pages and active livestream pages (but show on discovery and leela)
     const hideOnRoutes = /^(\/chat\/\d+|\/live\/.+)/
@@ -18,37 +20,37 @@ export function MobileBottomNav() {
     const navItems = [
         {
             href: '/',
-            label: 'Feed',
+            label: t('nav.feed'),
             icon: Home,
             isActive: pathname === '/' || pathname.startsWith('/feed'),
         },
         {
             href: '/explore',
-            label: 'Explore',
+            label: t('nav.explore'),
             icon: Compass,
             isActive: pathname.startsWith('/explore'),
         },
         {
             href: '/leela',
-            label: 'Leela',
+            label: t('nav.leela'),
             icon: null, // Custom image icon
             isActive: pathname.startsWith('/leela'),
         },
         {
             href: '/chat',
-            label: 'Chats',
+            label: t('nav.chat'),
             icon: MessageSquare,
             isActive: pathname.startsWith('/chat'),
         },
         {
             href: '/news',
-            label: 'News',
+            label: t('nav.news'),
             icon: Newspaper,
             isActive: pathname.startsWith('/news'),
         },
         {
             href: loggedInUser ? `/profile/${loggedInUser.username}` : '/',
-            label: 'Profile',
+            label: t('userMenu.profile'),
             icon: User,
             isActive: pathname.startsWith('/profile') && loggedInUser,
         },
@@ -59,7 +61,7 @@ export function MobileBottomNav() {
             <div className="flex items-center justify-between h-16 px-1 w-full">
                 {navItems.map((item) => {
                     const IconComponent = item.icon
-                    const isLeela = item.label === 'Leela'
+                    const isLeela = item.href === '/leela'
 
                     return (
                         <Link
@@ -82,7 +84,7 @@ export function MobileBottomNav() {
                                         width={24}
                                         height={24}
                                     />
-                                ) : item.label === 'Profile' && loggedInUser?.avatar_url ? (
+                                ) : item.href.startsWith('/profile') && loggedInUser?.avatar_url ? (
                                     <div className={cn(
                                         "h-6 w-6 rounded-full overflow-hidden ring-2 ring-offset-1 ring-offset-background transition-all shrink-0",
                                         item.isActive

@@ -22,6 +22,8 @@ import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/comp
 import { createClient } from '@/lib/utils'
 import { v4 as uuidv4 } from 'uuid';
 
+import { useTranslation } from 'react-i18next';
+
 interface EditGroupDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -29,6 +31,8 @@ interface EditGroupDialogProps {
 }
 
 export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogProps) {
+  const { t } = useTranslation();
+
   const { loggedInUser } = useAppContext();
   const { toast } = useToast();
   const supabase = createClient();
@@ -199,36 +203,34 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Edit Group: {group.name}</DialogTitle>
-          <DialogDescription>Modify the group's details and manage members.</DialogDescription>
+          <DialogDescription>{t('chat.modifyTheGroupsDetailsAndManage')}</DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="general" className="mt-4">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="members">Members</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
+            <TabsTrigger value="general">{t('chat.general')}</TabsTrigger>
+            <TabsTrigger value="members">{t('chat.members')}</TabsTrigger>
+            <TabsTrigger value="settings">{t('settings.title')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="general" className="space-y-6 py-4">
             <div className="flex items-center gap-6">
               <div className="relative">
                 <Avatar className="h-20 w-20">
-                  <AvatarImage src={avatarPreview} alt="Group avatar" />
+                  <AvatarImage src={avatarPreview} alt={t('chat.groupAvatar')} />
                   <AvatarFallback>{name?.charAt(0).toUpperCase() || 'G'}</AvatarFallback>
                 </Avatar>
                 <Button type="button" size="sm" variant="outline" className="absolute -bottom-2 -right-2" onClick={() => avatarInputRef.current?.click()}>
-                  <Upload className="h-3 w-3 mr-1" />
-                  Change
-                </Button>
+                  <Upload className="h-3 w-3 mr-1" />{t('settings.security.change')}</Button>
                 <input type="file" ref={avatarInputRef} onChange={handleAvatarChange} className="hidden" accept="image/*" />
               </div>
               <div className="flex-1 space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="group-name">Group Name</Label>
+                  <Label htmlFor="group-name">{t('chat.groupName')}</Label>
                   <Input id="group-name" value={name} onChange={e => setName(e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="group-description">Description</Label>
+                  <Label htmlFor="group-description">{t('challenges.description')}</Label>
                   <Textarea id="group-description" value={description} onChange={e => setDescription(e.target.value)} className="resize-none" />
                 </div>
               </div>
@@ -242,8 +244,8 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
                   <Globe className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <Label>Public Group</Label>
-                  <p className="text-xs text-muted-foreground">Allow anyone with the link to join.</p>
+                  <Label>{t('chat.publicGroup')}</Label>
+                  <p className="text-xs text-muted-foreground">{t('chat.allowAnyoneWithTheLinkTo')}</p>
                 </div>
               </div>
               <Switch checked={isPublic} onCheckedChange={setIsPublic} />
@@ -254,8 +256,8 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
                   <Eye className="h-4 w-4 text-blue-500" />
                 </div>
                 <div>
-                  <Label>Chat History</Label>
-                  <p className="text-xs text-muted-foreground">Allow new members to see past messages.</p>
+                  <Label>{t('chat.chatHistory')}</Label>
+                  <p className="text-xs text-muted-foreground">{t('chat.allowNewMembersToSeePast')}</p>
                 </div>
               </div>
               <Switch checked={historyVisible} onCheckedChange={setHistoryVisible} />
@@ -266,8 +268,8 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
                   <Lock className="h-4 w-4 text-orange-500" />
                 </div>
                 <div>
-                  <Label>Disable Sharing</Label>
-                  <p className="text-xs text-muted-foreground">Prevent members from forwarding messages from this group.</p>
+                  <Label>{t('chat.disableSharing')}</Label>
+                  <p className="text-xs text-muted-foreground">{t('chat.preventMembersFromForwardingMessagesFrom')}</p>
                 </div>
               </div>
               <Switch checked={disableSharing} onCheckedChange={setDisableSharing} />
@@ -278,14 +280,14 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
                   <Tag className="h-4 w-4 text-green-500" />
                 </div>
                 <div>
-                  <Label>Member Tags</Label>
-                  <p className="text-xs text-muted-foreground">Allow members to set their own tags.</p>
+                  <Label>{t('chat.memberTags')}</Label>
+                  <p className="text-xs text-muted-foreground">{t('chat.allowMembersToSetTheirOwn')}</p>
                 </div>
               </div>
               <Switch checked={membersCanSetTag} onCheckedChange={setMembersCanSetTag} />
             </div>
             <div className="space-y-2">
-              <Label>Invite Link</Label>
+              <Label>{t('chat.inviteLink')}</Label>
               {inviteCode ? (
                 <div className="flex gap-2">
                   <Input readOnly value={`${window.location.origin}/join/${inviteCode}`} />
@@ -293,7 +295,7 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
                   <Button variant="destructive" size="icon" onClick={() => setInviteCode(null)}><UserX className="h-4 w-4" /></Button>
                 </div>
               ) : (
-                <Button variant="outline" className="w-full" onClick={() => setInviteCode(uuidv4())}>Generate Invite Link</Button>
+                <Button variant="outline" className="w-full" onClick={() => setInviteCode(uuidv4())}>{t('chat.generateInviteLink')}</Button>
               )}
             </div>
           </TabsContent>
@@ -321,7 +323,7 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
                             <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto justify-between">
                               <div className="flex items-center space-x-2">
                                 <Switch id={`admin-switch-${p.user_id}`} checked={p.is_admin} onCheckedChange={() => handleToggleAdmin(p.user_id)} disabled={p.user_id === loggedInUser?.id} aria-label={`Toggle admin status for ${p.profiles.name}`} />
-                                <Label htmlFor={`admin-switch-${p.user_id}`} className="text-sm font-normal cursor-pointer">Admin</Label>
+                                <Label htmlFor={`admin-switch-${p.user_id}`} className="text-sm font-normal cursor-pointer">{t('chat.admin')}</Label>
                               </div>
                               <Tooltip>
                                 <TooltipTrigger asChild>
@@ -330,7 +332,7 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
                                   </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  <p>Remove from group</p>
+                                  <p>{t('chat.removeFromGroup')}</p>
                                 </TooltipContent>
                               </Tooltip>
                             </div>
@@ -352,10 +354,10 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
                   </div>
                   <Separator />
                   <div>
-                    <h4 className="font-medium mb-2">Add New Members</h4>
+                    <h4 className="font-medium mb-2">{t('chat.addNewMembers')}</h4>
                     <div className="relative mb-2">
                       <Input
-                        placeholder="Search users to add..."
+                        placeholder={t('chat.searchUsersToAdd')}
                         value={memberSearch}
                         onChange={e => setMemberSearch(e.target.value)}
                       />
@@ -363,7 +365,7 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
                     </div>
                     <div className="space-y-2">
                       {searchResults.length === 0 && memberSearch.trim() && !isSearching && (
-                        <p className="text-sm text-muted-foreground text-center py-4">No users found.</p>
+                        <p className="text-sm text-muted-foreground text-center py-4">{t('chat.noUsersFound')}</p>
                       )}
                       {searchResults.filter(u => !currentParticipantIds.has(u.id)).map(user => (
                         <div key={user.id} className="flex items-center justify-between p-2 rounded-md hover:bg-muted">
@@ -375,9 +377,7 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
                             <span>{user.name}</span>
                           </div>
                           <Button variant="outline" size="sm" onClick={() => handleAddMember(user)}>
-                            <UserPlus className="mr-2 h-4 w-4" />
-                            Add
-                          </Button>
+                            <UserPlus className="mr-2 h-4 w-4" />{t('settings.security.add')}</Button>
                         </div>
                       ))}
                     </div>
@@ -389,7 +389,7 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
         </Tabs>
 
         <DialogFooter className="mt-4">
-          <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+          <DialogClose asChild><Button variant="outline">{t('common.cancel')}</Button></DialogClose>
           <Button onClick={handleSaveChanges} disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Save Changes

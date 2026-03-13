@@ -15,7 +15,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 
+import { useTranslation } from 'react-i18next';
+
 export default function ManageChallengePage() {
+  const { t } = useTranslation();
+
     const params = useParams();
     const router = useRouter();
     const supabase = createClient();
@@ -174,7 +178,7 @@ export default function ManageChallengePage() {
                             Manage: {challenge.title}
                             <Badge variant="outline" className="text-xs">{challenge.status}</Badge>
                         </h1>
-                        <p className="text-sm text-muted-foreground">Author Dashboard</p>
+                        <p className="text-sm text-muted-foreground">{t('challenges.authorDashboard')}</p>
                     </div>
                 </div>
             </header>
@@ -184,17 +188,17 @@ export default function ManageChallengePage() {
                 {/* Sidebar Navigation */}
                 <div className="md:w-64 shrink-0">
                     <div className="flex flex-col gap-1 bg-background border rounded-xl p-2 sticky top-24">
-                        <NavButton id="stats" icon={<BarChart3 />} label="Analytics & Stats" active={activeTab} onClick={handleTabChange} />
+                        <NavButton id="stats" icon={<BarChart3 />} label={t('challenges.analyticsStats')} active={activeTab} onClick={handleTabChange} />
                         <NavButton
                             id="submissions"
                             icon={<Users />}
-                            label="Submissions"
+                            label={t('challenges.submissions')}
                             active={activeTab}
                             onClick={handleTabChange}
                             badge={pendingCount > 0 ? pendingCount : undefined}
                         />
-                        <NavButton id="leaderboard" icon={<Trophy />} label="Live Leaderboard" active={activeTab} onClick={handleTabChange} />
-                        <NavButton id="controls" icon={<Settings />} label="Controls & Status" active={activeTab} onClick={handleTabChange} />
+                        <NavButton id="leaderboard" icon={<Trophy />} label={t('challenges.liveLeaderboard')} active={activeTab} onClick={handleTabChange} />
+                        <NavButton id="controls" icon={<Settings />} label={t('challenges.controlsStatus')} active={activeTab} onClick={handleTabChange} />
                     </div>
                 </div>
 
@@ -204,21 +208,21 @@ export default function ManageChallengePage() {
                     {activeTab === 'stats' && (
                         <div className="space-y-6 animate-in fade-in">
                             <div>
-                                <h2 className="text-2xl font-bold mb-1">Challenge Overview</h2>
-                                <p className="text-muted-foreground">Real-time performance metrics.</p>
+                                <h2 className="text-2xl font-bold mb-1">{t('challenges.challengeOverview')}</h2>
+                                <p className="text-muted-foreground">{t('challenges.realtimePerformanceMetrics')}</p>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <Card>
-                                    <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground flex items-center gap-2"><Users className="h-4 w-4" /> Participants</CardTitle></CardHeader>
+                                    <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground flex items-center gap-2"><Users className="h-4 w-4" />{t('challenges.participants')}</CardTitle></CardHeader>
                                     <CardContent><div className="text-4xl font-black">{challenge.participant_count}</div></CardContent>
                                 </Card>
                                 <Card>
-                                    <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground flex items-center gap-2"><CheckCircle className="h-4 w-4" /> Submissions</CardTitle></CardHeader>
+                                    <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground flex items-center gap-2"><CheckCircle className="h-4 w-4" />{t('challenges.submissions')}</CardTitle></CardHeader>
                                     <CardContent><div className="text-4xl font-black">{submissions.length}</div></CardContent>
                                 </Card>
                                 <Card>
-                                    <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground flex items-center gap-2"><Clock className="h-4 w-4" /> Pending Review</CardTitle></CardHeader>
+                                    <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground flex items-center gap-2"><Clock className="h-4 w-4" />{t('challenges.pendingReview')}</CardTitle></CardHeader>
                                     <CardContent><div className="text-4xl font-black text-orange-500">{pendingCount}</div></CardContent>
                                 </Card>
                             </div>
@@ -229,17 +233,17 @@ export default function ManageChallengePage() {
                         <div className="space-y-6 animate-in fade-in">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <h2 className="text-2xl font-bold mb-1">Review Submissions</h2>
-                                    <p className="text-muted-foreground">Approve or reject participant entries.</p>
+                                    <h2 className="text-2xl font-bold mb-1">{t('challenges.reviewSubmissions')}</h2>
+                                    <p className="text-muted-foreground">{t('challenges.approveOrRejectParticipantEntries')}</p>
                                 </div>
                                 <div className="flex gap-2">
-                                    <Button variant="outline" size="sm">Approve All Pending</Button>
+                                    <Button variant="outline" size="sm">{t('challenges.approveAllPending')}</Button>
                                 </div>
                             </div>
 
                             <div className="border rounded-xl overflow-hidden divide-y">
                                 {submissions.length === 0 ? (
-                                    <div className="p-8 text-center text-muted-foreground">No submissions to review yet.</div>
+                                    <div className="p-8 text-center text-muted-foreground">{t('challenges.noSubmissionsToReviewYet')}</div>
                                 ) : (
                                     submissions.map(sub => (
                                         <div key={sub.id} className="p-4 flex flex-col md:flex-row gap-4 items-start md:items-center hover:bg-muted/30 transition-colors">
@@ -252,22 +256,20 @@ export default function ManageChallengePage() {
                                                 </div>
                                                 <p className="text-sm text-muted-foreground line-clamp-1 mt-1">{sub.proof_text || "No text provided"}</p>
                                                 {sub.proof_media_url && (
-                                                    <a href={sub.proof_media_url} target="_blank" rel="noreferrer" className="text-xs text-blue-500 hover:underline mt-1 inline-block">View Attached Media</a>
+                                                    <a href={sub.proof_media_url} target="_blank" rel="noreferrer" className="text-xs text-blue-500 hover:underline mt-1 inline-block">{t('challenges.viewAttachedMedia')}</a>
                                                 )}
                                             </div>
 
                                             <div className="flex items-center gap-3 w-full md:w-auto mt-4 md:mt-0 justify-between md:justify-end">
                                                 {sub.status === 'pending' ? (
-                                                    <Badge variant="secondary" className="bg-orange-500/10 text-orange-600 border-none">Pending</Badge>
+                                                    <Badge variant="secondary" className="bg-orange-500/10 text-orange-600 border-none">{t('profile.pending')}</Badge>
                                                 ) : sub.status === 'approved' ? (
-                                                    <Badge className="bg-green-500 hover:bg-green-600 border-none">Approved</Badge>
+                                                    <Badge className="bg-green-500 hover:bg-green-600 border-none">{t('challenges.approved')}</Badge>
                                                 ) : (
-                                                    <Badge variant="destructive" className="border-none">Rejected</Badge>
+                                                    <Badge variant="destructive" className="border-none">{t('challenges.rejected')}</Badge>
                                                 )}
 
-                                                <Button size="sm" variant="outline" onClick={() => openReviewModal(sub)}>
-                                                    Review
-                                                </Button>
+                                                <Button size="sm" variant="outline" onClick={() => openReviewModal(sub)}>{t('challenges.review')}</Button>
                                             </div>
                                         </div>
                                     ))
@@ -279,13 +281,13 @@ export default function ManageChallengePage() {
                     {activeTab === 'leaderboard' && (
                         <div className="space-y-6 animate-in fade-in">
                             <div>
-                                <h2 className="text-2xl font-bold mb-1">Standings</h2>
-                                <p className="text-muted-foreground">Current rankings of participants.</p>
+                                <h2 className="text-2xl font-bold mb-1">{t('challenges.standings')}</h2>
+                                <p className="text-muted-foreground">{t('challenges.currentRankingsOfParticipants')}</p>
                             </div>
 
                             <div className="border rounded-xl overflow-hidden divide-y">
                                 {leaderboard.length === 0 ? (
-                                    <div className="p-8 text-center text-muted-foreground">No activity yet to rank.</div>
+                                    <div className="p-8 text-center text-muted-foreground">{t('challenges.noActivityYetToRank')}</div>
                                 ) : (
                                     leaderboard.map((entry, index) => (
                                         <div key={entry.user_id} className="flex items-center gap-4 p-4 hover:bg-muted/20">
@@ -303,14 +305,14 @@ export default function ManageChallengePage() {
                     {activeTab === 'controls' && (
                         <div className="space-y-8 animate-in fade-in">
                             <div>
-                                <h2 className="text-2xl font-bold mb-1">State Controls</h2>
-                                <p className="text-muted-foreground">Manually override challenge phases.</p>
+                                <h2 className="text-2xl font-bold mb-1">{t('challenges.stateControls')}</h2>
+                                <p className="text-muted-foreground">{t('challenges.manuallyOverrideChallengePhases')}</p>
                             </div>
 
                             <div className="grid gap-6">
                                 <Card className="border-orange-500/20 bg-orange-500/5">
                                     <CardHeader>
-                                        <CardTitle className="text-lg flex items-center gap-2"><Clock className="h-5 w-5 text-orange-500" /> Close Submissions</CardTitle>
+                                        <CardTitle className="text-lg flex items-center gap-2"><Clock className="h-5 w-5 text-orange-500" />{t('challenges.closeSubmissions')}</CardTitle>
                                     </CardHeader>
                                     <CardContent>
                                         <p className="text-sm text-foreground/80 mb-4">Stop accepting new entries. The challenge moves to the review phase where you can finalize scores.</p>
@@ -319,15 +321,13 @@ export default function ManageChallengePage() {
                                             className="border-orange-200 text-orange-700 hover:bg-orange-100"
                                             disabled={challenge.status !== 'active'}
                                             onClick={() => handleUpdateStatus('submission_closed')}
-                                        >
-                                            Close Submissions Now
-                                        </Button>
+                                        >{t('challenges.closeSubmissionsNow')}</Button>
                                     </CardContent>
                                 </Card>
 
                                 <Card className="border-green-500/20 bg-green-500/5">
                                     <CardHeader>
-                                        <CardTitle className="text-lg flex items-center gap-2"><CheckCircle className="h-5 w-5 text-green-600" /> Complete Challenge</CardTitle>
+                                        <CardTitle className="text-lg flex items-center gap-2"><CheckCircle className="h-5 w-5 text-green-600" />{t('challenges.completeChallenge')}</CardTitle>
                                     </CardHeader>
                                     <CardContent>
                                         <p className="text-sm text-foreground/80 mb-4">Finalize the challenge, lock the leaderboard, and distribute rewards (if applicable).</p>
@@ -335,15 +335,13 @@ export default function ManageChallengePage() {
                                             className="bg-green-600 hover:bg-green-700 text-white"
                                             disabled={challenge.status === 'completed' || challenge.status === 'cancelled'}
                                             onClick={() => handleUpdateStatus('completed')}
-                                        >
-                                            Mark as Completed
-                                        </Button>
+                                        >{t('challenges.markAsCompleted')}</Button>
                                     </CardContent>
                                 </Card>
 
                                 <Card className="border-red-500/20 bg-red-500/5">
                                     <CardHeader>
-                                        <CardTitle className="text-lg flex items-center gap-2"><AlertCircle className="h-5 w-5 text-red-500" /> Cancel Challenge</CardTitle>
+                                        <CardTitle className="text-lg flex items-center gap-2"><AlertCircle className="h-5 w-5 text-red-500" />{t('challenges.cancelChallenge')}</CardTitle>
                                     </CardHeader>
                                     <CardContent>
                                         <p className="text-sm text-foreground/80 mb-4">Abort immediately. All pending submissions are voided, and the challenge is hidden from the main feed.</p>
@@ -355,9 +353,7 @@ export default function ManageChallengePage() {
                                                     handleUpdateStatus('cancelled');
                                                 }
                                             }}
-                                        >
-                                            Cancel Challenge
-                                        </Button>
+                                        >{t('challenges.cancelChallenge')}</Button>
                                     </CardContent>
                                 </Card>
                             </div>
@@ -370,7 +366,7 @@ export default function ManageChallengePage() {
             <Dialog open={reviewModalOpen} onOpenChange={setReviewModalOpen}>
                 <DialogContent className="sm:max-w-[500px]">
                     <DialogHeader>
-                        <DialogTitle>Review Submission</DialogTitle>
+                        <DialogTitle>{t('challenges.reviewSubmission')}</DialogTitle>
                     </DialogHeader>
 
                     {selectedSubmission && (
@@ -385,8 +381,8 @@ export default function ManageChallengePage() {
 
                             {selectedSubmission.proof_media_url && (
                                 <div>
-                                    <Label className="mb-2 block text-muted-foreground">Attachment</Label>
-                                    <img src={selectedSubmission.proof_media_url} alt="Proof" className="w-full rounded-md border" />
+                                    <Label className="mb-2 block text-muted-foreground">{t('challenges.attachment')}</Label>
+                                    <img src={selectedSubmission.proof_media_url} alt={t('challenges.proof')} className="w-full rounded-md border" />
                                 </div>
                             )}
 
@@ -404,7 +400,7 @@ export default function ManageChallengePage() {
                                 </Label>
                                 <Textarea
                                     id="reason"
-                                    placeholder="Explain why this is rejected to help the user improve..."
+                                    placeholder={t('challenges.explainWhyThisIsRejectedTo')}
                                     value={rejectionReason}
                                     onChange={(e) => setRejectionReason(e.target.value)}
                                     className="resize-none"
@@ -414,9 +410,9 @@ export default function ManageChallengePage() {
                     )}
 
                     <DialogFooter className="gap-2 sm:gap-0">
-                        <Button variant="ghost" onClick={() => setReviewModalOpen(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={() => handleReviewSubmit('rejected')} className="gap-2"><XCircle className="h-4 w-4" /> Reject</Button>
-                        <Button className="bg-green-600 hover:bg-green-700 text-white gap-2" onClick={() => handleReviewSubmit('approved')}><CheckCircle className="h-4 w-4" /> Approve</Button>
+                        <Button variant="ghost" onClick={() => setReviewModalOpen(false)}>{t('common.cancel')}</Button>
+                        <Button variant="destructive" onClick={() => handleReviewSubmit('rejected')} className="gap-2"><XCircle className="h-4 w-4" />{t('profile.reject')}</Button>
+                        <Button className="bg-green-600 hover:bg-green-700 text-white gap-2" onClick={() => handleReviewSubmit('approved')}><CheckCircle className="h-4 w-4" />{t('profile.approve')}</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

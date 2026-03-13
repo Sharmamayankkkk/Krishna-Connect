@@ -18,13 +18,17 @@ import { ShareEventDialog } from './share-event-dialog';
 import { createClient } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
+import { useTranslation } from 'react-i18next';
+
 export function EventCard({ event, onRsvp }: { event: Event, onRsvp: () => void }) {
+    const { t } = useTranslation();
     const { loggedInUser } = useAppContext();
     const { toast } = useToast();
     const supabase = createClient();
     const [isShareDialogOpen, setIsShareDialogOpen] = React.useState(false);
 
     const handleRsvp = async (status: RSVPStatus) => {
+
         if (!loggedInUser) return;
 
         const { error } = await supabase.from('event_rsvps').upsert({
@@ -34,9 +38,9 @@ export function EventCard({ event, onRsvp }: { event: Event, onRsvp: () => void 
         }, { onConflict: 'event_id, user_id' });
 
         if (error) {
-            toast({ variant: 'destructive', title: 'Error RSVPing', description: error.message });
+            toast({ variant: 'destructive', title: t('events.errorRsvping'), description: error.message });
         } else {
-            toast({ title: `You're now marked as ${status}!` });
+            toast({ title: t('events.markedAsStatus', { status }) });
             onRsvp(); // Callback to re-fetch events
         }
     };
@@ -54,7 +58,7 @@ export function EventCard({ event, onRsvp }: { event: Event, onRsvp: () => void 
             await navigator.share(shareData);
         } catch (err) {
             navigator.clipboard.writeText(shareData.url);
-            toast({ title: 'Link Copied!', description: "The event link has been copied to your clipboard." });
+            toast({ title: t('events.linkCopied'), description: t('events.linkCopiedDescription') });
         }
     };
 
@@ -90,7 +94,7 @@ export function EventCard({ event, onRsvp }: { event: Event, onRsvp: () => void 
                         {(isPastEvent || isCancelled) &&
                             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                                 <Badge variant="destructive" className="text-base">
-                                    {isCancelled ? 'Cancelled' : 'Past Event'}
+                                    {isCancelled ? t('events.cancelled') : t('events.pastEvent')}
                                 </Badge>
                             </div>
                         }
@@ -121,7 +125,7 @@ export function EventCard({ event, onRsvp }: { event: Event, onRsvp: () => void 
                                     <span>{goingCount} Going</span>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    <p className="max-w-xs">{rsvpCount('going')} people going</p>
+                                    <p className="max-w-xs">{t('events.peopleGoing', { count: rsvpCount('going') })}</p>
                                 </TooltipContent>
                             </Tooltip>
                             <Tooltip>
@@ -130,7 +134,7 @@ export function EventCard({ event, onRsvp }: { event: Event, onRsvp: () => void 
                                     <span>{interestedCount} Interested</span>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    <p className="max-w-xs">{rsvpCount('interested')} interested</p>
+                                    <p className="max-w-xs">{t('events.countInterested', { count: rsvpCount('interested') })}</p>
                                 </TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
@@ -140,35 +144,31 @@ export function EventCard({ event, onRsvp }: { event: Event, onRsvp: () => void 
                     {loggedInUser && !isPastEvent && !isCancelled && (
                         <div className="grid grid-cols-3 gap-2">
                             <Button variant={userRsvp?.status === 'going' ? 'success' : 'outline'} size="sm" onClick={() => handleRsvp('going')}>
-                                <Check className="mr-1.5 h-4 w-4" /> Going
-                            </Button>
+                                <Check className="mr-1.5 h-4 w-4" />{t('events.going')}</Button>
                             <Button variant={userRsvp?.status === 'interested' ? 'default' : 'outline'} size="sm" onClick={() => handleRsvp('interested')}>
-                                <Star className="mr-1.5 h-4 w-4" /> Interested
-                            </Button>
+                                <Star className="mr-1.5 h-4 w-4" />{t('events.interested')}</Button>
                             <Button variant={userRsvp?.status === 'not_going' ? 'destructive' : 'outline'} size="sm" onClick={() => handleRsvp('not_going')}>
-                                <X className="mr-1.5 h-4 w-4" /> Can't go
-                            </Button>
+                                <X className="mr-1.5 h-4 w-4" />{t('events.cantGo')}</Button>
                         </div>
                     )}
                     <div className="grid grid-cols-2 gap-2">
                         <Button variant="secondary" asChild>
-                            <Link href={`/events/${event.id}`}>View Details</Link>
+                            <Link href={`/events/${event.id}`}>{t('events.viewDetails')}</Link>
                         </Button>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="secondary"><Share2 className="mr-1.5 h-4 w-4" /> Share</Button>
+                                <Button variant="secondary"><Share2 className="mr-1.5 h-4 w-4" />{t('post.share')}</Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
-                                <DropdownMenuItem onClick={handleNativeShare}>Share Externally</DropdownMenuItem>
-                                <DropdownMenuItem onClick={handleShareInApp}>Share in App</DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleNativeShare}>{t('events.shareExternally')}</DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleShareInApp}>{t('events.shareInApp')}</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
                     {event.meet_link && !isPastEvent && !isCancelled && (
                         <a href={event.meet_link} target="_blank" rel="noopener noreferrer" className="w-full">
                             <Button className="w-full">
-                                <LinkIcon className="mr-1.5 h-4 w-4" /> Join Meet
-                            </Button>
+                                <LinkIcon className="mr-1.5 h-4 w-4" />{t('events.joinMeet')}</Button>
                         </a>
                     )}
                 </CardFooter>

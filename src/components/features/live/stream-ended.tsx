@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { formatDistance } from 'date-fns'
 
+import { useTranslation } from 'react-i18next';
+
 interface StreamEndedProps {
     host: {
         name: string
@@ -17,6 +19,8 @@ interface StreamEndedProps {
 }
 
 export function StreamEnded({ host, duration, viewerCount }: StreamEndedProps) {
+  const { t } = useTranslation();
+
     return (
         <div className="flex flex-col items-center justify-center h-[100dvh] bg-background text-foreground p-6 text-center animate-in fade-in duration-700">
             {/* Host Info */}
@@ -31,35 +35,29 @@ export function StreamEnded({ host, duration, viewerCount }: StreamEndedProps) {
                 </div>
             </div>
 
-            <h2 className="text-3xl font-bold mb-2">Stream Ended</h2>
-            <p className="text-muted-foreground mb-8">
-                Thanks for watching!
-            </p>
+            <h2 className="text-3xl font-bold mb-2">{t('live.streamEnded')}</h2>
+            <p className="text-muted-foreground mb-8">{t('live.thanksForWatching')}</p>
 
             {/* Stats Grid */}
             <div className="grid grid-cols-2 gap-4 w-full max-w-sm mb-8">
                 <div className="bg-muted/50 p-4 rounded-xl border border-border">
                     <span className="block text-2xl font-bold text-foreground">{viewerCount || 0}</span>
-                    <span className="text-xs text-muted-foreground uppercase tracking-wider">Peak Viewers</span>
+                    <span className="text-xs text-muted-foreground uppercase tracking-wider">{t('live.peakViewers')}</span>
                 </div>
                 <div className="bg-muted/50 p-4 rounded-xl border border-border">
                     <span className="block text-2xl font-bold text-foreground">{duration || '0m'}</span>
-                    <span className="text-xs text-muted-foreground uppercase tracking-wider">Duration</span>
+                    <span className="text-xs text-muted-foreground uppercase tracking-wider">{t('live.duration')}</span>
                 </div>
             </div>
 
             {/* Actions */}
             <div className="flex flex-col gap-3 w-full max-w-xs">
                 <Button className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold rounded-full h-12 shadow-lg hover:scale-105 transition-transform">
-                    <UserPlus className="mr-2 h-5 w-5" />
-                    Follow Host
-                </Button>
+                    <UserPlus className="mr-2 h-5 w-5" />{t('live.followHost')}</Button>
 
                 <Link href="/live" className="w-full">
                     <Button variant="ghost" className="w-full text-muted-foreground hover:text-foreground hover:bg-muted rounded-full h-12">
-                        <Home className="mr-2 h-5 w-5" />
-                        Back to Live Hub
-                    </Button>
+                        <Home className="mr-2 h-5 w-5" />{t('live.backToLiveHub')}</Button>
                 </Link>
             </div>
         </div>

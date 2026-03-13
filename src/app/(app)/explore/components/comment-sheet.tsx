@@ -21,6 +21,8 @@ import { Loader2, Heart, MessageSquareReply, Send, MoreHorizontal, Pin, EyeOff, 
 import { cn, getAvatarUrl } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthGuard } from '@/hooks/use-auth-guard';
+import { useTranslation } from 'react-i18next';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -105,6 +107,7 @@ function CommentCard({
   onHide: (commentId: string, isHidden: boolean) => void,
   onLikeToggle: (commentId: string, isLiked: boolean) => void
 }) {
+  const { t } = useTranslation();
   const { loggedInUser } = useAppContext();
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(comment.text);
@@ -185,8 +188,7 @@ function CommentCard({
                 <DropdownMenuContent align="end">
                   {isAuthor && (
                     <DropdownMenuItem onClick={() => setIsEditing(true)}>
-                      <Edit2 className="h-4 w-4 mr-2" /> Edit
-                    </DropdownMenuItem>
+                      <Edit2 className="h-4 w-4 mr-2" />{t('common.edit')}</DropdownMenuItem>
                   )}
                   {isPostAuthor && (
                     <>
@@ -200,8 +202,7 @@ function CommentCard({
                   )}
                   {(isAuthor || isPostAuthor) && (
                     <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => onDelete(comment.id)}>
-                      <Trash2 className="h-4 w-4 mr-2" /> Delete
-                    </DropdownMenuItem>
+                      <Trash2 className="h-4 w-4 mr-2" />{t('common.delete')}</DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -217,8 +218,8 @@ function CommentCard({
                 className="min-h-[60px] text-sm"
               />
               <div className="flex gap-2 justify-end">
-                <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)}>Cancel</Button>
-                <Button size="sm" onClick={handleSaveEdit}>Save</Button>
+                <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)}>{t('common.cancel')}</Button>
+                <Button size="sm" onClick={handleSaveEdit}>{t('common.save')}</Button>
               </div>
             </div>
           ) : (
@@ -242,7 +243,7 @@ function CommentCard({
               className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-primary"
             >
               <MessageSquareReply className="h-3.5 w-3.5" />
-              <span>Reply</span>
+              <span>{t('explore.reply')}</span>
             </button>
           </div>
         </div>
@@ -273,6 +274,8 @@ function CommentCard({
 
 // --- Main Comment Sheet Component ---
 export function CommentSheet({ post, open, onOpenChange, onComment }: CommentSheetProps) {
+  const { t } = useTranslation();
+
   const { loggedInUser } = useAppContext();
   const [content, setContent] = useState('');
   const [isPosting, setIsPosting] = useState(false);
@@ -418,8 +421,8 @@ export function CommentSheet({ post, open, onOpenChange, onComment }: CommentShe
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-[85vh] flex flex-col p-0 gap-0 sm:max-w-3xl sm:mx-auto sm:rounded-t-xl">
         <SheetHeader className="p-4 border-b text-left">
-          <SheetTitle>Comments</SheetTitle>
-          <SheetDescription className="hidden">Comments section</SheetDescription>
+          <SheetTitle>{t('explore.comments')}</SheetTitle>
+          <SheetDescription className="hidden">{t('explore.commentsSection')}</SheetDescription>
         </SheetHeader>
 
         {/* Comment List */}
@@ -441,8 +444,8 @@ export function CommentSheet({ post, open, onOpenChange, onComment }: CommentShe
               ))
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-muted-foreground text-center">
-                <p>No comments yet.</p>
-                <p className="text-sm">Start the conversation!</p>
+                <p>{t('explore.noCommentsYet')}</p>
+                <p className="text-sm">{t('explore.startTheConversation')}</p>
               </div>
             )}
           </div>
@@ -469,9 +472,7 @@ export function CommentSheet({ post, open, onOpenChange, onComment }: CommentShe
                   <div
                     className="flex-1 border rounded-md px-3 py-2 text-muted-foreground bg-transparent text-sm cursor-pointer hover:bg-muted/50 transition-colors"
                     onClick={() => requireAuth(() => { }, "Log in to reply")}
-                  >
-                    Post your reply
-                  </div>
+                  >{t('explore.postYourReply')}</div>
                 ) : (
                   <>
                     <Textarea

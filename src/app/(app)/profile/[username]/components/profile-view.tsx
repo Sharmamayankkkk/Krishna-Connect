@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAppContext } from "@/providers/app-provider";
@@ -81,6 +82,7 @@ export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], f
   const router = useRouter();
   const supabase = createClient();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const { loggedInUser: clientUser } = useAppContext();
 
   // Use client-side user if server-side user is missing (fixes hydration/cookie issues)
@@ -125,8 +127,8 @@ export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], f
       console.error('Error handling message:', error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: error?.message || "Failed to start chat."
+        title: t('common.error'),
+        description: error?.message || t('profile.failedToStartChat')
       });
     } finally {
       setIsMessageLoading(false);
@@ -141,12 +143,12 @@ export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], f
         target_user_id: profile.id
       });
       if (error) throw error;
-      toast({ title: "Blocked", description: `@${profile.username} has been blocked.` });
+      toast({ title: t('profile.blocked'), description: `@${profile.username} has been blocked.` });
       // Optionally redirect or refresh
       router.refresh();
     } catch (error) {
       console.error('Error blocking user:', error);
-      toast({ variant: "destructive", title: "Error", description: "Failed to block user." });
+      toast({ variant: "destructive", title: t('common.error'), description: "Failed to block user." });
     }
   };
 
@@ -165,10 +167,10 @@ export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], f
     } else {
       try {
         await navigator.clipboard.writeText(url);
-        toast({ title: "Link copied", description: "Profile link copied to clipboard." });
+        toast({ title: t('profile.linkCopied'), description: t('profile.profileLinkCopied') });
       } catch (err) {
         console.error('Error copying link:', err);
-        toast({ variant: "destructive", title: "Error", description: "Failed to copy link." });
+        toast({ variant: "destructive", title: t('common.error'), description: t('profile.failedToCopyLink') });
       }
     }
   };
@@ -225,10 +227,10 @@ export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], f
     // Delete from database
     const { error } = await supabase.from('leela_videos').delete().eq('id', videoId);
     if (error) {
-      toast({ title: 'Failed to delete', description: error.message, variant: 'destructive' });
+      toast({ title: t('profile.failedToDelete'), description: error.message, variant: 'destructive' });
       setDisplayedLeelaVideos(leelaVideos); // Restore on error
     } else {
-      toast({ title: 'Leela deleted' });
+      toast({ title: t('profile.leelaDeleted') });
     }
   };
 
@@ -391,7 +393,7 @@ export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], f
                   className="rounded-full font-semibold"
                   onClick={() => setIsEditProfileOpen(true)}
                 >
-                  Edit profile
+                  {t('profile.editProfile')}
                 </Button>
                 <Button variant="outline" size="icon" className="rounded-full" onClick={handleShare}>
                   <Share2 className="h-5 w-5" />
@@ -408,11 +410,11 @@ export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], f
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={handleBlock} className="text-destructive">
                       <Ban className="mr-2 h-4 w-4" />
-                      Block @{profile.username}
+                      {t('profile.block', { username: profile.username })}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setIsReportDialogOpen(true)}>
                       <Flag className="mr-2 h-4 w-4" />
-                      Report @{profile.username}
+                      {t('profile.report', { username: profile.username })}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -443,7 +445,7 @@ export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], f
                           </span>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Follow to message</p>
+                          <p>{t('profile.followToMessage')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -464,7 +466,7 @@ export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], f
                 ) : (
                   <AuthGate>
                     <Button className="rounded-full font-semibold">
-                      Follow
+                      {t('profile.follow')}
                     </Button>
                   </AuthGate>
                 )}
@@ -506,7 +508,7 @@ export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], f
           {joinDate && (
             <span className="flex items-center gap-1">
               <CalendarDays className="h-4 w-4" />
-              Joined {joinDate}
+              {t('profile.joined', { date: joinDate })}
             </span>
           )}
         </div>
@@ -515,24 +517,24 @@ export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], f
           {canViewConnections ? (
             <Link href={`/profile/${profile.username}/connections?type=following`} className="hover:underline">
               <span className="font-bold">{profile.following_count || 0}</span>
-              <span className="text-muted-foreground ml-1">Following</span>
+              <span className="text-muted-foreground ml-1">{t('profile.following')}</span>
             </Link>
           ) : (
             <div className="cursor-default opacity-70">
               <span className="font-bold">{profile.following_count || 0}</span>
-              <span className="text-muted-foreground ml-1">Following</span>
+              <span className="text-muted-foreground ml-1">{t('profile.following')}</span>
             </div>
           )}
 
           {canViewConnections ? (
             <Link href={`/profile/${profile.username}/connections?type=followers`} className="hover:underline">
               <span className="font-bold">{profile.follower_count || 0}</span>
-              <span className="text-muted-foreground ml-1">Followers</span>
+              <span className="text-muted-foreground ml-1">{t('profile.followers')}</span>
             </Link>
           ) : (
             <div className="cursor-default opacity-70">
               <span className="font-bold">{profile.follower_count || 0}</span>
-              <span className="text-muted-foreground ml-1">Followers</span>
+              <span className="text-muted-foreground ml-1">{t('profile.followers')}</span>
             </div>
           )}
 
@@ -546,8 +548,8 @@ export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], f
                 </div>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="max-w-[200px] text-center">
-                <p className="font-bold mb-1">Challenge Points</p>
-                <p className="text-xs text-muted-foreground">Points earned from accepted challenge submissions. Rank up on the leaderboard!</p>
+                <p className="font-bold mb-1">{t('profile.challengePoints')}</p>
+                <p className="text-xs text-muted-foreground">{t('profile.challengePointsDesc')}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -571,7 +573,7 @@ export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], f
             <div className="border-b">
               <div className="flex items-center gap-2 px-4 py-3 text-sm text-muted-foreground">
                 <Pin className="h-4 w-4" />
-                <span className="font-semibold">Pinned</span>
+                <span className="font-semibold">{t('profile.pinned')}</span>
               </div>
               <FeedList
                 posts={pinnedPosts}
@@ -588,16 +590,16 @@ export function ProfileView({ profile, posts, repostedPosts, leelaVideos = [], f
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="w-full h-auto p-0 bg-transparent border-b rounded-none justify-start">
               <TabsTrigger value="posts" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
-                Posts
+                {t('profile.posts')}
               </TabsTrigger>
               <TabsTrigger value="replies" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
-                Replies
+                {t('profile.replies')}
               </TabsTrigger>
               <TabsTrigger value="reposts" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
-                Reposts
+                {t('profile.reposts')}
               </TabsTrigger>
               <TabsTrigger value="leela" className="flex-1 py-4 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
-                Leela
+                {t('profile.leela')}
               </TabsTrigger>
             </TabsList>
 

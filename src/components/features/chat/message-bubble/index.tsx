@@ -28,7 +28,9 @@ import { SystemMessage } from './system-message';
 import { CallMessage } from './call-message';
 import { StoryReplyMessage } from './story-reply-message';
 
-// ReplyPreview is a tiny inner component with no hooks — safe to define here
+import { useTranslation } from 'react-i18next';
+
+// ReplyPreview is a tiny inner component — safe to define here
 const ReplyPreview = ({
     repliedTo,
     themeSettings,
@@ -38,6 +40,7 @@ const ReplyPreview = ({
     themeSettings: any;
     jumpToMessage: (id: number) => void;
 }) => {
+    const { t } = useTranslation();
     const isImageReply = repliedTo.attachment_url && repliedTo.attachment_metadata?.type?.startsWith('image/');
     const isVoiceReply = repliedTo.attachment_metadata?.type === 'audio/webm' || repliedTo.attachment_metadata?.type?.startsWith('audio/');
     const isFileReply = repliedTo.attachment_url && !isImageReply && !isVoiceReply;
@@ -50,13 +53,13 @@ const ReplyPreview = ({
         >
             <div className="flex-1 overflow-hidden min-w-0">
                 <p className="font-semibold text-sm truncate" style={{ color: themeSettings.usernameColor }}>
-                    {repliedTo.profiles?.name || 'Unknown'}
+                    {repliedTo.profiles?.name || t('chat.unknown')}
                 </p>
                 <p className="text-xs truncate opacity-80">
-                    {isVoiceReply ? '🎤 Voice message'
-                        : isFileReply ? `📎 ${repliedTo.attachment_metadata?.name || 'File'}`
-                        : isImageReply ? '🖼️ Photo'
-                        : (typeof repliedTo.content === 'string' ? repliedTo.content : 'Attachment')}
+                    {isVoiceReply ? t('chat.voiceMessage')
+                        : isFileReply ? `📎 ${repliedTo.attachment_metadata?.name || t('chat.file')}`
+                        : isImageReply ? t('chat.photo')
+                        : (typeof repliedTo.content === 'string' ? repliedTo.content : t('chat.attachment'))}
                 </p>
             </div>
             {isImageReply && repliedTo.attachment_url && (
@@ -92,6 +95,7 @@ export const MessageBubble = React.memo(function MessageBubble({
     } = ctx;
 
     // ⚠️ RULES OF HOOKS: always called before any early returns
+    const { t } = useTranslation();
     const isMyMessage = message.user_id === loggedInUserId;
     const isOptimistic = typeof message.id === 'string';
 
@@ -129,7 +133,7 @@ export const MessageBubble = React.memo(function MessageBubble({
                 <div className="relative max-w-[85%] sm:max-w-md lg:max-w-lg rounded-lg text-sm px-2 sm:px-3 py-2" style={bubbleStyle}>
                     <div className="flex items-center gap-2 italic text-current/70">
                         <CircleSlash className="h-4 w-4" />
-                        <span>This message was deleted</span>
+                        <span>{t('chat.thisMessageWasDeleted')}</span>
                     </div>
                 </div>
                 {isMyMessage && <div className="w-6 sm:w-8 shrink-0" />}
@@ -142,7 +146,7 @@ export const MessageBubble = React.memo(function MessageBubble({
     const isEditing = editingMessage?.id === message.id;
     const messageStatus = getMessageStatus(message);
 
-    if (!sender) return <div>Loading message...</div>;
+    if (!sender) return <div>{t('chat.loadingMessage')}</div>;
 
     const bubbleStyle = isMyMessage ? outgoingBubbleStyle : incomingBubbleStyle;
     const senderName = isGroup && sender.role === 'gurudev' ? chatName : sender.name;
@@ -187,7 +191,7 @@ export const MessageBubble = React.memo(function MessageBubble({
                 >
                     {isEditing ? (
                         <div className="w-full">
-                            <p className="text-xs font-semibold text-primary mb-2">Editing...</p>
+                            <p className="text-xs font-semibold text-primary mb-2">{t('chat.editing')}</p>
                         </div>
                     ) : (
                         <>
@@ -195,13 +199,13 @@ export const MessageBubble = React.memo(function MessageBubble({
                                 <div className="flex items-center gap-1.5 font-semibold mb-1 text-sm">
                                     <span style={{ color: themeSettings.usernameColor }}>{senderName}</span>
                                     {senderVerifiedTier === 'verified' && (
-                                        <Image src="/user_Avatar/verified.png" alt="Verified" width={16} height={16} className="inline-block shrink-0" />
+                                        <Image src="/user_Avatar/verified.png" alt={t('getVerified.verified')} width={16} height={16} className="inline-block shrink-0" />
                                     )}
                                     {senderVerifiedTier === 'kcs' && (
-                                        <Image src="/user_Avatar/KCS-verified.png" alt="KCS Verified" width={16} height={16} className="inline-block shrink-0" />
+                                        <Image src="/user_Avatar/KCS-verified.png" alt={t('chat.kcsVerified')} width={16} height={16} className="inline-block shrink-0" />
                                     )}
                                     {sender.role === 'gurudev' && (
-                                        <Badge variant="destructive" className="text-xs px-1.5 py-0 leading-none">Gurudev</Badge>
+                                        <Badge variant="destructive" className="text-xs px-1.5 py-0 leading-none">{t('chat.gurudev')}</Badge>
                                     )}
                                     {/* Member tag */}
                                     {memberTag && (
@@ -227,7 +231,7 @@ export const MessageBubble = React.memo(function MessageBubble({
                                 style={{ justifyContent: isMyMessage ? 'flex-end' : 'flex-start' }}
                             >
                                 {message.is_pinned && <Pin className="h-3 w-3 text-current mr-1" />}
-                                {message.is_edited && <span className="text-xs italic">Edited</span>}
+                                {message.is_edited && <span className="text-xs italic">{t('chat.edited')}</span>}
                                 {(message.starred_by?.includes(loggedInUserId) ?? message.is_starred) && (
                                     <Star className="h-3 w-3 text-amber-400 fill-amber-400 mr-1" />
                                 )}
@@ -253,21 +257,21 @@ export const MessageBubble = React.memo(function MessageBubble({
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent className="w-auto p-1">
                                     <DropdownMenuItem onClick={() => handleStartReply(message)} disabled={isOptimistic}>
-                                        <Reply className="mr-2 h-4 w-4" /><span>Reply</span>
+                                        <Reply className="mr-2 h-4 w-4" /><span>{t('explore.reply')}</span>
                                     </DropdownMenuItem>
                                     {message.content && !isMyMessage && (
                                         <DropdownMenuItem onClick={() => setMessageToTranslate(message)}>
-                                            <Languages className="mr-2 h-4 w-4" /><span>Translate</span>
+                                            <Languages className="mr-2 h-4 w-4" /><span>{t('chat.translate')}</span>
                                         </DropdownMenuItem>
                                     )}
                                     {!disableSharing && (
                                         <DropdownMenuItem onClick={() => setMessageToForward(message)} disabled={isOptimistic}>
-                                            <Share2 className="mr-2 h-4 w-4" /><span>Forward</span>
+                                            <Share2 className="mr-2 h-4 w-4" /><span>{t('chat.forward')}</span>
                                         </DropdownMenuItem>
                                     )}
                                     {message.content && (
                                         <DropdownMenuItem onClick={() => handleCopy(message.content as string)}>
-                                            <Copy className="mr-2 h-4 w-4" /><span>Copy</span>
+                                            <Copy className="mr-2 h-4 w-4" /><span>{t('chat.copy')}</span>
                                         </DropdownMenuItem>
                                     )}
                                     {(() => {
@@ -292,12 +296,12 @@ export const MessageBubble = React.memo(function MessageBubble({
                                     })()}
                                     {isMyMessage && isGroup && !isOptimistic && (
                                         <DropdownMenuItem onClick={() => setMessageInfo(message)}>
-                                            <Info className="mr-2 h-4 w-4" /><span>Message Info</span>
+                                            <Info className="mr-2 h-4 w-4" /><span>{t('chat.messageInfo')}</span>
                                         </DropdownMenuItem>
                                     )}
                                     {!isMyMessage && (
                                         <DropdownMenuItem onClick={() => { setMessageToReport(message); setIsReportDialogOpen(true); }} disabled={isOptimistic}>
-                                            <ShieldAlert className="mr-2 h-4 w-4" /><span>Report Message</span>
+                                            <ShieldAlert className="mr-2 h-4 w-4" /><span>{t('chat.reportMessage')}</span>
                                         </DropdownMenuItem>
                                     )}
                                     {isMyMessage && !isOptimistic && (
@@ -305,11 +309,11 @@ export const MessageBubble = React.memo(function MessageBubble({
                                             <DropdownMenuSeparator />
                                             {message.content && (
                                                 <DropdownMenuItem onClick={() => handleStartEdit(message)}>
-                                                    <Pencil className="mr-2 h-4 w-4" /><span>Edit</span>
+                                                    <Pencil className="mr-2 h-4 w-4" /><span>{t('common.edit')}</span>
                                                 </DropdownMenuItem>
                                             )}
                                             <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteForEveryone(message.id as number)}>
-                                                <Trash2 className="mr-2 h-4 w-4" /><span>Delete for everyone</span>
+                                                <Trash2 className="mr-2 h-4 w-4" /><span>{t('chat.deleteForEveryone')}</span>
                                             </DropdownMenuItem>
                                         </>
                                     )}

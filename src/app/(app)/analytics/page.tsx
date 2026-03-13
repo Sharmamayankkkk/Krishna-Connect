@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAppContext } from '@/providers/app-provider';
+import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
 
 // Types matching RPC returns
@@ -63,6 +64,7 @@ const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE'];
 
 export default function AnalyticsPage() {
     const { loggedInUser: user, isReady } = useAppContext();
+    const { t } = useTranslation();
     const [period, setPeriod] = useState(30);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -142,7 +144,7 @@ export default function AnalyticsPage() {
         return (
             <div className="flex h-[80vh] items-center justify-center flex-col gap-4">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                {!user && isReady && <p>Please log in to view analytics.</p>}
+                {!user && isReady && <p>{t('analytics.loginRequired')}</p>}
             </div>
         );
     }
@@ -152,7 +154,7 @@ export default function AnalyticsPage() {
         return (
             <span className={`text-xs font-medium flex items-center ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
                 {isPositive ? <ArrowUpRight className="h-3 w-3 mr-1" /> : <ArrowDownRight className="h-3 w-3 mr-1" />}
-                {Math.abs(value).toFixed(1)}% vs last period
+                {Math.abs(value).toFixed(1)}{t('analytics.vsLastPeriod')}
             </span>
         );
     };
@@ -162,26 +164,26 @@ export default function AnalyticsPage() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
-                    <p className="text-muted-foreground">Track your performance and growth</p>
+                    <h1 className="text-3xl font-bold tracking-tight">{t('analytics.title')}</h1>
+                    <p className="text-muted-foreground">{t('analytics.subtitle')}</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm">
                         <Download className="mr-2 h-4 w-4" />
-                        Export
+                        {t('analytics.export')}
                     </Button>
                     <Button variant="outline" size="sm" onClick={fetchData} disabled={isLoading}>
                         <RefreshCcw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-                        Refresh
+                        {t('analytics.refresh')}
                     </Button>
                 </div>
             </div>
 
             <Tabs defaultValue="30" onValueChange={(val) => setPeriod(parseInt(val))} className="space-y-4">
                 <TabsList>
-                    <TabsTrigger value="7">Last 7 days</TabsTrigger>
-                    <TabsTrigger value="30">Last 30 days</TabsTrigger>
-                    <TabsTrigger value="90">Last 90 days</TabsTrigger>
+                    <TabsTrigger value="7">{t('analytics.last7Days')}</TabsTrigger>
+                    <TabsTrigger value="30">{t('analytics.last30Days')}</TabsTrigger>
+                    <TabsTrigger value="90">{t('analytics.last90Days')}</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value={period.toString()} className="space-y-8">
@@ -189,7 +191,7 @@ export default function AnalyticsPage() {
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Total Views</CardTitle>
+                                <CardTitle className="text-sm font-medium">{t('analytics.totalViews')}</CardTitle>
                                 <Eye className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
@@ -199,7 +201,7 @@ export default function AnalyticsPage() {
                         </Card>
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Engagement Rate</CardTitle>
+                                <CardTitle className="text-sm font-medium">{t('analytics.engagementRate')}</CardTitle>
                                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
@@ -213,7 +215,7 @@ export default function AnalyticsPage() {
                         </Card>
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Total Interactions</CardTitle>
+                                <CardTitle className="text-sm font-medium">{t('analytics.totalInteractions')}</CardTitle>
                                 <MessageCircle className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
@@ -223,7 +225,7 @@ export default function AnalyticsPage() {
                         </Card>
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">New Followers</CardTitle>
+                                <CardTitle className="text-sm font-medium">{t('analytics.newFollowers')}</CardTitle>
                                 <Users className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
@@ -238,8 +240,8 @@ export default function AnalyticsPage() {
                         {/* Views Over Time */}
                         <Card className="col-span-4">
                             <CardHeader>
-                                <CardTitle>Views Over Time</CardTitle>
-                                <CardDescription>Your content reach in the last {period} days</CardDescription>
+                                <CardTitle>{t('analytics.viewsOverTime')}</CardTitle>
+                                <CardDescription>{t('analytics.contentReachInLast', { days: period })}</CardDescription>
                             </CardHeader>
                             <CardContent className="pl-2">
                                 <div className="h-[300px] w-full">
@@ -267,8 +269,8 @@ export default function AnalyticsPage() {
                         {/* Audience Demographics */}
                         <Card className="col-span-3">
                             <CardHeader>
-                                <CardTitle>Audience by Gender</CardTitle>
-                                <CardDescription>Who's viewing your content</CardDescription>
+                                <CardTitle>{t('analytics.audienceByGender')}</CardTitle>
+                                <CardDescription>{t('analytics.whosViewingContent')}</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <div className="h-[300px] w-full flex items-center justify-center">
@@ -296,9 +298,9 @@ export default function AnalyticsPage() {
                                         </ResponsiveContainer>
                                     ) : (
                                         <div className="text-center text-muted-foreground">
-                                            Not enough data yet.
+                                            {t('analytics.notEnoughData')}
                                             <br />
-                                            <span className="text-xs">Views need to be associated with profiles that have set their gender.</span>
+                                            <span className="text-xs">{t('analytics.viewsNeedGender')}</span>
                                         </div>
                                     )}
                                 </div>
@@ -311,8 +313,8 @@ export default function AnalyticsPage() {
                         {/* Best Times to Post */}
                         <Card>
                             <CardHeader>
-                                <CardTitle>Best Times to Post</CardTitle>
-                                <CardDescription>When your audience is most active</CardDescription>
+                                <CardTitle>{t('analytics.bestTimesToPost')}</CardTitle>
+                                <CardDescription>{t('analytics.whenAudienceActive')}</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <div className="h-[300px] w-full">
@@ -333,8 +335,8 @@ export default function AnalyticsPage() {
                         {/* Engagement Breakdown */}
                         <Card>
                             <CardHeader>
-                                <CardTitle>Engagement Breakdown</CardTitle>
-                                <CardDescription>Likes vs Comments over time</CardDescription>
+                                <CardTitle>{t('analytics.engagementBreakdown')}</CardTitle>
+                                <CardDescription>{t('analytics.likesVsComments')}</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <div className="h-[300px] w-full">
@@ -346,8 +348,8 @@ export default function AnalyticsPage() {
                                                 contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: '6px' }}
                                             />
                                             <Legend />
-                                            <Bar dataKey="likes" name="Likes" fill="#ef4444" radius={[4, 4, 0, 0]} stackId="a" />
-                                            <Bar dataKey="comments" name="Comments" fill="#3b82f6" radius={[4, 4, 0, 0]} stackId="a" />
+                                            <Bar dataKey="likes" name={t('analytics.likes')} fill="#ef4444" radius={[4, 4, 0, 0]} stackId="a" />
+                                            <Bar dataKey="comments" name={t('analytics.comments')} fill="#3b82f6" radius={[4, 4, 0, 0]} stackId="a" />
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </div>
@@ -358,8 +360,8 @@ export default function AnalyticsPage() {
                     {/* Top Performing Posts */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Top Performing Posts</CardTitle>
-                            <CardDescription>Your best content this period</CardDescription>
+                            <CardTitle>{t('analytics.topPerformingPosts')}</CardTitle>
+                            <CardDescription>{t('analytics.bestContentThisPeriod')}</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
@@ -371,7 +373,7 @@ export default function AnalyticsPage() {
                                                     {index + 1}
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium line-clamp-2 max-w-[500px]">{post.content || 'Media Post'}</p>
+                                                    <p className="font-medium line-clamp-2 max-w-[500px]">{post.content || t('analytics.mediaPost')}</p>
                                                     <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                                                         <span className="flex items-center gap-1"><Eye className="h-3 w-3" /> {post.views}</span>
                                                         <span className="flex items-center gap-1"><Heart className="h-3 w-3" /> {post.likes}</span>
@@ -382,12 +384,12 @@ export default function AnalyticsPage() {
                                             </div>
                                             <div className="text-right shrink-0 ml-2">
                                                 <div className="text-lg font-bold text-primary">{post.engagement_rate.toFixed(1)}%</div>
-                                                <div className="text-xs text-muted-foreground">engagement</div>
+                                                <div className="text-xs text-muted-foreground">{t('analytics.engagementLabel')}</div>
                                             </div>
                                         </div>
                                     </Link>
                                 )) : (
-                                    <p className="text-center text-muted-foreground py-8">No posts found in this period</p>
+                                    <p className="text-center text-muted-foreground py-8">{t('analytics.noPostsFound')}</p>
                                 )}
                             </div>
                         </CardContent>
@@ -398,7 +400,7 @@ export default function AnalyticsPage() {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <TrendingUp className="h-5 w-5 text-primary" />
-                                Insights & Recommendations
+                                {t('analytics.insightsAndRecommendations')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -406,7 +408,7 @@ export default function AnalyticsPage() {
                                 <div className="flex gap-3 items-start">
                                     <div className="mt-0.5 h-2 w-2 rounded-full bg-green-500 shrink-0" />
                                     <p className="text-sm">
-                                        <strong>Your reach is growing!</strong> You have {summary.views_change.toFixed(1)}% more views than the previous period. Keep posting consistently.
+                                        <strong>{t('analytics.reachGrowing')}</strong> {t('analytics.moreViewsThanPrevious', { change: summary.views_change.toFixed(1) })}
                                     </p>
                                 </div>
                             ) : null}
@@ -414,14 +416,14 @@ export default function AnalyticsPage() {
                                 <div className="flex gap-3 items-start">
                                     <div className="mt-0.5 h-2 w-2 rounded-full bg-blue-500 shrink-0" />
                                     <p className="text-sm">
-                                        <strong>Best Time to Post:</strong> Your audience is most active during {postingTimes[0].time_slot}. Try scheduling your next post then!
+                                        <strong>{t('analytics.bestTimeToPost')}</strong> {t('analytics.audienceMostActive', { timeSlot: postingTimes[0].time_slot })}
                                     </p>
                                 </div>
                             )}
                             <div className="flex gap-3 items-start">
                                 <div className="mt-0.5 h-2 w-2 rounded-full bg-purple-500 shrink-0" />
                                 <p className="text-sm">
-                                    <strong>Content Tip:</strong> Posts with images generate 45% more engagement on average. Consider adding media to your text posts.
+                                    <strong>{t('analytics.contentTip')}</strong> {t('analytics.contentTipText')}
                                 </p>
                             </div>
                         </CardContent>

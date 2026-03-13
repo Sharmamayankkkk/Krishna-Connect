@@ -9,6 +9,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PostType } from '@/lib/types';
 import { Zap, X } from 'lucide-react';
 
+import { useTranslation } from 'react-i18next';
+
 interface PromotePostDialogProps {
     post: PostType | null;
     isOpen: boolean;
@@ -23,6 +25,8 @@ const budgetOptions = [
 ];
 
 export function PromotePostDialog({ post, isOpen, onClose, onConfirm }: PromotePostDialogProps) {
+  const { t } = useTranslation();
+
     const [selectedBudget, setSelectedBudget] = React.useState(25);
 
     if (!post) return null;
@@ -36,7 +40,7 @@ export function PromotePostDialog({ post, isOpen, onClose, onConfirm }: PromoteP
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-[480px]">
                 <DialogHeader>
-                    <DialogTitle className="flex items-center"><Zap className="h-5 w-5 mr-2 text-primary" /> Promote Your Post</DialogTitle>
+                    <DialogTitle className="flex items-center"><Zap className="h-5 w-5 mr-2 text-primary" />{t('common.promoteYourPost')}</DialogTitle>
                     <DialogDescription>
                         Boost this post to reach a wider, relevant audience beyond your followers.
                     </DialogDescription>
@@ -45,7 +49,7 @@ export function PromotePostDialog({ post, isOpen, onClose, onConfirm }: PromoteP
                 <div className="grid gap-6 py-4">
                     {/* Post Preview */}
                     <div>
-                        <Label className="text-sm font-medium">Post Preview</Label>
+                        <Label className="text-sm font-medium">{t('common.postPreview')}</Label>
                         <Card className="mt-2 bg-muted/50">
                             <CardContent className="p-4 text-sm">
                                 <p className='line-clamp-3'>{post.content}</p>
@@ -55,8 +59,8 @@ export function PromotePostDialog({ post, isOpen, onClose, onConfirm }: PromoteP
 
                     {/* Budget Selection */}
                     <div>
-                        <Label className="text-sm font-medium">Choose Your Budget</Label>
-                        <p className='text-xs text-muted-foreground mb-3'>A higher budget will show your post to more people.</p>
+                        <Label className="text-sm font-medium">{t('common.chooseYourBudget')}</Label>
+                        <p className='text-xs text-muted-foreground mb-3'>{t('common.aHigherBudgetWillShowYour')}</p>
                         <RadioGroup
                             defaultValue="25"
                             onValueChange={(value) => setSelectedBudget(parseInt(value))}
@@ -78,11 +82,9 @@ export function PromotePostDialog({ post, isOpen, onClose, onConfirm }: PromoteP
                 </div>
 
                 <DialogFooter className='sm:justify-between items-center'>
-                    <div className='text-xs text-muted-foreground'>
-                        This is a mock transaction for demonstration purposes.
-                    </div>
+                    <div className='text-xs text-muted-foreground'>{t('common.thisIsAMockTransactionFor')}</div>
                     <div className='flex gap-2'>
-                        <Button variant="ghost" onClick={onClose}>Cancel</Button>
+                        <Button variant="ghost" onClick={onClose}>{t('common.cancel')}</Button>
                         <Button onClick={handleConfirm}>
                             <Zap className='h-4 w-4 mr-2' />
                             Promote for ${selectedBudget}

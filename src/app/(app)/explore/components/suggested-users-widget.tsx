@@ -7,7 +7,11 @@ import { UserCard } from './user-card';
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from '@/hooks/use-toast';
 
+import { useTranslation } from 'react-i18next';
+
 export function SuggestedUsersWidget({ showHeader = true }: { showHeader?: boolean }) {
+  const { t } = useTranslation();
+
     const [suggestedUsers, setSuggestedUsers] = React.useState<any[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const { toast } = useToast();
@@ -60,7 +64,7 @@ export function SuggestedUsersWidget({ showHeader = true }: { showHeader?: boole
             {showHeader && (
                 <div className="flex items-center gap-2 mb-2 px-1">
                     <Users className="h-4 w-4 text-primary" />
-                    <h3 className="font-semibold text-sm">Who to Follow</h3>
+                    <h3 className="font-semibold text-sm">{t('explore.whoToFollow1')}</h3>
                 </div>
             )}
             <div className="space-y-3">

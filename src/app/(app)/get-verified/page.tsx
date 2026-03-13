@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/dialog';
 import Image from 'next/image';
 import { useAppContext } from '@/providers/app-provider';
+import { useTranslation } from 'react-i18next';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -73,6 +74,7 @@ const PRICES = {
 export default function GetVerifiedPage() {
     const router = useRouter();
     const { loggedInUser, isReady } = useAppContext();
+    const { t } = useTranslation();
     const { toast } = useToast();
     const supabase = createClient();
 
@@ -151,7 +153,7 @@ export default function GetVerifiedPage() {
 
             if (error) {
                 if (error.code === '23505') {
-                    toast({ variant: 'destructive', title: 'Application Exists', description: 'You already have a verification request.' });
+                    toast({ variant: 'destructive', title: t('getVerified.applicationExists'), description: t('getVerified.applicationExistsDesc') });
                 } else {
                     throw error;
                 }
@@ -160,7 +162,7 @@ export default function GetVerifiedPage() {
             }
         } catch (error: any) {
             console.error('Error submitting:', error);
-            toast({ variant: 'destructive', title: 'Error', description: error.message || 'Failed to submit application.' });
+            toast({ variant: 'destructive', title: t('getVerified.error'), description: error.message || t('getVerified.failedToSubmit') });
         } finally {
             setIsSubmitting(false);
         }
@@ -194,12 +196,12 @@ export default function GetVerifiedPage() {
 
             if (error) throw error;
 
-            toast({ title: 'Resubmitted!', description: 'Your updated links are now under review.' });
+            toast({ title: t('getVerified.resubmitted'), description: t('getVerified.resubmittedDesc') });
             // Refresh state
             setExistingRequest({ ...existingRequest, social_links: socialLinks, status: 'reviewing' });
         } catch (error: any) {
             console.error('Error resubmitting:', error);
-            toast({ variant: 'destructive', title: 'Error', description: error.message || 'Failed to resubmit.' });
+            toast({ variant: 'destructive', title: t('getVerified.error'), description: error.message || t('getVerified.failedToResubmit') });
         } finally {
             setIsSubmitting(false);
         }
@@ -253,13 +255,13 @@ export default function GetVerifiedPage() {
                         <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-emerald-600 shadow-lg shadow-green-500/20">
                             <PartyPopper className="h-10 w-10 text-white" />
                         </div>
-                        <DialogTitle className="text-2xl">Application Received</DialogTitle>
+                        <DialogTitle className="text-2xl">{t('getVerified.applicationReceived')}</DialogTitle>
                         <DialogDescription className="text-base leading-relaxed">
-                            Thank you for applying! We will review your application and contact you shortly to schedule your KCS Meet.
+                            {t('getVerified.applicationReceivedDesc')}
                         </DialogDescription>
                     </DialogHeader>
                     <Button onClick={() => { setShowSuccessModal(false); router.refresh(); }} className="mt-4 rounded-full">
-                        Got it!
+                        {t('getVerified.gotIt')}
                     </Button>
                 </DialogContent>
             </Dialog>
@@ -268,12 +270,12 @@ export default function GetVerifiedPage() {
             <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b">
                 <div className="flex items-center gap-4 px-4 h-14 max-w-5xl mx-auto">
                     <SidebarTrigger className="md:hidden" />
-                    <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full" aria-label="Go back">
+                    <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full" aria-label={t('getVerified.goBack')}>
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
                     <div className="flex items-center gap-2">
-                        <Image src="/user_Avatar/verified.png" alt="Verified" width={20} height={20} />
-                        <h1 className="font-bold text-lg">Get Verified</h1>
+                        <Image src="/user_Avatar/verified.png" alt={t('getVerified.verified')} width={20} height={20} />
+                        <h1 className="font-bold text-lg">{t('getVerified.title')}</h1>
                     </div>
                 </div>
             </header>
@@ -282,14 +284,14 @@ export default function GetVerifiedPage() {
                 {/* Hero Section */}
                 <div className="text-center space-y-6 pt-4">
                     <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 shadow-2xl shadow-purple-500/25 animate-in zoom-in-50 duration-500">
-                        <Image src="/user_Avatar/verified.png" alt="Verified" width={56} height={56} className="drop-shadow-lg" />
+                        <Image src="/user_Avatar/verified.png" alt={t('getVerified.verified')} width={56} height={56} className="drop-shadow-lg" />
                     </div>
                     <div className="space-y-3 max-w-2xl mx-auto">
                         <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                            Get Verified
+                            {t('getVerified.heroTitle')}
                         </h2>
                         <p className="text-lg text-muted-foreground leading-relaxed">
-                            Join the verified community of devotees. Unlock exclusive features and establish your authentic presence.
+                            {t('getVerified.heroDesc')}
                         </p>
                     </div>
                 </div>
@@ -333,19 +335,21 @@ export default function GetVerifiedPage() {
                         {isSubmitting ? (
                             <>
                                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                Submitting...
+                                {t('getVerified.submitting')}
                             </>
                         ) : (
                             <>
                                 <Send className="mr-2 h-5 w-5" />
-                                Submit Application
+                                {t('getVerified.submitApplication')}
                             </>
                         )}
                     </Button>
                     <p className="text-sm text-muted-foreground">
-                        Selected: <strong>{selectedPlan === 'monthly' ? 'Monthly' : 'Yearly'}</strong> •
-                        Total: <strong>₹{currentPrice}</strong>
-                        {allLinksProvided && ' (with ₹100 discount)'}
+                        {t('getVerified.selectedPlan', {
+                            plan: t(selectedPlan === 'monthly' ? 'getVerified.monthly' : 'getVerified.yearly'),
+                            price: currentPrice
+                        })}
+                        {allLinksProvided && ` ${t('getVerified.withDiscount')}`}
                     </p>
                 </div>
             </main>

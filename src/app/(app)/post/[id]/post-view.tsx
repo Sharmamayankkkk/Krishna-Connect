@@ -31,6 +31,8 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { GoogleAd } from '@/components/ads/google-ad';
 
+import { useTranslation } from 'react-i18next';
+
 const POST_QUERY = `
     id,
     user_id,
@@ -109,6 +111,8 @@ function ThreadComment({ comment, onLike, currentUserId }: {
 }
 
 export default function PostView() {
+  const { t } = useTranslation();
+
     const params = useParams<{ id: string }>();
     const router = useRouter();
     const { toast } = useToast();
@@ -269,7 +273,7 @@ export default function PostView() {
                     <Button variant="ghost" size="icon" onClick={() => router.back()}>
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
-                    <h2 className="text-xl font-bold tracking-tight">Post</h2>
+                    <h2 className="text-xl font-bold tracking-tight">{t('post.postButton')}</h2>
                 </div>
             </header>
 
@@ -279,9 +283,9 @@ export default function PostView() {
                         <PostSkeleton />
                     ) : !post ? (
                         <div className="p-10 text-center">
-                            <h3 className="text-lg font-semibold">Post not found</h3>
-                            <p className="text-muted-foreground">This post may have been deleted or does not exist.</p>
-                            <Button className="mt-4" onClick={() => router.push('/explore')}>Go to Feed</Button>
+                            <h3 className="text-lg font-semibold">{t('post.postNotFound')}</h3>
+                            <p className="text-muted-foreground">{t('post.thisPostMayHaveBeenDeleted')}</p>
+                            <Button className="mt-4" onClick={() => router.push('/explore')}>{t('post.goToFeed')}</Button>
                         </div>
                     ) : (
                         <>
@@ -316,7 +320,7 @@ export default function PostView() {
                                     <AuthGate className="w-full">
                                         <Textarea
                                             ref={commentInputRef}
-                                            placeholder="Post your reply"
+                                            placeholder={t('explore.postYourReply')}
                                             className="w-full bg-transparent border-none focus:ring-0 resize-none text-sm min-h-[2.5rem] outline-none placeholder:text-muted-foreground shadow-none p-0"
                                             value={commentContent}
                                             onChange={(e) => setCommentContent(e.target.value)}
@@ -351,9 +355,7 @@ export default function PostView() {
                                 ) : (
                                     <div className="py-12 text-center">
                                         <MessageCircle className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
-                                        <p className="text-muted-foreground text-sm">
-                                            No replies yet. Be the first to reply!
-                                        </p>
+                                        <p className="text-muted-foreground text-sm">{t('post.noRepliesYetBeTheFirst')}</p>
                                     </div>
                                 )}
                             </div>
@@ -364,7 +366,7 @@ export default function PostView() {
                             <Dialog open={isQuoteOpen} onOpenChange={setIsQuoteOpen}>
                                 <DialogContent>
                                     <DialogHeader>
-                                        <DialogTitle>Quote Post</DialogTitle>
+                                        <DialogTitle>{t('dialogs.quotePostTitle')}</DialogTitle>
                                     </DialogHeader>
                                     <div className="space-y-4 py-4">
                                         {post && (
@@ -374,15 +376,15 @@ export default function PostView() {
                                             </div>
                                         )}
                                         <Textarea
-                                            placeholder="Add a comment..."
+                                            placeholder={t('dialogs.addComment')}
                                             value={quoteText}
                                             onChange={(e) => setQuoteText(e.target.value)}
                                             className="min-h-[100px]"
                                         />
                                     </div>
                                     <DialogFooter>
-                                        <Button variant="ghost" onClick={() => setIsQuoteOpen(false)}>Cancel</Button>
-                                        <Button onClick={handleQuoteSubmit} disabled={!quoteText.trim()}>Post Quote</Button>
+                                        <Button variant="ghost" onClick={() => setIsQuoteOpen(false)}>{t('common.cancel')}</Button>
+                                        <Button onClick={handleQuoteSubmit} disabled={!quoteText.trim()}>{t('dialogs.postQuote')}</Button>
                                     </DialogFooter>
                                 </DialogContent>
                             </Dialog>

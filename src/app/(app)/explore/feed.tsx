@@ -36,11 +36,15 @@ import { NewsWidget } from './components/news-widget';
 import { MobileDashboard } from './components/mobile-dashboard';
 import { transformPost } from './utils';
 
+import { useTranslation } from 'react-i18next';
+
 const POSTS_PER_PAGE = 10;
 const SCROLL_THRESHOLD = 500;
 
 // Main Explore Page (Feed)
 export default function Feed() {
+  const { t } = useTranslation();
+
     const {
         loggedInUser,
     } = useAppContext();
@@ -459,7 +463,7 @@ export default function Feed() {
                         {/* Search Bar - Center focus */}
                         <div className="flex-1 min-w-0 max-w-xl mx-auto px-2 md:px-0">
                             <GlobalSearchBar
-                                placeholder="Search..."
+                                placeholder={t('explore.search')}
                                 className="w-full max-w-full"
                             />
                         </div>
@@ -490,9 +494,7 @@ export default function Feed() {
                             <span className={cn(
                                 "text-sm font-medium transition-colors duration-200 whitespace-nowrap truncate",
                                 feedFilter === 'latest' ? "text-foreground font-bold" : "text-muted-foreground group-hover:text-foreground/80"
-                            )}>
-                                For You
-                            </span>
+                            )}>{t('explore.forYou')}</span>
                             {feedFilter === 'latest' && (
                                 <div className="absolute bottom-0 h-[3px] w-16 bg-primary rounded-t-full layout-id-indicator animate-in fade-in zoom-in-75 duration-300" />
                             )}
@@ -507,9 +509,7 @@ export default function Feed() {
                             <span className={cn(
                                 "text-sm font-medium transition-colors duration-200 whitespace-nowrap truncate",
                                 feedFilter === 'following' ? "text-foreground font-bold" : "text-muted-foreground group-hover:text-foreground/80"
-                            )}>
-                                Following
-                            </span>
+                            )}>{t('follow.followingTitle')}</span>
                             {feedFilter === 'following' && (
                                 <div className="absolute bottom-0 h-[3px] w-16 bg-primary rounded-t-full layout-id-indicator animate-in fade-in zoom-in-75 duration-300" />
                             )}
@@ -541,7 +541,7 @@ export default function Feed() {
                                         {latestNewPostAuthor?.avatar && (
                                             <img
                                                 src={getAvatarUrl(latestNewPostAuthor.avatar) || '/male.png'}
-                                                alt="Author"
+                                                alt={t('explore.author')}
                                                 className="h-5 w-5 rounded-full object-cover"
                                             />
                                         )}
@@ -597,7 +597,7 @@ export default function Feed() {
                             {/* Trending Widget */}
                             <div className="bg-card rounded-xl border p-4 shadow-sm">
                                 <div className="flex items-center gap-2 mb-4">
-                                    <h3 className="font-semibold text-sm">Trending Now</h3>
+                                    <h3 className="font-semibold text-sm">{t('explore.trendingNow')}</h3>
                                 </div>
                                 <TrendingTopicsList onHashtagClick={(tag: string) => {
                                     // Use window.location or router if available. Feed component doesn't have router hook yet.
@@ -616,17 +616,17 @@ export default function Feed() {
                             {/* Footer / Links */}
                             <div className="text-xs text-muted-foreground px-4">
                                 <div className="flex flex-wrap gap-2">
-                                    <Link href="/privacy-policy" className="hover:underline">Privacy</Link>
+                                    <Link href="/privacy-policy" className="hover:underline">{t('settings.privacy.title')}</Link>
                                     <span>·</span>
-                                    <Link href="/terms-and-conditions" className="hover:underline">Terms</Link>
+                                    <Link href="/terms-and-conditions" className="hover:underline">{t('auth.terms')}</Link>
                                     <span>·</span>
-                                    <Link href="/directory" className="hover:underline">Policies</Link>
+                                    <Link href="/directory" className="hover:underline">{t('explore.policies')}</Link>
                                     <span>·</span>
-                                    <Link href="/contact-us" className="hover:underline">Contact</Link>
+                                    <Link href="/contact-us" className="hover:underline">{t('explore.contact')}</Link>
                                     <span>·</span>
-                                    <Link href="/faq" className="hover:underline">FAQ</Link>
+                                    <Link href="/faq" className="hover:underline">{t('explore.faq')}</Link>
                                     <span>·</span>
-                                    <Link href="/developers" className="hover:underline">Developers</Link>
+                                    <Link href="/developers" className="hover:underline">{t('explore.developers')}</Link>
                                     <span>·</span>
                                     <span>© 2026 Krishna Connect</span>
                                 </div>
@@ -644,7 +644,7 @@ export default function Feed() {
                         size="icon"
                         className="fixed bottom-36 right-4 rounded-full shadow-lg z-50 md:bottom-24"
                         onClick={scrollToTop}
-                        aria-label="Scroll to top"
+                        aria-label={t('explore.scrollToTop')}
                     >
                         <ArrowUp className="h-5 w-5" />
                     </Button>

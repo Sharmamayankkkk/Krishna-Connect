@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNowStrict, isToday, isYesterday, isThisWeek } from 'date-fns';
 import { cn, getAvatarUrl } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 import { NotificationType } from '@/lib/types';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { ChevronRight, Settings, Heart, ImageIcon, PlaySquare, BarChart2, Mic } from 'lucide-react';
@@ -103,6 +104,7 @@ const NotificationItem = React.memo(({
     onAccept?: (id: string) => void;
     onDecline?: (id: string) => void;
 }) => {
+    const { t } = useTranslation();
     const { fromUser, type, metadata, referenceId, createdAt } = notification;
 
     // Build the action phrase
@@ -128,8 +130,14 @@ const NotificationItem = React.memo(({
             
             actionHtml = (
                 <span>
-                    {likeCount > 1 ? `and ${likeCount - 1} other${likeCount - 1 > 1 ? 's' : ''} liked your ${likeTarget}` : `liked your ${likeTarget}`}
-                    {inlineSnippet ? <span className="opacity-85">: "{inlineSnippet}"</span> : '.'}
+                    {likeCount > 1
+                        ? (likeTarget === 'comment'
+                            ? t('notifications.andOthersLikedYourComment', { count: likeCount - 1 })
+                            : t('notifications.andOthersLikedYourPost', { count: likeCount - 1 }))
+                        : (likeTarget === 'comment'
+                            ? t('notifications.likedYourComment')
+                            : t('notifications.likedYourPost'))}
+                    {inlineSnippet ? <span className="opacity-85">: &quot;{inlineSnippet}&quot;</span> : '.'}
                 </span>
             );
             if (showRightSide) {
@@ -146,7 +154,7 @@ const NotificationItem = React.memo(({
         case 'comment':
             actionHtml = (
                 <span>
-                    commented: {inlineSnippet ? <span className="opacity-80">"{inlineSnippet}"</span> : 'on your post.'}
+                    {t('notifications.commented')} {inlineSnippet ? <span className="opacity-80">"{inlineSnippet}"</span> : t('notifications.onYourPost')}
                 </span>
             );
             if (showRightSide) {
@@ -163,7 +171,7 @@ const NotificationItem = React.memo(({
         case 'mention':
             actionHtml = (
                 <span>
-                    mentioned you in a {metadata?.post_media_type === 'video' ? 'reel' : 'post'}
+                    {metadata?.post_media_type === 'video' ? t('notifications.mentionedYouInReel') : t('notifications.mentionedYouInPost')}
                     {inlineSnippet ? <span className="opacity-85">: "{inlineSnippet}"</span> : '.'}
                 </span>
             );
@@ -181,36 +189,36 @@ const NotificationItem = React.memo(({
         case 'follow':
             // If it's a follow request
             if (notification.status === 'pending') {
-                actionHtml = <span>requested to follow you.</span>;
+                actionHtml = <span>{t('notifications.requestedToFollowYou')}</span>;
                 rightSideHtml = (
                     <div className="flex shrink-0 items-center gap-2">
                         <Button 
                             className="h-8 rounded-lg bg-[#0064e0] px-4 py-0 text-sm font-semibold hover:bg-[#0052b8] text-white"
                             onClick={() => onAccept && onAccept(notification.id)}
                         >
-                            Confirm
+                            {t('notifications.confirm')}
                         </Button>
                         <Button 
                             variant="secondary" 
                             className="h-8 rounded-lg bg-muted px-4 py-0 text-sm font-semibold hover:bg-muted/80 text-foreground"
                             onClick={() => onDecline && onDecline(notification.id)}
                         >
-                            Delete
+                            {t('notifications.delete')}
                         </Button>
                     </div>
                 );
             } else {
-                actionHtml = <span>started following you.</span>;
+                actionHtml = <span>{t('notifications.startedFollowingYou')}</span>;
                 rightSideHtml = (
                     <div className="shrink-0">
                          {/* Usually this would toggle between follow/following based on relationship */}
                          {notification.status === 'accepted' ? (
                              <Button variant="secondary" className="h-8 rounded-lg bg-muted px-4 py-0 text-sm font-semibold hover:bg-muted/80 text-foreground">
-                                Following
+                                {t('notifications.following')}
                             </Button>
                          ) : (
                              <Button className="h-8 rounded-lg bg-[#0064e0] px-4 py-0 text-sm font-semibold hover:bg-[#0052b8] text-white">
-                                Follow
+                                {t('notifications.follow')}
                             </Button>
                          )}
                     </div>
@@ -219,7 +227,7 @@ const NotificationItem = React.memo(({
             break;
 
         case 'collaboration_request':
-            actionHtml = <span>invited you to collaborate on a post.</span>;
+            actionHtml = <span>{t('notifications.invitedToCollaborate')}</span>;
             if (showRightSide) {
                 rightSideHtml = (
                     <Link href={targetHref} className="shrink-0">
@@ -236,8 +244,8 @@ const NotificationItem = React.memo(({
             const rpCount = metadata?.grouped_count ? parseInt(metadata.grouped_count, 10) : 1;
             actionHtml = (
                 <span>
-                    {rpCount > 1 ? `and ${rpCount - 1} other${rpCount - 1 > 1 ? 's' : ''} reposted your post` : `reposted your post`}
-                    {inlineSnippet ? <span className="opacity-85">: "{inlineSnippet}"</span> : '.'}
+                    {rpCount > 1 ? t('notifications.andOthersRepostedYourPost', { count: rpCount - 1 }) : t('notifications.repostedYourPost')}
+                    {inlineSnippet ? <span className="opacity-85">: &quot;{inlineSnippet}&quot;</span> : '.'}
                 </span>
             );
             if (showRightSide) {
@@ -252,7 +260,7 @@ const NotificationItem = React.memo(({
             break;
 
         default:
-            actionHtml = <span>sent you a notification.</span>;
+            actionHtml = <span>{t('notifications.sentYouNotification')}</span>;
             break;
     }
 
@@ -294,6 +302,13 @@ NotificationItem.displayName = 'NotificationItem';
 
 export default function NotificationsPage() {
     const { toast } = useToast();
+    const { t } = useTranslation();
+    const timeGroupLabels: Record<string, string> = {
+        'Today': t('notifications.today'),
+        'This week': t('notifications.thisWeek'),
+        'This month': t('notifications.thisMonth'),
+        'Earlier': t('notifications.earlier'),
+    };
     const [notifications, setNotifications] = React.useState<NotificationType[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const PAGE_SIZE = 50;
@@ -375,13 +390,13 @@ export default function NotificationsPage() {
 
     const handleAcceptRequest = React.useCallback(async (id: string) => {
         setNotifications(prev => prev.map(n => n.id === id ? { ...n, status: 'accepted' } : n));
-        toast({ title: "Follow request accepted" });
+        toast({ title: t('notifications.followRequestAccepted') });
         // TODO: call actual accept RPC
     }, [toast]);
 
     const handleDeclineRequest = React.useCallback(async (id: string) => {
         setNotifications(prev => prev.filter(n => n.id !== id));
-        toast({ title: "Request deleted" });
+        toast({ title: t('notifications.requestDeleted') });
         // TODO: call actual decline RPC
     }, [toast]);
 
@@ -391,7 +406,7 @@ export default function NotificationsPage() {
             <div className="sticky top-0 z-30 flex items-center justify-between bg-background px-4 py-3 sm:px-6">
                 <div className="flex items-center gap-4">
                     <SidebarTrigger className="md:hidden" />
-                    <h1 className="text-xl font-bold tracking-tight">Notifications</h1>
+                    <h1 className="text-xl font-bold tracking-tight">{t('notifications.title')}</h1>
                 </div>
             </div>
 
@@ -429,8 +444,8 @@ export default function NotificationsPage() {
                                             </div>
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className="font-bold text-[15px] leading-tight text-foreground">Follow requests</span>
-                                            <span className="text-[14px] text-muted-foreground">{followRequests[0].fromUser.username} + {followRequests.length - 1} others</span>
+                                            <span className="font-bold text-[15px] leading-tight text-foreground">{t('notifications.followRequests')}</span>
+                                            <span className="text-[14px] text-muted-foreground">{followRequests[0].fromUser.username} {t('notifications.andOthers', { count: followRequests.length - 1 })}</span>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
@@ -447,16 +462,16 @@ export default function NotificationsPage() {
                                 <div className="mb-4 rounded-full border-2 border-current p-6">
                                     <Heart className="h-10 w-10" />
                                 </div>
-                                <h3 className="text-xl font-medium">Activity On Your Posts</h3>
+                                <h3 className="text-xl font-medium">{t('notifications.activityOnPosts')}</h3>
                                 <p className="mt-2 text-sm text-muted-foreground max-w-[250px]">
-                                    When someone likes or comments on one of your posts, you'll see it here.
+                                    {t('notifications.emptyDescription')}
                                 </p>
                             </div>
                         ) : (
                             groupedNotifications.map((group) => (
                                 <div key={group.label} className="mt-1 w-full">
                                     <h3 className="px-4 pb-3 pt-3 text-[16px] font-bold text-foreground">
-                                        {group.label}
+                                        {timeGroupLabels[group.label] || group.label}
                                     </h3>
                                     <div className="flex flex-col">
                                         {group.items.map((notification) => (

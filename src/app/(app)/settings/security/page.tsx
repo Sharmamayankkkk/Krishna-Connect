@@ -33,6 +33,7 @@ import {
 import { useToast } from "@/hooks/use-toast"
 
 import { PhoneCollectionDialog } from "@/components/auth/phone-collection-dialog"
+import { useTranslation } from "react-i18next"
 
 interface SessionInfo {
   id: string
@@ -51,6 +52,7 @@ export default function SecurityPage() {
   const [sessions, setSessions] = useState<SessionInfo[]>([])
   const [isPhoneDialogOpen, setIsPhoneDialogOpen] = useState(false)
   const [userPhone, setUserPhone] = useState<string | null>(null)
+  const { t } = useTranslation()
 
   const fetchProfile = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -97,8 +99,8 @@ export default function SecurityPage() {
 
   const handleDeleteAccount = async () => {
     toast({
-      title: "Account Deletion Requested",
-      description: "Please contact madanmohandas@krishnaconnect.in to complete account deletion.",
+      title: t("account.deletionRequested"),
+      description: t("account.deletionContact"),
       variant: "destructive",
     })
   }
@@ -106,9 +108,9 @@ export default function SecurityPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium">Security</h3>
+        <h3 className="text-lg font-medium">{t('settings.security.title')}</h3>
         <p className="text-sm text-muted-foreground">
-          Manage your account security settings and active sessions.
+          {t('settings.security.pageDescription')}
         </p>
       </div>
 
@@ -120,14 +122,14 @@ export default function SecurityPage() {
               <Key className="h-4 w-4 text-primary" />
             </div>
             <div className="space-y-0.5">
-              <h4 className="text-sm font-medium">Password</h4>
+              <h4 className="text-sm font-medium">{t('settings.security.password')}</h4>
               <p className="text-sm text-muted-foreground">
-                Update your password regularly to stay secure.
+                {t('settings.security.passwordDescription')}
               </p>
             </div>
           </div>
           <Link href="/update-password">
-            <Button variant="outline" size="sm">Change</Button>
+            <Button variant="outline" size="sm">{t('settings.security.change')}</Button>
           </Link>
         </div>
 
@@ -139,16 +141,16 @@ export default function SecurityPage() {
             </div>
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
-                <h4 className="text-sm font-medium">Phone Number</h4>
-                <Badge variant="secondary" className="text-[10px]">Temporarily Unavailable</Badge>
+                <h4 className="text-sm font-medium">{t('settings.security.phoneNumber')}</h4>
+                <Badge variant="secondary" className="text-[10px]">{t('common.temporarilyUnavailable')}</Badge>
               </div>
               <p className="text-sm text-muted-foreground">
-                Phone number features are currently disabled.
+                {t('settings.security.phoneDisabled')}
               </p>
             </div>
           </div>
           <Button variant="outline" size="sm" disabled title="Phone number updates are temporarily disabled">
-            {userPhone ? 'Change' : 'Add'}
+            {userPhone ? t('settings.security.change') : t('settings.security.add')}
           </Button>
         </div>
 
@@ -167,11 +169,11 @@ export default function SecurityPage() {
             </div>
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
-                <h4 className="text-sm font-medium">Two-Factor Authentication</h4>
-                <Badge variant="secondary" className="text-[10px]">Coming Soon</Badge>
+                <h4 className="text-sm font-medium">{t('settings.security.twoFactor')}</h4>
+                <Badge variant="secondary" className="text-[10px]">{t('common.comingSoon')}</Badge>
               </div>
               <p className="text-sm text-muted-foreground">
-                Add an extra layer of security to your account.
+                {t('settings.security.twoFactorDescription')}
               </p>
             </div>
           </div>
@@ -190,11 +192,11 @@ export default function SecurityPage() {
             </div>
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
-                <h4 className="text-sm font-medium">Login Alerts</h4>
-                <Badge variant="secondary" className="text-[10px]">Coming Soon</Badge>
+                <h4 className="text-sm font-medium">{t('settings.security.loginAlerts')}</h4>
+                <Badge variant="secondary" className="text-[10px]">{t('common.comingSoon')}</Badge>
               </div>
               <p className="text-sm text-muted-foreground">
-                Get notified about new sign-ins to your account.
+                {t('settings.security.loginAlertsDescription')}
               </p>
             </div>
           </div>
@@ -208,7 +210,7 @@ export default function SecurityPage() {
 
       {/* Active Sessions */}
       <div className="space-y-3">
-        <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Active Sessions</h4>
+        <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">{t('settings.security.activeSessions')}</h4>
         <div className="space-y-2">
           {sessions.map((session) => {
             const SessionIcon = session.icon
@@ -222,7 +224,7 @@ export default function SecurityPage() {
                     <div className="flex items-center gap-2">
                       <h4 className="text-sm font-medium">{session.device}</h4>
                       {session.isCurrent && (
-                        <Badge variant="default" className="text-[10px] bg-green-500">This Device</Badge>
+                        <Badge variant="default" className="text-[10px] bg-green-500">{t('settings.security.thisDevice')}</Badge>
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -242,7 +244,7 @@ export default function SecurityPage() {
 
       {/* Data & Account */}
       <div className="space-y-3">
-        <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Data & Account</h4>
+        <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">{t('settings.security.dataAccount')}</h4>
         <div className="space-y-2">
 
 
@@ -253,14 +255,14 @@ export default function SecurityPage() {
                 <LogOut className="h-4 w-4 text-orange-500" />
               </div>
               <div className="space-y-0.5">
-                <h4 className="text-sm font-medium text-orange-900 dark:text-orange-200">Sign Out All Devices</h4>
+                <h4 className="text-sm font-medium text-orange-900 dark:text-orange-200">{t('settings.security.signOutAll')}</h4>
                 <p className="text-sm text-orange-700 dark:text-orange-300">
-                  This will sign you out from all devices including this one.
+                  {t('settings.security.signOutAllDescription')}
                 </p>
               </div>
             </div>
             <Button variant="outline" size="sm" className="border-orange-300 text-orange-700 hover:bg-orange-100 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-950" onClick={handleSignOut}>
-              Sign Out
+              {t('settings.security.signOut')}
             </Button>
           </div>
 
@@ -272,30 +274,30 @@ export default function SecurityPage() {
                   <Trash2 className="h-4 w-4 text-red-500" />
                 </div>
                 <div className="space-y-0.5">
-                  <h4 className="text-sm font-medium text-red-900 dark:text-red-200">Delete Account</h4>
+                  <h4 className="text-sm font-medium text-red-900 dark:text-red-200">{t('settings.security.deleteAccount')}</h4>
                   <p className="text-sm text-red-700 dark:text-red-300">
-                    Permanently delete your account and all associated data.
+                    {t('settings.security.deleteAccountDescription')}
                   </p>
                 </div>
               </div>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm">Delete</Button>
+                <Button variant="destructive" size="sm">{t('common.delete')}</Button>
               </AlertDialogTrigger>
             </div>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogTitle>{t('settings.security.deleteConfirmTitle')}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete your account, posts, messages, and all associated data from our servers.
+                  {t('settings.security.deleteConfirmDescription')}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                 <AlertDialogAction
                   className="bg-red-600 hover:bg-red-700"
                   onClick={handleDeleteAccount}
                 >
-                  Yes, Delete My Account
+                  {t('dialogs.yesDelete')}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

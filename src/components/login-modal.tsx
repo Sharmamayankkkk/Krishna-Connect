@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslation } from 'react-i18next';
 
 interface LoginModalProps {
     open: boolean;
@@ -14,13 +15,14 @@ interface LoginModalProps {
 
 export function LoginModal({ open, onOpenChange, message, redirectUrl }: LoginModalProps) {
     const pathname = usePathname();
+    const { t } = useTranslation();
     const finalRedirect = redirectUrl || pathname || '/explore';
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle className="text-center text-2xl font-bold">Log in to Krishna Connect</DialogTitle>
+                    <DialogTitle className="text-center text-2xl font-bold">{t('auth.signIn')} - {t('common.appName')}</DialogTitle>
                     <DialogDescription className="text-center">
                         {message || "Join the community to like, comment, share, and connect with others."}
                     </DialogDescription>
@@ -28,12 +30,12 @@ export function LoginModal({ open, onOpenChange, message, redirectUrl }: LoginMo
                 <div className="flex flex-col gap-4 py-4">
                     <Button asChild size="lg" className="w-full font-semibold">
                         <Link href={`/login?next=${encodeURIComponent(finalRedirect)}`}>
-                            Log in
+                            {t('auth.signIn')}
                         </Link>
                     </Button>
                     <Button asChild variant="outline" size="lg" className="w-full font-semibold">
                         <Link href={`/signup?next=${encodeURIComponent(finalRedirect)}`}>
-                            Sign up
+                            {t('auth.signUp')}
                         </Link>
                     </Button>
                 </div>

@@ -19,12 +19,16 @@ import { useRouter } from 'next/navigation';
 import { Lock, Globe, Loader2 } from 'lucide-react';
 import { useAuthContext } from '@/providers/auth-context';
 
+import { useTranslation } from 'react-i18next';
+
 interface PrivacySetupModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
 }
 
 export function PrivacySetupModal({ open, onOpenChange }: PrivacySetupModalProps) {
+  const { t } = useTranslation();
+
     const [privacy, setPrivacy] = useState<'public' | 'private'>('public');
     const [loading, setLoading] = useState(false);
     const { toast } = useToast();
@@ -95,7 +99,7 @@ export function PrivacySetupModal({ open, onOpenChange }: PrivacySetupModalProps
                     <div className="mx-auto bg-primary/10 p-3 rounded-full mb-4 w-fit">
                         <Icons.logo className="h-8 w-8 text-primary" />
                     </div>
-                    <DialogTitle className="text-center text-2xl">Profile Privacy</DialogTitle>
+                    <DialogTitle className="text-center text-2xl">{t('common.profilePrivacy')}</DialogTitle>
                     <DialogDescription className="text-center pt-2">
                         How would you like people to see your profile? You can change this later in settings.
                     </DialogDescription>
@@ -111,10 +115,8 @@ export function PrivacySetupModal({ open, onOpenChange }: PrivacySetupModalProps
                             >
                                 <Globe className="mb-3 h-6 w-6 text-muted-foreground peer-data-[state=checked]:text-primary" />
                                 <div className="text-center">
-                                    <div className="font-semibold text-lg">Public Profile</div>
-                                    <div className="text-sm text-muted-foreground mt-1">
-                                        Anyone can see your posts and follow you.
-                                    </div>
+                                    <div className="font-semibold text-lg">{t('common.publicProfile')}</div>
+                                    <div className="text-sm text-muted-foreground mt-1">{t('common.anyoneCanSeeYourPostsAnd')}</div>
                                 </div>
                             </Label>
                         </div>
@@ -127,7 +129,7 @@ export function PrivacySetupModal({ open, onOpenChange }: PrivacySetupModalProps
                             >
                                 <Lock className="mb-3 h-6 w-6 text-muted-foreground peer-data-[state=checked]:text-primary" />
                                 <div className="text-center">
-                                    <div className="font-semibold text-lg">Private Profile</div>
+                                    <div className="font-semibold text-lg">{t('common.privateProfile')}</div>
                                     <div className="text-sm text-muted-foreground mt-1">
                                         Only followers can see your posts. You approve follow requests.
                                     </div>

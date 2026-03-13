@@ -8,7 +8,11 @@ import { useRouter } from 'next/navigation'
 import { ToastAction } from '@/components/ui/toast'
 import { Radio } from 'lucide-react'
 
+import { useTranslation } from 'react-i18next';
+
 export function LivestreamInviteListener() {
+  const { t } = useTranslation();
+
     const { loggedInUser } = useAppContext()
     const { toast } = useToast()
     const router = useRouter()
@@ -56,9 +60,7 @@ export function LivestreamInviteListener() {
                                         onClick={() => router.push(`/live/${stream.id}?guest=true`)}
                                         className="bg-red-600 text-white hover:bg-red-700 border-none"
                                     >
-                                        <Radio className="h-4 w-4 mr-2" />
-                                        Join Live
-                                    </ToastAction>
+                                        <Radio className="h-4 w-4 mr-2" />{t('live.joinLive')}</ToastAction>
                                 ),
                             })
                         }

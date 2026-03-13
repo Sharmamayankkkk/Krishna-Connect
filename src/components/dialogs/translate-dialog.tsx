@@ -25,6 +25,8 @@ import { translateMessage } from '@/ai/flows/translate-message-flow';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
+import { useTranslation } from 'react-i18next';
+
 interface TranslateDialogProps {
   message: Message | null;
   open: boolean;
@@ -36,6 +38,8 @@ const commonLanguages = [
 ];
 
 export function TranslateDialog({ message, open, onOpenChange }: TranslateDialogProps) {
+  const { t } = useTranslation();
+
   const { toast } = useToast();
   const [targetLanguage, setTargetLanguage] = React.useState('English');
   const [translatedText, setTranslatedText] = React.useState<string | null>(null);
@@ -80,27 +84,23 @@ export function TranslateDialog({ message, open, onOpenChange }: TranslateDialog
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Languages />
-            Translate Message
-          </DialogTitle>
-          <DialogDescription>
-            Select a language to translate the message into.
-          </DialogDescription>
+            <Languages />{t('dialogs.translateMessage')}</DialogTitle>
+          <DialogDescription>{t('dialogs.selectALanguageToTranslateThe')}</DialogDescription>
         </DialogHeader>
 
         <div className="py-4 space-y-4">
             <div className="space-y-2">
-                <Label>Original Message</Label>
+                <Label>{t('dialogs.originalMessage')}</Label>
                 <p className="text-sm p-3 rounded-md bg-muted border text-muted-foreground max-h-28 overflow-y-auto">
                     {message?.content || 'No text content to translate.'}
                 </p>
             </div>
 
             <div className="space-y-2">
-                 <Label htmlFor="language-select">Translate To</Label>
+                 <Label htmlFor="language-select">{t('dialogs.translateTo')}</Label>
                  <Select value={targetLanguage} onValueChange={setTargetLanguage}>
                      <SelectTrigger id="language-select">
-                         <SelectValue placeholder="Select a language" />
+                         <SelectValue placeholder={t('dialogs.selectALanguage')} />
                      </SelectTrigger>
                      <SelectContent>
                        <ScrollArea className="h-48">
@@ -114,7 +114,7 @@ export function TranslateDialog({ message, open, onOpenChange }: TranslateDialog
             
             {translatedText && !isTranslating && (
                  <div className="space-y-2">
-                    <Label>Translated Text</Label>
+                    <Label>{t('dialogs.translatedText')}</Label>
                     <p className="text-sm p-3 rounded-md bg-primary/10 border border-primary/20 text-primary max-h-28 overflow-y-auto">
                         {translatedText}
                     </p>
@@ -129,10 +129,10 @@ export function TranslateDialog({ message, open, onOpenChange }: TranslateDialog
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{t('common.close')}</Button>
           <Button onClick={handleTranslate} disabled={isTranslating || !message?.content}>
             {isTranslating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Languages className="mr-2 h-4 w-4" />}
-            Translate
+            {t('dialogs.translate')}
           </Button>
         </DialogFooter>
       </DialogContent>

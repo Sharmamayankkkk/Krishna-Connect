@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button'
 import { Send, Heart } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
+import { useTranslation } from 'react-i18next';
+
 interface LiveChatProps {
     livestreamId: string
     isOverlay?: boolean
@@ -29,6 +31,8 @@ interface ChatMessage {
 }
 
 export function LiveChat({ livestreamId, isOverlay = false, actionButtons }: LiveChatProps) {
+  const { t } = useTranslation();
+
     const { loggedInUser } = useAppContext()
     const supabase = createClient()
     const scrollRef = useRef<HTMLDivElement>(null)
@@ -163,7 +167,7 @@ export function LiveChat({ livestreamId, isOverlay = false, actionButtons }: Liv
                         <Input
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
-                            placeholder="Add a comment..."
+                            placeholder={t('dialogs.addComment')}
                             className={cn(
                                 "pr-10 h-11 w-full rounded-full border border-white/10 text-white placeholder:text-white/70 focus:ring-0 focus:border-white/30 transition-all shadow-lg",
                                 // IMPORTANT: text-base prevents iOS zoom

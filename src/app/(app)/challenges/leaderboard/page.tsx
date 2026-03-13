@@ -11,6 +11,8 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 
+import { useTranslation } from 'react-i18next';
+
 interface LeaderboardEntry {
     user_id: string;
     name: string | null;
@@ -23,6 +25,8 @@ interface LeaderboardEntry {
 }
 
 export default function GlobalLeaderboardPage() {
+  const { t } = useTranslation();
+
     const router = useRouter();
     const supabase = createClient();
     const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
@@ -83,10 +87,8 @@ export default function GlobalLeaderboardPage() {
                         </Button>
                         <div className="flex flex-col">
                             <h1 className="text-xl md:text-2xl font-bold flex items-center gap-2">
-                                <Trophy className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-                                Global Leaderboard
-                            </h1>
-                            <p className="text-xs md:text-sm text-muted-foreground">Top community challenge participants</p>
+                                <Trophy className="h-5 w-5 md:h-6 md:w-6 text-primary" />{t('challenges.globalLeaderboard')}</h1>
+                            <p className="text-xs md:text-sm text-muted-foreground">{t('challenges.topCommunityChallengeParticipants')}</p>
                         </div>
                     </div>
                 </div>
@@ -96,17 +98,17 @@ export default function GlobalLeaderboardPage() {
                 {isLoading ? (
                     <div className="flex flex-col items-center justify-center py-20 gap-4">
                         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                        <p className="text-muted-foreground">Calculating ranks...</p>
+                        <p className="text-muted-foreground">{t('challenges.calculatingRanks')}</p>
                     </div>
                 ) : entries.length === 0 ? (
                     <div className="text-center py-20 px-4">
                         <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                             <Sparkles className="h-8 w-8 text-primary" />
                         </div>
-                        <h3 className="text-xl font-bold mb-2">No participants yet</h3>
-                        <p className="text-muted-foreground">Be the first to join a challenge and earn points!</p>
+                        <h3 className="text-xl font-bold mb-2">{t('challenges.noParticipantsYet')}</h3>
+                        <p className="text-muted-foreground">{t('challenges.beTheFirstToJoinA')}</p>
                         <Link href="/challenges">
-                            <Button className="mt-6">Explore Challenges</Button>
+                            <Button className="mt-6">{t('challenges.exploreChallenges')}</Button>
                         </Link>
                     </div>
                 ) : (
@@ -146,7 +148,7 @@ export default function GlobalLeaderboardPage() {
                                                 <span className="text-sm font-medium opacity-70">pts</span>
                                             </div>
                                             <span className="text-xs opacity-70 mt-0.5">
-                                                {entry.challenges_completed} completed
+                                                {entry.challenges_completed} {t('challenges.completed')}
                                             </span>
                                         </div>
                                     </CardContent>

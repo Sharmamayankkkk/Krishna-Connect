@@ -17,6 +17,8 @@ import Image from 'next/image'
 import { GoogleAd } from '@/components/ads/google-ad'
 import { LikeAnimation } from '@/components/shared/like-animation'
 
+import { useTranslation } from 'react-i18next';
+
 type LeelaVideo = {
   id: string
   video_url: string
@@ -73,6 +75,7 @@ function VideoPlayer({
   onDelete?: (id: string) => void
   isOwner?: boolean
 }) {
+  const { t } = useTranslation()
   const videoRef = React.useRef<HTMLVideoElement>(null)
   const [isPlaying, setIsPlaying] = React.useState(false)
   const [isMuted, setIsMuted] = React.useState(false)
@@ -173,7 +176,7 @@ function VideoPlayer({
       <button
         onClick={toggleMute}
         className="absolute top-20 right-4 bg-black/40 rounded-full p-2 backdrop-blur-sm z-10"
-        aria-label={isMuted ? 'Unmute' : 'Mute'}
+        aria-label={isMuted ? t('leela.unmute') : t('leela.mute')}
       >
         {isMuted ? <VolumeX className="h-5 w-5 text-white" /> : <Volume2 className="h-5 w-5 text-white" />}
       </button>
@@ -227,7 +230,7 @@ function VideoPlayer({
           <div className={cn("p-2", video.is_bookmarked ? "text-yellow-400" : "text-white")}>
             <Bookmark className="h-7 w-7 drop-shadow-lg" fill={video.is_bookmarked ? "currentColor" : "none"} />
           </div>
-          <span className="text-white text-xs font-semibold drop-shadow-lg">{video.is_bookmarked ? 'Saved' : 'Save'}</span>
+          <span className="text-white text-xs font-semibold drop-shadow-lg">{video.is_bookmarked ? t('leela.saved') : t('leela.save')}</span>
         </button>
 
         <button onClick={(e) => { e.stopPropagation(); onShare(video); }} className="flex flex-col items-center gap-1">
@@ -242,7 +245,7 @@ function VideoPlayer({
             <div className="p-2 text-white/80 hover:text-red-400 transition-colors">
               <Trash2 className="h-6 w-6 drop-shadow-lg" />
             </div>
-            <span className="text-white/80 text-[10px] font-semibold drop-shadow-lg">Delete</span>
+            <span className="text-white/80 text-[10px] font-semibold drop-shadow-lg">{t('common.delete')}</span>
           </button>
         )}
 
@@ -260,6 +263,8 @@ function VideoPlayer({
 }
 
 export default function LeelaPage() {
+  const { t } = useTranslation();
+
   const { loggedInUser } = useAppContext()
   const { toast } = useToast()
   const supabase = createClient()
@@ -355,7 +360,7 @@ export default function LeelaPage() {
 
   const handleLike = async (videoId: string) => {
     if (!loggedInUser) {
-      toast({ title: 'Log in to like videos' })
+      toast({ title: t('leela.logInToLikeVideos') })
       return
     }
     setVideos(prev => prev.map(v => {
@@ -378,7 +383,7 @@ export default function LeelaPage() {
   // Bookmark handler
   const handleBookmark = async (videoId: string) => {
     if (!loggedInUser) {
-      toast({ title: 'Log in to save videos' })
+      toast({ title: t('leela.logInToSaveVideos') })
       return
     }
     const video = videos.find(v => v.id === videoId)
@@ -386,10 +391,10 @@ export default function LeelaPage() {
 
     if (video?.is_bookmarked) {
       await supabase.from('leela_bookmarks').delete().match({ user_id: loggedInUser.id, video_id: videoId })
-      toast({ title: 'Removed from saved' })
+      toast({ title: t('leela.removedFromSaved') })
     } else {
       await supabase.from('leela_bookmarks').insert({ user_id: loggedInUser.id, video_id: videoId })
-      toast({ title: 'Saved to collection' })
+      toast({ title: t('leela.savedToCollection') })
     }
   }
 
@@ -398,7 +403,7 @@ export default function LeelaPage() {
     const url = `${window.location.origin}/leela?v=${video.id}`
     if (navigator.share) {
       try {
-        await navigator.share({ title: video.caption || 'Check out this Leela', url })
+        await navigator.share({ title: video.caption || t('leela.checkOutThisLeela'), url })
       } catch (err: unknown) {
         if (err instanceof Error && err.name !== 'AbortError') {
           console.error('Share failed:', err.message)
@@ -406,7 +411,7 @@ export default function LeelaPage() {
       }
     } else {
       await navigator.clipboard.writeText(url)
-      toast({ title: 'Link copied to clipboard' })
+      toast({ title: t('leela.linkCopied') })
     }
   }
 
@@ -415,7 +420,7 @@ export default function LeelaPage() {
     if (!loggedInUser) return
     const video = videos.find(v => v.id === videoId)
     if (!video || video.author_id !== loggedInUser.id) {
-      toast({ title: 'You can only delete your own videos', variant: 'destructive' })
+      toast({ title: t('leela.canOnlyDeleteOwnVideos'), variant: 'destructive' })
       return
     }
 
@@ -436,10 +441,10 @@ export default function LeelaPage() {
     // Delete from database (cascade will handle likes/comments/bookmarks)
     const { error } = await supabase.from('leela_videos').delete().eq('id', videoId)
     if (error) {
-      toast({ title: 'Failed to delete', description: error.message, variant: 'destructive' })
+      toast({ title: t('leela.failedToDelete'), description: error.message, variant: 'destructive' })
       fetchVideos() // Reload on error
     } else {
-      toast({ title: 'Leela deleted' })
+      toast({ title: t('leela.leelaDeleted') })
     }
   }
 
@@ -469,7 +474,7 @@ export default function LeelaPage() {
         content: c.content,
         created_at: c.created_at,
         user_id: c.user_id,
-        user_name: profile?.name || 'User',
+        user_name: profile?.name || t('leela.user'),
         user_username: profile?.username || '',
         user_avatar: profile?.avatar_url || null,
       }
@@ -505,12 +510,12 @@ export default function LeelaPage() {
     if (!file || !loggedInUser) return
 
     if (!file.type.startsWith('video/')) {
-      toast({ title: 'Only video files are allowed', variant: 'destructive' })
+      toast({ title: t('leela.onlyVideoFiles'), variant: 'destructive' })
       return
     }
 
     if (file.size > getMaxFileSize(loggedInUser?.is_verified)) {
-      toast({ title: `Video must be under ${getMaxFileSizeMB(loggedInUser?.is_verified)}MB`, variant: 'destructive' })
+      toast({ title: t('leela.videoMustBeUnder', { size: getMaxFileSizeMB(loggedInUser?.is_verified) }), variant: 'destructive' })
       return
     }
 
@@ -540,10 +545,10 @@ export default function LeelaPage() {
 
       if (insertError) throw insertError
 
-      toast({ title: 'Leela uploaded successfully' })
+      toast({ title: t('leela.leelaUploadedSuccessfully') })
       fetchVideos()
     } catch (err: any) {
-      toast({ title: 'Upload failed', description: err.message, variant: 'destructive' })
+      toast({ title: t('leela.uploadFailed'), description: err.message, variant: 'destructive' })
     } finally {
       setIsUploading(false)
       setSelectedFile(null)
@@ -557,8 +562,8 @@ export default function LeelaPage() {
       <div className="flex flex-col h-[100dvh]">
         <header className="flex items-center gap-3 border-b p-4 bg-background z-10">
           <SidebarTrigger className="md:hidden" />
-          <Image src="/icons/leela.png" alt="Leela" width={28} height={28} />
-          <h1 className="text-xl font-bold">Leela</h1>
+          <Image src="/icons/leela.png" alt={t('create.leela')} width={28} height={28} />
+          <h1 className="text-xl font-bold">{t('create.leela')}</h1>
         </header>
 
         {/* Hidden File Input */}
@@ -569,19 +574,18 @@ export default function LeelaPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in">
             <div className="bg-card w-full max-w-md rounded-xl shadow-lg border p-6 animate-in zoom-in-95">
               <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <Upload className="h-5 w-5 text-primary" /> Upload Leela
-              </h2>
+                <Upload className="h-5 w-5 text-primary" />{t('feed.uploadLeela')}</h2>
               <p className="text-sm text-muted-foreground mb-4">
-                Selected: <span className="font-semibold text-foreground">{selectedFile.name}</span>
+                {t('leela.selected')}: <span className="font-semibold text-foreground">{selectedFile.name}</span>
               </p>
               <div className="space-y-4 mb-6">
                 <div>
-                  <label htmlFor="caption" className="block text-sm font-medium mb-1.5">Caption <span className="text-muted-foreground font-normal">(optional)</span></label>
+                  <label htmlFor="caption" className="block text-sm font-medium mb-1.5">{t('leela.caption')} <span className="text-muted-foreground font-normal">({t('leela.optional')})</span></label>
                   <textarea
                     id="caption"
                     value={uploadCaption}
                     onChange={(e) => setUploadCaption(e.target.value)}
-                    placeholder="Write a caption for your Leela..."
+                    placeholder={t('feed.writeACaptionForYourLeela')}
                     className="w-full min-h-[100px] p-3 rounded-md border bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm resize-none"
                     maxLength={200}
                   />
@@ -591,11 +595,9 @@ export default function LeelaPage() {
                 </div>
               </div>
               <div className="flex justify-end gap-3 border-t pt-4">
-                <Button variant="ghost" onClick={() => { setIsUploadDialogOpen(false); setSelectedFile(null); }}>
-                  Cancel
-                </Button>
+                <Button variant="ghost" onClick={() => { setIsUploadDialogOpen(false); setSelectedFile(null); }}>{t('common.cancel')}</Button>
                 <Button onClick={handleUploadConfirm} disabled={isUploading}>
-                  {isUploading ? <><div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" /> Uploading...</> : 'Post Leela'}
+                  {isUploading ? <><div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />{t('feed.uploading1')}</> : t('leela.postLeela')}
                 </Button>
               </div>
             </div>
@@ -609,18 +611,18 @@ export default function LeelaPage() {
             </div>
           </div>
           <div className="space-y-2 max-w-sm">
-            <h2 className="text-2xl font-bold">Welcome to Leela</h2>
+            <h2 className="text-2xl font-bold">{t('feed.welcomeToLeela')}</h2>
             <p className="text-muted-foreground">
-              Short-form videos from the Krishna Connect community. Be the first to share a Leela!
+              {t('leela.emptyDescription')}
             </p>
           </div>
           <Button className="gap-2" onClick={() => fileInputRef.current?.click()} disabled={isUploading || isUploadDialogOpen}>
             {isUploading ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <Upload className="h-4 w-4" />}
-            {isUploading ? 'Uploading...' : 'Upload Your First Leela'}
+            {isUploading ? t('feed.uploading1') : t('leela.uploadFirstLeela')}
           </Button>
           <div className="mt-4 bg-muted/50 rounded-lg p-4 max-w-xs text-sm text-muted-foreground">
-            <p className="font-medium text-foreground mb-1 flex items-center gap-1.5"><Lightbulb className="h-3.5 w-3.5" /> What is Leela?</p>
-            <p>Share divine moments through short-form videos up to 60 seconds. Express your devotion, share teachings, and connect with the community through visual stories.</p>
+            <p className="font-medium text-foreground mb-1 flex items-center gap-1.5"><Lightbulb className="h-3.5 w-3.5" />{t('feed.whatIsLeela')}</p>
+            <p>{t('leela.whatIsLeelaDescription')}</p>
           </div>
         </div>
       </div>
@@ -637,19 +639,18 @@ export default function LeelaPage() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in">
           <div className="bg-card w-full max-w-md rounded-xl shadow-2xl border p-6 animate-in zoom-in-95 relative overflow-hidden">
             <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <Upload className="h-5 w-5 text-primary" /> Upload Leela
-            </h2>
+              <Upload className="h-5 w-5 text-primary" />{t('feed.uploadLeela')}</h2>
             <p className="text-sm text-muted-foreground mb-4">
-              Selected: <span className="font-semibold text-foreground truncate block">{selectedFile.name}</span>
+              {t('leela.selected')}: <span className="font-semibold text-foreground truncate block">{selectedFile.name}</span>
             </p>
             <div className="space-y-4 mb-6">
               <div>
-                <label htmlFor="caption-main" className="block text-sm font-medium mb-1.5">Caption <span className="text-muted-foreground font-normal">(optional)</span></label>
+                <label htmlFor="caption-main" className="block text-sm font-medium mb-1.5">{t('leela.caption')} <span className="text-muted-foreground font-normal">({t('leela.optional')})</span></label>
                 <textarea
                   id="caption-main"
                   value={uploadCaption}
                   onChange={(e) => setUploadCaption(e.target.value)}
-                  placeholder="Write a caption for your Leela..."
+                  placeholder={t('feed.writeACaptionForYourLeela')}
                   className="w-full min-h-[100px] p-3 rounded-md border bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm resize-none"
                   maxLength={200}
                 />
@@ -659,11 +660,9 @@ export default function LeelaPage() {
               </div>
             </div>
             <div className="flex justify-end gap-3 border-t pt-4">
-              <Button variant="ghost" onClick={() => { setIsUploadDialogOpen(false); setSelectedFile(null); }} className="hover:bg-red-500/10 hover:text-red-500">
-                Cancel
-              </Button>
+              <Button variant="ghost" onClick={() => { setIsUploadDialogOpen(false); setSelectedFile(null); }} className="hover:bg-red-500/10 hover:text-red-500">{t('common.cancel')}</Button>
               <Button onClick={handleUploadConfirm} disabled={isUploading} className="min-w-[120px]">
-                {isUploading ? <><div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" /> Uploading</> : 'Post Leela'}
+                {isUploading ? <><div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />{t('feed.uploading')}</> : t('leela.postLeela')}
               </Button>
             </div>
           </div>
@@ -673,15 +672,15 @@ export default function LeelaPage() {
       {/* Header overlay */}
       <header className="absolute top-0 left-0 right-0 z-20 flex items-center gap-3 p-4">
         <SidebarTrigger className="md:hidden text-white" />
-        <Image src="/icons/leela.png" alt="Leela" width={24} height={24} />
-        <h1 className="text-lg font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Leela</h1>
+        <Image src="/icons/leela.png" alt={t('create.leela')} width={24} height={24} />
+        <h1 className="text-lg font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">{t('create.leela')}</h1>
         <div className="ml-auto flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
             className="text-white hover:bg-white/20 rounded-full h-8 w-8 backdrop-blur-sm"
             onClick={() => fileInputRef.current?.click()}
-            title="Upload Leela"
+            title={t('feed.uploadLeela')}
           >
             <Upload className="h-4 w-4" />
           </Button>
@@ -689,7 +688,7 @@ export default function LeelaPage() {
             onClick={() => navigate('up')}
             disabled={currentIndex === 0}
             className="p-1.5 rounded-full bg-white/10 backdrop-blur-sm text-white disabled:opacity-30 hover:bg-white/20 transition-colors"
-            aria-label="Previous video"
+            aria-label={t('feed.previousVideo')}
           >
             <ChevronUp className="h-4 w-4" />
           </button>
@@ -697,7 +696,7 @@ export default function LeelaPage() {
             onClick={() => navigate('down')}
             disabled={currentIndex >= videos.length - 1}
             className="p-1.5 rounded-full bg-white/10 backdrop-blur-sm text-white disabled:opacity-30 hover:bg-white/20 transition-colors"
-            aria-label="Next video"
+            aria-label={t('feed.nextVideo')}
           >
             <ChevronDown className="h-4 w-4" />
           </button>
@@ -756,7 +755,7 @@ export default function LeelaPage() {
       <Sheet open={commentSheetOpen} onOpenChange={setCommentSheetOpen}>
         <SheetContent side="bottom" className="h-[70vh] rounded-t-2xl p-0 flex flex-col">
           <SheetHeader className="p-4 pb-2 border-b shrink-0">
-            <SheetTitle className="text-center text-base">Comments</SheetTitle>
+            <SheetTitle className="text-center text-base">{t('explore.comments')}</SheetTitle>
           </SheetHeader>
           <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
             {loadingComments ? (
@@ -766,7 +765,7 @@ export default function LeelaPage() {
             ) : comments.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <MessageCircle className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                <p className="text-sm">No comments yet. Be the first!</p>
+                <p className="text-sm">{t('feed.noCommentsYetBeTheFirst')}</p>
               </div>
             ) : (
               comments.map(c => (
@@ -794,7 +793,7 @@ export default function LeelaPage() {
           </div>
           <div className="p-3 border-t shrink-0 flex gap-2">
             <Input
-              placeholder="Add a comment..."
+              placeholder={t('dialogs.addComment')}
               value={commentText}
               onChange={e => setCommentText(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); postComment(); } }}

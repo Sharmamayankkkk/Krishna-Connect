@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Newspaper, ChevronRight, ExternalLink } from 'lucide-react';
@@ -18,6 +19,7 @@ interface NewsWidgetProps {
 }
 
 export function NewsWidget({ className, limit = 4, showFooter = true }: NewsWidgetProps) {
+    const { t } = useTranslation();
     const [news, setNews] = React.useState<NewsItem[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
 
@@ -67,14 +69,14 @@ export function NewsWidget({ className, limit = 4, showFooter = true }: NewsWidg
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <Newspaper className="h-4 w-4 text-orange-500" />
-                        <h3 className="font-semibold text-sm">Latest News</h3>
+                        <h3 className="font-semibold text-sm">{t('explore.latestNews')}</h3>
                     </div>
                     {showFooter && (
                         <Link
                             href="/news"
                             className="text-xs text-muted-foreground hover:text-primary flex items-center gap-0.5 transition-colors"
                         >
-                            View All <ChevronRight className="h-3 w-3" />
+                            {t('common.viewAll')} <ChevronRight className="h-3 w-3" />
                         </Link>
                     )}
                 </div>

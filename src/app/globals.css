@@ -201,3 +201,104 @@ html {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
 }
+
+/* RTL-specific styles for Arabic, Urdu, and other RTL languages */
+[dir="rtl"] {
+  text-align: right;
+}
+
+[dir="rtl"] .space-x-1 > :not([hidden]) ~ :not([hidden]),
+[dir="rtl"] .space-x-2 > :not([hidden]) ~ :not([hidden]),
+[dir="rtl"] .space-x-3 > :not([hidden]) ~ :not([hidden]),
+[dir="rtl"] .space-x-4 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 1;
+}
+
+[dir="rtl"] .ml-auto { margin-left: unset; margin-right: auto; }
+[dir="rtl"] .mr-auto { margin-right: unset; margin-left: auto; }
+[dir="rtl"] .ml-1 { margin-left: unset; margin-right: 0.25rem; }
+[dir="rtl"] .ml-2 { margin-left: unset; margin-right: 0.5rem; }
+[dir="rtl"] .ml-3 { margin-left: unset; margin-right: 0.75rem; }
+[dir="rtl"] .ml-4 { margin-left: unset; margin-right: 1rem; }
+[dir="rtl"] .mr-1 { margin-right: unset; margin-left: 0.25rem; }
+[dir="rtl"] .mr-2 { margin-right: unset; margin-left: 0.5rem; }
+[dir="rtl"] .mr-3 { margin-right: unset; margin-left: 0.75rem; }
+[dir="rtl"] .mr-4 { margin-right: unset; margin-left: 1rem; }
+
+[dir="rtl"] .pl-2 { padding-left: unset; padding-right: 0.5rem; }
+[dir="rtl"] .pl-3 { padding-left: unset; padding-right: 0.75rem; }
+[dir="rtl"] .pl-4 { padding-left: unset; padding-right: 1rem; }
+[dir="rtl"] .pl-6 { padding-left: unset; padding-right: 1.5rem; }
+[dir="rtl"] .pl-8 { padding-left: unset; padding-right: 2rem; }
+[dir="rtl"] .pr-2 { padding-right: unset; padding-left: 0.5rem; }
+[dir="rtl"] .pr-3 { padding-right: unset; padding-left: 0.75rem; }
+[dir="rtl"] .pr-4 { padding-right: unset; padding-left: 1rem; }
+[dir="rtl"] .pr-6 { padding-right: unset; padding-left: 1.5rem; }
+[dir="rtl"] .pr-8 { padding-right: unset; padding-left: 2rem; }
+
+/* When left-0 and right-0 are used together (full-width positioning), preserve both */
+[dir="rtl"] .left-0.right-0 { left: 0; right: 0; }
+[dir="rtl"] .left-0 { left: unset; right: 0; }
+[dir="rtl"] .right-0 { right: unset; left: 0; }
+[dir="rtl"] .left-3 { left: unset; right: 0.75rem; }
+[dir="rtl"] .right-3 { right: unset; left: 0.75rem; }
+[dir="rtl"] .right-1 { right: unset; left: 0.25rem; }
+[dir="rtl"] .left-1 { left: unset; right: 0.25rem; }
+[dir="rtl"] .right-2 { right: unset; left: 0.5rem; }
+[dir="rtl"] .left-2 { left: unset; right: 0.5rem; }
+[dir="rtl"] .right-4 { right: unset; left: 1rem; }
+[dir="rtl"] .left-4 { left: unset; right: 1rem; }
+[dir="rtl"] .right-6 { right: unset; left: 1.5rem; }
+[dir="rtl"] .left-6 { left: unset; right: 1.5rem; }
+
+[dir="rtl"] .-translate-x-1\/2 { --tw-translate-x: 50%; }
+[dir="rtl"] .translate-x-1\/2 { --tw-translate-x: -50%; }
+[dir="rtl"] .-translate-x-full { --tw-translate-x: 100%; }
+[dir="rtl"] .translate-x-full { --tw-translate-x: -100%; }
+
+[dir="rtl"] .origin-bottom-right { transform-origin: bottom left; }
+[dir="rtl"] .origin-bottom-left { transform-origin: bottom right; }
+[dir="rtl"] .origin-top-right { transform-origin: top left; }
+[dir="rtl"] .origin-top-left { transform-origin: top right; }
+
+[dir="rtl"] .text-left { text-align: right; }
+[dir="rtl"] .text-right { text-align: left; }
+
+[dir="rtl"] .border-l { border-left: none; border-right: 1px solid hsl(var(--border)); }
+[dir="rtl"] .border-r { border-right: none; border-left: 1px solid hsl(var(--border)); }
+
+[dir="rtl"] .rounded-l-lg { border-radius: 0 0.5rem 0.5rem 0; }
+[dir="rtl"] .rounded-r-lg { border-radius: 0.5rem 0 0 0.5rem; }
+
+/* RTL: Float reversal */
+[dir="rtl"] .float-left { float: right; }
+[dir="rtl"] .float-right { float: left; }
+
+/* RTL shimmer direction override */
+@keyframes shimmer-rtl {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+[dir="rtl"] .shimmer,
+[dir="rtl"] [class*="shimmer"] {
+  animation-name: shimmer-rtl;
+}
+
+/* RTL mask gradient */
+[dir="rtl"] .mask-gradient-right {
+  mask-image: linear-gradient(to left, black 85%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to left, black 85%, transparent 100%);
+}
+
+/* Font adjustments for multilingual text size discrepancies */
+[lang="hi"], [lang="bn"], [lang="ta"], [lang="te"], [lang="mr"],
+[lang="gu"], [lang="kn"], [lang="ml"], [lang="pa"], [lang="or"],
+[lang="as"], [lang="sa"], [lang="ur"], [lang="ar"] {
+  line-height: 1.6;
+}
+
+[lang="zh"], [lang="ja"], [lang="ko"] {
+  line-height: 1.5;
+  word-break: break-all;
+}

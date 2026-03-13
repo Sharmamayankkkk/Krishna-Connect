@@ -59,14 +59,12 @@ export default async function NewsArticlePage({ params }: PageProps) {
                         <SidebarTrigger className="md:hidden" />
                         <Button variant="ghost" size="sm" asChild className="-ml-2">
                             <Link href="/news">
-                                <ChevronLeft className="mr-1 h-4 w-4" />
-                                Back to News
-                            </Link>
+                                <ChevronLeft className="mr-1 h-4 w-4" />Back to News</Link>
                         </Button>
                     </div>
                     <div className="flex gap-2">
                         <Button variant="ghost" size="icon" asChild>
-                            <a href={link} target="_blank" rel="noopener noreferrer" title="Open Original">
+                            <a href={link} target="_blank" rel="noopener noreferrer" title="Open original">
                                 <ExternalLink className="h-4 w-4" />
                             </a>
                         </Button>

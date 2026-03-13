@@ -6,7 +6,11 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle2, XCircle, Loader2 } from 'lucide-react'
 
+import { useTranslation } from 'react-i18next';
+
 export default function StreamDebugPage() {
+  const { t } = useTranslation();
+
     const { client, isLoading } = useStreamVideo()
     const { loggedInUser } = useAppContext()
 
@@ -17,14 +21,14 @@ export default function StreamDebugPage() {
         <div className="container max-w-2xl mx-auto py-8 space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>Stream SDK Debug Info</CardTitle>
-                    <CardDescription>Check if Stream SDK is properly configured</CardDescription>
+                    <CardTitle>{t('common.streamSdkDebugInfo')}</CardTitle>
+                    <CardDescription>{t('common.checkIfStreamSdkIsProperly')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {/* API Key Check */}
                     <div className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
-                            <p className="font-medium">API Key Configured</p>
+                            <p className="font-medium">{t('common.apiKeyConfigured')}</p>
                             <p className="text-sm text-muted-foreground">
                                 {hasApiKey ? `Key: ${apiKey?.substring(0, 8)}...` : 'Not set'}
                             </p>
@@ -39,7 +43,7 @@ export default function StreamDebugPage() {
                     {/* User Check */}
                     <div className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
-                            <p className="font-medium">User Logged In</p>
+                            <p className="font-medium">{t('common.userLoggedIn')}</p>
                             <p className="text-sm text-muted-foreground">
                                 {loggedInUser ? `${loggedInUser.username}` : 'Not logged in'}
                             </p>
@@ -54,7 +58,7 @@ export default function StreamDebugPage() {
                     {/* Client Loading Check */}
                     <div className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
-                            <p className="font-medium">Stream Client Loading</p>
+                            <p className="font-medium">{t('common.streamClientLoading')}</p>
                             <p className="text-sm text-muted-foreground">
                                 {isLoading ? 'Initializing...' : 'Complete'}
                             </p>
@@ -69,7 +73,7 @@ export default function StreamDebugPage() {
                     {/* Client Initialized Check */}
                     <div className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
-                            <p className="font-medium">Stream Client Initialized</p>
+                            <p className="font-medium">{t('common.streamClientInitialized')}</p>
                             <p className="text-sm text-muted-foreground">
                                 {client ? 'Client ready' : 'Not initialized'}
                             </p>
@@ -83,7 +87,7 @@ export default function StreamDebugPage() {
 
                     {/* Environment Variables */}
                     <div className="p-4 border rounded-lg space-y-2">
-                        <p className="font-medium">Environment Variables</p>
+                        <p className="font-medium">{t('common.environmentVariables')}</p>
                         <div className="text-sm space-y-1 font-mono bg-muted p-3 rounded">
                             <div>NEXT_PUBLIC_STREAM_API_KEY: {apiKey || 'undefined'}</div>
                             <div>Has Client: {client ? 'true' : 'false'}</div>
@@ -96,15 +100,11 @@ export default function StreamDebugPage() {
                         <Button
                             onClick={() => window.location.reload()}
                             variant="outline"
-                        >
-                            Reload Page
-                        </Button>
+                        >{t('common.reloadPage')}</Button>
                         <Button
                             onClick={() => console.log({ client, apiKey, loggedInUser })}
                             variant="outline"
-                        >
-                            Log to Console
-                        </Button>
+                        >{t('common.logToConsole')}</Button>
                     </div>
                 </CardContent>
             </Card>

@@ -205,9 +205,7 @@ export default async function ProfilePage(props: ProfilePageProps) {
             </div>
 
             <Button asChild size="lg" className="rounded-full px-8">
-              <Link href="/explore">
-                Go to Explore
-              </Link>
+              <Link href="/explore">Go to Explore</Link>
             </Button>
           </div>
         </Card>

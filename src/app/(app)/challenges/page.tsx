@@ -12,7 +12,11 @@ import { Challenge } from '@/components/challenges/types';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { useTranslation } from 'react-i18next';
+
 export default function ChallengesPage() {
+  const { t } = useTranslation();
+
     const router = useRouter();
     const supabase = createClient();
     const { loggedInUser } = useAppContext();
@@ -105,8 +109,8 @@ export default function ChallengesPage() {
                             <Trophy className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/80">Challenges</h1>
-                            <p className="text-xs text-muted-foreground hidden sm:block">Compete and grow together</p>
+                            <h1 className="text-xl font-bold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/80">{t('challenges.title')}</h1>
+                            <p className="text-xs text-muted-foreground hidden sm:block">{t('challenges.subtitle')}</p>
                         </div>
                     </div>
 
@@ -114,20 +118,20 @@ export default function ChallengesPage() {
                         <Link href="/challenges/leaderboard">
                             <Button variant="ghost" size="sm" className="flex gap-1.5 px-2 sm:px-3 text-yellow-600 dark:text-yellow-500 hover:text-yellow-700 hover:bg-yellow-500/10 dark:hover:bg-yellow-500/10">
                                 <Medal className="h-4 w-4" />
-                                <span className="hidden sm:inline">Leaderboard</span>
+                                <span className="hidden sm:inline">{t('challenges.leaderboard')}</span>
                             </Button>
                         </Link>
                         <Link href="/challenges/me">
                             <Button variant="ghost" size="sm" className="flex gap-1.5 px-2 sm:px-3">
                                 <Settings className="h-4 w-4" />
-                                <span className="hidden sm:inline">My Hub</span>
+                                <span className="hidden sm:inline">{t('challenges.myHub')}</span>
                             </Button>
                         </Link>
                         {isVerified && (
                             <Link href="/challenges/create">
                                 <Button size="sm" className="gap-1.5 px-2 sm:px-3 shadow-md bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 border-0">
                                     <Plus className="h-4 w-4" />
-                                    <span className="hidden sm:inline font-semibold">Create</span>
+                                    <span className="hidden sm:inline font-semibold">{t('challenges.create')}</span>
                                 </Button>
                             </Link>
                         )}
@@ -137,7 +141,7 @@ export default function ChallengesPage() {
                 {/* Search Bar Row */}
                 <div className="px-4 pb-4 max-w-7xl mx-auto w-full">
                     <Input
-                        placeholder="Search challenges by title, category, or tag..."
+                        placeholder={t('challenges.searchPlaceholder')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="max-w-md bg-muted/50 border-border/50 focus-visible:ring-primary/40 rounded-full px-5"
@@ -151,7 +155,7 @@ export default function ChallengesPage() {
                         <div className="flex items-center justify-center py-32">
                             <div className="flex flex-col items-center gap-4">
                                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
-                                <p className="text-muted-foreground animate-pulse text-sm">Loading challenges ecosystem...</p>
+                                <p className="text-muted-foreground animate-pulse text-sm">{t('challenges.loading')}</p>
                             </div>
                         </div>
                     ) : (
@@ -166,7 +170,7 @@ export default function ChallengesPage() {
                                                 <div className="p-1.5 rounded-md bg-yellow-500/10 text-yellow-600 dark:text-yellow-500">
                                                     <Sparkles className="h-4 w-4" />
                                                 </div>
-                                                <h2 className="text-lg font-bold">Featured Picks</h2>
+                                                <h2 className="text-lg font-bold">{t('challenges.featuredPicks')}</h2>
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -191,7 +195,7 @@ export default function ChallengesPage() {
                                                 <div className="p-1.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-500">
                                                     <Users className="h-4 w-4" />
                                                 </div>
-                                                <h2 className="text-lg font-bold">From Your Network</h2>
+                                                <h2 className="text-lg font-bold">{t('challenges.fromYourNetwork')}</h2>
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -216,7 +220,7 @@ export default function ChallengesPage() {
                                                 <div className="p-1.5 rounded-md bg-red-500/10 text-red-600 dark:text-red-500">
                                                     <Clock className="h-4 w-4" />
                                                 </div>
-                                                <h2 className="text-lg font-bold">Ending Soon</h2>
+                                                <h2 className="text-lg font-bold">{t('challenges.endingSoon')}</h2>
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -239,7 +243,7 @@ export default function ChallengesPage() {
                                         <div className="p-1.5 rounded-md bg-green-500/10 text-green-600 dark:text-green-500">
                                             <Flame className="h-4 w-4" />
                                         </div>
-                                        <h2 className="text-xl font-bold">Explore All Active</h2>
+                                        <h2 className="text-xl font-bold">{t('challenges.exploreAllActive')}</h2>
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -259,9 +263,9 @@ export default function ChallengesPage() {
                                         {activeChallenges.length === 0 && (
                                             <div className="col-span-full py-16 text-center border-2 border-dashed rounded-2xl bg-muted/20 border-border/50">
                                                 <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-30" />
-                                                <h3 className="text-lg font-medium text-foreground">No active challenges</h3>
+                                                <h3 className="text-lg font-medium text-foreground">{t('challenges.noActiveChallenges')}</h3>
                                                 <p className="text-muted-foreground text-sm max-w-sm mx-auto mt-1">
-                                                    Check back later when creators launch new events, or be the first to create one!
+                                                    {t('challenges.noActiveChallengesDescription')}
                                                 </p>
                                             </div>
                                         )}
@@ -272,7 +276,7 @@ export default function ChallengesPage() {
                                 {completedChallenges.length > 0 && !searchQuery && (
                                     <section className="pt-8 opacity-80 hover:opacity-100 transition-opacity">
                                         <div className="flex items-center gap-2 mb-6">
-                                            <h2 className="text-lg font-bold text-muted-foreground">Past Events Reference</h2>
+                                            <h2 className="text-lg font-bold text-muted-foreground">{t('challenges.pastEventsReference')}</h2>
                                         </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                                             {completedChallenges.slice(0, 8).map(challenge => (
@@ -295,32 +299,26 @@ export default function ChallengesPage() {
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 blur-3xl -mr-10 -mt-10 rounded-full pointer-events-none" />
                                     <div className="flex items-center justify-between mb-4 relative z-10">
                                         <div className="flex items-center gap-2 font-bold text-lg">
-                                            <Trophy className="h-5 w-5 text-yellow-500" />
-                                            Top Challengers
-                                        </div>
-                                        <Link href="/challenges/leaderboard" className="text-xs text-primary hover:underline font-medium">View All</Link>
+                                            <Trophy className="h-5 w-5 text-yellow-500" />{t('challenges.topChallengers')}</div>
+                                        <Link href="/challenges/leaderboard" className="text-xs text-primary hover:underline font-medium">{t('common.viewAll')}</Link>
                                     </div>
                                     <p className="text-sm text-muted-foreground mb-5 relative z-10">
-                                        The global leaderboard tracks points across the entire Challenge ecosystem. Climb the ranks to earn ultimate bragging rights!
+                                        {t('challenges.globalLeaderboardDescription')}
                                     </p>
                                     <Link href="/challenges/leaderboard" className="block relative z-10">
-                                        <Button className="w-full bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600 text-white border-0 shadow-md">
-                                            View Rankings
-                                        </Button>
+                                        <Button className="w-full bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600 text-white border-0 shadow-md">{t('challenges.viewRankings')}</Button>
                                     </Link>
                                 </div>
 
                                 {/* Create Action Widget */}
                                 <div className="bg-gradient-to-br from-primary/10 to-transparent rounded-xl border border-primary/20 p-5">
                                     <h3 className="font-bold mb-2 flex items-center gap-2">
-                                        <Sparkles className="h-4 w-4 text-primary" />
-                                        Launch an Event
-                                    </h3>
+                                        <Sparkles className="h-4 w-4 text-primary" />{t('challenges.launchAnEvent')}</h3>
                                     <p className="text-sm text-muted-foreground mb-4">
-                                        Ready to issue a challenge to your network? Set the rules, deadline, and watch the proofs roll in.
+                                        {t('challenges.launchAnEventDescription')}
                                     </p>
                                     <Link href="/challenges/create">
-                                        <Button variant="outline" className="w-full bg-background/50 backdrop-blur-sm border-primary/30 hover:bg-primary/10">Host a Challenge</Button>
+                                        <Button variant="outline" className="w-full bg-background/50 backdrop-blur-sm border-primary/30 hover:bg-primary/10">{t('challenges.hostAChallenge')}</Button>
                                     </Link>
                                 </div>
                             </div>

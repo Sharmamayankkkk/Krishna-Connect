@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -26,6 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   // Stats for both forms
   const [name, setName] = useState('');
@@ -57,7 +59,7 @@ export default function SignupPage() {
   const validateCommonFields = async () => {
     const usernameRegex = /^[a-zA-Z0-9_]+$/;
     if (!usernameRegex.test(username.trim())) {
-      setError('Username can only contain letters, numbers, and underscores (no spaces or special characters).');
+      setError(t('auth.errors.usernameInvalid'));
       return false;
     }
 
@@ -68,12 +70,12 @@ export default function SignupPage() {
       .maybeSingle();
 
     if (usernameError && usernameError.code !== 'PGRST116') {
-      setError('Could not verify username. Please try again.');
+      setError(t('auth.errors.usernameCheckFailed'));
       return false;
     }
 
     if (existingProfile) {
-      setError('This username is already taken. Please choose another one.');
+      setError(t('auth.errors.usernameTaken'));
       return false;
     }
 
@@ -86,7 +88,7 @@ export default function SignupPage() {
     setIsLoading(true);
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters long.');
+      setError(t('auth.passwordMinLength'));
       setIsLoading(false);
       return;
     }
@@ -117,11 +119,11 @@ export default function SignupPage() {
     if (signUpError) {
       setError(signUpError.message);
     } else if (signUpData.user?.identities?.length === 0) {
-      setError("An account with this email address already exists. Please log in instead.");
+      setError(t('auth.accountExists'));
     } else {
       toast({
-        title: "Check your email!",
-        description: "We've sent you a confirmation link to verify your email address.",
+        title: t('auth.checkEmail'),
+        description: t('auth.confirmationSent'),
       });
       router.push('/login');
     }
@@ -225,40 +227,40 @@ export default function SignupPage() {
                 priority
               />
             </div>
-            <CardTitle className="text-2xl font-bold text-foreground">Create Account</CardTitle>
-            <CardDescription className="text-muted-foreground">Enter your details to join Krishna Connect</CardDescription>
+            <CardTitle className="text-2xl font-bold text-foreground">{t('auth.createAccount')}</CardTitle>
+            <CardDescription className="text-muted-foreground">{t('auth.enterDetails')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {error && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Signup Failed</AlertTitle>
+                <AlertTitle>{t('auth.signupFailed')}</AlertTitle>
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
 
             <Tabs defaultValue="email" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="email">Email</TabsTrigger>
-                <TabsTrigger value="phone" disabled title="Phone signup is temporarily unavailable">Phone</TabsTrigger>
+                <TabsTrigger value="email">{t('auth.email')}</TabsTrigger>
+                <TabsTrigger value="phone" disabled title={t('auth.phoneSignupUnavailable')}>{t('auth.phone')}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="email">
                 <form onSubmit={handleEmailSignup} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="full-name" className="text-foreground">Full Name</Label>
+                    <Label htmlFor="full-name" className="text-foreground">{t('auth.fullName')}</Label>
                     <Input id="full-name" placeholder="John Doe" required value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} className="bg-background/50 border-input focus:border-primary" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="username" className="text-foreground">Username</Label>
+                    <Label htmlFor="username" className="text-foreground">{t('auth.username')}</Label>
                     <Input id="username" placeholder="johndoe" required value={username} onChange={(e) => setUsername(e.target.value)} disabled={isLoading} className="bg-background/50 border-input focus:border-primary" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-foreground">Email</Label>
+                    <Label htmlFor="email" className="text-foreground">{t('auth.email')}</Label>
                     <Input id="email" type="email" placeholder="krishna@connect.com" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} className="bg-background/50 border-input focus:border-primary" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="password" className="text-foreground">Password</Label>
+                    <Label htmlFor="password" className="text-foreground">{t('auth.password')}</Label>
                     <div className="relative">
                       <Input
                         id="password"
@@ -282,22 +284,22 @@ export default function SignupPage() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-foreground">Gender</Label>
+                    <Label className="text-foreground">{t('auth.gender')}</Label>
                     <RadioGroup value={gender} onValueChange={(value: 'male' | 'female') => setGender(value)} className="flex items-center space-x-4 pt-1" disabled={isLoading}>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="male" id="male" className="border-primary text-primary" />
-                        <Label htmlFor="male" className="font-normal cursor-pointer text-foreground">Prabhuji (Male)</Label>
+                        <Label htmlFor="male" className="font-normal cursor-pointer text-foreground">{t('auth.prabhujiMale')}</Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="female" id="female" className="border-primary text-primary" />
-                        <Label htmlFor="female" className="font-normal cursor-pointer text-foreground">Mataji (Female)</Label>
+                        <Label htmlFor="female" className="font-normal cursor-pointer text-foreground">{t('auth.matajieFemale')}</Label>
                       </div>
                     </RadioGroup>
                   </div>
 
                   <Button type="submit" className="w-full font-semibold shadow-lg hover:shadow-primary/25 transition-all" disabled={isLoading}>
                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    Create Account
+                    {t('auth.createAccount')}
                   </Button>
                 </form>
               </TabsContent>
@@ -307,41 +309,41 @@ export default function SignupPage() {
                   {!isOtpSent ? (
                     <>
                       <div className="space-y-2">
-                        <Label htmlFor="full-name-phone" className="text-foreground">Full Name</Label>
+                        <Label htmlFor="full-name-phone" className="text-foreground">{t('auth.fullName')}</Label>
                         <Input id="full-name-phone" placeholder="John Doe" required value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} className="bg-background/50 border-input focus:border-primary" />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="username-phone" className="text-foreground">Username</Label>
+                        <Label htmlFor="username-phone" className="text-foreground">{t('auth.username')}</Label>
                         <Input id="username-phone" placeholder="johndoe" required value={username} onChange={(e) => setUsername(e.target.value)} disabled={isLoading} className="bg-background/50 border-input focus:border-primary" />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="phone" className="text-foreground">Phone Number</Label>
+                        <Label htmlFor="phone" className="text-foreground">{t('auth.phoneNumber')}</Label>
                         <Input id="phone" type="tel" placeholder="e.g. +919876543210" required value={phone} onChange={(e) => setPhone(e.target.value)} disabled={isLoading} className="bg-background/50 border-input focus:border-primary" />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-foreground">Gender</Label>
+                        <Label className="text-foreground">{t('auth.gender')}</Label>
                         <RadioGroup value={gender} onValueChange={(value: 'male' | 'female') => setGender(value)} className="flex items-center space-x-4 pt-1" disabled={isLoading}>
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="male" id="male-phone" className="border-primary text-primary" />
-                            <Label htmlFor="male-phone" className="font-normal cursor-pointer text-foreground">Prabhuji (Male)</Label>
+                            <Label htmlFor="male-phone" className="font-normal cursor-pointer text-foreground">{t('auth.prabhujiMale')}</Label>
                           </div>
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="female" id="female-phone" className="border-primary text-primary" />
-                            <Label htmlFor="female-phone" className="font-normal cursor-pointer text-foreground">Mataji (Female)</Label>
+                            <Label htmlFor="female-phone" className="font-normal cursor-pointer text-foreground">{t('auth.matajieFemale')}</Label>
                           </div>
                         </RadioGroup>
                       </div>
                     </>
                   ) : (
                     <div className="space-y-2">
-                      <Label htmlFor="otp" className="text-foreground">One-Time Password</Label>
-                      <Input id="otp" placeholder="Enter 6-digit OTP" required value={otp} onChange={(e) => setOtp(e.target.value)} disabled={isLoading} className="bg-background/50 border-input focus:border-primary" />
+                      <Label htmlFor="otp" className="text-foreground">{t('auth.otp')}</Label>
+                      <Input id="otp" placeholder={t('auth.enterOtp')} required value={otp} onChange={(e) => setOtp(e.target.value)} disabled={isLoading} className="bg-background/50 border-input focus:border-primary" />
                     </div>
                   )}
 
                   <Button type="submit" className="w-full font-semibold shadow-lg hover:shadow-primary/25 transition-all" disabled={isLoading}>
                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    {isOtpSent ? 'Verify & Create Account' : 'Get OTP'}
+                    {isOtpSent ? t('auth.verifyCreateAccount') : t('auth.getOtp')}
                   </Button>
 
                   {isOtpSent && (
@@ -356,10 +358,10 @@ export default function SignupPage() {
                             setTimeLeft(0);
                           }}
                         >
-                          Change Details
+                          {t('auth.changeDetails')}
                         </Button>
                         {timeLeft > 0 ? (
-                          <span>Resend in {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}</span>
+                          <span>{t('auth.resendIn', { time: `${Math.floor(timeLeft / 60)}:${(timeLeft % 60).toString().padStart(2, '0')}` })}</span>
                         ) : (
                           <button
                             type="button"
@@ -367,7 +369,7 @@ export default function SignupPage() {
                             className="text-primary hover:underline font-medium"
                             disabled={isLoading}
                           >
-                            Resend OTP
+                            {t('auth.resendOtp')}
                           </button>
                         )}
                       </div>
@@ -382,7 +384,7 @@ export default function SignupPage() {
                 <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground font-medium">Or sign up with</span>
+                <span className="bg-card px-2 text-muted-foreground font-medium">{t('auth.orSignUpWith')}</span>
               </div>
             </div>
 
@@ -394,30 +396,30 @@ export default function SignupPage() {
                 className="w-full bg-background/50 hover:bg-accent hover:text-accent-foreground transition-all"
               >
                 <Icons.google className="mr-2 h-4 w-4" />
-                Google
+                {t('auth.google')}
               </Button>
             </div>
 
             <div className="mt-4 text-center text-sm text-muted-foreground">
-              Already have an account?{' '}
+              {t('auth.alreadyHaveAccount')}{' '}
               <Link href="/login" className="font-bold text-primary hover:text-primary/80 hover:underline transition-colors">
-                Login
+                {t('auth.login')}
               </Link>
             </div>
           </CardContent>
           <CardFooter className="justify-center text-center text-xs text-muted-foreground pb-6">
             <p>
-              By creating an account, you agree to our{' '}
+              {t('auth.termsAgreement')}{' '}
               <Link href="/terms-and-conditions" className="underline hover:text-primary transition-colors">
-                Terms
+                {t('auth.terms')}
               </Link>
               ,{' '}
               <Link href="/privacy-policy" className="underline hover:text-primary transition-colors">
-                Privacy Policy
+                {t('auth.privacyPolicy')}
               </Link>
               , and{' '}
               <Link href="/p/acceptable-use-policy" className="underline hover:text-primary transition-colors">
-                Acceptable Use Policy
+                {t('auth.acceptableUsePolicy')}
               </Link>
               .
             </p>

@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -47,6 +48,7 @@ function StarredPageLoader() {
 }
 
 export default function StarredMessagesPage() {
+  const { t } = useTranslation();
   const { loggedInUser, isReady } = useAppContext();
   const router = useRouter();
   const [starredMessages, setStarredMessages] = React.useState<StarredMessage[]>([]);
@@ -122,7 +124,7 @@ export default function StarredMessagesPage() {
         <SidebarTrigger className="md:hidden" />
         <div className="flex items-center gap-2">
           <Star className="h-6 w-6 text-amber-500 fill-amber-400" />
-          <h2 className="text-xl font-bold tracking-tight">Starred Messages</h2>
+          <h2 className="text-xl font-bold tracking-tight">{t('starred.title')}</h2>
         </div>
       </header>
 
@@ -157,7 +159,7 @@ export default function StarredMessagesPage() {
                   <div className="mt-4 flex justify-end">
                     <Button variant="outline" size="sm" onClick={() => handleGoToMessage(message.chat_id, message.id)}>
                       <MessageSquare className="mr-2 h-4 w-4" />
-                      Go to message
+                      {t('starred.goToMessage')}
                     </Button>
                   </div>
                 </CardContent>
@@ -170,9 +172,9 @@ export default function StarredMessagesPage() {
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-secondary">
                 <Star className="h-8 w-8 text-muted-foreground" />
               </div>
-              <CardTitle>No Starred Messages</CardTitle>
+              <CardTitle>{t('starred.noStarred')}</CardTitle>
               <CardDescription>
-                You can star important messages to keep track of them here.
+                {t('starred.noStarredDesc')}
               </CardDescription>
             </CardHeader>
           </Card>

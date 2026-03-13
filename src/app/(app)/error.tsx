@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 
+import { useTranslation } from 'react-i18next';
+
 export default function Error({
     error,
     reset,
@@ -11,6 +13,8 @@ export default function Error({
     error: Error & { digest?: string };
     reset: () => void;
 }) {
+    const { t } = useTranslation();
+
     useEffect(() => {
         // Log the error to an error reporting service
         console.error("App error:", error);
@@ -21,18 +25,14 @@ export default function Error({
             <div className="bg-destructive/10 rounded-full p-4 mb-4">
                 <AlertTriangle className="h-10 w-10 text-destructive" />
             </div>
-            <h2 className="text-xl font-semibold mb-2">Something went wrong</h2>
+            <h2 className="text-xl font-semibold mb-2">{t('common.somethingWentWrong')}</h2>
             <p className="text-muted-foreground mb-6 max-w-md">
                 We encountered an unexpected error. Please try again or refresh the page.
             </p>
             <div className="flex gap-3">
                 <Button onClick={() => reset()} variant="default">
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Try again
-                </Button>
-                <Button onClick={() => window.location.reload()} variant="outline">
-                    Refresh page
-                </Button>
+                    <RefreshCw className="h-4 w-4 mr-2" />{t('common.tryAgain')}</Button>
+                <Button onClick={() => window.location.reload()} variant="outline">{t('common.refreshPage')}</Button>
             </div>
             {error.digest && (
                 <p className="text-xs text-muted-foreground mt-4">

@@ -13,6 +13,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { VerificationBadge } from '@/components/shared/verification-badge';
 import { getAvatarUrl } from '@/lib/utils';
 
+import { useTranslation } from 'react-i18next';
+
 interface Comment {
     id: string;
     challenge_id: number;
@@ -26,6 +28,8 @@ interface Comment {
 }
 
 export function ChallengeComments({ challengeId }: { challengeId: number }) {
+  const { t } = useTranslation();
+
     const supabase = createClient();
     const { loggedInUser } = useAppContext();
     const { toast } = useToast();
@@ -91,7 +95,7 @@ export function ChallengeComments({ challengeId }: { challengeId: number }) {
                 <div className="bg-primary/10 p-2 rounded-xl text-primary">
                     <MessageSquare className="h-5 w-5" />
                 </div>
-                <h3 className="text-xl font-bold">Discussion</h3>
+                <h3 className="text-xl font-bold">{t('challenges.discussion')}</h3>
                 <span className="bg-muted px-2.5 py-0.5 rounded-full text-xs font-bold text-muted-foreground ml-auto">{comments.length}</span>
             </div>
 
@@ -104,7 +108,7 @@ export function ChallengeComments({ challengeId }: { challengeId: number }) {
                     </Avatar>
                     <div className="flex-1 space-y-3">
                         <Textarea
-                            placeholder="Share your thoughts, ask questions, or encourage others..."
+                            placeholder={t('challenges.shareYourThoughtsAskQuestionsOr')}
                             className="resize-none h-24 bg-muted/30 focus-visible:bg-background border-muted"
                             value={newComment}
                             onChange={(e) => setNewComment(e.target.value)}
@@ -127,7 +131,7 @@ export function ChallengeComments({ challengeId }: { challengeId: number }) {
                 </div>
             ) : (
                 <div className="bg-muted/30 border border-muted p-6 rounded-xl text-center">
-                    <p className="text-muted-foreground text-sm">Please log in to join the discussion.</p>
+                    <p className="text-muted-foreground text-sm">{t('challenges.pleaseLogInToJoinThe')}</p>
                 </div>
             )}
 
@@ -140,7 +144,7 @@ export function ChallengeComments({ challengeId }: { challengeId: number }) {
                 ) : comments.length === 0 ? (
                     <div className="text-center py-16 text-muted-foreground">
                         <MessageSquare className="h-10 w-10 mx-auto mb-3 opacity-20" />
-                        <p>No comments yet. Start the conversation!</p>
+                        <p>{t('challenges.noCommentsYetStartTheConversation')}</p>
                     </div>
                 ) : (
                     comments.map(comment => (
@@ -173,8 +177,7 @@ export function ChallengeComments({ challengeId }: { challengeId: number }) {
                                                     onClick={() => handleDelete(comment.id)}
                                                     className="text-red-500 hover:text-red-600 dark:hover:text-red-400 focus:text-red-600 dark:focus:text-red-400 cursor-pointer font-medium"
                                                 >
-                                                    <Trash2 className="h-4 w-4 mr-2" /> Delete
-                                                </DropdownMenuItem>
+                                                    <Trash2 className="h-4 w-4 mr-2" />{t('common.delete')}</DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     )}

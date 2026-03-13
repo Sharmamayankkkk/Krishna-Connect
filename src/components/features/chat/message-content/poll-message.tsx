@@ -9,6 +9,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { DateChip } from './parse-markdown';
 
+import { useTranslation } from 'react-i18next';
+
 interface PollOption {
     id: string;
     text: string;
@@ -21,6 +23,8 @@ interface PollMessageProps {
 }
 
 export const PollMessage = ({ pollId, loggedInUserId, chatParticipants }: PollMessageProps) => {
+  const { t } = useTranslation();
+
     const [poll, setPoll] = useState<any>(null);
     const [votes, setVotes] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -124,9 +128,7 @@ export const PollMessage = ({ pollId, loggedInUserId, chatParticipants }: PollMe
     if (!poll) {
         return (
             <div className="w-[280px] sm:w-[320px] p-4 bg-destructive/10 text-destructive rounded-xl border border-destructive/20 text-sm flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 shrink-0" />
-                Poll not found
-            </div>
+                <BarChart3 className="w-4 h-4 shrink-0" />{t('chat.pollNotFound')}</div>
         );
     }
 
@@ -139,20 +141,16 @@ export const PollMessage = ({ pollId, loggedInUserId, chatParticipants }: PollMe
                         <div className="w-6 h-6 rounded-md bg-primary/15 flex items-center justify-center">
                             <BarChart3 className="w-3.5 h-3.5 text-primary" />
                         </div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-primary">Poll</span>
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-primary">{t('create.poll')}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                         {poll.is_anonymous && (
                             <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 gap-1 font-medium">
-                                <EyeOff className="w-2.5 h-2.5" />
-                                Anonymous
-                            </Badge>
+                                <EyeOff className="w-2.5 h-2.5" />{t('chat.anonymous')}</Badge>
                         )}
                         {isMultiple && (
                             <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 gap-1 font-medium">
-                                <CheckSquare className="w-2.5 h-2.5" />
-                                Multi
-                            </Badge>
+                                <CheckSquare className="w-2.5 h-2.5" />{t('chat.multi')}</Badge>
                         )}
                     </div>
                 </div>
@@ -304,9 +302,7 @@ export const PollMessage = ({ pollId, loggedInUserId, chatParticipants }: PollMe
                                         <Undo2 className="w-3.5 h-3.5" />
                                     </button>
                                 </TooltipTrigger>
-                                <TooltipContent side="top" className="text-xs">
-                                    Retract your vote
-                                </TooltipContent>
+                                <TooltipContent side="top" className="text-xs">{t('chat.retractYourVote')}</TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
                     )}

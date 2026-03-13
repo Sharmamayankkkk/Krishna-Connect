@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslation } from 'react-i18next';
 import { Wallet, Grid } from 'lucide-react';
 
 // Mock data for NFTs
@@ -10,14 +11,15 @@ const mockNfts = [
 ];
 
 export default function NftPage() {
+  const { t } = useTranslation();
   const isConnected = true; // Mock wallet connection status
 
   return (
     <div className="container mx-auto max-w-5xl py-8">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Digital Collectibles</h1>
-          <p className="text-muted-foreground">Showcase your unique NFTs on your profile.</p>
+          <h1 className="text-3xl font-bold">{t('nft.title')}</h1>
+          <p className="text-muted-foreground">{t('nft.description')}</p>
         </div>
         {/* <Button> {isConnected ? 'Wallet Connected' : 'Connect Wallet'} </Button> */}
       </div>
@@ -26,7 +28,7 @@ export default function NftPage() {
         <div>
           <h2 className="text-2xl font-bold mb-4 flex items-center">
             <Grid className="mr-2 h-6 w-6" />
-            Your Collection
+            {t('nft.yourCollection')}
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {mockNfts.map(nft => (
@@ -43,8 +45,8 @@ export default function NftPage() {
       ) : (
         <div className="text-center py-20 border-2 border-dashed rounded-lg">
           <Wallet className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <h2 className="text-xl font-semibold">Connect Your Wallet</h2>
-          <p className="text-muted-foreground mt-2">Connect your wallet to view and display your digital collectibles.</p>
+          <h2 className="text-xl font-semibold">{t('nft.connectWallet')}</h2>
+          <p className="text-muted-foreground mt-2">{t('nft.connectWalletDesc')}</p>
           {/* <Button className="mt-4">Connect Wallet</Button> */}
         </div>
       )}

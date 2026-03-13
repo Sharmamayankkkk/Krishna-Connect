@@ -9,38 +9,47 @@ import {
   Shield,
   Lock,
   TrendingUp,
+  Globe,
   ChevronRight
 } from "lucide-react"
-
-const settingsCategories = [
-  {
-    name: "Appearance",
-    description: "Theme, colors, and display",
-    href: "/settings/appearance",
-    icon: Palette
-  },
-  {
-    name: "Privacy",
-    description: "Control who can see your content",
-    href: "/settings/privacy",
-    icon: Shield
-  },
-  {
-    name: "Security",
-    description: "Password and authentication",
-    href: "/settings/security",
-    icon: Lock
-  },
-  {
-    name: "Promotions",
-    description: "Manage promoted posts",
-    href: "/settings/promotions",
-    icon: TrendingUp
-  }
-]
+import { useTranslation } from "react-i18next"
 
 export default function SettingsPage() {
   const router = useRouter()
+  const { t } = useTranslation()
+
+  const settingsCategories = [
+    {
+      name: t("settings.appearance.title"),
+      description: t("settings.appearance.description"),
+      href: "/settings/appearance",
+      icon: Palette
+    },
+    {
+      name: t("settings.language.title"),
+      description: t("settings.language.description"),
+      href: "/settings/language",
+      icon: Globe
+    },
+    {
+      name: t("settings.privacy.title"),
+      description: t("settings.privacy.description"),
+      href: "/settings/privacy",
+      icon: Shield
+    },
+    {
+      name: t("settings.security.title"),
+      description: t("settings.security.description"),
+      href: "/settings/security",
+      icon: Lock
+    },
+    {
+      name: t("settings.promotions.title"),
+      description: t("settings.promotions.description"),
+      href: "/settings/promotions",
+      icon: TrendingUp
+    }
+  ]
 
   useEffect(() => {
     // On large screens, redirect to first tab
@@ -51,7 +60,7 @@ export default function SettingsPage() {
 
   return (
     <div className="lg:hidden space-y-2 p-4">
-      <h1 className="text-xl font-semibold mb-4">Settings</h1>
+      <h1 className="text-xl font-semibold mb-4">{t('settings.title')}</h1>
       <nav className="space-y-2" aria-label="Settings categories">
         {settingsCategories.map((category) => {
           const Icon = category.icon

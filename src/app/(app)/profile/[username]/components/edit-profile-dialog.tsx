@@ -16,6 +16,8 @@ import type { Profile } from '@/types';
 import Image from 'next/image';
 import { PhoneCollectionDialog } from "@/components/auth/phone-collection-dialog";
 
+import { useTranslation } from 'react-i18next';
+
 interface EditProfileDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
@@ -23,6 +25,8 @@ interface EditProfileDialogProps {
 }
 
 export function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDialogProps) {
+  const { t } = useTranslation();
+
     const supabase = createClient();
     const { toast } = useToast();
     const router = useRouter();
@@ -137,15 +141,15 @@ export function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDi
                 }
             }
 
-            toast({ title: 'Profile updated!', description: 'Your changes have been saved.' });
+            toast({ title: t('profile.profileUpdated'), description: t('profile.changesSaved') });
             onOpenChange(false);
             router.refresh();
         } catch (error: any) {
             console.error('Error updating profile:', error);
             toast({
                 variant: 'destructive',
-                title: 'Error',
-                description: error.message || 'Failed to update profile.'
+                title: t('common.error'),
+                description: error.message || t('profile.failedToUpdateProfile')
             });
         } finally {
             setIsLoading(false);
@@ -166,7 +170,7 @@ export function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDi
                             >
                                 <X className="h-5 w-5" />
                             </Button>
-                            <DialogTitle>Edit profile</DialogTitle>
+                            <DialogTitle>{t('profile.editProfile')}</DialogTitle>
                         </div>
                         <Button
                             onClick={handleSave}
@@ -174,7 +178,7 @@ export function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDi
                             className="rounded-full"
                         >
                             {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                            Save
+                            {t('profile.save')}
                         </Button>
                     </div>
                 </DialogHeader>
@@ -187,7 +191,7 @@ export function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDi
                     >
                         <Image
                             src={bannerPreview || (profile.banner_url ? getImageUrl(profile.banner_url) : '/background/banner.png') || '/background/banner.png'}
-                            alt="Banner"
+                            alt={t('profile.banner')}
                             fill
                             className="object-cover"
                         />
@@ -211,7 +215,7 @@ export function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDi
                         <Avatar className="h-24 w-24 border-4 border-background">
                             <AvatarImage
                                 src={avatarPreview || getImageUrl(profile.avatar_url)}
-                                alt="Avatar"
+                                alt={t('profile.avatar')}
                                 className="object-cover"
                             />
                             <AvatarFallback className="text-2xl">
@@ -234,23 +238,23 @@ export function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDi
                 {/* Form */}
                 <div className="p-4 pt-16 space-y-4 max-h-[60vh] overflow-y-auto">
                     <div className="space-y-2">
-                        <Label htmlFor="name">Name</Label>
+                        <Label htmlFor="name">{t('bookmarks.name')}</Label>
                         <Input
                             id="name"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            placeholder="Your display name"
+                            placeholder={t('profile.yourDisplayName')}
                             maxLength={50}
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="bio">Bio</Label>
+                        <Label htmlFor="bio">{t('profile.bio')}</Label>
                         <Textarea
                             id="bio"
                             value={bio}
                             onChange={(e) => setBio(e.target.value)}
-                            placeholder="Tell us about yourself"
+                            placeholder={t('profile.tellUsAboutYourself')}
                             rows={3}
                             maxLength={160}
                         />
@@ -258,18 +262,18 @@ export function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDi
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="location">Location</Label>
+                        <Label htmlFor="location">{t('profile.location')}</Label>
                         <Input
                             id="location"
                             value={location}
                             onChange={(e) => setLocation(e.target.value)}
-                            placeholder="Where are you based?"
+                            placeholder={t('profile.whereAreYouBased')}
                             maxLength={30}
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="website">Website</Label>
+                        <Label htmlFor="website">{t('profile.website')}</Label>
                         <Input
                             id="website"
                             value={website}
@@ -280,13 +284,13 @@ export function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDi
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="phone">Phone Number</Label>
+                        <Label htmlFor="phone">{t('settings.security.phoneNumber')}</Label>
                         <div className="flex flex-col gap-1">
                             <div className="flex gap-2">
                                 <Input
                                     id="phone"
                                     value={profile.phone || ''}
-                                    placeholder="Temporarily unavailable"
+                                    placeholder={t('profile.temporarilyUnavailable')}
                                     disabled
                                     className="bg-muted"
                                 />
@@ -294,23 +298,23 @@ export function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDi
                                     type="button"
                                     variant="outline"
                                     disabled
-                                    title="Phone number updates are temporarily disabled"
+                                    title={t('profile.phoneNumberUpdatesAreTemporarilyDisabled')}
                                 >
                                     {profile.phone ? 'Change' : 'Add'}
                                 </Button>
                             </div>
-                            <p className="text-xs text-muted-foreground">Phone number features are temporarily unavailable.</p>
+                            <p className="text-xs text-muted-foreground">{t('profile.phoneNumberFeaturesAreTemporarilyUnavailable')}</p>
                         </div>
                     </div>
 
                     <div className="flex items-center justify-between p-3 border rounded-lg bg-muted/50">
                         <div className="space-y-0.5">
                             <div className="flex items-center gap-2">
-                                <Label className="text-base">Private Account</Label>
+                                <Label className="text-base">{t('settings.privacy.privateAccount')}</Label>
                                 {isPrivate ? <Lock className="h-3 w-3 text-muted-foreground" /> : <Globe className="h-3 w-3 text-muted-foreground" />}
                             </div>
                             <p className="text-sm text-muted-foreground">
-                                Only your followers will be able to see your photos and videos.
+                                {t('profile.privateAccountHelp')}
                             </p>
                         </div>
                         <Switch

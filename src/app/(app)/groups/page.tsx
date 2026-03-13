@@ -23,6 +23,8 @@ import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 
+import { useTranslation } from 'react-i18next';
+
 interface Group {
     id: string;
     name: string;
@@ -39,6 +41,8 @@ interface Group {
 }
 
 export default function GroupsPage() {
+  const { t } = useTranslation();
+
     const { toast } = useToast();
     const router = useRouter();
     const [publicGroups, setPublicGroups] = useState<Group[]>([]);
@@ -274,14 +278,12 @@ export default function GroupsPage() {
                                 className="flex-1"
                                 onClick={() => router.push(`/group/${group.id}`)}
                             >
-                                <Eye className="h-4 w-4 mr-2" />
-                                View Group
-                            </Button>
+                                <Eye className="h-4 w-4 mr-2" />{t('chat.viewGroup')}</Button>
                             <Button
                                 variant="outline"
                                 size="icon"
                                 onClick={() => handleLeaveGroup(group.id)}
-                                title="Leave group"
+                                title={t('chat.leaveGroup1')}
                             >
                                 <Check className="h-4 w-4" />
                             </Button>
@@ -291,9 +293,7 @@ export default function GroupsPage() {
                             className="w-full"
                             onClick={() => handleJoinGroup(group.id)}
                         >
-                            <UserPlus className="h-4 w-4 mr-2" />
-                            Join Group
-                        </Button>
+                            <UserPlus className="h-4 w-4 mr-2" />{t('chat.joinGroup')}</Button>
                     )
                 )}
             </CardContent>
@@ -304,7 +304,7 @@ export default function GroupsPage() {
         <div className="flex flex-col items-center justify-center py-12 text-center">
             <Users className="h-16 w-16 text-muted-foreground mb-4 opacity-50" />
             <h3 className="text-lg font-medium mb-2">{message}</h3>
-            <p className="text-muted-foreground text-sm">Try creating a new group or joining an existing one</p>
+            <p className="text-muted-foreground text-sm">{t('chat.tryCreatingANewGroupOr')}</p>
         </div>
     );
 
@@ -314,37 +314,34 @@ export default function GroupsPage() {
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight mb-1">Groups</h1>
-                        <p className="text-muted-foreground">Discover and join groups in the community</p>
+                        <h1 className="text-3xl font-bold tracking-tight mb-1">{t('chat.groups')}</h1>
+                        <p className="text-muted-foreground">{t('chat.discoverAndJoinGroupsInThe')}</p>
                     </div>
                     <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                         <DialogTrigger asChild>
                             <Button>
-                                <Plus className="mr-2 h-4 w-4" /> Create Group
-                            </Button>
+                                <Plus className="mr-2 h-4 w-4" />{t('chat.createGroup')}</Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[425px]">
                             <DialogHeader>
-                                <DialogTitle>Create New Group</DialogTitle>
-                                <DialogDescription>
-                                    Create a community group for people with shared interests.
-                                </DialogDescription>
+                                <DialogTitle>{t('chat.createNewGroup')}</DialogTitle>
+                                <DialogDescription>{t('chat.createACommunityGroupForPeople')}</DialogDescription>
                             </DialogHeader>
                             <div className="grid gap-4 py-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="name">Group Name</Label>
+                                    <Label htmlFor="name">{t('chat.groupName')}</Label>
                                     <Input
                                         id="name"
-                                        placeholder="Enter group name..."
+                                        placeholder={t('chat.enterGroupName')}
                                         value={newGroupName}
                                         onChange={(e) => setNewGroupName(e.target.value)}
                                     />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="description">Description</Label>
+                                    <Label htmlFor="description">{t('challenges.description')}</Label>
                                     <Textarea
                                         id="description"
-                                        placeholder="What is this group about?"
+                                        placeholder={t('chat.whatIsThisGroupAbout')}
                                         value={newGroupDescription}
                                         onChange={(e) => setNewGroupDescription(e.target.value)}
                                         rows={3}
@@ -352,9 +349,7 @@ export default function GroupsPage() {
                                 </div>
                             </div>
                             <DialogFooter>
-                                <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                                    Cancel
-                                </Button>
+                                <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>{t('common.cancel')}</Button>
                                 <Button onClick={handleCreateGroup} disabled={isCreating}>
                                     {isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     {isCreating ? 'Creating...' : 'Create Group'}
@@ -369,7 +364,7 @@ export default function GroupsPage() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         type="search"
-                        placeholder="Search groups by name or description..."
+                        placeholder={t('chat.searchGroupsByNameOrDescription')}
                         className="pl-10"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}

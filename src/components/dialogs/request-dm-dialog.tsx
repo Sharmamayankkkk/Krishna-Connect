@@ -18,6 +18,8 @@ import { useAppContext } from '@/providers/app-provider'
 import type { User } from '@/lib/types'
 import { Loader2 } from 'lucide-react'
 
+import { useTranslation } from 'react-i18next';
+
 interface RequestDmDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -25,6 +27,8 @@ interface RequestDmDialogProps {
 }
 
 export function RequestDmDialog({ open, onOpenChange, targetUser }: RequestDmDialogProps) {
+  const { t } = useTranslation();
+
   const { sendDmRequest } = useAppContext()
   const [reason, setReason] = React.useState('')
   const [isSending, setIsSending] = React.useState(false)
@@ -51,8 +55,8 @@ export function RequestDmDialog({ open, onOpenChange, targetUser }: RequestDmDia
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader className="sr-only">
-          <DialogTitle>Request Message</DialogTitle>
-          <DialogDescription>Send a message request to this user</DialogDescription>
+          <DialogTitle>{t('dialogs.requestMessage')}</DialogTitle>
+          <DialogDescription>{t('dialogs.sendAMessageRequestToThis')}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <DialogHeader>
@@ -62,7 +66,7 @@ export function RequestDmDialog({ open, onOpenChange, targetUser }: RequestDmDia
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <Label htmlFor="reason">Reason for Contact</Label>
+            <Label htmlFor="reason">{t('dialogs.reasonForContact')}</Label>
             <Textarea
               id="reason"
               value={reason}
@@ -74,9 +78,7 @@ export function RequestDmDialog({ open, onOpenChange, targetUser }: RequestDmDia
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button type="button" variant="outline" disabled={isSending}>
-                Cancel
-              </Button>
+              <Button type="button" variant="outline" disabled={isSending}>{t('common.cancel')}</Button>
             </DialogClose>
             <Button type="submit" disabled={!reason.trim() || isSending}>
               {isSending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

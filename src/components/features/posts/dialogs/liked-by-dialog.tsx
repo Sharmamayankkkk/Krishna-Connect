@@ -17,6 +17,8 @@ import { FollowButton } from "@/app/(app)/profile/[username]/components/follow-b
 import { useAppContext } from "@/providers/app-provider";
 import { VerificationBadge } from "@/components/shared/verification-badge";
 
+import { useTranslation } from 'react-i18next';
+
 interface LikedByDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
@@ -33,6 +35,8 @@ interface LikedUser {
 }
 
 export function LikedByDialog({ open, onOpenChange, postId }: LikedByDialogProps) {
+  const { t } = useTranslation();
+
     const [users, setUsers] = useState<LikedUser[]>([]);
     const [loading, setLoading] = useState(true);
     const supabase = createClient();
@@ -61,7 +65,7 @@ export function LikedByDialog({ open, onOpenChange, postId }: LikedByDialogProps
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle className="text-center">Likes</DialogTitle>
+                    <DialogTitle className="text-center">{t('settings.promotions.likes')}</DialogTitle>
                 </DialogHeader>
                 <ScrollArea className="h-[300px] w-full pr-4">
                     {loading ? (
@@ -69,9 +73,7 @@ export function LikedByDialog({ open, onOpenChange, postId }: LikedByDialogProps
                             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                         </div>
                     ) : users.length === 0 ? (
-                        <div className="text-center py-8 text-muted-foreground">
-                            No likes yet.
-                        </div>
+                        <div className="text-center py-8 text-muted-foreground">{t('post.noLikesYet')}</div>
                     ) : (
                         <div className="space-y-4">
                             {users.map((user) => (

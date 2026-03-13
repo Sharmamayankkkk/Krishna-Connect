@@ -16,10 +16,12 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { createClient } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
@@ -141,8 +143,8 @@ export default function LoginPage() {
 
             <Tabs defaultValue="email" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="email">Email</TabsTrigger>
-                <TabsTrigger value="phone" disabled title="Phone login is temporarily unavailable">Phone</TabsTrigger>
+                <TabsTrigger value="email">{t('auth.email')}</TabsTrigger>
+                <TabsTrigger value="phone" disabled title={t('auth.phoneUnavailable')}>{t('auth.phone')}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="email">
@@ -150,7 +152,7 @@ export default function LoginPage() {
                   {error && (
                     <Alert variant="destructive">
                       <AlertCircle className="h-4 w-4" />
-                      <AlertTitle>Login Failed</AlertTitle>
+                      <AlertTitle>{t('auth.loginFailed')}</AlertTitle>
                       <AlertDescription>{error}</AlertDescription>
                     </Alert>
                   )}
@@ -173,7 +175,7 @@ export default function LoginPage() {
                         : 'top-1/2 -translate-y-1/2 scale-100 text-muted-foreground'
                         }`}
                     >
-                      Email
+                      {t('auth.email')}
                     </Label>
                   </div>
 
@@ -195,7 +197,7 @@ export default function LoginPage() {
                         : 'top-1/2 -translate-y-1/2 scale-100 text-muted-foreground'
                         }`}
                     >
-                      Password
+                      {t('auth.password')}
                     </Label>
                     <Button
                       type="button"
@@ -215,12 +217,12 @@ export default function LoginPage() {
                       href="/forgot-password"
                       className="text-sm text-foreground/80 hover:text-primary hover:underline transition-colors"
                     >
-                      Forgot password?
+                      {t('auth.forgotPasswordTitle')}
                     </Link>
                   </div>
 
                   <Button type="submit" className="w-full font-semibold shadow-lg hover:shadow-primary/25 transition-all" size="lg">
-                    Sign In
+                    {t('auth.signIn')}
                   </Button>
                 </form>
               </TabsContent>
@@ -230,7 +232,7 @@ export default function LoginPage() {
                   {error && (
                     <Alert variant="destructive">
                       <AlertCircle className="h-4 w-4" />
-                      <AlertTitle>Error</AlertTitle>
+                      <AlertTitle>{t('common.error')}</AlertTitle>
                       <AlertDescription>{error}</AlertDescription>
                     </Alert>
                   )}
@@ -253,7 +255,7 @@ export default function LoginPage() {
                           : 'top-1/2 -translate-y-1/2 scale-100 text-muted-foreground'
                           }`}
                       >
-                        Phone Number
+                        {t('auth.phoneNumber')}
                       </Label>
                     </div>
                   ) : (
@@ -261,7 +263,7 @@ export default function LoginPage() {
                       <Input
                         id="otp"
                         type="text"
-                        placeholder="Enter 6-digit OTP"
+                        placeholder={t('auth.enterOtp')}
                         required
                         value={otp}
                         onChange={(e) => setOtp(e.target.value)}
@@ -275,7 +277,7 @@ export default function LoginPage() {
                           : 'top-1/2 -translate-y-1/2 scale-100 text-muted-foreground'
                           }`}
                       >
-                        One-Time Password
+                        {t('auth.otp')}
                       </Label>
                     </div>
                   )}
@@ -283,9 +285,9 @@ export default function LoginPage() {
                   <Button type="submit" className="w-full font-semibold shadow-lg hover:shadow-primary/25 transition-all" size="lg" disabled={isLoading}>
                     {isLoading ? (
                       <span className="flex items-center gap-2">
-                        Processing...
+                        {t('auth.processing')}
                       </span>
-                    ) : isOtpSent ? 'Verify OTP & Login' : 'Get OTP'}
+                    ) : isOtpSent ? t('auth.verifyOtpLogin') : t('auth.getOtp')}
                   </Button>
 
                   {isOtpSent && (
@@ -300,11 +302,11 @@ export default function LoginPage() {
                             setTimeLeft(0);
                           }}
                         >
-                          Change Phone Number
+                          {t('auth.changePhoneNumber')}
                         </Button>
 
                         {timeLeft > 0 ? (
-                          <span>Resend in {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}</span>
+                          <span>{t('auth.resendIn', { minutes: Math.floor(timeLeft / 60), seconds: (timeLeft % 60).toString().padStart(2, '0') })}</span>
                         ) : (
                           <button
                             type="button"
@@ -312,7 +314,7 @@ export default function LoginPage() {
                             className="text-primary hover:underline font-medium"
                             disabled={isLoading}
                           >
-                            Resend OTP
+                            {t('auth.resendOtp')}
                           </button>
                         )}
                       </div>
@@ -325,7 +327,7 @@ export default function LoginPage() {
             <div className="flex items-center my-6">
               <span className="flex-1 border-t border-border" />
               <span className="mx-4 text-xs uppercase text-muted-foreground font-medium">
-                Or continue with
+                {t('auth.orContinueWith')}
               </span>
               <span className="flex-1 border-t border-border" />
             </div>
@@ -337,17 +339,17 @@ export default function LoginPage() {
                 className="w-full bg-background/50 hover:bg-accent hover:text-accent-foreground transition-all"
               >
                 <Icons.google className="mr-2 h-4 w-4" />
-                Google
+                {t('auth.google')}
               </Button>
             </div>
 
             <div className="mt-6 text-center text-sm text-muted-foreground">
-              Don&apos;t have an account?{' '}
+              {t('auth.dontHaveAccount')}{' '}
               <Link
                 href="/signup"
                 className="font-medium text-primary hover:text-primary/80 hover:underline transition-colors"
               >
-                Sign up
+                {t('auth.signUpLink')}
               </Link>
             </div>
           </CardContent>

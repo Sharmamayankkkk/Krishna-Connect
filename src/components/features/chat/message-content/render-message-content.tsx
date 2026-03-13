@@ -15,6 +15,8 @@ import { getAvatarUrl } from '@/lib/utils';
 import type { Message } from '@/lib/types';
 import { PollMessage } from './poll-message';
 
+import { useTranslation } from 'react-i18next';
+
 const formatBytes = (bytes: number, decimals = 2) => {
     if (!+bytes) return '0 Bytes';
     const k = 1024;
@@ -41,6 +43,7 @@ interface RenderMessageContentOptions {
 }
 
 function PostShareCard({ metadata }: { metadata: any }) {
+    const { t } = useTranslation();
     const [thumbnail, setThumbnail] = React.useState<string | null>(null);
     const authorName = metadata?.postAuthor || metadata?.description?.replace('@', '') || 'Unknown';
     const authorAvatar = metadata?.postAuthorAvatar || metadata?.image;
@@ -86,7 +89,7 @@ function PostShareCard({ metadata }: { metadata: any }) {
                 </div>
                 {hasMedia && displaySrc && (
                     <div className="relative aspect-square w-full bg-black/5">
-                        <Image src={displaySrc} alt="Post content" fill className="object-cover" sizes="(max-width: 768px) 100vw, 300px" />
+                        <Image src={displaySrc} alt={t('chat.postContent')} fill className="object-cover" sizes="(max-width: 768px) 100vw, 300px" />
                         {isVideo && (
                             <div className="absolute inset-0 flex items-center justify-center bg-black/20">
                                 <div className="bg-black/50 backdrop-blur-sm rounded-full p-2.5">

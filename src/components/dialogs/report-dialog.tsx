@@ -19,6 +19,8 @@ import { useAppContext } from '@/providers/app-provider'
 import type { User, Message } from '@/lib/types'
 import { Loader2 } from 'lucide-react'
 
+import { useTranslation } from 'react-i18next';
+
 interface ReportDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -27,6 +29,8 @@ interface ReportDialogProps {
 }
 
 export function ReportDialog({ open, onOpenChange, userToReport, messageToReport }: ReportDialogProps) {
+  const { t } = useTranslation();
+
   const { reportUser, blockUser } = useAppContext()
   const [reason, setReason] = React.useState('')
   const [alsoBlock, setAlsoBlock] = React.useState(false)
@@ -73,7 +77,7 @@ export function ReportDialog({ open, onOpenChange, userToReport, messageToReport
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="reason">Reason for Report</Label>
+              <Label htmlFor="reason">{t('dialogs.reasonForReport')}</Label>
               <Textarea
                 id="reason"
                 value={reason}
@@ -85,14 +89,12 @@ export function ReportDialog({ open, onOpenChange, userToReport, messageToReport
             </div>
             <div className="flex items-center space-x-2">
               <Checkbox id="also-block" checked={alsoBlock} onCheckedChange={(checked) => setAlsoBlock(!!checked)} />
-              <Label htmlFor="also-block" className="text-sm font-normal">Also block this user</Label>
+              <Label htmlFor="also-block" className="text-sm font-normal">{t('dialogs.alsoBlockThisUser')}</Label>
             </div>
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button type="button" variant="outline" disabled={isSending}>
-                Cancel
-              </Button>
+              <Button type="button" variant="outline" disabled={isSending}>{t('common.cancel')}</Button>
             </DialogClose>
             <Button type="submit" disabled={!reason.trim() || isSending}>
               {isSending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

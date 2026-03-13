@@ -12,7 +12,11 @@ import { useToast } from '@/hooks/use-toast';
 import { Challenge } from '@/components/challenges/types';
 import { Card, CardContent } from '@/components/ui/card';
 
+import { useTranslation } from 'react-i18next';
+
 export default function SubmitProofPage() {
+  const { t } = useTranslation();
+
     const params = useParams();
     const router = useRouter();
     const supabase = createClient();
@@ -151,7 +155,7 @@ export default function SubmitProofPage() {
                     </Button>
                     <div>
                         <h1 className="text-xl font-bold line-clamp-1">{challenge.title}</h1>
-                        <p className="text-xs text-muted-foreground">Submit Proof of Completion</p>
+                        <p className="text-xs text-muted-foreground">{t('challenges.submitProofOfCompletion')}</p>
                     </div>
                 </div>
             </header>
@@ -164,7 +168,7 @@ export default function SubmitProofPage() {
                             <CheckCircle className="h-6 w-6 text-primary" />
                         </div>
                         <div>
-                            <h3 className="font-bold text-foreground">Guidelines</h3>
+                            <h3 className="font-bold text-foreground">{t('challenges.guidelines')}</h3>
                             <p className="text-sm text-muted-foreground mt-1">Review the challenge rules carefully. Upload a clear photo, video link, or detailed notes to prove you've accomplished the goal.</p>
                             {challenge.submission_deadline && (
                                 <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-orange-500">
@@ -179,7 +183,7 @@ export default function SubmitProofPage() {
 
                             {/* Media Upload */}
                             <div className="space-y-3">
-                                <Label className="text-base font-bold flex items-center gap-2"><Upload className="h-4 w-4" /> Media Proof</Label>
+                                <Label className="text-base font-bold flex items-center gap-2"><Upload className="h-4 w-4" />{t('challenges.mediaProof')}</Label>
                                 <div className="border-2 border-dashed border-border/60 hover:border-primary/50 transition-colors rounded-xl p-4 flex flex-col items-center justify-center text-center relative bg-muted/20 min-h-[200px] overflow-hidden">
                                     <input
                                         type="file"
@@ -188,19 +192,19 @@ export default function SubmitProofPage() {
                                         onChange={handleMediaChange}
                                     />
                                     {mediaPreview ? (
-                                        <img src={mediaPreview} alt="Preview" className="absolute inset-0 w-full h-full object-contain bg-black/5" />
+                                        <img src={mediaPreview} alt={t('settings.appearance.preview')} className="absolute inset-0 w-full h-full object-contain bg-black/5" />
                                     ) : (
                                         <>
                                             <div className="h-12 w-12 rounded-full bg-background border flex items-center justify-center mb-3 shadow-sm">
                                                 <Upload className="h-5 w-5 text-muted-foreground" />
                                             </div>
-                                            <p className="text-sm font-medium">Click or drag file here</p>
+                                            <p className="text-sm font-medium">{t('challenges.clickOrDragFileHere')}</p>
                                             <p className="text-xs text-muted-foreground mt-1 max-w-[200px]">PNG, JPG, or MP4 up to 10MB</p>
                                         </>
                                     )}
                                     {mediaPreview && (
                                         <div className="absolute top-2 right-2 z-20">
-                                            <Button size="sm" variant="secondary" onClick={(e) => { e.preventDefault(); setMediaFile(null); setMediaPreview(null); }} className="h-8 shadow-md">Replace</Button>
+                                            <Button size="sm" variant="secondary" onClick={(e) => { e.preventDefault(); setMediaFile(null); setMediaPreview(null); }} className="h-8 shadow-md">{t('challenges.replace')}</Button>
                                         </div>
                                     )}
                                 </div>
@@ -208,10 +212,10 @@ export default function SubmitProofPage() {
 
                             {/* Notes Area */}
                             <div className="space-y-3">
-                                <Label htmlFor="notes" className="text-base font-bold flex items-center gap-2"><FileText className="h-4 w-4" /> Notes & Story</Label>
+                                <Label htmlFor="notes" className="text-base font-bold flex items-center gap-2"><FileText className="h-4 w-4" />{t('challenges.notesStory')}</Label>
                                 <Textarea
                                     id="notes"
-                                    placeholder="Describe your experience completing this challenge..."
+                                    placeholder={t('challenges.describeYourExperienceCompletingThisChallenge')}
                                     className="min-h-[150px] resize-none text-base p-4"
                                     value={proofText}
                                     onChange={(e) => setProofText(e.target.value)}
@@ -246,9 +250,7 @@ export default function SubmitProofPage() {
                         className="flex-1 sm:flex-none sm:w-32"
                         disabled={isSubmitting}
                         onClick={() => handleSubmit(true)}
-                    >
-                        Save Draft
-                    </Button>
+                    >{t('challenges.saveDraft')}</Button>
                     <Button
                         className="flex-1 sm:flex-none sm:w-48 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-md"
                         disabled={isSubmitting}

@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Calendar } from 'lucide-react';
 import { useAppContext } from '@/providers/app-provider';
@@ -43,6 +44,7 @@ function EventsPageLoader() {
 }
 
 export default function EventsPage() {
+    const { t } = useTranslation();
     const { loggedInUser } = useAppContext();
     const { toast } = useToast();
     const supabase = createClient();
@@ -59,7 +61,7 @@ export default function EventsPage() {
             .order('date_time', { ascending: false });
 
         if (error) {
-            toast({ variant: 'destructive', title: 'Error fetching events', description: error.message });
+            toast({ variant: 'destructive', title: t('events.fetchError'), description: error.message });
             setEvents([]);
         } else {
             setEvents(data as Event[]);
@@ -100,19 +102,19 @@ export default function EventsPage() {
                     <SidebarTrigger className="md:hidden" />
                     <div className="flex items-center gap-2">
                         <Calendar className="h-5 w-5 text-primary" />
-                        <h1 className="text-xl font-bold">Events</h1>
+                        <h1 className="text-xl font-bold">{t('events.title')}</h1>
                     </div>
                     <div className="ml-auto">
                         {isVerified ? (
                             <Button onClick={() => setIsCreateOpen(true)} size="sm" className="gap-2 rounded-full">
                                 <PlusCircle className="h-4 w-4" />
-                                <span className="hidden sm:inline">Create Event</span>
+                                <span className="hidden sm:inline">{t('events.createEvent')}</span>
                             </Button>
                         ) : (
                             <Button asChild size="sm" variant="outline" className="gap-2 rounded-full">
                                 <Link href="/get-verified">
                                     <PlusCircle className="h-4 w-4" />
-                                    <span className="hidden sm:inline">Get Verified to Create</span>
+                                    <span className="hidden sm:inline">{t('events.getVerifiedToCreate')}</span>
                                     <span className="sm:hidden"><PlusCircle className="h-3.5 w-3.5" /></span>
                                 </Link>
                             </Button>
@@ -126,7 +128,7 @@ export default function EventsPage() {
                 ) : (
                     <div className="space-y-8">
                         <section>
-                            <h3 className="text-2xl font-semibold tracking-tight mb-4">Upcoming Events</h3>
+                            <h3 className="text-2xl font-semibold tracking-tight mb-4">{t('events.upcoming')}</h3>
                             {upcomingEvents.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                     {upcomingEvents.map(event => <EventCard key={event.id} event={event} onRsvp={fetchEvents} />)}
@@ -137,20 +139,20 @@ export default function EventsPage() {
                                         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-secondary">
                                             <Calendar className="h-8 w-8 text-muted-foreground" />
                                         </div>
-                                        <CardTitle>No Upcoming Events</CardTitle>
-                                        <CardDescription>Check back later for new events.</CardDescription>
+                                        <CardTitle>{t('events.noUpcoming')}</CardTitle>
+                                        <CardDescription>{t('events.checkBackLater')}</CardDescription>
                                     </CardHeader>
                                 </Card>
                             )}
                         </section>
                         <section>
-                            <h3 className="text-2xl font-semibold tracking-tight mb-4">Past Events</h3>
+                            <h3 className="text-2xl font-semibold tracking-tight mb-4">{t('events.past')}</h3>
                              {pastEvents.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                     {pastEvents.map(event => <EventCard key={event.id} event={event} onRsvp={fetchEvents} />)}
                                 </div>
                             ) : (
-                                <p className="text-sm text-muted-foreground">No past events to show.</p>
+                                <p className="text-sm text-muted-foreground">{t('events.noPast')}</p>
                             )}
                         </section>
 

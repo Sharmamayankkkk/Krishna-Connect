@@ -17,6 +17,8 @@ import { AuthGate } from '@/components/auth-gate';
 import { usePostInteractions } from '@/hooks/use-post-interactions';
 import { transformPost } from '@/lib/post-utils';
 
+import { useTranslation } from 'react-i18next';
+
 const POST_QUERY = `
     id,
     user_id,
@@ -50,6 +52,8 @@ const POST_QUERY = `
 `;
 
 export default function PostView() {
+  const { t } = useTranslation();
+
     const params = useParams<{ username: string; id: string }>();
     const router = useRouter();
     const { toast } = useToast();
@@ -108,7 +112,7 @@ export default function PostView() {
                 .single();
 
             if (error || !data) {
-                toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch post.' });
+                toast({ variant: 'destructive', title: t('common.error'), description: t('post.couldNotFetchPost') });
                 notFound();
             } else {
                 const formattedPost = transformPost(data);
@@ -148,7 +152,7 @@ export default function PostView() {
             if (error) throw error;
 
             setCommentContent('');
-            toast({ title: 'Comment posted!' });
+            toast({ title: t('post.commentPosted') });
 
             if (data) {
                 setPost(prev => prev ? ({
@@ -161,7 +165,7 @@ export default function PostView() {
                 }) : null);
             }
         } catch (error) {
-            toast({ variant: 'destructive', title: 'Failed to post reply' });
+            toast({ variant: 'destructive', title: t('post.failedToPostReply') });
         } finally {
             setIsPostingComment(false);
         }
@@ -179,7 +183,7 @@ export default function PostView() {
                     <Button variant="ghost" size="icon" onClick={() => router.back()}>
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
-                    <h2 className="text-xl font-bold tracking-tight">Post</h2>
+                    <h2 className="text-xl font-bold tracking-tight">{t('post.postButton')}</h2>
                 </div>
             </header>
 
@@ -271,9 +275,7 @@ export default function PostView() {
                                     })
                                 ) : (
                                     <div className="p-10 text-center">
-                                        <p className="text-muted-foreground">
-                                            No comments yet.
-                                        </p>
+                                        <p className="text-muted-foreground">{t('explore.noCommentsYet')}</p>
                                     </div>
                                 )}
                             </div>

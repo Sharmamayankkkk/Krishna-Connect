@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Users } from 'lucide-react';
 
 // Mock data for lists - in a real app, this would come from an API
@@ -26,17 +27,18 @@ const mockLists = [
 ];
 
 export default function ListsPage() {
+  const { t } = useTranslation();
   const [lists, setLists] = useState(mockLists);
 
   return (
     <div className="container mx-auto max-w-3xl py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Your Lists</h1>
+        <h1 className="text-3xl font-bold">{t('lists.title')}</h1>
         {/* <Button>Create new list</Button> */}
       </div>
 
       <p className="text-muted-foreground mb-8">
-        Create and manage custom lists of users to see a curated timeline of posts from only those accounts.
+        {t('lists.description')}
       </p>
 
       <div className="space-y-4">
@@ -47,7 +49,7 @@ export default function ListsPage() {
               <p className="text-sm text-muted-foreground">{list.description}</p>
               <div className="flex items-center text-sm text-muted-foreground mt-2">
                 <Users className="h-4 w-4 mr-1" />
-                <span>{list.memberCount} members</span>
+                <span>{list.memberCount} {t('lists.members')}</span>
               </div>
             </div>
             <div>
@@ -60,7 +62,7 @@ export default function ListsPage() {
 
       {lists.length === 0 && (
         <div className="text-center py-16 border-2 border-dashed rounded-lg">
-            <p className="text-muted-foreground">You haven't created any lists yet.</p>
+            <p className="text-muted-foreground">{t('lists.noLists')}</p>
             {/* <Button className="mt-4">Create your first list</Button> */}
         </div>
       )}

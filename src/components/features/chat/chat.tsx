@@ -39,6 +39,8 @@ import { MessageInfoDialog } from './dialogs/message-info-dialog';
 import { ChatInput } from './chat-input';
 import { TranslateDialog } from '../../dialogs/translate-dialog';
 
+import { useTranslation } from 'react-i18next';
+
 // ---------------------------------------------------------------------------
 // Small pure separator components — no hooks, safe to keep inline
 // ---------------------------------------------------------------------------
@@ -51,14 +53,17 @@ const DateSeparator = ({ date }: { date: string }) => (
     </div>
 );
 
-const UnreadSeparator = () => (
+const UnreadSeparator = () => {
+    const { t } = useTranslation();
+    return (
     <div className="relative my-4">
         <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-red-500" /></div>
         <div className="relative flex justify-center">
-            <span className="bg-red-500 px-3 text-xs font-medium text-white rounded-full">Unread Messages</span>
+            <span className="bg-red-500 px-3 text-xs font-medium text-white rounded-full">{t('chat.unreadMessages')}</span>
         </div>
     </div>
-);
+    );
+};
 
 // ---------------------------------------------------------------------------
 // Chat component
@@ -68,6 +73,8 @@ export function Chat({
     highlightMessageId, isLoadingMore, hasMoreMessages,
     topMessageSentinelRef, scrollContainerRef, initialUnreadCount = 0,
 }: ChatProps) {
+  const { t } = useTranslation();
+
     const { toast } = useToast();
     const { themeSettings, dmRequests, leaveGroup, deleteGroup, sendDmRequest, unblockUser, blockedUsers, forwardMessage } = useAppContext();
     const { startCall, startGroupCall, joinCall } = useCallContext();
@@ -357,7 +364,7 @@ export function Chat({
                                     <Pin className="h-4 w-4 sm:h-5 sm:w-5" />
                                 </Button>
                             </TooltipTrigger>
-                            <TooltipContent>View Pinned Messages</TooltipContent>
+                            <TooltipContent>{t('chat.viewPinnedMessages')}</TooltipContent>
                         </Tooltip></TooltipProvider>
                     )}
                     {starredMessages.length > 0 && (
@@ -367,7 +374,7 @@ export function Chat({
                                     <Star className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400 fill-amber-400" />
                                 </Button>
                             </TooltipTrigger>
-                            <TooltipContent>View Starred Messages</TooltipContent>
+                            <TooltipContent>{t('chat.viewStarredMessages')}</TooltipContent>
                         </Tooltip></TooltipProvider>
                     )}
                     <Button variant="ghost" size="icon" className="hidden sm:inline-flex h-8 w-8 sm:h-9 sm:w-9"
@@ -387,22 +394,20 @@ export function Chat({
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem asChild><Link href={isGroup ? `/group/${chat.id}` : `/profile/${chatPartner?.username || ''}`}>View Info</Link></DropdownMenuItem>
+                            <DropdownMenuItem asChild><Link href={isGroup ? `/group/${chat.id}` : `/profile/${chatPartner?.username || ''}`}>{t('chat.viewInfo')}</Link></DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => setIsStarredDialogOpen(true)}>
-                                <Star className="mr-2 h-4 w-4" /><span>Starred Messages</span>
+                                <Star className="mr-2 h-4 w-4" /><span>{t('starred.title')}</span>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => isGroup ? startGroupCall(chat.id.toString(), 'voice') : chatPartner && startCall(chatPartner.id, 'voice')} className="sm:hidden">
-                                <Phone className="mr-2 h-4 w-4" /><span>Voice Call</span>
+                                <Phone className="mr-2 h-4 w-4" /><span>{t('chat.voiceCall')}</span>
                             </DropdownMenuItem>
                             <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => {
                                 if (window.confirm('Are you sure you want to clear this chat? This will remove all messages from your view.')) {
                                     handleClearChat();
                                 }
-                            }}>
-                                Clear chat
-                            </DropdownMenuItem>
+                            }}>{t('chat.clearChat')}</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

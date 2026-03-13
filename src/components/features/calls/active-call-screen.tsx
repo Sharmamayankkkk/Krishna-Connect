@@ -12,6 +12,8 @@ import { Maximize2, Minimize2, LayoutGrid, Square, Pin, PinOff } from "lucide-re
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
+import { useTranslation } from 'react-i18next';
+
 function formatDuration(seconds: number): string {
   const hrs = Math.floor(seconds / 3600)
   const mins = Math.floor((seconds % 3600) / 60)
@@ -142,6 +144,8 @@ function RemoteParticipant({
 }
 
 export function ActiveCallScreen() {
+  const { t } = useTranslation();
+
   const {
     activeCall,
     callStatus,
@@ -314,7 +318,7 @@ export function ActiveCallScreen() {
               />
             ) : (
               // Should not happen if logic is correct, but fallback
-              <div className="flex items-center justify-center h-full text-white/50">Select a participant</div>
+              <div className="flex items-center justify-center h-full text-white/50">{t('calls.selectAParticipant')}</div>
             )}
           </div>
 
@@ -326,10 +330,10 @@ export function ActiveCallScreen() {
                 <StreamVideo stream={localStream} isMirrored={true} className="w-full h-full" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-zinc-700">
-                  <span className="text-xs text-white/50">You</span>
+                  <span className="text-xs text-white/50">{t('calls.you')}</span>
                 </div>
               )}
-              <div className="absolute bottom-1 right-1 px-1 py-0.5 bg-black/60 rounded text-[10px] text-white">You</div>
+              <div className="absolute bottom-1 right-1 px-1 py-0.5 bg-black/60 rounded text-[10px] text-white">{t('calls.you')}</div>
             </div>
 
             {/* Other Remotes */}
@@ -455,7 +459,7 @@ export function ActiveCallScreen() {
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-zinc-800">
               <Avatar className="h-12 w-12">
-                <AvatarFallback>You</AvatarFallback>
+                <AvatarFallback>{t('calls.you')}</AvatarFallback>
               </Avatar>
             </div>
           )}

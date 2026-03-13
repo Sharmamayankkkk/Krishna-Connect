@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useDeleteCollection, useRemoveFromCollection } from '../hooks/useCollections';
 
+import { useTranslation } from 'react-i18next';
+
 function isVideoUrl(url: string): boolean {
     if (!url || typeof url !== 'string') return false;
     const videoExts = ['.mp4', '.webm', '.ogg', '.mov', '.avi'];
@@ -78,6 +80,8 @@ const transformPostData = (post: any): PostType => {
 };
 
 export default function CollectionDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { t } = useTranslation();
+
     const router = useRouter();
     const { id: collectionId } = use(params);
 
@@ -116,7 +120,7 @@ export default function CollectionDetailsPage({ params }: { params: Promise<{ id
                             <ArrowLeft className="h-5 w-5" />
                         </Button>
                         <div>
-                            <h1 className="text-xl font-bold">Collection</h1>
+                            <h1 className="text-xl font-bold">{t('common.collection')}</h1>
                         </div>
                     </div>
                     <DropdownMenu>
@@ -127,9 +131,7 @@ export default function CollectionDetailsPage({ params }: { params: Promise<{ id
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={handleDeleteCollection}>
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete Collection
-                            </DropdownMenuItem>
+                                <Trash2 className="mr-2 h-4 w-4" />{t('common.deleteCollection')}</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
@@ -168,14 +170,12 @@ export default function CollectionDetailsPage({ params }: { params: Promise<{ id
                                         e.stopPropagation();
                                         handleRemovePost(post.id);
                                     }}
-                                >
-                                    Remove
-                                </Button>
+                                >{t('common.remove')}</Button>
                             </div>
                         ))
                     ) : (
                         <div className="text-center py-12">
-                            <p className="text-muted-foreground">No posts in this collection yet.</p>
+                            <p className="text-muted-foreground">{t('common.noPostsInThisCollectionYet')}</p>
                         </div>
                     )}
                 </div>

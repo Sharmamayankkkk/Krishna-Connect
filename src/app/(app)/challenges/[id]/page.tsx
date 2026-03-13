@@ -18,6 +18,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ChallengeDetailPage() {
+  const { t } = useTranslation();
+
     const params = useParams();
     const router = useRouter();
     const supabase = createClient();
@@ -192,28 +194,28 @@ export default function ChallengeDetailPage() {
                     {/* The 5-Tab Interface */}
                     <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full min-w-0">
                         <TabsList className="mb-8 flex w-full max-w-full justify-start h-auto p-1 bg-card border rounded-xl overflow-x-auto no-scrollbar flex-nowrap shrink-0">
-                            <TabsTrigger value="overview" className="shrink-0 rounded-lg py-2.5 px-4"><BookOpen className="h-4 w-4 mr-2" /> Overview</TabsTrigger>
-                            <TabsTrigger value="submissions" className="shrink-0 rounded-lg py-2.5 px-4"><Users className="h-4 w-4 mr-2" /> Feed</TabsTrigger>
-                            <TabsTrigger value="leaderboard" className="shrink-0 rounded-lg py-2.5 px-4"><Trophy className="h-4 w-4 mr-2" /> Leaderboard</TabsTrigger>
+                            <TabsTrigger value="overview" className="shrink-0 rounded-lg py-2.5 px-4"><BookOpen className="h-4 w-4 mr-2" />{t('analytics.overview')}</TabsTrigger>
+                            <TabsTrigger value="submissions" className="shrink-0 rounded-lg py-2.5 px-4"><Users className="h-4 w-4 mr-2" />{t('nav.feed')}</TabsTrigger>
+                            <TabsTrigger value="leaderboard" className="shrink-0 rounded-lg py-2.5 px-4"><Trophy className="h-4 w-4 mr-2" />{t('challenges.leaderboard')}</TabsTrigger>
                             {challenge.has_joined && !isAuthor && (
-                                <TabsTrigger value="my_entries" className="shrink-0 rounded-lg py-2.5 px-4"><UserCircle className="h-4 w-4 mr-2" /> My Entries</TabsTrigger>
+                                <TabsTrigger value="my_entries" className="shrink-0 rounded-lg py-2.5 px-4"><UserCircle className="h-4 w-4 mr-2" />{t('challenges.myEntries')}</TabsTrigger>
                             )}
-                            <TabsTrigger value="discussion" className="shrink-0 rounded-lg py-2.5 px-4"><MessageSquare className="h-4 w-4 mr-2" /> Discussion</TabsTrigger>
+                            <TabsTrigger value="discussion" className="shrink-0 rounded-lg py-2.5 px-4"><MessageSquare className="h-4 w-4 mr-2" />{t('challenges.discussion')}</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="overview" className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             {/* Description */}
                             <section className="bg-card border rounded-2xl p-6 md:p-8 min-w-0">
-                                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">The Challenge</h3>
+                                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">{t('challenges.theChallenge')}</h3>
                                 <div className="prose prose-sm md:prose-base dark:prose-invert max-w-full overflow-hidden break-words text-muted-foreground whitespace-pre-wrap leading-relaxed min-w-0 text-wrap break-all md:break-words">
-                                    {challenge.description || "No description provided."}
+                                    {challenge.description || t('challenges.noDescriptionProvided')}
                                 </div>
                             </section>
 
                             {/* Rules & Rewards Split */}
                             <div className="grid md:grid-cols-2 gap-8 min-w-0 w-full overflow-hidden">
                                 <section className={`bg-muted/30 border border-primary/20 rounded-2xl p-6 md:p-8 min-w-0 ${!challenge.prize_description ? 'md:col-span-2' : ''}`}>
-                                    <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-primary"><ShieldCheck className="h-5 w-5" /> Rules</h3>
+                                    <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-primary"><ShieldCheck className="h-5 w-5" />{t('challenges.rules')}</h3>
                                     <div className="text-sm md:text-base text-muted-foreground whitespace-pre-wrap font-medium break-words overflow-wrap-anywhere overflow-hidden min-w-0 break-all md:break-words text-wrap">
                                         {Array.isArray(challenge.rules) && challenge.rules.length > 0 ? (
                                             <ul className="list-disc pl-5 space-y-1">
@@ -224,14 +226,14 @@ export default function ChallengeDetailPage() {
                                         ) : typeof challenge.rules === 'string' ? (
                                             challenge.rules
                                         ) : (
-                                            "Standard community guidelines apply."
+                                            t('challenges.standardGuidelines')
                                         )}
                                     </div>
                                 </section>
 
                                 {challenge.prize_description && (
                                     <section className="bg-gradient-to-br from-yellow-500/10 to-orange-500/5 border border-yellow-500/20 rounded-2xl p-6 md:p-8 min-w-0">
-                                        <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-yellow-600 dark:text-yellow-500"><Award className="h-5 w-5" /> Reward</h3>
+                                        <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-yellow-600 dark:text-yellow-500"><Award className="h-5 w-5" />{t('challenges.reward')}</h3>
                                         <div className="text-sm md:text-base font-semibold break-words overflow-wrap-anywhere min-w-0 text-wrap break-all md:break-words">
                                             {challenge.prize_description}
                                         </div>
@@ -244,13 +246,13 @@ export default function ChallengeDetailPage() {
                             {challenge.submissions_visibility === 'author_only' && !isAuthor ? (
                                 <div className="text-center py-20 border-2 border-dashed rounded-xl bg-muted/20">
                                     <ShieldCheck className="mx-auto h-12 w-12 text-muted-foreground/30 mb-4" />
-                                    <h3 className="text-lg font-bold">Private Feed</h3>
+                                    <h3 className="text-lg font-bold">{t('challenges.privateFeed')}</h3>
                                     <p className="text-muted-foreground">The author has chosen to hide submissions until the challenge ends.</p>
                                 </div>
                             ) : publicSubmissions.length === 0 ? (
                                 <div className="text-center py-20 border rounded-xl bg-card">
                                     <Users className="mx-auto h-12 w-12 text-muted-foreground/30 mb-4" />
-                                    <p className="text-muted-foreground">No submissions yet. Be the first!</p>
+                                    <p className="text-muted-foreground">{t('challenges.noSubmissionsYetBeTheFirst')}</p>
                                 </div>
                             ) : (
                                 <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
@@ -264,7 +266,7 @@ export default function ChallengeDetailPage() {
                                                 </div>
                                             </div>
                                             {sub.proof_media_url && (
-                                                <img src={sub.proof_media_url} alt="Proof" className="w-full object-cover" />
+                                                <img src={sub.proof_media_url} alt={t('challenges.proof')} className="w-full object-cover" />
                                             )}
                                             {sub.proof_text && (
                                                 <div className="p-4 text-sm leading-relaxed whitespace-pre-wrap">
@@ -288,7 +290,7 @@ export default function ChallengeDetailPage() {
                             {leaderboard.length === 0 ? (
                                 <div className="text-center py-20 border rounded-xl bg-card">
                                     <Trophy className="mx-auto h-12 w-12 text-muted-foreground/30 mb-4" />
-                                    <p className="text-muted-foreground">The leaderboard is empty. Be the first to score!</p>
+                                    <p className="text-muted-foreground">{t('challenges.theLeaderboardIsEmptyBeThe')}</p>
                                 </div>
                             ) : (
                                 <div className="bg-card border rounded-2xl overflow-hidden">
@@ -316,8 +318,8 @@ export default function ChallengeDetailPage() {
                             {myEntries.length === 0 ? (
                                 <div className="bg-card border rounded-xl p-10 text-center">
                                     <ShieldCheck className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                                    <h3 className="text-lg font-medium mb-1">No entries yet</h3>
-                                    <p className="text-muted-foreground text-sm">Submit proof of your completion to see it here.</p>
+                                    <h3 className="text-lg font-medium mb-1">{t('challenges.noEntriesYet')}</h3>
+                                    <p className="text-muted-foreground text-sm">{t('challenges.submitProofOfYourCompletionTo')}</p>
                                 </div>
                             ) : (
                                 myEntries.map((entry, i) => (
@@ -331,20 +333,19 @@ export default function ChallengeDetailPage() {
 
                                             {/* Status Badge highlighting */}
                                             <div className="mt-2">
-                                                {entry.status === 'approved' && <Badge className="bg-green-500 hover:bg-green-600 text-white border-0 py-1 px-3">Approved</Badge>}
-                                                {entry.status === 'rejected' && <Badge variant="destructive" className="py-1 px-3 border-0">Rejected</Badge>}
-                                                {entry.status === 'pending' && <Badge variant="secondary" className="py-1 px-3 bg-yellow-500/20 text-yellow-700 dark:text-yellow-500 border-0">Under Review</Badge>}
+                                                {entry.status === 'approved' && <Badge className="bg-green-500 hover:bg-green-600 text-white border-0 py-1 px-3">{t('challenges.approved')}</Badge>}
+                                                {entry.status === 'rejected' && <Badge variant="destructive" className="py-1 px-3 border-0">{t('challenges.rejected')}</Badge>}
+                                                {entry.status === 'pending' && <Badge variant="secondary" className="py-1 px-3 bg-yellow-500/20 text-yellow-700 dark:text-yellow-500 border-0">{t('challenges.underReview')}</Badge>}
                                             </div>
 
                                             {/* Crucial Phase 1 Requirement: Display Rejection Reason */}
                                             {entry.status === 'rejected' && entry.rejection_reason && (
                                                 <div className="mt-4 p-3 rounded-lg border border-red-500/20 bg-red-500/5">
                                                     <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-bold text-xs mb-1 uppercase">
-                                                        <AlertCircle className="h-3.5 w-3.5" /> Author Feedback
-                                                    </div>
+                                                        <AlertCircle className="h-3.5 w-3.5" />{t('challenges.authorFeedback')}</div>
                                                     <p className="text-sm text-foreground/80">{entry.rejection_reason}</p>
                                                     {challenge.allow_resubmit_after_rejection && (
-                                                        <Button size="sm" variant="outline" className="w-full mt-3 h-8 text-xs border-red-200 hover:bg-red-50 dark:border-red-900/50">Edit & Resubmit</Button>
+                                                        <Button size="sm" variant="outline" className="w-full mt-3 h-8 text-xs border-red-200 hover:bg-red-50 dark:border-red-900/50">{t('challenges.editResubmit')}</Button>
                                                     )}
                                                 </div>
                                             )}
@@ -352,7 +353,7 @@ export default function ChallengeDetailPage() {
 
                                         <div className="md:w-2/3 border-t md:border-t-0 md:border-l pt-4 md:pt-0 md:pl-6">
                                             {entry.proof_media_url && (
-                                                <img src={entry.proof_media_url} alt="Proof" className="rounded-lg border mb-4 max-h-60 object-contain bg-black/5" />
+                                                <img src={entry.proof_media_url} alt={t('challenges.proof')} className="rounded-lg border mb-4 max-h-60 object-contain bg-black/5" />
                                             )}
                                             <p className="text-sm whitespace-pre-wrap leading-relaxed">{entry.proof_text || "No note provided."}</p>
                                         </div>
@@ -374,17 +375,17 @@ export default function ChallengeDetailPage() {
                 <div className="hidden md:block">
                     {/* Status hint text based on state */}
                     {isClosed ? (
-                        <span className="font-bold text-red-500 flex items-center gap-2"><Lock className="h-4 w-4" /> Submissions Closed</span>
+                        <span className="font-bold text-red-500 flex items-center gap-2"><Lock className="h-4 w-4" />{t('challenges.submissionsClosed')}</span>
                     ) : (
-                        <span className="font-bold text-primary flex items-center gap-2"><Flame className="h-4 w-4" /> Active Challenge</span>
+                        <span className="font-bold text-primary flex items-center gap-2"><Flame className="h-4 w-4" />{t('challenges.activeChallenge')}</span>
                     )}
                 </div>
 
                 <div className="flex w-full md:w-auto gap-3 justify-end leading-none">
                     {isAuthor ? (
                         <div className="flex w-full gap-2">
-                            <Button variant="outline" className="w-1/2 md:w-auto">Edit Challenge</Button>
-                            <Button className="w-1/2 md:w-auto">Manage Participants</Button>
+                            <Button variant="outline" className="w-1/2 md:w-auto">{t('challenges.editChallenge')}</Button>
+                            <Button className="w-1/2 md:w-auto">{t('challenges.manageParticipants')}</Button>
                         </div>
                     ) : (
                         <div className="flex w-full gap-2">
@@ -407,9 +408,9 @@ export default function ChallengeDetailPage() {
                                     className={`w-1/2 md:w-[200px] font-bold ${challenge.has_submitted ? 'border-green-500 text-green-600 bg-green-50/50' : 'bg-foreground text-background hover:bg-foreground/90'}`}
                                 >
                                     {challenge.has_submitted ? (
-                                        <><ShieldCheck className="h-4 w-4 mr-2" /> Proof Submitted</>
+                                        <><ShieldCheck className="h-4 w-4 mr-2" />{t('challenges.proofSubmitted')}</>
                                     ) : (
-                                        <><Upload className="h-4 w-4 mr-2" /> Submit Proof</>
+                                        <><Upload className="h-4 w-4 mr-2" />{t('challenges.submitProof')}</>
                                     )}
                                 </Button>
                             )}
@@ -435,3 +436,5 @@ function ChallengeDetailSkeleton() {
 }
 
 import { Lock } from 'lucide-react';
+
+import { useTranslation } from 'react-i18next';

@@ -10,6 +10,8 @@ import { CreateStatusDialog } from './create-status-dialog';
 import { ViewStatusDialog } from './view-status-dialog';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { useTranslation } from 'react-i18next';
+
 type StatusUpdate = {
     user_id: string;
     name: string;
@@ -122,6 +124,7 @@ function OwnStoryMenu({
     onDelete: () => void;
     anchorRect: DOMRect | null;
 }) {
+    const { t } = useTranslation();
     const menuRef = React.useRef<HTMLDivElement>(null);
 
     React.useEffect(() => {
@@ -149,17 +152,13 @@ function OwnStoryMenu({
                 onClick={() => { onAddHighlight(); onClose(); }}
                 className="flex items-center gap-2.5 w-full px-3 py-2 text-sm hover:bg-accent transition-colors"
             >
-                <Star className="w-4 h-4" />
-                Add to Highlight
-            </button>
+                <Star className="w-4 h-4" />{t('story.addToHighlight')}</button>
             <button
                 role="menuitem"
                 onClick={() => { onDelete(); onClose(); }}
                 className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
             >
-                <Trash2 className="w-4 h-4" />
-                Delete Story
-            </button>
+                <Trash2 className="w-4 h-4" />{t('story.deleteStory')}</button>
         </div>
     );
 }
@@ -167,6 +166,8 @@ function OwnStoryMenu({
 // --- Main Component ---
 
 export function StoriesBar() {
+  const { t } = useTranslation();
+
     const { loggedInUser } = useAppContext();
     const queryClient = useQueryClient();
     const [isCreateOpen, setIsCreateOpen] = React.useState(false);
@@ -360,7 +361,7 @@ export function StoriesBar() {
                         >
                             <StoryRing variant={myStatus ? 'own-active' : 'own-empty'}>
                                 <Avatar className="w-full h-full">
-                                    <AvatarImage src={getAvatarUrl(loggedInUser.avatar_url)} alt="Your Story" className="object-cover" />
+                                    <AvatarImage src={getAvatarUrl(loggedInUser.avatar_url)} alt={t('story.yourStory')} className="object-cover" />
                                     <AvatarFallback className="text-sm">{loggedInUser.name?.charAt(0) || 'Y'}</AvatarFallback>
                                 </Avatar>
                             </StoryRing>
@@ -376,13 +377,11 @@ export function StoriesBar() {
                             <button
                                 onClick={() => setIsCreateOpen(true)}
                                 className="sr-only"
-                                aria-label="Add new story"
+                                aria-label={t('story.addNewStory')}
                             />
                         )}
 
-                        <span className="text-[11px] font-medium text-muted-foreground truncate max-w-[72px] group-hover:text-foreground transition-colors leading-tight">
-                            Your story
-                        </span>
+                        <span className="text-[11px] font-medium text-muted-foreground truncate max-w-[72px] group-hover:text-foreground transition-colors leading-tight">{t('story.yourStory1')}</span>
                     </div>
 
                     {/* === Other Stories === */}
@@ -414,9 +413,7 @@ export function StoriesBar() {
 
                                         {/* LIVE badge */}
                                         {update.is_live && (
-                                            <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-sm leading-none shadow-md border border-background">
-                                                Live
-                                            </span>
+                                            <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-sm leading-none shadow-md border border-background">{t('nav.live')}</span>
                                         )}
                                     </div>
 

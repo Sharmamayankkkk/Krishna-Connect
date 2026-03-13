@@ -16,10 +16,12 @@ import { createClient } from '@/lib/supabase/client'
 import { useAuthGuard } from '@/hooks/use-auth-guard'
 import { useAppContext } from '@/providers/app-provider'
 import Image from 'next/image'
+import { useTranslation } from 'react-i18next'
 
 export function MainNav() {
   const pathname = usePathname()
   const [unreadCount, setUnreadCount] = useState(0)
+  const { t } = useTranslation()
 
   // Fetch unread notification count
   useEffect(() => {
@@ -57,27 +59,27 @@ export function MainNav() {
   const menuItems = [
     {
       href: '/',
-      label: 'Feed',
+      label: t('nav.feed'),
       icon: Sparkles,
       isActive: pathname === '/' || pathname.startsWith('/feed'),
       mobileHidden: true, // In bottom nav
     },
     {
       href: '/explore',
-      label: 'Explore',
+      label: t('nav.explore'),
       icon: Compass,
       isActive: pathname.startsWith('/explore'),
       mobileHidden: true, // In bottom nav
     },
     {
       href: '/live',
-      label: 'Live',
+      label: t('nav.live'),
       icon: Radio,
       isActive: pathname.startsWith('/live'),
     },
     {
       href: '/leela',
-      label: 'Leela',
+      label: t('nav.leela'),
       icon: null, // Custom image icon
       customIcon: '/icons/leela.png',
       isActive: pathname.startsWith('/leela'),
@@ -85,39 +87,39 @@ export function MainNav() {
     },
     {
       href: '/chat',
-      label: 'Chat',
+      label: t('nav.chat'),
       icon: MessageSquare,
       isActive: pathname.startsWith('/chat') || pathname.startsWith('/calls'),
       mobileHidden: true, // In bottom nav
     },
     {
       href: '/notifications',
-      label: 'Notifications',
+      label: t('nav.notifications'),
       icon: Bell,
       isActive: pathname.startsWith('/notifications'),
       badge: unreadCount > 0 ? unreadCount : undefined,
     },
     {
       href: '/challenges',
-      label: 'Challenges',
+      label: t('nav.challenges'),
       icon: Trophy,
       isActive: pathname.startsWith('/challenges'),
     },
     {
       href: '/events',
-      label: 'Events',
+      label: t('nav.events'),
       icon: Calendar,
       isActive: pathname.startsWith('/events'),
     },
     {
       href: '/get-verified',
-      label: 'Get Verified',
+      label: t('nav.getVerified'),
       icon: Sparkles,
       isActive: pathname.startsWith('/get-verified'),
     },
     {
       href: '/news',
-      label: 'News',
+      label: t('nav.news'),
       icon: Newspaper,
       isActive: pathname.startsWith('/news'),
     },

@@ -11,6 +11,8 @@ import { getAvatarUrl } from '@/lib/utils';
 import Image from 'next/image';
 import { VerificationBadge } from "@/components/shared/verification-badge";
 
+import { useTranslation } from 'react-i18next';
+
 interface RepostUser {
     id: string;
     name: string;
@@ -27,6 +29,8 @@ interface RepostedByDialogProps {
 }
 
 export function RepostedByDialog({ open, onOpenChange, postId, initialCount = 0 }: RepostedByDialogProps) {
+  const { t } = useTranslation();
+
     const [users, setUsers] = React.useState<RepostUser[]>([]);
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
@@ -84,7 +88,7 @@ export function RepostedByDialog({ open, onOpenChange, postId, initialCount = 0 
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Reposted by</DialogTitle>
+                    <DialogTitle>{t('post.repostedBy')}</DialogTitle>
                 </DialogHeader>
 
                 <div className="max-h-[400px] overflow-y-auto">
@@ -97,9 +101,7 @@ export function RepostedByDialog({ open, onOpenChange, postId, initialCount = 0 
                             {error}
                         </div>
                     ) : users.length === 0 ? (
-                        <div className="text-center py-8 text-muted-foreground">
-                            No reposts yet
-                        </div>
+                        <div className="text-center py-8 text-muted-foreground">{t('post.noRepostsYet')}</div>
                     ) : (
                         <div className="space-y-3">
                             {users.map((user) => (

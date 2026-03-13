@@ -6,7 +6,11 @@ import { Bell, BellOff, Loader2 } from 'lucide-react';
 import { subscribeUserToPush, unsubscribeUserFromPush } from '@/lib/push-notifications';
 import { useToast } from '@/hooks/use-toast';
 
+import { useTranslation } from 'react-i18next';
+
 export function PushNotificationManager() {
+  const { t } = useTranslation();
+
     const [isSupported, setIsSupported] = React.useState(false);
     const [isSubscribed, setIsSubscribed] = React.useState(false);
     const [isLoading, setIsLoading] = React.useState(true);
@@ -82,18 +86,14 @@ export function PushNotificationManager() {
                     onClick={handleUnsubscribe}
                     className="gap-2"
                 >
-                    <BellOff className="h-4 w-4" />
-                    Disable Notifications
-                </Button>
+                    <BellOff className="h-4 w-4" />{t('common.disableNotifications')}</Button>
             ) : (
                 <Button
                     size="sm"
                     onClick={handleSubscribe}
                     className="gap-2"
                 >
-                    <Bell className="h-4 w-4" />
-                    Enable Notifications
-                </Button>
+                    <Bell className="h-4 w-4" />{t('common.enableNotifications')}</Button>
             )}
         </div>
     );

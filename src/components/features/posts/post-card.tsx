@@ -62,6 +62,7 @@ import { VerificationBadge } from "@/components/shared/verification-badge";
 import { AutoLinkPreview } from './auto-link-preview';
 import { QrCodeOverlay } from '../media/qr-code-overlay';
 import { LikeAnimation } from '@/components/shared/like-animation';
+import { useTranslation } from 'react-i18next';
 
 interface PostCardProps {
     post: PostType;
@@ -123,19 +124,20 @@ const DeleteConfirmDialog = ({ open, onOpenChange, onConfirm, itemType = "post" 
 };
 
 const ReportDialog = ({ open, onOpenChange, onReport }: { open: boolean; onOpenChange: (open: boolean) => void; onReport: () => void }) => {
+    const { t } = useTranslation();
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Report Post</DialogTitle>
+                    <DialogTitle>{t('dialogs.reportTitle')}</DialogTitle>
                     <DialogDescription>
-                        Why are you reporting this post?
+                        {t('dialogs.reportDescription')}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
-                    <p className="text-sm text-muted-foreground">Select a reason:</p>
+                    <p className="text-sm text-muted-foreground">{t('dialogs.selectReason')}</p>
                     <div className="grid gap-2">
-                        {['Spam', 'Inappropriate Content', 'Harassment', 'Misinformation'].map((reason) => (
+                        {[t('dialogs.reportReasons.spam'), t('dialogs.reportReasons.inappropriate'), t('dialogs.reportReasons.harassment'), t('dialogs.reportReasons.misinformation')].map((reason) => (
                             <Button key={reason} variant="outline" className="justify-start" onClick={onReport}>
                                 {reason}
                             </Button>
@@ -144,7 +146,7 @@ const ReportDialog = ({ open, onOpenChange, onReport }: { open: boolean; onOpenC
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="ghost">Cancel</Button>
+                        <Button variant="ghost">{t('common.cancel')}</Button>
                     </DialogClose>
                 </DialogFooter>
             </DialogContent>
@@ -153,12 +155,13 @@ const ReportDialog = ({ open, onOpenChange, onReport }: { open: boolean; onOpenC
 };
 
 const QuotePostDialog = ({ post, open, onOpenChange, onQuote }: { post: PostType; open: boolean; onOpenChange: (open: boolean) => void; onQuote: (text: string) => void }) => {
+    const { t } = useTranslation();
     const [text, setText] = React.useState('');
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Quote Post</DialogTitle>
+                    <DialogTitle>{t('dialogs.quotePostTitle')}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                     <div className="border rounded-md p-3 bg-muted/50 text-sm text-muted-foreground">
@@ -166,15 +169,15 @@ const QuotePostDialog = ({ post, open, onOpenChange, onQuote }: { post: PostType
                         <p className="line-clamp-2">{post.content}</p>
                     </div>
                     <Textarea
-                        placeholder="Add a comment..."
+                        placeholder={t('dialogs.addComment')}
                         value={text}
                         onChange={(e) => setText(e.target.value)}
                         className="min-h-[100px]"
                     />
                 </div>
                 <DialogFooter>
-                    <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-                    <Button onClick={() => { onQuote(text); setText(''); }}>Post Quote</Button>
+                    <Button variant="ghost" onClick={() => onOpenChange(false)}>{t('common.cancel')}</Button>
+                    <Button onClick={() => { onQuote(text); setText(''); }}>{t('dialogs.postQuote')}</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -548,6 +551,7 @@ export const PostCard = React.memo(function PostCard({
     onView
 }: PostCardProps) {
     const { author, createdAt, content, media, stats = { likes: 0, comments: 0, reposts: 0, reshares: 0, views: 0, bookmarks: 0 }, originalPost, editedAt, poll, isRepost, isPromoted } = post;
+    const { t } = useTranslation();
     const { loggedInUser } = useAppContext();
     const { requireAuth } = useAuthGuard();
     const { toast } = useToast();
@@ -624,8 +628,8 @@ export const PostCard = React.memo(function PostCard({
     const handleReport = () => {
         setIsReportOpen(false);
         toast({
-            title: "Report Submitted",
-            description: "Thank you for helping keep our community safe."
+            title: t('post.reportSubmittedTitle'),
+            description: t('post.thankYouForReporting')
         });
     };
 
@@ -672,7 +676,7 @@ export const PostCard = React.memo(function PostCard({
         requireAuth(() => {
             onRepost(post.id);
             setShowRepostMenu(false);
-        }, "Log in to repost");
+        }, t('post.loginToRepost'));
     };
 
     const handleRepostWithQuote = () => {
@@ -753,7 +757,7 @@ export const PostCard = React.memo(function PostCard({
                 {isRepost && (
                     <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground mb-1 ml-12">
                         <Repeat2 className="h-3 w-3" />
-                        <span>{author.name} reposted</span>
+                        <span>{t('post.reposted', { name: author.name })}</span>
                     </div>
                 )}
 
@@ -860,9 +864,9 @@ export const PostCard = React.memo(function PostCard({
                                             <DropdownMenuSubContent>
                                                 <DropdownMenuItem onClick={handleSave}>
                                                     {isSaved ? (
-                                                        <span>Remove from Bookmarks</span>
+                                                        <span>{t('post.removeFromBookmarks')}</span>
                                                     ) : (
-                                                        <span>Save to Bookmarks</span>
+                                                        <span>{t('post.saveToBookmarks')}</span>
                                                     )}
                                                 </DropdownMenuItem>
                                                 <DropdownMenuSeparator />
@@ -879,7 +883,7 @@ export const PostCard = React.memo(function PostCard({
                                                     setIsAddToCollectionOpen(true);
                                                 }}>
                                                     <Plus className="mr-2 h-4 w-4" />
-                                                    Add to Collection...
+                                                    {t('post.addToCollection')}
                                                 </DropdownMenuItem>
                                             </DropdownMenuSubContent>
                                         </DropdownMenuPortal>
@@ -890,19 +894,19 @@ export const PostCard = React.memo(function PostCard({
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
                                                 <Edit className="mr-2 h-4 w-4" />
-                                                <span>Edit Post</span>
+                                                <span>{t('post.editPost')}</span>
                                             </DropdownMenuItem>
                                             {onPin && (
                                                 <DropdownMenuItem onClick={() => onPin(post.id)}>
                                                     {post.isPinned ? (
                                                         <>
                                                             <PinOff className="mr-2 h-4 w-4" />
-                                                            <span>Unpin from Profile</span>
+                                                            <span>{t('post.unpinFromProfile')}</span>
                                                         </>
                                                     ) : (
                                                         <>
                                                             <Pin className="mr-2 h-4 w-4" />
-                                                            <span>Pin to Profile</span>
+                                                            <span>{t('post.pinToProfile')}</span>
                                                         </>
                                                     )}
                                                 </DropdownMenuItem>
@@ -911,7 +915,7 @@ export const PostCard = React.memo(function PostCard({
                                             {!post.isPromoted && (
                                                 <DropdownMenuItem onClick={handlePromote}>
                                                     <TrendingUp className="mr-2 h-4 w-4 text-green-500" />
-                                                    <span className="text-green-500 font-medium">Promote Post</span>
+                                                    <span className="text-green-500 font-medium">{t('post.promotePost')}</span>
                                                 </DropdownMenuItem>
                                             )}
                                             <DropdownMenuItem
@@ -919,7 +923,7 @@ export const PostCard = React.memo(function PostCard({
                                                 onClick={() => setIsDeleteOpen(true)}
                                             >
                                                 <Trash2 className="mr-2 h-4 w-4" />
-                                                <span>Delete Post</span>
+                                                <span>{t('post.deletePost')}</span>
                                             </DropdownMenuItem>
                                         </>
                                     ) : (
@@ -927,7 +931,7 @@ export const PostCard = React.memo(function PostCard({
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem onClick={() => setIsReportOpen(true)}>
                                                 <Flag className="mr-2 h-4 w-4" />
-                                                <span>Report Post</span>
+                                                <span>{t('post.reportPost')}</span>
                                             </DropdownMenuItem>
                                         </>
                                     )}
@@ -951,7 +955,7 @@ export const PostCard = React.memo(function PostCard({
                                         onClick={() => setIsExpanded(true)}
                                         className="text-primary hover:underline font-medium ml-1 text-sm"
                                     >
-                                        Read more
+                                        {t('common.readMore')}
                                     </button>
                                 </>
                             ) : (
@@ -1032,16 +1036,16 @@ export const PostCard = React.memo(function PostCard({
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem onClick={handleRepost}>
                                         <Repeat2 className="mr-2 h-4 w-4" />
-                                        Repost
+                                        {t('post.repost')}
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={handleRepostWithQuote}>
                                         <Quote className="mr-2 h-4 w-4" />
-                                        Quote Post
+                                        {t('post.quotePost')}
                                     </DropdownMenuItem>
                                     {(stats.reposts || 0) > 0 && (
                                         <DropdownMenuItem onClick={() => { setShowRepostMenu(false); setIsRepostedByOpen(true); }}>
                                             <Users className="mr-2 h-4 w-4" />
-                                            See who reposted
+                                            {t('post.seeWhoReposted')}
                                         </DropdownMenuItem>
                                     )}
                                 </DropdownMenuContent>
