@@ -12,7 +12,7 @@ interface NewsFeedProps {
 }
 
 export function NewsFeed({ initialItems }: NewsFeedProps) {
-  const { t } = useTranslation();
+    const { t } = useTranslation();
 
     // No state needed anymore as navigation is handled by Link in NewsCard
 

@@ -96,23 +96,28 @@ function calculateItemScore(item: ExploreContentItem): number {
  * 2. Calculate scores for intelligent placement
  * 3. Return top posts by engagement
  */
+/**
+ * Mix posts dynamically — sorted by engagement score across ALL posts,
+ * not limited to the last 24h (unlike getTrendingPosts which is feed-only).
+ */
 export function generateExploreContent(
     posts: PostType[],
-    limit: number = 20
+    limit: number = 30
 ): ExploreContentItem[] {
-    const contentPool: ExploreContentItem[] = [];
+    if (!posts || posts.length === 0) return [];
 
-    // Get top trending posts with scoring
-    const trendingPosts = getTrendingPosts(posts, limit);
-    trendingPosts.forEach((post, idx) => {
-        contentPool.push({
-            id: `post-${post.id}`,
-            type: 'post',
-            data: post,
-            score: calculateEngagementScore(post) + (trendingPosts.length - idx) * 0.1
+    const contentPool: ExploreContentItem[] = posts
+        .slice(0, limit * 2) // Take from first N posts (already sorted by recency from DB)
+        .map((post, idx) => {
+            const score = calculateEngagementScore(post) + (posts.length - idx) * 0.01;
+            return {
+                id: `post-${post.id}`,
+                type: 'post' as const,
+                data: post,
+                score
+            };
         });
-    });
 
-    // Sort by score
-    return contentPool.sort((a, b) => b.score - a.score);
+    // Sort by score descending, take top `limit`
+    return contentPool.sort((a, b) => b.score - a.score).slice(0, limit);
 }

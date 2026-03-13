@@ -89,8 +89,8 @@ export default function ExplorePage() {
         const fetchData = async () => {
             const supabase = createClient();
 
+            // Fetch suggested users
             const { data: usersData } = await supabase.rpc('get_who_to_follow', { limit_count: 8 });
-
             if (usersData) {
                 const enhanced = usersData.map((u: any) => ({
                     ...u,
@@ -100,74 +100,61 @@ export default function ExplorePage() {
                 setSuggestedUsers(enhanced);
             }
 
-            const { data: postsData } = await supabase
-                .from('posts')
-                .select(`
-                    id,
-                    content,
-                    media_urls,
-                    created_at,
-                    user_id,
-                    author:profiles!user_id (
-                        id,
-                        username,
-                        name,
-                        avatar_url,
-                        verified
-                    ),
-                    likes:post_likes(count),
-                    comments:comments(count),
-                    views:post_views(count),
-                    reposts:post_reposts(count)
-                `)
-                .order('created_at', { ascending: false })
-                .limit(60);
+            // Use the dedicated explore feed RPC — returns all public posts with
+            // author info and engagement counts in a single efficient query
+            const { data: postsData, error: postsError } = await supabase
+                .rpc('get_explore_feed', { p_limit: 60, p_offset: 0 });
 
-            if (postsData) {
-                // Pre-select random media for each post (stable across re-renders)
+            if (postsError) {
+                console.error('Explore: Error fetching posts:', postsError);
+                setIsLoading(false);
+                return;
+            }
+
+            if (postsData && postsData.length > 0) {
+                // Pre-select display media for each post (stable across re-renders)
                 const mediaSelection: Record<string, { url: string; type: string }> = {};
 
                 const transformedPosts: PostType[] = postsData.map((p: any) => {
-                    // Handle media_urls which can be [{url, type}] objects or plain strings
                     const rawMedia = p.media_urls || [];
                     const normalizedMedia = rawMedia.map((m: any) => ({
                         url: getMediaUrl(m) || '',
                         type: getMediaType(m)
                     })).filter((m: any) => m.url);
 
-                    // Pick a deterministic media item for the grid thumbnail
+                    const postId = String(p.id);
                     if (normalizedMedia.length > 0) {
-                        mediaSelection[p.id] = pickDisplayMedia(p.id, normalizedMedia)!;
+                        mediaSelection[postId] = pickDisplayMedia(p.id, normalizedMedia)!;
                     }
 
                     return {
-                        id: p.id,
+                        id: postId,
                         content: p.content,
                         createdAt: p.created_at,
                         author: {
-                            id: p.author?.id || p.user_id,
-                            username: p.author?.username || 'user',
-                            name: p.author?.name || 'User',
-                            avatar: p.author?.avatar_url || '/user_Avatar/male.png',
-                            verified: p.author?.verified || 'none'
+                            id: p.author_id || p.user_id,
+                            username: p.author_username || 'user',
+                            name: p.author_name || 'User',
+                            avatar: p.author_avatar || '/user_Avatar/male.png',
+                            verified: p.author_verified || 'none'
                         },
                         media: normalizedMedia,
                         stats: {
-                            likes: p.likes?.[0]?.count || 0,
-                            comments: p.comments?.[0]?.count || 0,
-                            views: p.views?.[0]?.count || 0,
-                            reposts: p.reposts?.[0]?.count || 0,
+                            likes: Number(p.like_count) || 0,
+                            comments: Number(p.comment_count) || 0,
+                            views: p.views_count || 0,
+                            reposts: Number(p.repost_count) || 0,
                             reshares: 0,
                             bookmarks: 0
                         },
-                        likedBy: [],
+                        likedBy: p.is_liked ? [p.user_id] : [],
                         savedBy: [],
-                        repostedBy: [],
+                        repostedBy: p.is_reposted ? [p.user_id] : [],
                         collaborators: [],
                         originalPost: null,
                         isRepost: false,
                         comments: [],
-                        poll: undefined
+                        poll: p.poll || undefined
                     };
                 });
 
@@ -175,7 +162,7 @@ export default function ExplorePage() {
                 const mixedContent = generateExploreContent(transformedPosts, 30);
                 setExploreContent(mixedContent);
 
-                // Extract video thumbnails for video posts
+                // Extract video thumbnails in batches
                 const videoItems = mixedContent.filter(item => {
                     const sel = mediaSelection[item.data.id];
                     return sel?.type === 'video' && sel.url;
@@ -204,6 +191,7 @@ export default function ExplorePage() {
         };
         fetchData();
     }, []);
+
 
     const handlePostClick = (post: any) => {
         router.push(`/profile/${post.author?.username || 'user'}/post/${post.id}`);
