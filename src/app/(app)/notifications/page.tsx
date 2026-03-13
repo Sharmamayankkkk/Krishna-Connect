@@ -154,7 +154,7 @@ const NotificationItem = React.memo(({
         case 'comment':
             actionHtml = (
                 <span>
-                    commented: {inlineSnippet ? <span className="opacity-80">"{inlineSnippet}"</span> : 'on your post.'}
+                    {t('notifications.commented')} {inlineSnippet ? <span className="opacity-80">"{inlineSnippet}"</span> : t('notifications.onYourPost')}
                 </span>
             );
             if (showRightSide) {
@@ -171,7 +171,7 @@ const NotificationItem = React.memo(({
         case 'mention':
             actionHtml = (
                 <span>
-                    mentioned you in a {metadata?.post_media_type === 'video' ? 'reel' : 'post'}
+                    {metadata?.post_media_type === 'video' ? t('notifications.mentionedYouInReel') : t('notifications.mentionedYouInPost')}
                     {inlineSnippet ? <span className="opacity-85">: "{inlineSnippet}"</span> : '.'}
                 </span>
             );
@@ -189,36 +189,36 @@ const NotificationItem = React.memo(({
         case 'follow':
             // If it's a follow request
             if (notification.status === 'pending') {
-                actionHtml = <span>requested to follow you.</span>;
+                actionHtml = <span>{t('notifications.requestedToFollowYou')}</span>;
                 rightSideHtml = (
                     <div className="flex shrink-0 items-center gap-2">
                         <Button 
                             className="h-8 rounded-lg bg-[#0064e0] px-4 py-0 text-sm font-semibold hover:bg-[#0052b8] text-white"
                             onClick={() => onAccept && onAccept(notification.id)}
                         >
-                            Confirm
+                            {t('notifications.confirm')}
                         </Button>
                         <Button 
                             variant="secondary" 
                             className="h-8 rounded-lg bg-muted px-4 py-0 text-sm font-semibold hover:bg-muted/80 text-foreground"
                             onClick={() => onDecline && onDecline(notification.id)}
                         >
-                            Delete
+                            {t('notifications.delete')}
                         </Button>
                     </div>
                 );
             } else {
-                actionHtml = <span>started following you.</span>;
+                actionHtml = <span>{t('notifications.startedFollowingYou')}</span>;
                 rightSideHtml = (
                     <div className="shrink-0">
                          {/* Usually this would toggle between follow/following based on relationship */}
                          {notification.status === 'accepted' ? (
                              <Button variant="secondary" className="h-8 rounded-lg bg-muted px-4 py-0 text-sm font-semibold hover:bg-muted/80 text-foreground">
-                                Following
+                                {t('notifications.following')}
                             </Button>
                          ) : (
                              <Button className="h-8 rounded-lg bg-[#0064e0] px-4 py-0 text-sm font-semibold hover:bg-[#0052b8] text-white">
-                                Follow
+                                {t('notifications.follow')}
                             </Button>
                          )}
                     </div>
@@ -227,7 +227,7 @@ const NotificationItem = React.memo(({
             break;
 
         case 'collaboration_request':
-            actionHtml = <span>invited you to collaborate on a post.</span>;
+            actionHtml = <span>{t('notifications.invitedToCollaborate')}</span>;
             if (showRightSide) {
                 rightSideHtml = (
                     <Link href={targetHref} className="shrink-0">
@@ -260,7 +260,7 @@ const NotificationItem = React.memo(({
             break;
 
         default:
-            actionHtml = <span>sent you a notification.</span>;
+            actionHtml = <span>{t('notifications.sentYouNotification')}</span>;
             break;
     }
 
@@ -444,8 +444,8 @@ export default function NotificationsPage() {
                                             </div>
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className="font-bold text-[15px] leading-tight text-foreground">Follow requests</span>
-                                            <span className="text-[14px] text-muted-foreground">{followRequests[0].fromUser.username} + {followRequests.length - 1} others</span>
+                                            <span className="font-bold text-[15px] leading-tight text-foreground">{t('notifications.followRequests')}</span>
+                                            <span className="text-[14px] text-muted-foreground">{followRequests[0].fromUser.username} {t('notifications.andOthers', { count: followRequests.length - 1 })}</span>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">

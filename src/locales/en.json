@@ -964,7 +964,20 @@
     "andOthersLikedYourPost": "and {{count}} other(s) liked your post",
     "andOthersLikedYourComment": "and {{count}} other(s) liked your comment",
     "repostedYourPost": "reposted your post",
-    "andOthersRepostedYourPost": "and {{count}} other(s) reposted your post"
+    "andOthersRepostedYourPost": "and {{count}} other(s) reposted your post",
+    "commented": "commented:",
+    "onYourPost": "on your post.",
+    "mentionedYouInReel": "mentioned you in a reel",
+    "mentionedYouInPost": "mentioned you in a post",
+    "requestedToFollowYou": "requested to follow you.",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "startedFollowingYou": "started following you.",
+    "following": "Following",
+    "follow": "Follow",
+    "invitedToCollaborate": "invited you to collaborate on a post.",
+    "sentYouNotification": "sent you a notification.",
+    "andOthers": "+ {{count}} others"
   },
   "post": {
     "addGif": "Add GIF",
