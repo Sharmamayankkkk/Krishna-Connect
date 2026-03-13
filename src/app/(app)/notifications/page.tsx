@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNowStrict, isToday, isYesterday, isThisWeek } from 'date-fns';
 import { cn, getAvatarUrl } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 import { NotificationType } from '@/lib/types';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { ChevronRight, Settings, Heart, ImageIcon, PlaySquare, BarChart2, Mic } from 'lucide-react';
@@ -294,6 +295,13 @@ NotificationItem.displayName = 'NotificationItem';
 
 export default function NotificationsPage() {
     const { toast } = useToast();
+    const { t } = useTranslation();
+    const timeGroupLabels: Record<string, string> = {
+        'Today': t('notifications.today'),
+        'This week': t('notifications.thisWeek'),
+        'This month': t('notifications.thisMonth'),
+        'Earlier': t('notifications.earlier'),
+    };
     const [notifications, setNotifications] = React.useState<NotificationType[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const PAGE_SIZE = 50;
@@ -375,13 +383,13 @@ export default function NotificationsPage() {
 
     const handleAcceptRequest = React.useCallback(async (id: string) => {
         setNotifications(prev => prev.map(n => n.id === id ? { ...n, status: 'accepted' } : n));
-        toast({ title: "Follow request accepted" });
+        toast({ title: t('notifications.followRequestAccepted') });
         // TODO: call actual accept RPC
     }, [toast]);
 
     const handleDeclineRequest = React.useCallback(async (id: string) => {
         setNotifications(prev => prev.filter(n => n.id !== id));
-        toast({ title: "Request deleted" });
+        toast({ title: t('notifications.requestDeleted') });
         // TODO: call actual decline RPC
     }, [toast]);
 
@@ -391,7 +399,7 @@ export default function NotificationsPage() {
             <div className="sticky top-0 z-30 flex items-center justify-between bg-background px-4 py-3 sm:px-6">
                 <div className="flex items-center gap-4">
                     <SidebarTrigger className="md:hidden" />
-                    <h1 className="text-xl font-bold tracking-tight">Notifications</h1>
+                    <h1 className="text-xl font-bold tracking-tight">{t('notifications.title')}</h1>
                 </div>
             </div>
 
@@ -456,7 +464,7 @@ export default function NotificationsPage() {
                             groupedNotifications.map((group) => (
                                 <div key={group.label} className="mt-1 w-full">
                                     <h3 className="px-4 pb-3 pt-3 text-[16px] font-bold text-foreground">
-                                        {group.label}
+                                        {timeGroupLabels[group.label] || group.label}
                                     </h3>
                                     <div className="flex flex-col">
                                         {group.items.map((notification) => (
