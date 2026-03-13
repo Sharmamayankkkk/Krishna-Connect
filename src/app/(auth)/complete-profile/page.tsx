@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Icons } from '@/components/icons';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -23,6 +24,7 @@ import type { User } from '@/lib/types';
 
 export default function CompleteProfilePage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { toast } = useToast();
   const supabase = createClient();
   
@@ -52,7 +54,7 @@ export default function CompleteProfilePage() {
         .single();
 
       if (fetchError && fetchError.code !== 'PGRST116') { // PGRST1116 is "No rows found"
-        setError("Could not fetch your profile. Please try logging in again.");
+        setError(t('auth.fetchProfileError'));
         console.error("Error fetching profile:", fetchError);
         setIsLoading(false);
         return;
@@ -74,7 +76,7 @@ export default function CompleteProfilePage() {
           .single();
 
         if (insertError) {
-          setError("Failed to create your profile. Please try logging in again.");
+          setError(t('auth.createProfileError'));
           console.error("Error creating profile:", insertError);
           setIsLoading(false);
           return;
@@ -109,13 +111,13 @@ export default function CompleteProfilePage() {
     setIsLoading(true);
 
     if (!username.trim()) {
-        setError('Username is required.');
+        setError(t('auth.usernameRequired'));
         setIsLoading(false);
         return;
     }
     
     if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-        setError('Username can only contain letters, numbers, and underscores.');
+        setError(t('auth.usernameInvalidChars'));
         setIsLoading(false);
         return;
     }
@@ -128,13 +130,13 @@ export default function CompleteProfilePage() {
       .single();
 
     if (usernameError && usernameError.code !== 'PGRST116') { // PGRST116 = no rows found, which is good
-        setError('Could not verify username. Please try again.');
+        setError(t('auth.errors.usernameCheckFailed'));
         setIsLoading(false);
         return;
     }
       
     if (existingProfile) {
-      setError('This username is already taken. Please choose another one.');
+      setError(t('auth.errors.usernameTaken'));
       setIsLoading(false);
       return;
     }
@@ -157,8 +159,8 @@ export default function CompleteProfilePage() {
       setError(updateError.message);
     } else {
       toast({
-        title: "Profile Complete!",
-        description: "Welcome to Krishna Connect!",
+        title: t('auth.profileComplete'),
+        description: t('auth.welcomeKC'),
       });
       router.push('/chat');
       router.refresh();
@@ -179,42 +181,42 @@ export default function CompleteProfilePage() {
         <div className="mb-4 flex justify-center">
           <Icons.logo className="h-12 w-12 text-primary" />
         </div>
-        <CardTitle className="text-2xl font-bold">Complete Your Profile</CardTitle>
-        <CardDescription>Just a few more details to get you started.</CardDescription>
+        <CardTitle className="text-2xl font-bold">{t('auth.completeProfile')}</CardTitle>
+        <CardDescription>{t('auth.completeProfileDesc')}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleUpdateProfile} className="space-y-4">
           {error && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Error</AlertTitle>
+              <AlertTitle>{t('common.error')}</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
           <div className="space-y-2">
-            <Label htmlFor="full-name">Full Name</Label>
+            <Label htmlFor="full-name">{t('auth.fullName')}</Label>
             <Input id="full-name" placeholder="John Doe" required value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="username">{t('auth.username')}</Label>
             <Input id="username" placeholder="johndoe" required value={username} onChange={(e) => setUsername(e.target.value)} disabled={isLoading} />
           </div>
           <div className="space-y-2">
-            <Label>Gender</Label>
+            <Label>{t('auth.gender')}</Label>
             <RadioGroup value={gender} onValueChange={(value: 'male' | 'female') => setGender(value)} className="flex items-center space-x-4 pt-1" disabled={isLoading}>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="male" id="male" />
-                <Label htmlFor="male" className="font-normal">Prabhuji (Male)</Label>
+                <Label htmlFor="male" className="font-normal">{t('auth.prabhujiMale')}</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="female" id="female" />
-                <Label htmlFor="female" className="font-normal">Mataji (Female)</Label>
+                <Label htmlFor="female" className="font-normal">{t('auth.matajieFemale')}</Label>
               </div>
             </RadioGroup>
           </div>
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save and Continue
+            {t('auth.saveAndContinue')}
           </Button>
         </form>
       </CardContent>

@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Icons } from "@/components/icons"
 import type React from "react"
 import { useState, useEffect } from "react"
+import { useTranslation } from 'react-i18next';
 import { createClient } from "@/lib/utils"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, CheckCircle, Eye, EyeOff, Loader2 } from "lucide-react"
@@ -15,6 +16,7 @@ import { useRouter } from "next/navigation"
 
 export default function UpdatePasswordPage() {
   const router = useRouter()
+  const { t } = useTranslation();
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -42,12 +44,12 @@ export default function UpdatePasswordPage() {
     e.preventDefault()
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match.")
+      setError(t('auth.passwordsNoMatch'))
       return
     }
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters long.")
+      setError(t('auth.passwordMinLength'))
       return
     }
 
@@ -63,7 +65,7 @@ export default function UpdatePasswordPage() {
       if (error) {
         setError(error.message)
       } else {
-        setMessage("Your password has been successfully updated! You will be redirected to the login page.")
+        setMessage(t('auth.passwordUpdated'))
         // Sign out to clear the recovery session
         await supabase.auth.signOut()
         setTimeout(() => {
@@ -71,7 +73,7 @@ export default function UpdatePasswordPage() {
         }, 3000)
       }
     } catch (error: any) {
-      setError("An unexpected error occurred. Please try again.")
+      setError(t('auth.unexpectedError'))
     } finally {
       setIsLoading(false)
     }
@@ -91,15 +93,15 @@ export default function UpdatePasswordPage() {
         <div className="mb-4 flex justify-center">
           <Icons.logo className="h-12 w-12 text-primary" />
         </div>
-        <CardTitle className="text-2xl font-bold">Update Your Password</CardTitle>
-        <CardDescription>Enter a new password for your account below.</CardDescription>
+        <CardTitle className="text-2xl font-bold">{t('auth.updatePasswordTitle')}</CardTitle>
+        <CardDescription>{t('auth.updatePasswordDesc')}</CardDescription>
       </CardHeader>
       <CardContent>
           <form onSubmit={handleUpdatePassword} className="space-y-4">
             {error && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Error</AlertTitle>
+                <AlertTitle>{t('common.error')}</AlertTitle>
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
@@ -109,12 +111,12 @@ export default function UpdatePasswordPage() {
                 className="border-green-500/50 text-green-700 dark:border-green-500 [&>svg]:text-green-700"
               >
                 <CheckCircle className="h-4 w-4" />
-                <AlertTitle>Success!</AlertTitle>
+                <AlertTitle>{t('common.success')}</AlertTitle>
                 <AlertDescription>{message}</AlertDescription>
               </Alert>
             )}
             <div className="space-y-2">
-              <Label htmlFor="password">New Password</Label>
+              <Label htmlFor="password">{t('auth.newPassword')}</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -137,7 +139,7 @@ export default function UpdatePasswordPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirm New Password</Label>
+              <Label htmlFor="confirm-password">{t('auth.confirmNewPassword')}</Label>
               <Input
                 id="confirm-password"
                 type="password"
@@ -149,7 +151,7 @@ export default function UpdatePasswordPage() {
             </div>
             <Button type="submit" className="w-full" disabled={isLoading || !!message}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Update Password
+              {t('auth.updatePassword')}
             </Button>
           </form>
       </CardContent>

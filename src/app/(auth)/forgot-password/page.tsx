@@ -14,11 +14,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Icons } from '@/components/icons';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { createClient } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -39,7 +41,7 @@ export default function ForgotPasswordPage() {
     if (error) {
       setError(error.message);
     } else {
-      setMessage('Password reset link has been sent to your email address. Please check your inbox.');
+      setMessage(t('auth.resetLinkSent'));
     }
   };
 
@@ -49,27 +51,27 @@ export default function ForgotPasswordPage() {
         <div className="mb-4 flex justify-center">
             <Icons.logo className="h-12 w-12 text-primary" />
         </div>
-        <CardTitle className="text-2xl font-bold">Forgot Password?</CardTitle>
-        <CardDescription>Enter your email and we'll send you a link to reset your password.</CardDescription>
+        <CardTitle className="text-2xl font-bold">{t('auth.forgotPasswordTitle')}</CardTitle>
+        <CardDescription>{t('auth.forgotPasswordDesc')}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleResetRequest} className="space-y-4">
           {error && (
               <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Error</AlertTitle>
+                  <AlertTitle>{t('common.error')}</AlertTitle>
                   <AlertDescription>{error}</AlertDescription>
               </Alert>
           )}
            {message && (
               <Alert variant="default" className="border-green-500/50 text-green-700 dark:border-green-500 [&>svg]:text-green-700">
                   <CheckCircle className="h-4 w-4" />
-                  <AlertTitle>Check Your Email</AlertTitle>
+                  <AlertTitle>{t('auth.checkYourEmail')}</AlertTitle>
                   <AlertDescription>{message}</AlertDescription>
               </Alert>
           )}
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('auth.email')}</Label>
             <Input 
               id="email" 
               type="email" 
@@ -82,13 +84,13 @@ export default function ForgotPasswordPage() {
           </div>
           <Button type="submit" className="w-full" disabled={isLoading || !!message}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Send Reset Link
+            {t('auth.sendResetLink')}
           </Button>
         </form>
         <div className="mt-4 text-center text-sm">
-          Remembered your password?{' '}
+          {t('auth.rememberedPassword')}{' '}
           <Link href="/login" className="underline">
-            Back to Login
+            {t('auth.backToLogin')}
           </Link>
         </div>
       </CardContent>
