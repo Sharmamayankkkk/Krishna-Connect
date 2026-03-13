@@ -27,6 +27,7 @@ import ml from '@/locales/ml.json';
 import pa from '@/locales/pa.json';
 import or_ from '@/locales/or.json';
 import as_ from '@/locales/as.json';
+import sa from '@/locales/sa.json';
 
 export const RTL_LANGUAGES = ['ar', 'ur'];
 
@@ -43,6 +44,7 @@ export const SUPPORTED_LANGUAGES = [
   { code: 'pa', name: 'Punjabi', nativeName: 'ਪੰਜਾਬੀ', countryCode: 'IN' },
   { code: 'or', name: 'Odia', nativeName: 'ଓଡ଼ିଆ', countryCode: 'IN' },
   { code: 'as', name: 'Assamese', nativeName: 'অসমীয়া', countryCode: 'IN' },
+  { code: 'sa', name: 'Sanskrit', nativeName: 'संस्कृतम्', countryCode: 'IN' },
   { code: 'ur', name: 'Urdu', nativeName: 'اردو', countryCode: 'PK', rtl: true },
   { code: 'es', name: 'Spanish', nativeName: 'Español', countryCode: 'ES' },
   { code: 'fr', name: 'French', nativeName: 'Français', countryCode: 'FR' },
@@ -80,6 +82,7 @@ const resources = {
   pa: { translation: pa },
   or: { translation: or_ },
   as: { translation: as_ },
+  sa: { translation: sa },
 };
 
 i18n
