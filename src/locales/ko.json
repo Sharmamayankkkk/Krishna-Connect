@@ -176,6 +176,7 @@
     "privacy": {
       "title": "개인정보",
       "description": "콘텐츠를 볼 수 있는 사람 관리",
+      "pageDescription": "콘텐츠를 볼 수 있는 사람 관리",
       "privateAccount": "비공개 계정",
       "privateDescription": "승인한 사람만 사진과 동영상을 볼 수 있습니다.",
       "blockedUsers": "차단된 사용자",

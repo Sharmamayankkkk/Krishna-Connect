@@ -12,6 +12,7 @@ import { cn, getContrastingTextColor } from "@/lib/utils"
 import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { useTranslation } from "react-i18next"
 
 const BUBBLE_COLORS = [
   "#3b82f6", // Blue
@@ -107,6 +108,7 @@ export default function AppearancePage() {
   const { theme, setTheme } = useTheme()
   const { updateSettings, themeSettings, setThemeSettings } = useAppContext()
   const [customWallpaper, setCustomWallpaper] = useState("")
+  const { t } = useTranslation()
 
   const handleThemeChange = (newTheme: string) => {
     setTheme(newTheme)
@@ -120,15 +122,15 @@ export default function AppearancePage() {
   return (
     <div className="space-y-8 pb-10">
       <div>
-        <h3 className="text-lg font-medium">Appearance</h3>
+        <h3 className="text-lg font-medium">{t('settings.appearance.title')}</h3>
         <p className="text-sm text-muted-foreground">
-          Customize how the application looks and feels.
+          {t('settings.appearance.pageDescription')}
         </p>
       </div>
 
       {/* App Theme */}
       <div className="space-y-4">
-        <Label className="text-base">App Theme</Label>
+        <Label className="text-base">{t('settings.appearance.appTheme')}</Label>
         <RadioGroup
           defaultValue={theme}
           onValueChange={handleThemeChange}
@@ -150,7 +152,7 @@ export default function AppearancePage() {
                   </div>
                 </div>
               </div>
-              <span className="block w-full p-2 text-center text-sm font-medium">Light</span>
+              <span className="block w-full p-2 text-center text-sm font-medium">{t('settings.appearance.light')}</span>
             </Label>
           </div>
           <div className="text-center">
@@ -168,7 +170,7 @@ export default function AppearancePage() {
                   </div>
                 </div>
               </div>
-              <span className="block w-full p-2 text-center text-sm font-medium">Dark</span>
+              <span className="block w-full p-2 text-center text-sm font-medium">{t('settings.appearance.dark')}</span>
             </Label>
           </div>
           <div className="text-center">
@@ -186,7 +188,7 @@ export default function AppearancePage() {
                   </div>
                 </div>
               </div>
-              <span className="block w-full p-2 text-center text-sm font-medium">System</span>
+              <span className="block w-full p-2 text-center text-sm font-medium">{t('settings.appearance.system')}</span>
             </Label>
           </div>
         </RadioGroup>
@@ -196,24 +198,24 @@ export default function AppearancePage() {
 
       <div className="space-y-6">
         <div>
-          <h3 className="text-lg font-medium">Chat Appearance</h3>
+          <h3 className="text-lg font-medium">{t('settings.appearance.chatAppearance')}</h3>
           <p className="text-sm text-muted-foreground">
-            Preview and customize your chat experience.
+            {t('settings.appearance.chatDescription')}
           </p>
         </div>
 
         {/* Live Preview */}
         <div className="space-y-2">
-          <Label>Preview</Label>
+          <Label>{t('settings.appearance.preview')}</Label>
           <ChatPreview themeSettings={themeSettings} />
         </div>
 
         {/* Bubble Colors */}
         <div className="space-y-4">
-          <Label>Bubble Color</Label>
+          <Label>{t('settings.appearance.bubbleColor')}</Label>
           <div className="space-y-3">
             <div className="flex items-center gap-4">
-              <span className="text-xs text-muted-foreground w-16">Outgoing</span>
+              <span className="text-xs text-muted-foreground w-16">{t('settings.appearance.outgoing')}</span>
               <div className="flex flex-wrap gap-2">
                 {BUBBLE_COLORS.map(color => (
                   <ColorSwatch
@@ -231,7 +233,7 @@ export default function AppearancePage() {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-xs text-muted-foreground w-16">Incoming</span>
+              <span className="text-xs text-muted-foreground w-16">{t('settings.appearance.incoming')}</span>
               <div className="flex flex-wrap gap-2">
                 {BUBBLE_COLORS.map(color => (
                   <ColorSwatch
@@ -253,7 +255,7 @@ export default function AppearancePage() {
 
         {/* Username Color */}
         <div className="space-y-2">
-          <Label>Username Color</Label>
+          <Label>{t('settings.appearance.usernameColor')}</Label>
           <div className="flex flex-wrap gap-2">
             {BUBBLE_COLORS.map(color => (
               <ColorSwatch
@@ -273,7 +275,7 @@ export default function AppearancePage() {
 
         {/* Chat Wallpaper */}
         <div className="space-y-2">
-          <Label>Chat Wallpaper</Label>
+          <Label>{t('settings.appearance.chatWallpaper')}</Label>
           <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
             {WALLPAPERS.map(bg => (
               <button
@@ -297,16 +299,16 @@ export default function AppearancePage() {
               <DialogTrigger asChild>
                 <button className="aspect-square rounded-md border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center text-muted-foreground hover:bg-muted/50 transition-colors">
                   <ImageIcon className="h-6 w-6 mb-1" />
-                  <span className="text-[10px]">Custom</span>
+                  <span className="text-[10px]">{t('settings.appearance.custom')}</span>
                 </button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Set Custom Wallpaper</DialogTitle>
+                  <DialogTitle>{t('settings.appearance.setCustomWallpaper')}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 pt-4">
                   <div className="space-y-2">
-                    <Label>Image URL</Label>
+                    <Label>{t('settings.appearance.imageUrl')}</Label>
                     <Input
                       placeholder="https://example.com/image.png"
                       value={customWallpaper}
@@ -319,7 +321,7 @@ export default function AppearancePage() {
                       setCustomWallpaper('');
                     }
                   }}>
-                    Set Wallpaper
+                    {t('settings.appearance.setWallpaper')}
                   </Button>
                 </div>
               </DialogContent>
@@ -330,7 +332,7 @@ export default function AppearancePage() {
         {/* Brightness */}
         <div className="space-y-4 pt-2">
           <div className="flex items-center justify-between">
-            <Label>Wallpaper Brightness</Label>
+            <Label>{t('settings.appearance.wallpaperBrightness')}</Label>
             <span className="text-sm text-muted-foreground">{themeSettings.wallpaperBrightness}%</span>
           </div>
           <Slider

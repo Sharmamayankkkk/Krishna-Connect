@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthGuard } from "@/hooks/use-auth-guard";
 import UserIdentity from "@/components/shared/user-identity";
 import { SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
+import { useTranslation } from "react-i18next";
 
 function UserMenuSkeleton() {
   return (
@@ -34,6 +35,7 @@ function UserMenuSkeleton() {
 export function UserMenu() {
   const { loggedInUser, isReady } = useAppContext();
   const supabase = createClient();
+  const { t } = useTranslation();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -50,12 +52,12 @@ export function UserMenu() {
       <div className="flex flex-col gap-2 p-2">
         <Link href="/login" className="w-full">
           <Button variant="default" className="w-full justify-start">
-            Log in
+            {t('userMenu.logIn')}
           </Button>
         </Link>
         <Link href="/signup" className="w-full">
           <Button variant="outline" className="w-full justify-start">
-            Sign up
+            {t('userMenu.signUp')}
           </Button>
         </Link>
       </div>
@@ -85,43 +87,43 @@ export function UserMenu() {
         <Link href="/profile">
           <DropdownMenuItem>
             <User className="mr-2 h-4 w-4" />
-            Profile
+            {t('userMenu.profile')}
           </DropdownMenuItem>
         </Link>
         <Link href="/bookmarks">
           <DropdownMenuItem>
             <Bookmark className="mr-2 h-4 w-4" />
-            <span>Bookmarks</span>
+            <span>{t('userMenu.bookmarks')}</span>
           </DropdownMenuItem>
         </Link>
         <Link href="/starred">
           <DropdownMenuItem>
             <Star className="mr-2 h-4 w-4" />
-            <span>Starred Messages</span>
+            <span>{t('userMenu.starredMessages')}</span>
           </DropdownMenuItem>
         </Link>
         <Link href="/analytics">
           <DropdownMenuItem>
             <BarChart3 className="mr-2 h-4 w-4" />
-            <span>Analytics</span>
+            <span>{t('userMenu.analytics')}</span>
           </DropdownMenuItem>
         </Link>
         <Link href="/settings">
           <DropdownMenuItem>
             <Settings className="mr-2 h-4 w-4" />
-            Settings
+            {t('userMenu.settings')}
           </DropdownMenuItem>
         </Link>
         <Link href="/directory">
           <DropdownMenuItem>
             <FileText className="mr-2 h-4 w-4" />
-            Policies & Guidelines
+            {t('userMenu.policies')}
           </DropdownMenuItem>
         </Link>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout}>
           <LogOut className="mr-2 h-4 w-4" />
-          Logout
+          {t('userMenu.logout')}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <div className="p-1">

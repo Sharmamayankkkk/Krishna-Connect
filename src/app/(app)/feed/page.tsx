@@ -17,12 +17,14 @@ import { transformPost } from '@/lib/post-utils';
 import { GoogleAd } from '@/components/ads/google-ad';
 import { ChallengeCard } from '@/components/challenges/ChallengeCard';
 import { Challenge } from '@/components/challenges/types';
+import { useTranslation } from 'react-i18next';
 
 const SCROLL_THRESHOLD = 500;
 
 export default function FeedPage() {
     const { loggedInUser } = useAppContext();
     const { toast } = useToast();
+    const { t } = useTranslation();
 
     const [allPosts, setAllPosts] = React.useState<PostType[]>([]);
     const [visiblePosts, setVisiblePosts] = React.useState<PostType[]>([]);
@@ -250,7 +252,7 @@ export default function FeedPage() {
                         <SidebarTrigger className="md:hidden" />
                         <div className="flex items-center gap-2">
                             <Sparkles className="h-5 w-5 text-primary" />
-                            <h1 className="text-xl font-bold">For You</h1>
+                            <h1 className="text-xl font-bold">{t('feed.forYou')}</h1>
                         </div>
                     </div>
                 </header>
@@ -283,8 +285,8 @@ export default function FeedPage() {
                                     <ArrowUp className="h-4 w-4 text-primary group-hover:-translate-y-0.5 transition-transform" />
                                     <span>
                                         {latestNewPostAuthor?.name
-                                            ? `New from ${latestNewPostAuthor.name.split(' ')[0]}${newPostsCount > 1 ? ` and ${newPostsCount - 1} other${newPostsCount > 2 ? 's' : ''}` : ''}`
-                                            : `${newPostsCount} New Post${newPostsCount !== 1 ? 's' : ''}`
+                                            ? t('feed.newFromUser', { name: latestNewPostAuthor.name.split(' ')[0], count: newPostsCount - 1 })
+                                            : t('feed.newPosts', { count: newPostsCount })
                                         }
                                     </span>
                                 </div>
@@ -310,8 +312,8 @@ export default function FeedPage() {
                     {featuredChallenges.length > 0 && (
                         <div className="mb-6 space-y-3">
                             <div className="flex items-center justify-between px-1">
-                                <h2 className="text-sm font-bold flex items-center gap-1.5"><Sparkles className="h-4 w-4 text-primary" /> Trending Challenges</h2>
-                                <a href="/challenges" className="text-xs text-primary font-medium hover:underline">View All</a>
+                                <h2 className="text-sm font-bold flex items-center gap-1.5"><Sparkles className="h-4 w-4 text-primary" /> {t('feed.trendingChallenges')}</h2>
+                                <a href="/challenges" className="text-xs text-primary font-medium hover:underline">{t('common.viewAll')}</a>
                             </div>
                             <div className="flex overflow-x-auto gap-3 pb-2 snap-x no-scrollbar">
                                 {featuredChallenges.map(challenge => (

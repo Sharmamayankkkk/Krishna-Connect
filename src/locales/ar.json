@@ -176,6 +176,7 @@
     "privacy": {
       "title": "الخصوصية",
       "description": "تحكم في من يمكنه رؤية محتواك",
+      "pageDescription": "تحكم في من يمكنه رؤية محتواك",
       "privateAccount": "حساب خاص",
       "privateDescription": "فقط الأشخاص الذين توافق عليهم يمكنهم رؤية صورك ومقاطع الفيديو.",
       "blockedUsers": "المستخدمون المحظورون",

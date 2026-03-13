@@ -12,6 +12,7 @@ import { PostType } from '@/lib/types';
 const dummyPosts: PostType[] = [];
 import { PromotePostDialog } from '@/components/promote-post-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 // This page will be conditionally rendered based on the feature flag
 
@@ -20,6 +21,7 @@ type PromotedPost = PostType & { promotion: { impressions: number; clicks: numbe
 export default function PromotionsSettingsPage() {
     const { loggedInUser } = useAppContext();
     const { toast } = useToast();
+    const { t } = useTranslation();
 
     // State for the promotion dialog
     const [isDialogOpen, setIsDialogOpen] = React.useState(false);
@@ -61,8 +63,8 @@ export default function PromotionsSettingsPage() {
         setActivePromotions(prev => [newPromotion, ...prev]);
 
         toast({
-            title: "Post Promotion Started!",
-            description: `Your post is now being promoted for $${budget}.`,
+            title: t("post.promotionStarted"),
+            description: t("post.promotionDescription"),
         });
     };
 
@@ -71,11 +73,11 @@ export default function PromotionsSettingsPage() {
             <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Promotions</CardTitle>
-                        <CardDescription>The ability to promote posts is currently unavailable.</CardDescription>
+                        <CardTitle>{t('settings.promotions.title')}</CardTitle>
+                        <CardDescription>{t('settings.promotions.unavailable')}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <p className='text-sm text-muted-foreground'>The ability to boost your posts to a wider audience is coming soon. Stay tuned!</p>
+                        <p className='text-sm text-muted-foreground'>{t('settings.promotions.comingSoonMessage')}</p>
                     </CardContent>
                 </Card>
             </div>
@@ -92,32 +94,32 @@ export default function PromotionsSettingsPage() {
             />
             <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
                 <div className="flex items-center justify-between space-y-2">
-                    <h2 className="text-3xl font-bold tracking-tight">Promotions</h2>
+                    <h2 className="text-3xl font-bold tracking-tight">{t('settings.promotions.title')}</h2>
                 </div>
 
                 {/* Stats Cards */}
                 <div className="grid gap-4 md:grid-cols-2">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Active Promotions</CardTitle>
+                            <CardTitle className="text-sm font-medium">{t('settings.promotions.activePromotions')}</CardTitle>
                             <Zap className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{activePromotions.length}</div>
                             <p className="text-xs text-muted-foreground">
-                                Number of currently boosted posts.
+                                {t('settings.promotions.activePromotionsDescription')}
                             </p>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Total Impressions</CardTitle>
+                            <CardTitle className="text-sm font-medium">{t('settings.promotions.totalImpressions')}</CardTitle>
                             <BarChart2 className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{(activePromotions.reduce((sum, p) => sum + p.promotion.impressions, 0) || 0).toLocaleString()}</div>
                             <p className="text-xs text-muted-foreground">
-                                Total views on your promoted posts.
+                                {t('settings.promotions.totalImpressionsDescription')}
                             </p>
                         </CardContent>
                     </Card>
@@ -126,18 +128,18 @@ export default function PromotionsSettingsPage() {
                 {/* Active Promotions Section */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Active Promotions</CardTitle>
-                        <CardDescription>Manage your boosted posts and view their performance.</CardDescription>
+                        <CardTitle>{t('settings.promotions.activePromotions')}</CardTitle>
+                        <CardDescription>{t('settings.promotions.managePromotions')}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Post</TableHead>
-                                    <TableHead className='text-right'>Impressions</TableHead>
-                                    <TableHead className='text-right'>Clicks</TableHead>
-                                    <TableHead className='text-center'>Status</TableHead>
-                                    <TableHead className='text-right'>Actions</TableHead>
+                                    <TableHead>{t('post.postButton')}</TableHead>
+                                    <TableHead className='text-right'>{t('settings.promotions.impressions')}</TableHead>
+                                    <TableHead className='text-right'>{t('settings.promotions.clicks')}</TableHead>
+                                    <TableHead className='text-center'>{t('settings.promotions.status')}</TableHead>
+                                    <TableHead className='text-right'>{t('settings.promotions.actions')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -149,13 +151,13 @@ export default function PromotionsSettingsPage() {
                                             <TableCell className='text-right'>{post.promotion.clicks.toLocaleString()}</TableCell>
                                             <TableCell className='text-center'><Badge>{post.promotion.status}</Badge></TableCell>
                                             <TableCell className='text-right'>
-                                                <Button variant="outline" size="sm">Manage</Button>
+                                                <Button variant="outline" size="sm">{t('settings.promotions.manage')}</Button>
                                             </TableCell>
                                         </TableRow>
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="text-center h-24">You have no active promotions.</TableCell>
+                                        <TableCell colSpan={5} className="text-center h-24">{t('settings.promotions.noActivePromotions')}</TableCell>
                                     </TableRow>
                                 )}
                             </TableBody>
@@ -166,17 +168,17 @@ export default function PromotionsSettingsPage() {
                 {/* Promote a Post Section */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Promote a Post</CardTitle>
-                        <CardDescription>Boost your content to reach a wider audience.</CardDescription>
+                        <CardTitle>{t('settings.promotions.promoteAPost')}</CardTitle>
+                        <CardDescription>{t('settings.promotions.promoteDescription')}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Post Content</TableHead>
-                                    <TableHead className='text-center'>Created</TableHead>
-                                    <TableHead className='text-right'>Likes</TableHead>
-                                    <TableHead className='text-right'>Actions</TableHead>
+                                    <TableHead>{t('settings.promotions.postContent')}</TableHead>
+                                    <TableHead className='text-center'>{t('settings.promotions.created')}</TableHead>
+                                    <TableHead className='text-right'>{t('settings.promotions.likes')}</TableHead>
+                                    <TableHead className='text-right'>{t('settings.promotions.actions')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -187,14 +189,14 @@ export default function PromotionsSettingsPage() {
                                             <TableCell className='text-center text-xs text-muted-foreground'>{new Date(post.createdAt).toLocaleDateString()}</TableCell>
                                             <TableCell className='text-right'>{post.stats.likes}</TableCell>
                                             <TableCell className='text-right'>
-                                                <Button size="sm" variant='outline' className='mr-2'><ExternalLink className='h-3 w-3 mr-1' /> View</Button>
-                                                <Button size="sm" onClick={() => handlePromoteClick(post)}><Zap className='h-3 w-3 mr-1' /> Promote</Button>
+                                                <Button size="sm" variant='outline' className='mr-2'><ExternalLink className='h-3 w-3 mr-1' /> {t('settings.promotions.view')}</Button>
+                                                <Button size="sm" onClick={() => handlePromoteClick(post)}><Zap className='h-3 w-3 mr-1' /> {t('settings.promotions.promote')}</Button>
                                             </TableCell>
                                         </TableRow>
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={4} className="text-center h-24">You have no more posts to promote.</TableCell>
+                                        <TableCell colSpan={4} className="text-center h-24">{t('settings.promotions.noMorePosts')}</TableCell>
                                     </TableRow>
                                 )}
                             </TableBody>

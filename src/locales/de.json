@@ -176,6 +176,7 @@
     "privacy": {
       "title": "Datenschutz",
       "description": "Steuern Sie, wer Ihre Inhalte sehen kann",
+      "pageDescription": "Steuern Sie, wer Ihre Inhalte sehen kann",
       "privateAccount": "Privates Konto",
       "privateDescription": "Nur Personen die Sie genehmigen können Ihre Fotos und Videos sehen.",
       "blockedUsers": "Blockierte Benutzer",

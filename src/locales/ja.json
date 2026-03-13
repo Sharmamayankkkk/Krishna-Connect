@@ -176,6 +176,7 @@
     "privacy": {
       "title": "プライバシー",
       "description": "コンテンツの閲覧者を管理",
+      "pageDescription": "コンテンツの閲覧者を管理",
       "privateAccount": "非公開アカウント",
       "privateDescription": "承認した人のみがあなたの写真と動画を見ることができます。",
       "blockedUsers": "ブロックしたユーザー",

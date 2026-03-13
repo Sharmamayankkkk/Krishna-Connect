@@ -176,6 +176,7 @@
     "privacy": {
       "title": "隐私",
       "description": "控制谁可以查看您的内容",
+      "pageDescription": "控制谁可以查看您的内容",
       "privateAccount": "私密账户",
       "privateDescription": "只有您批准的人才能查看您的照片和视频。",
       "blockedUsers": "已屏蔽用户",

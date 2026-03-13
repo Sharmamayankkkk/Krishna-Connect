@@ -7,10 +7,12 @@ import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/utils"
+import { useTranslation } from "react-i18next"
 
 export default function PrivacyPage() {
   const { loggedInUser, blockedUsers, unblockUser, updateUser } = useAppContext()
   const supabase = createClient()
+  const { t } = useTranslation()
 
   const isPrivate = loggedInUser?.is_private || false
   const [loading, setLoading] = useState(false)
@@ -46,17 +48,17 @@ export default function PrivacyPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium">Privacy</h3>
+        <h3 className="text-lg font-medium">{t('settings.privacy.title')}</h3>
         <p className="text-sm text-muted-foreground">
-          Manage your account privacy and blocked users.
+          {t('settings.privacy.pageDescription')}
         </p>
       </div>
       <div className="space-y-4">
         <div className="flex items-center justify-between rounded-lg border p-4">
           <div className="space-y-0.5">
-            <Label className="text-base">Private Account</Label>
+            <Label className="text-base">{t('settings.privacy.privateAccount')}</Label>
             <p className="text-sm text-muted-foreground block">
-              Only people you approve can see your photos and videos. Your existing followers won't be affected.
+              {t('settings.privacy.privateDescription')}
             </p>
           </div>
           <Switch
@@ -67,9 +69,9 @@ export default function PrivacyPage() {
         </div>
 
         <div className="pt-4">
-          <h4 className="mb-4 text-sm font-medium">Blocked Users</h4>
+          <h4 className="mb-4 text-sm font-medium">{t('settings.privacy.blockedUsers')}</h4>
           {blockedProfiles.length === 0 ? (
-            <p className="text-sm text-muted-foreground">You haven't blocked anyone yet.</p>
+            <p className="text-sm text-muted-foreground">{t('settings.privacy.noBlockedUsers')}</p>
           ) : (
             <div className="space-y-4">
               {blockedProfiles.map(user => (
@@ -85,7 +87,7 @@ export default function PrivacyPage() {
                     </div>
                   </div>
                   <Button variant="outline" size="sm" onClick={() => unblockUser(user.id)}>
-                    Unblock
+                    {t('settings.privacy.unblock')}
                   </Button>
                 </div>
               ))}

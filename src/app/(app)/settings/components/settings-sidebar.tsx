@@ -5,44 +5,46 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Palette, Lock, Shield, ChevronRight, TrendingUp, FileText, Globe } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 interface SettingsSidebarProps extends React.HTMLAttributes<HTMLElement> { }
 
-const items = [
-    {
-        title: "Appearance",
-        href: "/settings/appearance",
-        icon: Palette,
-    },
-    {
-        title: "Language",
-        href: "/settings/language",
-        icon: Globe,
-    },
-    {
-        title: "Privacy",
-        href: "/settings/privacy",
-        icon: Lock,
-    },
-    {
-        title: "Security",
-        href: "/settings/security",
-        icon: Shield,
-    },
-    {
-        title: "Promotions",
-        href: "/settings/promotions",
-        icon: TrendingUp,
-    },
-    {
-        title: "Legal & Policies",
-        href: "/directory",
-        icon: FileText,
-    },
-]
-
 export function SettingsSidebar({ className, ...props }: SettingsSidebarProps) {
     const pathname = usePathname()
+    const { t } = useTranslation()
+
+    const items = [
+        {
+            title: t("settings.appearance.title"),
+            href: "/settings/appearance",
+            icon: Palette,
+        },
+        {
+            title: t("settings.language.title"),
+            href: "/settings/language",
+            icon: Globe,
+        },
+        {
+            title: t("settings.privacy.title"),
+            href: "/settings/privacy",
+            icon: Lock,
+        },
+        {
+            title: t("settings.security.title"),
+            href: "/settings/security",
+            icon: Shield,
+        },
+        {
+            title: t("settings.promotions.title"),
+            href: "/settings/promotions",
+            icon: TrendingUp,
+        },
+        {
+            title: t("settings.legal"),
+            href: "/directory",
+            icon: FileText,
+        },
+    ]
 
     return (
         <nav

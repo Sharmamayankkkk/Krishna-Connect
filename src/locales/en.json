@@ -176,6 +176,7 @@
     "privacy": {
       "title": "Privacy",
       "description": "Control who can see your content",
+      "pageDescription": "Manage your account privacy and blocked users.",
       "privateAccount": "Private Account",
       "privateDescription": "Only people you approve can see your photos and videos. Your existing followers won't be affected.",
       "blockedUsers": "Blocked Users",
