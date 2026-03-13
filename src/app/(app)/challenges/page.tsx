@@ -265,7 +265,7 @@ export default function ChallengesPage() {
                                                 <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-30" />
                                                 <h3 className="text-lg font-medium text-foreground">{t('challenges.noActiveChallenges')}</h3>
                                                 <p className="text-muted-foreground text-sm max-w-sm mx-auto mt-1">
-                                                    Check back later when creators launch new events, or be the first to create one!
+                                                    {t('challenges.noActiveChallengesDescription')}
                                                 </p>
                                             </div>
                                         )}
@@ -303,7 +303,7 @@ export default function ChallengesPage() {
                                         <Link href="/challenges/leaderboard" className="text-xs text-primary hover:underline font-medium">{t('common.viewAll')}</Link>
                                     </div>
                                     <p className="text-sm text-muted-foreground mb-5 relative z-10">
-                                        The global leaderboard tracks points across the entire Challenge ecosystem. Climb the ranks to earn ultimate bragging rights!
+                                        {t('challenges.globalLeaderboardDescription')}
                                     </p>
                                     <Link href="/challenges/leaderboard" className="block relative z-10">
                                         <Button className="w-full bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600 text-white border-0 shadow-md">{t('challenges.viewRankings')}</Button>
@@ -315,7 +315,7 @@ export default function ChallengesPage() {
                                     <h3 className="font-bold mb-2 flex items-center gap-2">
                                         <Sparkles className="h-4 w-4 text-primary" />{t('challenges.launchAnEvent')}</h3>
                                     <p className="text-sm text-muted-foreground mb-4">
-                                        Ready to issue a challenge to your network? Set the rules, deadline, and watch the proofs roll in.
+                                        {t('challenges.launchAnEventDescription')}
                                     </p>
                                     <Link href="/challenges/create">
                                         <Button variant="outline" className="w-full bg-background/50 backdrop-blur-sm border-primary/30 hover:bg-primary/10">{t('challenges.hostAChallenge')}</Button>

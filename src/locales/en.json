@@ -351,7 +351,10 @@
     "youHaventCreatedAny": "You haven't created any",
     "yourActive": "Your Active Challenges",
     "noDescriptionProvided": "No description provided.",
-    "standardGuidelines": "Standard community guidelines apply."
+    "standardGuidelines": "Standard community guidelines apply.",
+    "noActiveChallengesDescription": "Check back later when creators launch new events, or be the first to create one!",
+    "globalLeaderboardDescription": "The global leaderboard tracks points across the entire Challenge ecosystem. Climb the ranks to earn ultimate bragging rights!",
+    "launchAnEventDescription": "Ready to issue a challenge to your network? Set the rules, deadline, and watch the proofs roll in."
   },
   "chat": {
     "addMembers": "Add Members",
