@@ -141,7 +141,7 @@ export function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDi
                 }
             }
 
-            toast({ title: 'Profile updated!', description: 'Your changes have been saved.' });
+            toast({ title: t('profile.profileUpdated'), description: t('profile.changesSaved') });
             onOpenChange(false);
             router.refresh();
         } catch (error: any) {
@@ -178,7 +178,7 @@ export function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDi
                             className="rounded-full"
                         >
                             {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                            Save
+                            {t('profile.save')}
                         </Button>
                     </div>
                 </DialogHeader>
@@ -314,7 +314,7 @@ export function EditProfileDialog({ open, onOpenChange, profile }: EditProfileDi
                                 {isPrivate ? <Lock className="h-3 w-3 text-muted-foreground" /> : <Globe className="h-3 w-3 text-muted-foreground" />}
                             </div>
                             <p className="text-sm text-muted-foreground">
-                                Only your followers will be able to see your photos and videos.
+                                {t('profile.privateAccountHelp')}
                             </p>
                         </div>
                         <Switch

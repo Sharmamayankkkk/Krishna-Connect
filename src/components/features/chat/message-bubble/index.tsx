@@ -30,7 +30,7 @@ import { StoryReplyMessage } from './story-reply-message';
 
 import { useTranslation } from 'react-i18next';
 
-// ReplyPreview is a tiny inner component with no hooks — safe to define here
+// ReplyPreview is a tiny inner component — safe to define here
 const ReplyPreview = ({
     repliedTo,
     themeSettings,
@@ -40,6 +40,7 @@ const ReplyPreview = ({
     themeSettings: any;
     jumpToMessage: (id: number) => void;
 }) => {
+    const { t } = useTranslation();
     const isImageReply = repliedTo.attachment_url && repliedTo.attachment_metadata?.type?.startsWith('image/');
     const isVoiceReply = repliedTo.attachment_metadata?.type === 'audio/webm' || repliedTo.attachment_metadata?.type?.startsWith('audio/');
     const isFileReply = repliedTo.attachment_url && !isImageReply && !isVoiceReply;
@@ -52,13 +53,13 @@ const ReplyPreview = ({
         >
             <div className="flex-1 overflow-hidden min-w-0">
                 <p className="font-semibold text-sm truncate" style={{ color: themeSettings.usernameColor }}>
-                    {repliedTo.profiles?.name || 'Unknown'}
+                    {repliedTo.profiles?.name || t('chat.unknown')}
                 </p>
                 <p className="text-xs truncate opacity-80">
-                    {isVoiceReply ? '🎤 Voice message'
-                        : isFileReply ? `📎 ${repliedTo.attachment_metadata?.name || 'File'}`
-                        : isImageReply ? '🖼️ Photo'
-                        : (typeof repliedTo.content === 'string' ? repliedTo.content : 'Attachment')}
+                    {isVoiceReply ? t('chat.voiceMessage')
+                        : isFileReply ? `📎 ${repliedTo.attachment_metadata?.name || t('chat.file')}`
+                        : isImageReply ? t('chat.photo')
+                        : (typeof repliedTo.content === 'string' ? repliedTo.content : t('chat.attachment'))}
                 </p>
             </div>
             {isImageReply && repliedTo.attachment_url && (

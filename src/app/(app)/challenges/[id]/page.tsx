@@ -208,7 +208,7 @@ export default function ChallengeDetailPage() {
                             <section className="bg-card border rounded-2xl p-6 md:p-8 min-w-0">
                                 <h3 className="text-xl font-bold mb-4 flex items-center gap-2">{t('challenges.theChallenge')}</h3>
                                 <div className="prose prose-sm md:prose-base dark:prose-invert max-w-full overflow-hidden break-words text-muted-foreground whitespace-pre-wrap leading-relaxed min-w-0 text-wrap break-all md:break-words">
-                                    {challenge.description || "No description provided."}
+                                    {challenge.description || t('challenges.noDescriptionProvided')}
                                 </div>
                             </section>
 
@@ -226,7 +226,7 @@ export default function ChallengeDetailPage() {
                                         ) : typeof challenge.rules === 'string' ? (
                                             challenge.rules
                                         ) : (
-                                            "Standard community guidelines apply."
+                                            t('challenges.standardGuidelines')
                                         )}
                                     </div>
                                 </section>

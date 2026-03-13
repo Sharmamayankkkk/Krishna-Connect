@@ -237,7 +237,7 @@
     "codingTech": "Coding & Tech",
     "communityVoted": "Community Voted",
     "completeChallenge": "Complete Challenge",
-    "completed": "Completed",
+    "completed": "completed",
     "configureRulesRewardsAndDeadlines": "Configure rules, rewards, and deadlines",
     "controlsStatus": "Controls & Status",
     "coreDetails": "Core Details",
@@ -349,7 +349,9 @@
     "whatIsThisChallengeAboutInspire": "What is this challenge about? Inspire your community.",
     "writing": "Writing",
     "youHaventCreatedAny": "You haven't created any",
-    "yourActive": "Your Active Challenges"
+    "yourActive": "Your Active Challenges",
+    "noDescriptionProvided": "No description provided.",
+    "standardGuidelines": "Standard community guidelines apply."
   },
   "chat": {
     "addMembers": "Add Members",
@@ -490,10 +492,14 @@
     "viewProfile": "View Profile",
     "viewStarredMessages": "View Starred Messages",
     "voiceCall": "Voice Call",
-    "voiceMessage": "Voice message",
+    "voiceMessage": "🎤 Voice message",
     "whatIsThisGroupAbout": "What is this group about?",
     "youCannotSendDirectMessagesTo": "You cannot send direct messages to this user.",
-    "youCantSendMessagesToA": "You can't send messages to a user you have blocked."
+    "youCantSendMessagesToA": "You can't send messages to a user you have blocked.",
+    "photo": "🖼️ Photo",
+    "attachment": "Attachment",
+    "file": "File",
+    "unknown": "Unknown"
   },
   "comments": {
     "deleted": "Comment deleted",
@@ -681,7 +687,8 @@
     "upcoming": "Upcoming Events",
     "uploadImage": "Upload Image",
     "viewDetails": "View Details",
-    "whatIsThisEventAbout": "What is this event about?"
+    "whatIsThisEventAbout": "What is this event about?",
+    "saveChanges": "Save Changes"
   },
   "explore": {
     "author": "Author",
@@ -1033,7 +1040,8 @@
     "views": "Views",
     "whatIsHappening": "What's happening?!",
     "writeAComment": "Write a comment",
-    "yourCredits": "Your Credits"
+    "yourCredits": "Your Credits",
+    "reposted": "{{name}} reposted"
   },
   "profile": {
     "advertisement": "Advertisement",
@@ -1076,7 +1084,11 @@
     "unfollow": "Unfollow",
     "website": "Website",
     "whereAreYouBased": "Where are you based?",
-    "yourDisplayName": "Your display name"
+    "yourDisplayName": "Your display name",
+    "profileUpdated": "Profile updated!",
+    "changesSaved": "Your changes have been saved.",
+    "save": "Save",
+    "privateAccountHelp": "Only your followers will be able to see your photos and videos."
   },
   "settings": {
     "appearance": {
@@ -1239,5 +1251,14 @@
     "settings": "Settings",
     "signUp": "Sign up",
     "starredMessages": "Starred Messages"
+  },
+  "leela": {
+    "checkOutThisLeela": "Check out this Leela",
+    "linkCopied": "Link copied to clipboard",
+    "onlyVideoFiles": "Only video files are allowed",
+    "videoMustBeUnder": "Video must be under {{size}}MB",
+    "emptyDescription": "Short-form videos from the Krishna Connect community. Be the first to share a Leela!",
+    "whatIsLeelaDescription": "Share divine moments through short-form videos up to 60 seconds. Express your devotion, share teachings, and connect with the community through visual stories.",
+    "uploadFirstLeela": "Upload Your First Leela"
   }
 }

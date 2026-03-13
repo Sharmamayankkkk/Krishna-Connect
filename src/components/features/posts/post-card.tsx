@@ -757,7 +757,7 @@ export const PostCard = React.memo(function PostCard({
                 {isRepost && (
                     <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground mb-1 ml-12">
                         <Repeat2 className="h-3 w-3" />
-                        <span>{author.name} reposted</span>
+                        <span>{t('post.reposted', { name: author.name })}</span>
                     </div>
                 )}
 
@@ -1036,16 +1036,16 @@ export const PostCard = React.memo(function PostCard({
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem onClick={handleRepost}>
                                         <Repeat2 className="mr-2 h-4 w-4" />
-                                        Repost
+                                        {t('post.repost')}
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={handleRepostWithQuote}>
                                         <Quote className="mr-2 h-4 w-4" />
-                                        Quote Post
+                                        {t('post.quotePost')}
                                     </DropdownMenuItem>
                                     {(stats.reposts || 0) > 0 && (
                                         <DropdownMenuItem onClick={() => { setShowRepostMenu(false); setIsRepostedByOpen(true); }}>
                                             <Users className="mr-2 h-4 w-4" />
-                                            See who reposted
+                                            {t('post.seeWhoReposted')}
                                         </DropdownMenuItem>
                                     )}
                                 </DropdownMenuContent>

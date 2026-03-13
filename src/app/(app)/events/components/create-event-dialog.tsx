@@ -260,7 +260,7 @@ export function CreateEventDialog({ open, onOpenChange, eventToEdit, onEventCrea
               <DialogClose asChild><Button type="button" variant="outline">{t('common.cancel')}</Button></DialogClose>
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isEditing ? 'Save Changes' : 'Create Event'}
+                {isEditing ? t('events.saveChanges') : t('events.createEvent')}
               </Button>
             </DialogFooter>
           </form>

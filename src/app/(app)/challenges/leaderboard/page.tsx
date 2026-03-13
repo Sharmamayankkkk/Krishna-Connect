@@ -148,7 +148,7 @@ export default function GlobalLeaderboardPage() {
                                                 <span className="text-sm font-medium opacity-70">pts</span>
                                             </div>
                                             <span className="text-xs opacity-70 mt-0.5">
-                                                {entry.challenges_completed} completed
+                                                {entry.challenges_completed} {t('challenges.completed')}
                                             </span>
                                         </div>
                                     </CardContent>

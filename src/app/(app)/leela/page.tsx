@@ -403,7 +403,7 @@ export default function LeelaPage() {
     const url = `${window.location.origin}/leela?v=${video.id}`
     if (navigator.share) {
       try {
-        await navigator.share({ title: video.caption || 'Check out this Leela', url })
+        await navigator.share({ title: video.caption || t('leela.checkOutThisLeela'), url })
       } catch (err: unknown) {
         if (err instanceof Error && err.name !== 'AbortError') {
           console.error('Share failed:', err.message)
@@ -411,7 +411,7 @@ export default function LeelaPage() {
       }
     } else {
       await navigator.clipboard.writeText(url)
-      toast({ title: 'Link copied to clipboard' })
+      toast({ title: t('leela.linkCopied') })
     }
   }
 
@@ -510,12 +510,12 @@ export default function LeelaPage() {
     if (!file || !loggedInUser) return
 
     if (!file.type.startsWith('video/')) {
-      toast({ title: 'Only video files are allowed', variant: 'destructive' })
+      toast({ title: t('leela.onlyVideoFiles'), variant: 'destructive' })
       return
     }
 
     if (file.size > getMaxFileSize(loggedInUser?.is_verified)) {
-      toast({ title: `Video must be under ${getMaxFileSizeMB(loggedInUser?.is_verified)}MB`, variant: 'destructive' })
+      toast({ title: t('leela.videoMustBeUnder', { size: getMaxFileSizeMB(loggedInUser?.is_verified) }), variant: 'destructive' })
       return
     }
 
@@ -613,16 +613,16 @@ export default function LeelaPage() {
           <div className="space-y-2 max-w-sm">
             <h2 className="text-2xl font-bold">{t('feed.welcomeToLeela')}</h2>
             <p className="text-muted-foreground">
-              Short-form videos from the Krishna Connect community. Be the first to share a Leela!
+              {t('leela.emptyDescription')}
             </p>
           </div>
           <Button className="gap-2" onClick={() => fileInputRef.current?.click()} disabled={isUploading || isUploadDialogOpen}>
             {isUploading ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <Upload className="h-4 w-4" />}
-            {isUploading ? 'Uploading...' : 'Upload Your First Leela'}
+            {isUploading ? t('feed.uploading1') : t('leela.uploadFirstLeela')}
           </Button>
           <div className="mt-4 bg-muted/50 rounded-lg p-4 max-w-xs text-sm text-muted-foreground">
             <p className="font-medium text-foreground mb-1 flex items-center gap-1.5"><Lightbulb className="h-3.5 w-3.5" />{t('feed.whatIsLeela')}</p>
-            <p>Share divine moments through short-form videos up to 60 seconds. Express your devotion, share teachings, and connect with the community through visual stories.</p>
+            <p>{t('leela.whatIsLeelaDescription')}</p>
           </div>
         </div>
       </div>
