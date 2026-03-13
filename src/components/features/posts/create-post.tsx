@@ -668,7 +668,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
     if (!loggedInUser) {
         return (
             <div
-                className="w-full rounded-2xl bg-white shadow-lg border border-slate-100/80 overflow-hidden cursor-pointer hover:shadow-xl transition-shadow duration-300"
+                className="w-full rounded-2xl bg-card shadow-lg border border-border/80 overflow-hidden cursor-pointer hover:shadow-xl transition-shadow duration-300"
                 onClick={() => requireAuth(() => { }, "Log in to post")}
             >
                 <div className="p-4 sm:p-5">
@@ -678,12 +678,12 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                         </Avatar>
                         <div className="flex-1 text-muted-foreground/60 text-lg">{t('post.whatIsHappening')}</div>
                     </div>
-                    <div className="border-t border-slate-100 mt-4 mb-3" />
+                    <div className="border-t border-border mt-4 mb-3" />
                     <div className="flex justify-end">
-                        <Button size="sm" disabled className="rounded-full px-6 opacity-50 bg-gradient-to-r from-blue-400 to-blue-500 text-white border-0">{t('post.postButton')}</Button>
+                        <Button size="sm" disabled className="rounded-full px-6 opacity-50 bg-primary text-primary-foreground border-0">{t('post.postButton')}</Button>
                     </div>
                 </div>
-                <div className="border-t border-slate-100 bg-slate-50/70 px-4 py-3">
+                <div className="border-t border-border bg-muted/70 px-4 py-3">
                     <div className="grid grid-cols-4 gap-y-1">
                         {[
                             { icon: <ImageIcon className="h-4 w-4" />, label: t('create.photoVideo') },
@@ -695,8 +695,8 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                             { icon: <List className="h-4 w-4" />, label: t('post.draft') },
                         ].map(({ icon, label }, i) => (
                             <div key={i} className="flex flex-col items-center gap-1 py-2 rounded-xl opacity-50 w-full">
-                                <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500">{icon}</div>
-                                <span className="text-[10px] text-slate-400 text-center leading-tight w-full px-1 truncate">{label}</span>
+                                <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">{icon}</div>
+                                <span className="text-[10px] text-muted-foreground/60 text-center leading-tight w-full px-1 truncate">{label}</span>
                             </div>
                         ))}
                     </div>
@@ -770,7 +770,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
             </Dialog>
 
             {/* Main Create Post UI */}
-            <div className="w-full rounded-2xl bg-white shadow-lg border border-slate-100/80 overflow-hidden group/create-post transition-shadow duration-300 hover:shadow-xl focus-within:shadow-xl">
+            <div className="w-full rounded-2xl bg-card shadow-lg border border-border/80 overflow-hidden group/create-post transition-shadow duration-300 hover:shadow-xl focus-within:shadow-xl">
                 <CollaborativePostDialog
                     open={isCollaboratorDialogOpen}
                     onOpenChange={setIsCollaboratorDialogOpen}
@@ -1014,7 +1014,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                             <input type="file" ref={leelaInputRef} className="hidden" accept="video/*" onChange={handleLeelaSelect} disabled={isPosting || isUploadingLeela} />
 
                             {/* Divider */}
-                            <div className="border-t border-slate-100 mt-4 -mx-4 sm:-mx-5" />
+                            <div className="border-t border-border mt-4 -mx-4 sm:-mx-5" />
 
                             {/* Post button row */}
                             <div className="flex items-center justify-end pt-3">
@@ -1035,7 +1035,7 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                                     className={cn(
                                         "rounded-full px-7 py-2 font-bold text-base transition-all duration-300 shadow-md hover:shadow-lg border-0",
                                         isPosting ? "opacity-80" : "hover:scale-105 active:scale-95",
-                                        "bg-gradient-to-r from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 text-white"
+                                        "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-primary-foreground"
                                     )}
                                     size="default"
                                 >
@@ -1047,19 +1047,19 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                 </div>{/* close p-4 sm:p-5 (top card section) */}
 
                 {/* ── Bottom Icon Toolbar ── */}
-                <div className="border-t border-slate-100 bg-slate-50/60 px-2 py-2">
+                <div className="border-t border-border bg-muted/60 px-2 py-2">
                     <div className="grid grid-cols-4 gap-y-1">
 
                         {/* Photo / Video */}
                         <button
                             onClick={() => fileInputRef.current?.click()}
                             disabled={isPosting || mediaPreviews.length >= MAX_MEDIA}
-                            className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-40 w-full"
+                            className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-muted transition-colors disabled:opacity-40 w-full"
                         >
-                            <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600">
+                            <div className="w-9 h-9 rounded-xl bg-card border border-border shadow-sm flex items-center justify-center text-muted-foreground">
                                 <ImageIcon className="h-4 w-4" />
                             </div>
-                            <span className="text-[10px] text-slate-500 text-center leading-tight w-full px-1 truncate">{t('create.photoVideo')}</span>
+                            <span className="text-[10px] text-muted-foreground text-center leading-tight w-full px-1 truncate">{t('create.photoVideo')}</span>
                         </button>
 
                         {/* Poll */}
@@ -1067,50 +1067,50 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                             onClick={togglePollMode}
                             disabled={isPosting}
                             className={cn(
-                                "flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-40 w-full",
-                                isPollMode && "bg-blue-50"
+                                "flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-muted transition-colors disabled:opacity-40 w-full",
+                                isPollMode && "bg-primary/10"
                             )}
                         >
                             <div className={cn(
                                 "w-9 h-9 rounded-xl border shadow-sm flex items-center justify-center transition-colors",
-                                isPollMode ? "bg-blue-500 border-blue-400 text-white" : "bg-white border-slate-200 text-slate-600"
+                                isPollMode ? "bg-primary border-primary text-primary-foreground" : "bg-card border-border text-muted-foreground"
                             )}>
                                 <BarChart3 className="h-4 w-4" />
                             </div>
-                            <span className="text-[10px] text-slate-500 text-center leading-tight w-full px-1 truncate">{t('create.poll')}</span>
+                            <span className="text-[10px] text-muted-foreground text-center leading-tight w-full px-1 truncate">{t('create.poll')}</span>
                         </button>
 
                         {/* Collaborate */}
                         <button
                             onClick={() => setIsCollaboratorDialogOpen(true)}
                             disabled={isPosting}
-                            className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-40 w-full"
+                            className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-muted transition-colors disabled:opacity-40 w-full"
                         >
-                            <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600">
+                            <div className="w-9 h-9 rounded-xl bg-card border border-border shadow-sm flex items-center justify-center text-muted-foreground">
                                 <Users className="h-4 w-4" />
                             </div>
-                            <span className="text-[10px] text-slate-500 text-center leading-tight w-full px-1 truncate">{t('create.collaborate')}</span>
+                            <span className="text-[10px] text-muted-foreground text-center leading-tight w-full px-1 truncate">{t('create.collaborate')}</span>
                         </button>
 
                         {/* Schedule */}
                         <button
                             onClick={() => setIsScheduleMode(true)}
                             disabled={isPosting}
-                            className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-40 w-full"
+                            className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-muted transition-colors disabled:opacity-40 w-full"
                         >
-                            <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600">
+                            <div className="w-9 h-9 rounded-xl bg-card border border-border shadow-sm flex items-center justify-center text-muted-foreground">
                                 <Clock className="h-4 w-4" />
                             </div>
-                            <span className="text-[10px] text-slate-500 text-center leading-tight w-full px-1 truncate">{t('create.schedule')}</span>
+                            <span className="text-[10px] text-muted-foreground text-center leading-tight w-full px-1 truncate">{t('create.schedule')}</span>
                         </button>
 
                         {/* Leela */}
                         <button
                             onClick={() => leelaInputRef.current?.click()}
                             disabled={isPosting || isUploadingLeela}
-                            className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-sky-50 transition-colors disabled:opacity-40 w-full"
+                            className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-sky-500/10 transition-colors disabled:opacity-40 w-full"
                         >
-                            <div className="w-9 h-9 rounded-xl bg-white border border-sky-200 shadow-sm flex items-center justify-center ring-1 ring-sky-100">
+                            <div className="w-9 h-9 rounded-xl bg-card border border-sky-200 shadow-sm flex items-center justify-center ring-1 ring-sky-100">
                                 <Image src="/icons/leela.png" alt="Leela" width={20} height={20} className="object-contain" />
                             </div>
                             <span className="text-[10px] font-semibold text-sky-500 text-center leading-tight w-full px-1 truncate">
@@ -1123,12 +1123,12 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                             <button
                                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                                 disabled={isPosting}
-                                className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-40 w-full"
+                                className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-muted transition-colors disabled:opacity-40 w-full"
                             >
-                                <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600">
+                                <div className="w-9 h-9 rounded-xl bg-card border border-border shadow-sm flex items-center justify-center text-muted-foreground">
                                     <Smile className="h-4 w-4" />
                                 </div>
-                                <span className="text-[10px] text-slate-500 text-center leading-tight w-full px-1 truncate">{t('create.emoji')}</span>
+                                <span className="text-[10px] text-muted-foreground text-center leading-tight w-full px-1 truncate">{t('create.emoji')}</span>
                             </button>
                             {showEmojiPicker && (
                                 <div className="absolute bottom-16 left-0 z-50 animate-in fade-in zoom-in-95 duration-200">
@@ -1188,12 +1188,12 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                             <PopoverTrigger asChild>
                                 <button
                                     disabled={isPosting || mediaPreviews.length >= MAX_MEDIA}
-                                    className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-40 w-full"
+                                    className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-muted transition-colors disabled:opacity-40 w-full"
                                 >
-                                    <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600">
+                                    <div className="w-9 h-9 rounded-xl bg-card border border-border shadow-sm flex items-center justify-center text-muted-foreground">
                                         <span className="text-[10px] font-bold tracking-tight">GIF</span>
                                     </div>
-                                    <span className="text-[10px] text-slate-500 text-center leading-tight w-full px-1 truncate">GIF</span>
+                                    <span className="text-[10px] text-muted-foreground text-center leading-tight w-full px-1 truncate">GIF</span>
                                 </button>
                             </PopoverTrigger>
                             <PopoverContent className="w-[320px] p-0" align="start" side="top">
@@ -1212,12 +1212,12 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                         {/* Drafts */}
                         <button
                             onClick={() => setShowDraftDialog(true)}
-                            className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-slate-100 transition-colors w-full"
+                            className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-muted transition-colors w-full"
                         >
-                            <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600">
+                            <div className="w-9 h-9 rounded-xl bg-card border border-border shadow-sm flex items-center justify-center text-muted-foreground">
                                 <List className="h-4 w-4" />
                             </div>
-                            <span className="text-[10px] text-slate-500 text-center leading-tight w-full px-1 truncate">{t('post.draft')}</span>
+                            <span className="text-[10px] text-muted-foreground text-center leading-tight w-full px-1 truncate">{t('post.draft')}</span>
                         </button>
 
                     </div>
