@@ -24,7 +24,7 @@ import { AuthContext } from "./auth-context"
 
 function AppLoading() {
     return (
-        <div className="flex h-screen w-full items-center justify-center bg-background">
+        <div className="fixed inset-0 z-[9999] flex h-screen w-full items-center justify-center bg-background">
             <div className="flex flex-col items-center gap-4">
                 <Icons.logo className="h-16 w-16 animate-pulse text-primary" />
                 <p className="text-sm text-muted-foreground animate-pulse">Connecting to Krishna...</p>
@@ -103,15 +103,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             const chatIds = participantRecords?.map((p) => p.chat_id) || []
             if (chatIds.length > 0) {
-                const [{ data: chatsData }, { data: lastMessages }] = await Promise.all([
+                const [{ data: chatsData }, { data: lastMessages }, { data: unreadData }] = await Promise.all([
                     supabaseRef.current
                         .from("chats")
                         .select("*, participants:participants!chat_id(*, profiles!user_id(*))")
                         .in("id", chatIds),
                     supabaseRef.current.rpc("get_last_messages_for_chats", { p_chat_ids: chatIds }),
+                    supabaseRef.current
+                        .from("messages")
+                        .select("chat_id, read_by")
+                        .in("chat_id", chatIds)
+                        .neq("user_id", user.id)
+                        .gte("created_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
                 ])
 
-                const initialChats = (chatsData || []).map((c) => ({ ...c, messages: [], unreadCount: 0 })) as Chat[]
+                const unreadCounts = new Map<number, number>()
+                if (unreadData) {
+                    unreadData.forEach((msg: any) => {
+                        if (!msg.read_by || !msg.read_by.includes(user.id)) {
+                            unreadCounts.set(msg.chat_id, (unreadCounts.get(msg.chat_id) || 0) + 1)
+                        }
+                    })
+                }
+
+                const initialChats = (chatsData || []).map((c) => ({ 
+                    ...c, 
+                    messages: [], 
+                    unreadCount: unreadCounts.get(c.id) || 0 
+                })) as Chat[]
 
                 if (lastMessages) {
                     const chatsMap = new Map(initialChats.map((c) => [c.id, c]))
@@ -187,8 +206,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     }, [loggedInUser])
 
-    if (!isReady) return <AppLoading />
-
     return (
         <AuthContext.Provider value={{
             session, loggedInUser, setLoggedInUser,
@@ -197,6 +214,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             blockedUsers, setBlockedUsers,
             supabaseRef, isReady, refreshProfile, fetchInitialData,
         }}>
+            {!isReady && <AppLoading />}
             {children}
             <PrivacySetupModal open={showPrivacyModal} onOpenChange={setShowPrivacyModal} />
             <PhoneCollectionDialog

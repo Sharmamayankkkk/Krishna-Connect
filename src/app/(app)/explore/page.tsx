@@ -20,6 +20,7 @@ import { PostType } from '@/lib/types';
 import { extractVideoThumbnail } from '@/lib/video-thumbnail';
 import { cn } from '@/lib/utils';
 import { GoogleAd } from '@/components/ads/google-ad';
+import { useIntersection } from 'react-use';
 
 function getGridSpan(index: number): { col: string; row: string } {
     const patternIndex = index % 12;
@@ -78,6 +79,19 @@ export default function ExplorePage() {
     // Store the randomly selected media index per post for stable rendering
     const [selectedMedia, setSelectedMedia] = React.useState<Record<string, { url: string; type: string }>>({});
 
+    // Infinite scroll states
+    const [offset, setOffset] = React.useState(0);
+    const [hasMore, setHasMore] = React.useState(true);
+    const [isFetchingMore, setIsFetchingMore] = React.useState(false);
+    
+    // Create an intersection observer for the loader
+    const intersectionRef = React.useRef<HTMLDivElement>(null);
+    const intersection = useIntersection(intersectionRef, {
+        root: null,
+        rootMargin: '400px',
+        threshold: 0
+    });
+
     const categories = [
         { id: 'all', label: t('explore.forYou'), icon: Sparkles },
         { id: 'trending', label: t('explore.trending'), icon: Flame },
@@ -86,111 +100,125 @@ export default function ExplorePage() {
     ];
 
     React.useEffect(() => {
-        const fetchData = async () => {
-            const supabase = createClient();
+        if (intersection && intersection.isIntersecting && hasMore && !isLoading && !isFetchingMore) {
+            setOffset(prev => prev + 60);
+        }
+    }, [intersection?.isIntersecting, hasMore, isLoading, isFetchingMore]);
 
-            // Fetch suggested users
-            const { data: usersData } = await supabase.rpc('get_who_to_follow', { limit_count: 8 });
-            if (usersData) {
-                const enhanced = usersData.map((u: any) => ({
-                    ...u,
-                    followers: u.followers_count,
-                    avatar: u.avatar_url || '/placeholder-user.jpg'
-                }));
-                setSuggestedUsers(enhanced);
+    React.useEffect(() => {
+        const fetchPosts = async () => {
+            const supabase = createClient();
+            if (offset > 0) setIsFetchingMore(true);
+
+            // Fetch suggested users only on first load
+            if (offset === 0) {
+                const { data: usersData } = await supabase.rpc('get_who_to_follow', { limit_count: 8 });
+                if (usersData) {
+                    const enhanced = usersData.map((u: any) => ({
+                        ...u,
+                        followers: u.followers_count,
+                        avatar: u.avatar_url || '/placeholder-user.jpg'
+                    }));
+                    setSuggestedUsers(enhanced);
+                }
             }
 
-            // Use the dedicated explore feed RPC — returns all public posts with
-            // author info and engagement counts in a single efficient query
             const { data: postsData, error: postsError } = await supabase
-                .rpc('get_explore_feed', { p_limit: 60, p_offset: 0 });
+                .rpc('get_explore_feed', { p_limit: 60, p_offset: offset });
 
-            if (postsError) {
-                console.error('Explore: Error fetching posts:', postsError);
-                setIsLoading(false);
+            if (postsError || !postsData || postsData.length === 0) {
+                if (postsError) console.error('Explore: Error fetching posts:', postsError);
+                setHasMore(false);
+                if (offset === 0) setIsLoading(false);
+                setIsFetchingMore(false);
                 return;
             }
 
-            if (postsData && postsData.length > 0) {
-                // Pre-select display media for each post (stable across re-renders)
-                const mediaSelection: Record<string, { url: string; type: string }> = {};
+            const mediaSelection: Record<string, { url: string; type: string }> = {};
 
-                const transformedPosts: PostType[] = postsData.map((p: any) => {
-                    const rawMedia = p.media_urls || [];
-                    const normalizedMedia = rawMedia.map((m: any) => ({
-                        url: getMediaUrl(m) || '',
-                        type: getMediaType(m)
-                    })).filter((m: any) => m.url);
+            const transformedPosts: PostType[] = postsData.map((p: any) => {
+                const rawMedia = p.media_urls || [];
+                const normalizedMedia = rawMedia.map((m: any) => ({
+                    url: getMediaUrl(m) || '',
+                    type: getMediaType(m)
+                })).filter((m: any) => m.url);
 
-                    const postId = String(p.id);
-                    if (normalizedMedia.length > 0) {
-                        mediaSelection[postId] = pickDisplayMedia(p.id, normalizedMedia)!;
-                    }
+                const postId = String(p.id);
+                if (normalizedMedia.length > 0) {
+                    mediaSelection[postId] = pickDisplayMedia(p.id, normalizedMedia)!;
+                }
 
-                    return {
-                        id: postId,
-                        content: p.content,
-                        createdAt: p.created_at,
-                        author: {
-                            id: p.author_id || p.user_id,
-                            username: p.author_username || 'user',
-                            name: p.author_name || 'User',
-                            avatar: p.author_avatar || '/user_Avatar/male.png',
-                            verified: p.author_verified || 'none'
-                        },
-                        media: normalizedMedia,
-                        stats: {
-                            likes: Number(p.like_count) || 0,
-                            comments: Number(p.comment_count) || 0,
-                            views: p.views_count || 0,
-                            reposts: Number(p.repost_count) || 0,
-                            reshares: 0,
-                            bookmarks: 0
-                        },
-                        likedBy: p.is_liked ? [p.user_id] : [],
-                        savedBy: [],
-                        repostedBy: p.is_reposted ? [p.user_id] : [],
-                        collaborators: [],
-                        originalPost: null,
-                        isRepost: false,
-                        comments: [],
-                        poll: p.poll || undefined
-                    };
-                });
+                return {
+                    id: postId,
+                    content: p.content,
+                    createdAt: p.created_at,
+                    author: {
+                        id: p.author_id || p.user_id,
+                        username: p.author_username || 'user',
+                        name: p.author_name || 'User',
+                        avatar: p.author_avatar || '/user_Avatar/male.png',
+                        verified: p.author_verified || 'none'
+                    },
+                    media: normalizedMedia,
+                    stats: {
+                        likes: Number(p.like_count) || 0,
+                        comments: Number(p.comment_count) || 0,
+                        views: p.views_count || 0,
+                        reposts: Number(p.repost_count) || 0,
+                        reshares: 0,
+                        bookmarks: 0
+                    },
+                    likedBy: p.is_liked ? [p.user_id] : [],
+                    savedBy: [],
+                    repostedBy: p.is_reposted ? [p.user_id] : [],
+                    collaborators: [],
+                    originalPost: null,
+                    isRepost: false,
+                    comments: [],
+                    poll: p.poll || undefined
+                };
+            });
 
-                setSelectedMedia(mediaSelection);
-                const mixedContent = generateExploreContent(transformedPosts, 30);
-                setExploreContent(mixedContent);
+            setSelectedMedia(prev => ({ ...prev, ...mediaSelection }));
+            
+            // Mix content using the algorithm
+            const mixedContent = generateExploreContent(transformedPosts, 60);
+            
+            setExploreContent(prev => {
+                const existingIds = new Set(prev.map(item => item.id));
+                const newItems = mixedContent.filter(item => !existingIds.has(item.id));
+                return [...prev, ...newItems];
+            });
 
-                // Extract video thumbnails in batches
-                const videoItems = mixedContent.filter(item => {
-                    const sel = mediaSelection[item.data.id];
-                    return sel?.type === 'video' && sel.url;
-                });
+            // Extract video thumbnails in batches
+            const videoItems = mixedContent.filter(item => {
+                const sel = mediaSelection[item.data.id];
+                return sel?.type === 'video' && sel.url;
+            });
 
-                const BATCH_SIZE = 3;
-                for (let i = 0; i < videoItems.length; i += BATCH_SIZE) {
-                    const batch = videoItems.slice(i, i + BATCH_SIZE);
-                    const results = await Promise.allSettled(
-                        batch.map(item => {
-                            const videoUrl = mediaSelection[item.data.id]?.url;
-                            if (!videoUrl) return Promise.reject('No URL');
-                            return extractVideoThumbnail(videoUrl)
-                                .then(thumb => ({ id: item.data.id, thumb }));
-                        })
-                    );
-                    for (const result of results) {
-                        if (result.status === 'fulfilled') {
-                            setVideoThumbnails(prev => ({ ...prev, [result.value.id]: result.value.thumb }));
-                        }
+            const BATCH_SIZE = 3;
+            for (let i = 0; i < videoItems.length; i += BATCH_SIZE) {
+                const batch = videoItems.slice(i, i + BATCH_SIZE);
+                const results = await Promise.allSettled(
+                    batch.map(item => {
+                        const videoUrl = mediaSelection[item.data.id]?.url;
+                        if (!videoUrl) return Promise.reject('No URL');
+                        return extractVideoThumbnail(videoUrl)
+                            .then(thumb => ({ id: item.data.id, thumb }));
+                    })
+                );
+                for (const result of results) {
+                    if (result.status === 'fulfilled') {
+                        setVideoThumbnails(prev => ({ ...prev, [result.value.id]: result.value.thumb }));
                     }
                 }
             }
 
-            setIsLoading(false);
+            if (offset === 0) setIsLoading(false);
+            setIsFetchingMore(false);
         };
-        fetchData();
-    }, []);
+        fetchPosts();
+    }, [offset]);
 
 
     const handlePostClick = (post: any) => {
@@ -246,7 +274,7 @@ export default function ExplorePage() {
                 key={item.id}
                 onClick={() => handlePostClick(post)}
                 className={cn(
-                    "group relative overflow-hidden cursor-pointer",
+                    "group relative overflow-hidden cursor-pointer animate-in fade-in zoom-in-95 duration-500",
                     "rounded-[3px] sm:rounded-[4px]",
                     col, row,
                     "aspect-square"
@@ -469,12 +497,8 @@ export default function ExplorePage() {
                             {/* We can reuse NewsWidget but it's vertical. Let's make a container that forces grid or horizontal scroll. 
                                 Or simply put NewsWidget in a grid.
                             */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                                <NewsWidget limit={6} showFooter={false} className="sm:col-span-2 md:col-span-3 bg-transparent p-0" />
-                                {/* Wait, NewsWidget is designed as a vertical list in a card. 
-                                    If we want a grid on explore, we might need to adjust NewsWidget or create a new one.
-                                    For now, let's just use it as is, but maybe limit to 3 items so it doesn't take too much vertical space.
-                                */}
+                            <div className="w-full">
+                                <NewsWidget limit={6} showFooter={false} className="bg-transparent border-none shadow-none p-0" />
                             </div>
                         </section>
                     )}
@@ -511,6 +535,12 @@ export default function ExplorePage() {
                                     </div>
                                     <p className="text-base sm:text-lg font-semibold">{t('explore.nothingToExplore')}</p>
                                     <p className="text-xs sm:text-sm mt-1">{t('explore.communityPostsWillAppear')}</p>
+                                </div>
+                            )}
+                            
+                            {hasMore && !isLoading && (
+                                <div ref={intersectionRef} className="col-span-3 flex justify-center py-8">
+                                    <div className="h-6 w-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
                                 </div>
                             )}
                         </div>

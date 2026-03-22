@@ -270,7 +270,7 @@ export default function GetVerifiedPage() {
             <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b">
                 <div className="flex items-center gap-4 px-4 h-14 max-w-5xl mx-auto">
                     <SidebarTrigger className="md:hidden" />
-                    <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full" aria-label={t('getVerified.goBack')}>
+                    <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full md:hidden" aria-label={t('getVerified.goBack')}>
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
                     <div className="flex items-center gap-2">

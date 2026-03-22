@@ -377,7 +377,28 @@ function ChatPageContent() {
   const pathname = usePathname();
 
   const activeTab = (searchParams.get("tab") || "chats") as TabValue;
-  const totalUnread = chats.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+  
+  const unreadDMs = chats.filter(c => c.type === "dm").reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+  const unreadGroups = chats.filter(c => c.type === "group" || c.type === "channel").reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+  const totalUnread = unreadDMs + unreadGroups;
+
+  const [unreadCalls, setUnreadCalls] = useState(0);
+
+  useEffect(() => {
+    if (!loggedInUser) return;
+    const fetchMissedCalls = async () => {
+      const supabase = createClient();
+      const { count } = await supabase
+        .from('calls')
+        .select('*', { count: 'exact', head: true })
+        .eq('callee_id', loggedInUser.id)
+        .in('status', ['missed', 'declined'])
+        .gte('created_at', new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()); // Last 3 days
+      
+      setUnreadCalls(count || 0);
+    };
+    fetchMissedCalls();
+  }, [loggedInUser]);
 
   const handleTabChange = (value: TabValue) => {
     router.replace(`${pathname}?tab=${value}`, { scroll: false });
@@ -446,8 +467,14 @@ function ChatPageContent() {
           >
             <Icon className="h-4 w-4" />
             {t(labelKey)}
-            {value === "chats" && totalUnread > 0 && (
-              <Badge className="h-5 min-w-[20px] px-1.5 text-[10px]">{totalUnread}</Badge>
+            {value === "chats" && unreadDMs > 0 && (
+              <Badge className="h-5 min-w-[20px] px-1.5 text-[10px] bg-primary">{unreadDMs}</Badge>
+            )}
+            {value === "groups" && unreadGroups > 0 && (
+              <Badge className="h-5 min-w-[20px] px-1.5 text-[10px] bg-primary">{unreadGroups}</Badge>
+            )}
+            {value === "calls" && unreadCalls > 0 && (
+              <Badge className="h-5 min-w-[20px] px-1.5 text-[10px] bg-destructive hover:bg-destructive/90 text-destructive-foreground">{unreadCalls}</Badge>
             )}
           </button>
         ))}

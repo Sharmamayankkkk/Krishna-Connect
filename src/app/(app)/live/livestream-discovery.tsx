@@ -93,7 +93,7 @@ export function LivestreamDiscovery() {
             <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b supports-[backdrop-filter]:bg-background/60">
                 <div className="flex items-center justify-between px-4 py-3 max-w-7xl mx-auto w-full">
                     <div className="flex items-center gap-2">
-                        <SidebarTrigger className="-ml-2" />
+                        <SidebarTrigger className="-ml-2 md:hidden" />
                         <div className="bg-red-600 rounded-md p-1">
                             <Radio className="h-5 w-5 text-white" />
                         </div>
