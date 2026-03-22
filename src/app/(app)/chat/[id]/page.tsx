@@ -5,7 +5,7 @@ import { notFound, useParams, useSearchParams } from "next/navigation"
 import { Chat as ChatUI } from "@/components/features/chat/chat"
 import { useAppContext } from "@/providers/app-provider"
 import { Icons } from "@/components/icons"
-import { useEffect, useRef, useMemo, useCallback, useState } from "react"
+import { useEffect, useRef, useMemo, useCallback, useState, Suspense } from "react"
 import type { Message, Chat } from "@/lib/types"
 import { createClient } from "@/lib/utils"
 
@@ -33,6 +33,14 @@ const FULL_MESSAGE_SELECT_QUERY = `
 `;
 
 export default function ChatPage() {
+  return (
+    <Suspense fallback={<ChatPageLoading />}>
+      <ChatPageContent />
+    </Suspense>
+  )
+}
+
+function ChatPageContent() {
   const { t } = useTranslation();
 
   const params = useParams<{ id: string }>()

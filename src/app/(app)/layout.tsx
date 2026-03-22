@@ -5,6 +5,7 @@ import AppShell from "@/components/layout/app-shell"
 import { SidebarProvider } from "@/components/ui/sidebar"
 
 import { WhatsNewDialog } from "@/components/whats-new-dialog"
+import { AndroidInstallPrompt } from "@/components/android-install-prompt"
 
 export const metadata: Metadata = {
   title: "Home",
@@ -18,6 +19,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <SidebarProvider defaultOpen>
       <AppShell>{children}</AppShell>
       <WhatsNewDialog />
+      <AndroidInstallPrompt />
     </SidebarProvider>
   )
 }
