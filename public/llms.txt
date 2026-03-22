@@ -1,0 +1,68 @@
+# Krishna Connect
+
+> A spiritually-oriented social media platform for the global Krishna Consciousness and ISKCON devotee community.
+
+## What is Krishna Connect?
+Krishna Connect (krishnaconnect.in) is a sacred digital space designed to foster deep connections, share spiritual inspiration, and strengthen the collective journey in Krishna consciousness. Built with modern, scalable technology, it provides a secure and feature-rich environment for meaningful conversations, providing a distraction-free, values-aligned alternative to mainstream social media.
+
+## Features
+
+### Communication & Messaging
+- **Real-Time Messaging** — One-on-one direct messages and group chats with typing indicators
+- **Rich Text Formatting** — Compose messages with formatting, mentions, and hashtags
+- **Media Sharing** — Share images, files, voice notes, GIFs, and emojis
+- **Message Management** — Edit, delete, reply, forward, and star important messages
+- **Chat Customization** — Personalize chat appearance with wallpapers and bubble colors
+
+### User Experience
+- **User Profiles** — Customizable profiles with banners, avatars, bios, and social stats
+- **Stories/Status** — Share ephemeral 24-hour content with the community
+- **Feed System** — Explore posts with infinite scroll, likes, reposts, comments, pinning, and hiding support
+- **Leela Videos** — Share and discover engaging short-form videos
+- **Bookmarks** — Save and organize favorite posts and content
+- **Notifications** — Real-time notifications for mentions, likes, messages, and events
+- **Theme Customization** — Switch between light and dark modes
+- **Multilingual** — Supports Hindi, Arabic, Gujarati, and English (including RTL support)
+
+### Community & Social
+- **Communities/Groups** — Create and join topic-specific spaces
+- **Events Management** — Create, discover, and RSVP to community events
+- **Hashtags & Mentions** — Tag content and mention users with @ and # support
+- **Explore Page** — Discover trending posts, users, and content
+- **Search Functionality** — Find users, posts, and conversations
+- **Verification System** — Verified user badges for trusted community members (devotees or organizations)
+
+### Safety & Privacy
+- **Content Moderation** — Built-in reporting system for inappropriate content
+- **User Blocking** — Block unwanted interactions
+- **Privacy Controls** — Granular privacy settings for profile and content
+- **Security Settings** — Enhanced account security options
+- **Row Level Security** — Database-level access control via Supabase RLS
+
+### Advanced Features
+- **AI-Powered Features** — Smart content analysis powered by Google Gemini
+- **Progressive Web App (PWA)** — Install on any device for native-like experience
+- **Push Notifications** — Stay updated with web push notifications
+- **Analytics Dashboard** — Track engagement and insights for content creators
+- **Image Editing** — Built-in tools for cropping, rotating, and filters
+- **Content Scheduling** — Schedule posts for future publication
+- **Collaborative Posts** — Co-author posts with multiple users
+- **Thread Support** — Create connected series of posts
+- **Mobile app** — Available on Android and iOS (Flutter-based)
+- **Monetization & Maintenance Mode** — Ads integration and system-wide admin controls
+
+## Who is it for?
+Devotees of Krishna, ISKCON members, followers of Srila Prabhupada, and anyone interested in Vedic philosophy, bhakti yoga, and spiritual community.
+
+## Links
+- Website: https://krishnaconnect.in
+- Explore: https://krishnaconnect.in/explore
+- Groups: https://krishnaconnect.in/groups
+- Events: https://krishnaconnect.in/events
+- About: https://krishnaconnect.in/about
+- FAQ: https://krishnaconnect.in/faq
+- Contact Us: https://krishnaconnect.in/contact-us
+- Developers: https://krishnaconnect.in/developers
+- Member Directory: https://krishnaconnect.in/directory
+- Privacy Policy: https://krishnaconnect.in/privacy-policy
+- Terms and Conditions: https://krishnaconnect.in/terms-and-conditions

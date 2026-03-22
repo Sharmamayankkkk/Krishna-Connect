@@ -106,6 +106,23 @@ export default function RootLayout({
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <head>
         <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "Krishna Connect",
+              "url": "https://krishnaconnect.in",
+              "description": "A social media platform for the global Krishna Consciousness and ISKCON devotee community.",
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://krishnaconnect.in/explore?q={search_term_string}",
+                "query-input": "required name=search_term_string"
+              }
+            })
+          }}
+        />
+        <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
