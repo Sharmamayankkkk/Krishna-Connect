@@ -217,7 +217,7 @@ export function EditPostDialog({ post, open, onOpenChange, onPostUpdated }: Edit
 
             for (const media of mediaPreviews) {
                 // If it has a file (newly added), upload it
-                if (media.file) {
+                if (media.file instanceof File) {
                     const fileExt = media.file.name.split('.').pop();
                     const fileName = `${Math.random()}.${fileExt}`;
                     const filePath = `post-media/${loggedInUser.id}/${fileName}`;

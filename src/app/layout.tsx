@@ -75,7 +75,7 @@ export const metadata: Metadata = {
     site: '@KrishnaConnect',
   },
   keywords: ["Krishna Connect", "Spiritual Social Network", "Conscious Community", "Bhakti Yoga", "Hare Krishna", "ISKCON", "Spirituality", "Meditation", "Kirtan"],
-  authors: [{ name: "Krishna Connect Team", url: "https://krishnaconnect.in" }],
+  authors: [{ name: "Mayank Sharma", url: "https://github.com/Sharmamayankkkk" }],
   robots: {
     index: true,
     follow: true,

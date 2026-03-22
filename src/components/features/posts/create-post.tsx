@@ -513,8 +513,9 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
                     const { data: { publicUrl } } = supabase.storage
                         .from('post_media')
                         .getPublicUrl(filePath);
-
-                    uploadedMedia.push({ ...media, url: publicUrl }); // Use public URL, strip file
+                    
+                    const { file: _f, ...mediaData } = media as any;
+                    uploadedMedia.push({ ...mediaData, url: publicUrl }); // Use public URL, strip file
                 } else {
                     uploadedMedia.push(media); // Keep existing URL (e.g. GIF)
                 }
