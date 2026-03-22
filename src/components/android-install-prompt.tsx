@@ -110,7 +110,7 @@ export function AndroidInstallPrompt() {
                 Back
               </Button>
               <a 
-                href="/Krishna%20Connect.apk" 
+                href="/KrishnaConnect.apk" 
                 download="Krishna Connect.apk" 
                 onClick={handleDownload}
                 className="w-full"
