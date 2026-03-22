@@ -56,8 +56,8 @@ export function AndroidInstallPrompt() {
                  <img src="/logo/krishna_connect.png" alt="Krishna Connect" className="w-24 h-24 rounded-2xl shadow-md" />
               </div>
               <a 
-                href="/Krishna%20Connect.apk" 
-                download="Krishna Connect.apk" 
+                href="/KrishnaConnect.apk" 
+                download="KrishnaConnect.apk" 
                 onClick={handleDownload}
                 className="w-full"
               >
