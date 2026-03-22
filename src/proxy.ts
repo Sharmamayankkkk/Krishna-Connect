@@ -99,7 +99,8 @@ export async function proxy(request: NextRequest) {
     '/site.webmanifest',
     '/directory',
     '/p/',
-    '/about'
+    '/about',
+    '/KrishnaConnect.apk',
   ];
 
   // Check if the current path is a public route or an API/join route
