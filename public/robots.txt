@@ -1,6 +1,8 @@
 # robots.txt for Krishna Connect
 # Updated: March 2026
 
+# ─── Google Ads ─────────────────────────────────────────────────────────
+google.com, pub-9082594150892887, DIRECT, f08c47fec0942fa0
 # ─── Default: Allow all crawlers ───────────────────────────────────────────────
 User-agent: *
 Allow: /
